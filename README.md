@@ -1,2 +1,2 @@
-# DolmexicaInfinite
-Something resembling a Mugen port for Dreamcast.
+# Objectification
+Something resembling a dating sim for Sega Dreamcast.

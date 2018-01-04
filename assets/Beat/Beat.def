@@ -1,0 +1,21 @@
+[Info]
+name="Beat"
+displayname="Beat"
+versiondate= 10/4/2015 - 11/23/2015
+mugenversion=
+author="Hyde233"
+pal.defaults=1,2,3,4,5
+[Files]
+sprite=Beat.sff
+sound=Beat.snd
+anim=Beat.air
+cmd=Beat.cmd
+cns=Beat.cns
+st=Beat_S.st
+stcommon=common1.cns
+pal1=Palettes/1.act
+st1=Beat_C.st
+st2=Beat_A.st
+[Arcade]
+intro.storyboard=
+ending.storyboard=

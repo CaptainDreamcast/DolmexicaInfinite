@@ -1,0 +1,9 @@
+include Makefile.common
+
+all: complete
+
+clean_user:
+	
+TARI_PATH = ..\addons\libtari
+ADDITIONAL_PRELOADS = --preload-file assets
+include ../addons/libtari/Makefile.commonweb

@@ -1,0 +1,166 @@
+[Header]
+Sprites = assets/main/fight/story/3.sff
+
+
+[STORYSTART]
+
+[Image 1]
+Group = 1
+Item = 0
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Hmm... hmm... yeah, that's good."
+
+[Text 1]
+Speaker = "KFM(?) #1:"
+Text = "Umm, Ms. Okano?"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "You get a like."
+
+[Text 1]
+Speaker = "KFM(?) #1:"
+Text = "Ms. Okano, the fight is over, KFM (#2) won."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "..."
+
+[Text 1]
+Speaker = "KFM(?) #1:"
+Text = "MISS OKANO"
+
+[Image 1]
+Group = 1
+Item = 1
+
+[Text 1]
+Speaker = "Rita:"
+Text = "YIKES!"
+
+[Image 1]
+Group = 1
+Item = 2
+
+[Text 1]
+Speaker = "Rita:"
+Text = "W... welcome back, viewers and viewerettes! What an intense battle, I could hardly blink!"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "With this, we have our two finalists! Kung Fu Man and Kung Fu Man!"
+
+[Text 1]
+Speaker = "Crowd:"
+Text = "Boooo! We wanted Sonic Adventure 3! We wanted a new Jet Set Radio!"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Let's give them a big round of applause!"
+
+[Text 1]
+Speaker = "Crowd:"
+Text = "..."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "*stepping on what's left of Beat's headphones and crunching them into dust*"
+
+[Text 1]
+Speaker = "Crowd:"
+Text = "YEAAAAAAAAAAAAAHHHH! MUGEN MUGEN MUGEN! GO KUNG FU MAN! YOU ROCK! WE LOVE THE DREAM FIGHT TOURNAMENT!"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "That's more like it."
+
+[Image 1]
+Group = 1
+Item = 3
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Our finalists are facing off. What could possibly go through their minds?"
+
+
+[Text 1]
+Speaker = "KFM(?) #1:"
+Text = "(I want to go home. Just home. I want my bed.)"
+
+[Text 1]
+Speaker = "KFM(?) #2:"
+Text = "(Dududududu? Or was it more like Dudududu-du-dudududu? No that's not right either.)"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "I can feel their minds sharpening in on the battle."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "KFM #1, is there anything you need to get off your chest before the fight starts? It could be your last chance after all."
+
+[Text 1]
+Speaker = "KFM(?) #1:"
+Text = "There's just too much to tsukkomi, the missing music, the art, state machine glitches, we have the full package here."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "?"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "KFM #2, how do you rate your chances of winning?"
+
+[Text 1]
+Speaker = "KFM(?) #2:"
+Text = "Dubdudududu?"
+
+[Text 1]
+Speaker = "KFM(?) #1:"
+Text = "Oh I know that song! It goes Dadadadadada later on, right?"
+
+[Text 1]
+Speaker = "KFM(?) #2:"
+Text = "No, that's not right. It was more like daodaodaoooo after the dududududu part."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "These paragonic warriors have moved to a trash talking language us normal people can no longer comprehend."
+
+[Image 1]
+Group = 1
+Item = 4
+
+[Text 1]
+Speaker = "KFM(?) #1:"
+Text = "Just so we're in the clear, the song goes dadadadadadada not daodaodaoooo. I think Mr. Blind over there may be deaf too."
+
+[Text 1]
+Speaker = "KFM(?) #2:"
+Text = "It's obviously daoooo at the end, you scrawny little punk."
+
+[Text 1]
+Speaker = "KFM(?) #1:"
+Text = "What did you just call me, you musically challenged oaf?"
+
+[Text 1]
+Speaker = "KFM(?) #2:"
+Text = "I'll smash you in the ground and turn you into a radio receiver. Then we'll see who's right!"
+
+[Text 1]
+Speaker = "KFM(?) #1:"
+Text = "I'd love to see you try you dao dao dumbs[CENSORED]!"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Hold on a minute guys, it's just a song and-"
+
+[Text 1]
+Speaker = "Both KFMs:"
+Text = "JUST START THE FREAKING FIGHT ALREADY!"
+
+[Fight 1]
+Player = "assets/main/fight/kfm/kfm.def"
+Enemy = "assets/main/fight/kfm/kfm.def"

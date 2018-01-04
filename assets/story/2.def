@@ -1,0 +1,272 @@
+[Header]
+Sprites = assets/main/fight/story/2.sff
+
+
+[STORYSTART]
+
+[Image 1]
+Group = 1
+Item = 0
+
+[Text 1]
+Speaker = "Rita:"
+Text = "AND THE VICTORY GOES TO THE DREAMCAST'S VERY OWN KUNG FU MAN! GIVE US A BIG APPLAUSE EVERYONE!"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "..."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Well, I can't hear you anyway since our sound system isn't working but I'll just assume you're going wild."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Let's waste no time and introduce fighter numero tres!"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "You all know him, you all love him! Sega's flag ship character! It's none other than..."
+
+[Image 1]
+Group = 1
+Item = 1
+
+
+[Text 1]
+Speaker = "Rita:"
+Text = "SONIC! THE! HEDGEHOG!"
+
+[Text 1]
+Speaker = "Sonic:"
+Text = "Hey buddies! Sonic's the name, speed's my game!"
+
+[Text 1]
+Speaker = "Sonic:"
+Text = "Let's beat the bad guys and have some chili dogs afterwards!"
+
+[Text 1]
+Speaker = "Sonic:"
+Text = "I love nothing more than-"
+
+[Text 1]
+Speaker = "Sonic's watch:"
+Text = "*beep* *beep* *beep*"
+
+[Image 1]
+Group = 1
+Item = 2
+
+
+[Text 1]
+Speaker = "Mr. Hedgehog:"
+Text = "..."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Umm... Sonic? What do you love?"
+
+[Text 1]
+Speaker = "Mr. Hedgehog:"
+Text = "Look honey. I know you're garbage. Typical riffraff, no potential, just utter gutter trash with no value."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Wh... what?"
+
+[Text 1]
+Speaker = "Mr. Hedgehog:"
+Text = "... But, you see honey, MY time is valuable. You understand? Do the little marbles in your empty head click just enough to get the concept?"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Yes? I mean... err... no?"
+
+[Text 1]
+Speaker = "Mr. Hedgehog:"
+Text = "You only paid for 15 seconds. What am I? A charity? You should feel lucky I came in the first place."
+
+[Text 1]
+Speaker = "Mr. Hedgehog:"
+Text = "Do you know how many bootleg trash games want THE Sonic the Hedgehog?"
+
+[Text 1]
+Speaker = "KFM(?) from the distance:"
+Text = "Twelve?"
+
+[Text 1]
+Speaker = "Mr. Hedgehog:"
+Text = "..."
+
+[Text 1]
+Speaker = "Mr. Hedgehog:"
+Text = "Ugh."
+
+[Text 1]
+Speaker = "Mr. Hedgehog:"
+Text = "You also paid for two fights, so get a move on or I'll call my agent."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "..."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Why would marbles click? Marbles don't click."
+
+[Text 1]
+Speaker = "Mr. Hedgehog:"
+Text = "... This is the worst."
+
+[Image 1]
+Group = 1
+Item = 3
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Time for me to take over again, I guess."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "So everyone, click your marbles for the final fighter!"
+
+[Text 1]
+Speaker = "Crowd:"
+Text = "*clicking their marbles furiously*"
+
+[Text 1]
+Speaker = "Mr. Hedgehog from the distance:"
+Text = "What on earth is this place?"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "It's none other than..."
+
+[Image 1]
+Group = 1
+Item = 4
+
+[Text 1]
+Speaker = "Rita:"
+Text = "..."
+
+[Image 1]
+Group = 1
+Item = 5
+
+
+[Text 1]
+Speaker = "Rita:"
+Text = "..."
+
+[Image 1]
+Group = 1
+Item = 6
+
+[Text 1]
+Speaker = "Rita:"
+Text = "... Kung Fu Man from... M.U.G.E.N. again?"
+
+[Text 1]
+Speaker = "Kung Fu Man from M.U.G.E.N. again:"
+Text = "Yes, it is I. My heart is one of two. I am half man, half Kung Fu, I am..."
+
+[Text 1]
+Speaker = "KFM(?) #2:"
+Text = "KUNG FU MAN!"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "(... Oh no.)"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "So Kung Fu Man, how do you feel about your fight today?"
+
+[Text 1]
+Speaker = "KFM(?) #2:"
+Text = "When I look into the mirror in the morning..."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "(YOU CAN'T. YOUR BANDANA IS OVER YOUR EYES. YOU CAN'T. LITERALLY.)"
+
+[Text 1]
+Speaker = "KFM(?) #2:"
+Text = "I think to myself: A man's life is but a fleeting dream."
+
+[Text 1]
+Speaker = "KFM(?) #2:"
+Text = "When I look into the mirror in the evening to wash off the blood..."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "B... blood?"
+
+[Text 1]
+Speaker = "KFM(?) #2:"
+Text = "I think to myself: A man's life is but a series of fights."
+
+[Text 1]
+Speaker = "KFM(?) #2:"
+Text = "What is the true essence of a man? Both dream and fight, it is without a doubt a..."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Don't say it. Please."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "I'll pay you."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "I have money. Take my host salary. It's yours."
+
+[Text 1]
+Speaker = "KFM(?) #2:"
+Text = "... it is without a doubt a..."
+
+[Text 1]
+Speaker = "KFM(?) #2:"
+Text = "DREAM FIGHT!"
+
+[Text 1]
+Speaker = "Beat (from the ICU):"
+Text = "Aarrrrrrrrrgh myyyy HEAD"
+
+[Text 1]
+Speaker = "ICU doctor:"
+Text = "We're losing him! My God, we're losing him!"
+
+[Text 1]
+Speaker = "ICU doctor:"
+Text = "Nurse, bring me a syringe of adrenaline. Nurse? The nurse has fainted as well! This is a nightmare!"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "..."
+
+[Image 1]
+Group = 1
+Item = 7
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Casual murder aside, do you have a response to that, Sonic?"
+
+[Text 1]
+Speaker = "Mr. Hedgehog:"
+Text = "I've made a huge mistake."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Fair enough."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "With that out of the way, LET'S BEGIN THE SECOND BOUT!"
+
+[Fight 1]
+Player = "assets/main/fight/kfm/kfm.def"
+Enemy = "assets/main/fight/Sonicth/Sonicth.def"

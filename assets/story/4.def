@@ -1,0 +1,179 @@
+[Header]
+Sprites = assets/main/fight/story/4.sff
+
+
+[STORYSTART]
+
+[Image 1]
+Group = 1
+Item = 0
+
+[Text 1]
+Speaker = "KFM(?) #1:"
+Text = "AND STAY DOWN!"
+
+[Image 1]
+Group = 1
+Item = 1
+
+[Text 1]
+Speaker = "Rita:"
+Text = "... I meant to say this for a while, but weren't you just talking about Metallica's 'Nothing else matters'?"
+
+[Text 1]
+Speaker = "KFM(?) #1:"
+Text = "..."
+
+[Text 1]
+Speaker = "KFM(?) #2:"
+Text = "..."
+
+[Text 1]
+Speaker = "Crowd:"
+Text = "..."
+
+[Image 1]
+Group = 1
+Item = 2
+
+[Text 1]
+Speaker = "Metallica:"
+Text = "... It's true!"
+
+[Image 1]
+Group = 1
+Item = 0
+
+[Text 1]
+Speaker = "KFM(?) #1:"
+Text = "I guess we went a little overboard. You don't have to stay down if you don't want to, Cop."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "DON'T BREAK CHAR- you know what? It's over anyway, who cares. Feel free to take off the costumes, too."
+
+[Image 1]
+Group = 1
+Item = 3
+
+[Text 1]
+Speaker = "Cop Justice (Fists of Justice):"
+Text = "You really were the bigger man here, Kat. You earned that win."
+
+[Text 1]
+Speaker = "Kat (Eye of the Medusa):"
+Text = "Thanks Cop. It was a close call."
+
+[Image 1]
+Group = 1
+Item = 4
+
+[Text 1]
+Speaker = "Rita:"
+Text = "*sniff sniff*, this is so touching."
+
+[Text 1]
+Speaker = "Crowd:"
+Text = "*sniff sniff*, this is so touching."
+
+[Image 1]
+Group = 1
+Item = 2
+
+[Text 1]
+Speaker = "Metallica:"
+Text = "*sniff sniff*, this is so touching."
+
+[Image 1]
+Group = 1
+Item = 4
+
+[Text 1]
+Speaker = "Rita:"
+Text = "And wiff this, *sniff*, the winner of the Dweam Fight tournament is Kat from Eye of the Medusa. As such he is eligible to the tournament's prize *sniff*: A seqwel."
+
+[Text 1]
+Speaker = "Kat:"
+Text = "... Eh?"
+
+[Text 1]
+Speaker = "Cop Justice:"
+Text = "Wow, I can't imagine how happy you must be right now, Kat."
+
+[Text 1]
+Speaker = "Kat:"
+Text = "... Eh? Eh? Eh?"
+
+[Image 1]
+Group = 1
+Item = 5
+
+[Text 1]
+Speaker = "Kat:"
+Text = "No, I'm... I mean I was free and... can't I donate my price to charity? Where do I sign to do that?"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Don't be silly, silly. Eye of the Medusa: Beyond is now officially slated for a 30/09/17 release and nothing in the world can change that."
+
+[Text 1]
+Speaker = "Kat:"
+Text = "NOOOOOOOOOOOOOOOOOOOOOOOO OOOOOOOOOOOOOOOOOOOOOOOOO"
+
+[Text 1]
+Speaker = "Cop Justice:"
+Text = "He cares so much about his friends that he feels their pain of not getting a sequel."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "We could all learn a thing or two from a man like him."
+
+[Text 1]
+Speaker = "Kat:"
+Text = "[incoherent crying and yelling]"
+
+[Image 1]
+Group = 1
+Item = 6
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Anyway, that's it from the 16th Dream Fight tournament. On behalf of the organizers, I want to thank all our participants and viewers! You guys are the best!"
+
+[Text 1]
+Speaker = "Beat (from the ICU):"
+Text = "UuuuuuuuuuuuuuuuGhuuuuuuuuuuHu"
+
+[Text 1]
+Speaker = "Sonic (from the ICU):"
+Text = "I... I'll sue."
+
+[Text 1]
+Speaker = "Kat:"
+Text = "IT'S NOT FAIR! IT'S JUST NOT FAIR!"
+
+[Text 1]
+Speaker = "Cop Justice:"
+Text = "There, there. I'm alright, I tell you. I'll just win next time."
+
+[Text 1]
+Speaker = "Crowd:"
+Text = "*mostly playing with their phones*"
+
+[Image 1]
+Group = 1
+Item = 2
+
+[Text 1]
+Speaker = "Metallica:"
+Text = "Thanks for playing, everyone!"
+
+[Image 1]
+Group = 1
+Item = 7
+
+[Text 1]
+Speaker = "THE END:"
+Text = "SEE YOU NEXT DREAM FIGHT!"
+
+[Ending 1]

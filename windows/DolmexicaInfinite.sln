@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.15
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DolmexicaInfinite", "DolmexicaInfinite.vcxproj", "{1F70946A-55A5-4CA3-88C5-7DA417B967FF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtari", "..\..\addons\libtari\windows\vs17\libtari.vcxproj", "{3572E463-893D-4815-8ECC-E65F3B8C6D90}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1F70946A-55A5-4CA3-88C5-7DA417B967FF}.Debug|x64.ActiveCfg = Debug|x64
+		{1F70946A-55A5-4CA3-88C5-7DA417B967FF}.Debug|x64.Build.0 = Debug|x64
+		{1F70946A-55A5-4CA3-88C5-7DA417B967FF}.Debug|x86.ActiveCfg = Debug|Win32
+		{1F70946A-55A5-4CA3-88C5-7DA417B967FF}.Debug|x86.Build.0 = Debug|Win32
+		{1F70946A-55A5-4CA3-88C5-7DA417B967FF}.Release|x64.ActiveCfg = Release|x64
+		{1F70946A-55A5-4CA3-88C5-7DA417B967FF}.Release|x64.Build.0 = Release|x64
+		{1F70946A-55A5-4CA3-88C5-7DA417B967FF}.Release|x86.ActiveCfg = Release|Win32
+		{1F70946A-55A5-4CA3-88C5-7DA417B967FF}.Release|x86.Build.0 = Release|Win32
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Debug|x64.ActiveCfg = Debug|x64
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Debug|x64.Build.0 = Debug|x64
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Debug|x86.ActiveCfg = Debug|Win32
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Debug|x86.Build.0 = Debug|Win32
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Release|x64.ActiveCfg = Release|x64
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Release|x64.Build.0 = Release|x64
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Release|x86.ActiveCfg = Release|Win32
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F219532E-BC9B-4122-8845-4A8E8D3B528A}
+	EndGlobalSection
+EndGlobal

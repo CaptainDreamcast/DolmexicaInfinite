@@ -1,0 +1,173 @@
+[Header]
+Sprites = assets/main/fight/story/1.sff
+
+
+[STORYSTART]
+
+[Image 1]
+Group = 1
+Item = 0
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Welcome to the the 16th annual Dream Fight tournament! My name is Rita Okano, and I will be your host today!"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "We have spared no expenses and gathered four of the Dreamcast's most popular fighters! They will duke it out to decide which of them gets their long-awaited sequel!"
+
+[Image 1]
+Group = 2
+Item = 0
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Our first fighter is the roller skate anarchist himself, it's Beat from Jet Set Radio!"
+
+[Text 1]
+Speaker = "Beat:"
+Text = "What?"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "I said, our first fighter is the roller skate anarchist himself, it's Beat from Jet Set Radio!"
+
+[Text 1]
+Speaker = "Beat:"
+Text = "What? S-to-the-orry lady, I have a medical jam. That means I gotta wear these sick h-phones all the time."
+
+[Text 1]
+Speaker = "Beat:"
+Text = "It also means I gotta blast alternative indie rock music with the amp up to 11, yo."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "*ahem*"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "OUR FIRST FIGHTER IS THE ROLLER SKATE ANARCHIST HIMSELF, IT'S BEAT FROM JET SET RADIO!"
+
+[Text 1]
+Speaker = "Beat:"
+Text = "..."
+
+[Text 1]
+Speaker = "Beat:"
+Text = "Geez lady, chillax a bit."
+
+[Image 1]
+Group = 3
+Item = 0
+
+[Text 1]
+Speaker = "Beat's headphones:"
+Text = "*sound that headphones make when they are crushed by a fighting tournament host*"
+
+[Text 1]
+Speaker = "Beat:"
+Text = "NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO!"
+
+[Image 1]
+Group = 4
+Item = 0
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Moving on."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "His opponent in the first round is the Dreamcast's most well-known fighting game character. Yes, you guessed it, it's..."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "M.U.G.E.N.'s very own Kung! Fu! Man!"
+
+[Text 1]
+Speaker = "Crowd:"
+Text = "*going wild*"
+
+[Text 1]
+Speaker = "Crowd:"
+Text = "*pausing for a second, scratching their heads*"
+
+[Text 1]
+Speaker = "Crowd:"
+Text = "*shrugging and going wild again*"
+
+[Image 1]
+Group = 5
+Item = 0
+
+[Text 1]
+Speaker = "Rita:"
+Text = "KFM, how do you see your chances to win today?"
+
+[Text 1]
+Speaker = "KFM:"
+Text = "I'm so tired. I just want to go home. This costume is so hot and uncomfortable. Can I plea-"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "(Will you shut up and play your part?)"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Hahaha KFM, you must have nerves of steel to joke around before such an important match!"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "*punches KFM in the arm*"
+
+[Text 1]
+Speaker = "KFM(?):"
+Text = "*sigh*"
+
+[Text 1]
+Speaker = "KFM(?):"
+Text = "Kung fu kung fu angry angry fight fight grrrrrr."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Beat, do you have a response to this taunt?"
+
+[Image 1]
+Group = 6
+Item = 0
+
+[Text 1]
+Speaker = "Beat:"
+Text = "MyY pHOnes, I tHinK iI hAveE bbrrrraAin DamMageE noW"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "..."
+
+[Text 1]
+Speaker = "KFM(?):"
+Text = "..."
+
+[Text 1]
+Speaker = "Rita:"
+Text = "Just fight it off."
+
+[Text 1]
+Speaker = "KFM(?):"
+Text = "Oi, is this really ok?"
+
+[Text 1]
+Speaker = "Rita:"
+Text = "NOW, LET US BEGIN WITH THE FIRST FIGHT IN THE DREAM! FIGHT! TOURNAMENT!"
+
+[Text 1]
+Speaker = "Beat:"
+Text = "*drools a little*"
+
+[Text 1]
+Speaker = "KFM(?):"
+Text = "*playing on his phone*"
+
+[Fight 1]
+Player = "assets/main/fight/kfm/kfm.def"
+Enemy = "assets/main/fight/Beat/Beat.def"

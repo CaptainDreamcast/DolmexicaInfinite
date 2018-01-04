@@ -1,0 +1,4 @@
+OBJS = main.o \
+backgroundhandler.o clockhandler.o congratsgirlfriendscreen.o congratsscreen.o explanationscreen.o \
+gamelogic.o gameoverscreen.o girlbarhandler.o girlfriendhandler.o selectgirlscreen.o storyscreen.o \
+talktogirlscreen.o titlescreen.o

@@ -1,0 +1,36 @@
+; Definition file for Blank
+; Contains all the filenames needed for the character
+
+; Player information
+[Info]
+name ="Sonic The Hedgehog"
+displayname ="Sonic"
+versiondate =05,23,2006
+mugenversion =04,14,2002
+author ="Claymizer"
+pal.defaults =1
+
+; Files for the player
+[Files]
+cmd     =Sonic.cmd
+cns     =Sonic.cns
+st      =Sonic.cns
+stcommon =common1.cns
+sprite  =Sonic.sff
+anim    =Sonic.air
+sound   =Sonic.snd
+pal1=Sonic1_fixed.act
+pal2=Sonic2.act
+pal3=Sonic3.act
+pal4=Sonic4.act
+pal5=Sonic5.act
+pal6=Sonic6.act
+
+
+; Arcade mode
+;[Arcade]
+;intro.storyboard = intro.def
+;ending.storyboard = ending.def
+[Arcade]
+intro.storyboard=
+ending.storyboard=
