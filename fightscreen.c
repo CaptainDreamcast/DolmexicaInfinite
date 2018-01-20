@@ -7,12 +7,12 @@
 #include <tari/collisionhandler.h>
 #include <tari/system.h>
 #include <tari/mugenanimationreader.h>
+#include <tari/mugenanimationhandler.h>
 
 #include "stage.h"
 #include "mugencommandreader.h"
 #include "mugenstatereader.h"
 #include "playerdefinition.h"
-#include "mugenanimationhandler.h"
 #include "mugencommandhandler.h"
 #include "mugenstatehandler.h"
 #include "collision.h"
@@ -41,7 +41,7 @@ static void loadFightScreen() {
 	instantiateActor(DreamMugenConfig);
 	instantiateActor(HitDataHandler);
 	instantiateActor(ProjectileHandler);
-	instantiateActor(DreamMugenGameAnimationHandler);
+	instantiateActor(getMugenAnimationHandlerActorBlueprint());
 	instantiateActor(DreamMugenCommandHandler);
 	instantiateActor(DreamMugenStateHandler);
 	instantiateActor(DreamExplodHandler);

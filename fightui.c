@@ -9,8 +9,8 @@
 #include <tari/mugendefreader.h>
 #include <tari/mugenspritefilereader.h>
 #include <tari/mugenanimationreader.h>
+#include <tari/mugenanimationhandler.h>
 
-#include "mugenanimationhandler.h"
 #include "stage.h"
 #include "playerdefinition.h"
 #include "mugenstagehandler.h"
@@ -272,11 +272,11 @@ static void loadSingleUIComponentWithFullComponentName(MugenDefScript* tScript, 
 		return;
 	}
 
-	*oAnimationID = addDreamRegisteredAnimation(NULL, anim, tSprites, oPosition, COORD_P, tScaleCoordinateP); // TODO non-hardcoded
-	setDreamRegisteredAnimationToUseFixedZ(*oAnimationID);
+	*oAnimationID = addMugenAnimation(anim, tSprites, makePosition(0,0,0)); // TODO: fix
+	setMugenAnimationBasePosition(*oAnimationID, oPosition);
 
 	if (faceDirection == -1) {
-		setDreamRegisteredAnimationFaceDirection(*oAnimationID, FACE_DIRECTION_LEFT);
+		setMugenAnimationFaceDirection(*oAnimationID, 0);
 	}
 
 }
@@ -576,8 +576,8 @@ static int updateSingleHitSpark(void* tCaller, void* tData) {
 
 	HitSpark* e = tData;
 
-	if (!getDreamRegisteredAnimationRemainingAnimationTime(e->mAnimationID)) {
-		removeDreamRegisteredAnimation(e->mAnimationID);
+	if (!getMugenAnimationRemainingAnimationTime(e->mAnimationID)) {
+		removeMugenAnimation(e->mAnimationID);
 		return 1;
 	}
 
@@ -591,7 +591,7 @@ static void updateHitSparks() {
 static void setBarToPercentage(int tAnimationID, Vector3D tRange, double tPercentage) {
 	double fullSize = fabs(tRange.y - tRange.x);
 	int newSize = (int)(fullSize * tPercentage);
-	setDreamRegisteredAnimationRectangleWidth(tAnimationID, newSize);
+	setMugenAnimationRectangleWidth(tAnimationID, newSize);
 }
 
 static void updateSingleHealthBar(int i) {
@@ -621,16 +621,16 @@ static void updateHealthBars() {
 
 
 static void playDisplayAnimation(int* oAnimationID, MugenAnimation* tAnimation, Position* tBasePosition, int tFaceDirection) {
-	*oAnimationID = addDreamRegisteredAnimation(NULL, tAnimation, &gData.mFightSprites, tBasePosition, COORD_P, COORD_P); // TODO non-hardcoded
-	setDreamRegisteredAnimationToUseFixedZ(*oAnimationID);
+	*oAnimationID = addMugenAnimation(tAnimation, &gData.mFightSprites, makePosition(0,0,0)); 
+	setMugenAnimationBasePosition(*oAnimationID, tBasePosition);
 
 	if (tFaceDirection == -1) {
-		setDreamRegisteredAnimationFaceDirection(*oAnimationID, FACE_DIRECTION_LEFT);
+		setMugenAnimationFaceDirection(*oAnimationID, 0);
 	}
 }
 
 static void removeDisplayedAnimation(int tAnimationID) {
-	removeDreamRegisteredAnimation(tAnimationID);
+	removeMugenAnimation(tAnimationID);
 }
 
 
@@ -668,7 +668,7 @@ static void startControlCountdown() {
 static void updateFightDisplay() {
 	if (!gData.mFight.mIsDisplayingFight) return;
 
-	if (!getDreamRegisteredAnimationRemainingAnimationTime(gData.mFight.mAnimationID)) {
+	if (!getMugenAnimationRemainingAnimationTime(gData.mFight.mAnimationID)) {
 		removeDisplayedAnimation(gData.mFight.mAnimationID);
 		gData.mFight.mCB();
 		startControlCountdown();
@@ -679,7 +679,7 @@ static void updateFightDisplay() {
 static void updateKODisplay() {
 	if (!gData.mKO.mIsDisplaying) return;
 
-	if (!getDreamRegisteredAnimationRemainingAnimationTime(gData.mKO.mAnimationID)) {
+	if (!getMugenAnimationRemainingAnimationTime(gData.mKO.mAnimationID)) {
 		removeDisplayedAnimation(gData.mKO.mAnimationID);
 		gData.mKO.mCB();
 		gData.mKO.mIsDisplaying = 0;
@@ -811,11 +811,11 @@ void playDreamHitSpark(Position tPosition, DreamPlayer* tPlayer, int tIsInPlayer
 	
 	e->mPosition = tPosition;
 	e->mPosition.z = 16;
-	e->mAnimationID = addDreamRegisteredAnimation(NULL, anim, spriteFile, &e->mPosition, tPositionCoordinateP, tScaleCoordinateP);
-	setDreamRegisteredAnimationToUseFixedZ(e->mAnimationID);
-	setDreamRegisteredAnimationCameraPositionReference(e->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
+	e->mAnimationID = addMugenAnimation(anim, spriteFile, makePosition(0, 0, 0));
+	setMugenAnimationBasePosition(e->mAnimationID, &e->mPosition);
+	setMugenAnimationCameraPositionReference(e->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	if (!tIsFacingRight) {
-		setDreamRegisteredAnimationFaceDirection(e->mAnimationID, tIsFacingRight);
+		setMugenAnimationFaceDirection(e->mAnimationID, tIsFacingRight);
 	}
 	list_push_back_owned(&gData.mHitSparks, e);
 }
@@ -975,7 +975,7 @@ void setDreamTimeDisplayFinishedCB(void(*tTimeDisplayFinishedFunc)())
 }
 
 static void setSingleUIComponentInvisibleForOneFrame(int tAnimationID) {
-	if(tAnimationID != -1) setDreamRegisteredAnimationInvisibleFlag(tAnimationID);
+	if(tAnimationID != -1) setMugenAnimationInvisible(tAnimationID); // TODO: one frame only
 }
 
 void setDreamBarInvisibleForOneFrame()

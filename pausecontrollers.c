@@ -3,10 +3,10 @@
 #include <assert.h>
 
 #include <tari/mugenanimationreader.h>
+#include <tari/mugenanimationhandler.h>
 
 #include "playerdefinition.h"
 #include "fightui.h"
-#include "mugenanimationhandler.h"
 #include "mugenstagehandler.h"
 
 typedef struct {
@@ -60,7 +60,7 @@ void setDreamSuperPauseActive()
 
 static void setSuperPauseInactive() {
 	if (gData.mSuperPause.mHasAnimation) {
-		removeDreamRegisteredAnimation(gData.mSuperPause.mMugenAnimationID);
+		removeMugenAnimation(gData.mSuperPause.mMugenAnimationID);
 	}
 
 	setPlayerUnSuperPaused(gData.mSuperPause.mPlayer);
@@ -137,9 +137,9 @@ void setDreamSuperPauseAnimation(int tIsInPlayerFile, int tAnimationNumber)
 	}
 
 	gData.mSuperPause.mHasAnimation = 1;
-	gData.mSuperPause.mMugenAnimationID = addDreamRegisteredAnimation(NULL, animation, sprites, &gData.mSuperPause.mAnimationReferencePosition, getPlayerCoordinateP(gData.mSuperPause.mPlayer), getPlayerCoordinateP(gData.mSuperPause.mPlayer));
-	setDreamRegisteredAnimationCameraPositionReference(gData.mSuperPause.mMugenAnimationID, getDreamMugenStageHandlerCameraPositionReference());
-	setDreamRegisteredAnimationToUseFixedZ(gData.mSuperPause.mMugenAnimationID);
+	gData.mSuperPause.mMugenAnimationID = addMugenAnimation(animation, sprites, makePosition(0, 0, 0));
+	setMugenAnimationBasePosition(gData.mSuperPause.mMugenAnimationID, &gData.mSuperPause.mAnimationReferencePosition);
+	setMugenAnimationCameraPositionReference(gData.mSuperPause.mMugenAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 }
 
 void setDreamSuperPauseSound(int tIsInPlayerFile, int tSoundGroup, int tSoundItem)

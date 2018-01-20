@@ -12,9 +12,9 @@
 #include <tari/mugendefreader.h>
 #include <tari/mugenspritefilereader.h>
 #include <tari/mugenanimationreader.h>
+#include <tari/mugenanimationhandler.h>
 
 #include "story.h"
-#include "mugenanimationhandler.h"
 #include "titlescreen.h"
 #include "playerdefinition.h"
 #include "fightscreen.h"
@@ -55,12 +55,12 @@ static void increaseGroup() {
 
 static void loadImageGroup() {
 	if (gData.mOldAnimationID != -1) {
-		removeDreamRegisteredAnimation(gData.mOldAnimationID);
+		removeMugenAnimation(gData.mOldAnimationID);
 		destroyMugenAnimation(gData.mOldAnimation);
 	}
 
 	if (gData.mAnimationID != -1) {
-		setDreamRegisteredAnimationBasePosition(gData.mAnimationID, &gData.mOldAnimationBasePosition);
+		setMugenAnimationBasePosition(gData.mAnimationID, &gData.mOldAnimationBasePosition);
 	}
 
 	gData.mOldAnimationID = gData.mAnimationID;
@@ -71,9 +71,8 @@ static void loadImageGroup() {
 	int item =  getMugenDefNumberVariableAsGroup(gData.mCurrentGroup, "item");
 	gData.mAnimation = createOneFrameMugenAnimationForSprite(group, item);
 
-	gData.mAnimationID = addDreamRegisteredAnimation(NULL, gData.mAnimation, &gData.mSprites, &gData.mAnimationBasePosition, 480, 480);
-	setDreamRegisteredAnimationToNotUseStage(gData.mAnimationID);
-	setDreamRegisteredAnimationToUseFixedZ(gData.mAnimationID);
+	gData.mAnimationID = addMugenAnimation(gData.mAnimation, &gData.mSprites, makePosition(0, 0, 0));
+	setMugenAnimationBasePosition(gData.mAnimationID, &gData.mAnimationBasePosition);
 
 	increaseGroup();
 }
@@ -209,7 +208,7 @@ static void loadStoryScreen() {
 	startDreamNextStoryPart();
 	gData.mIsStoryOver = 0;
 	
-	instantiateActor(DreamMugenGameAnimationHandler);
+	instantiateActor(getMugenAnimationHandlerActorBlueprint());
 
 	char* defPath = getCurrentDreamStoryDefinitionFile();
 	gData.mScript = loadMugenDefScript(defPath);

@@ -11,10 +11,10 @@
 #include <tari/math.h>
 #include <tari/mugendefreader.h>
 #include <tari/mugenanimationreader.h>
+#include <tari/mugenanimationhandler.h>
 
 #include "mugencommandreader.h"
 #include "mugenstatereader.h"
-#include "mugenanimationhandler.h"
 #include "mugencommandhandler.h"
 #include "mugenstatehandler.h"
 #include "playerhitdata.h"
@@ -69,8 +69,9 @@ static void setPlayerExternalDependencies(DreamPlayer* tPlayer) {
 	setPlayerStateMoveType(tPlayer, MUGEN_STATE_MOVE_TYPE_IDLE);
 	setPlayerStateType(tPlayer, MUGEN_STATE_TYPE_STANDING);
 
-	tPlayer->mAnimationID = addDreamRegisteredAnimation(tPlayer, getMugenAnimation(&tPlayer->mAnimations, 0), &tPlayer->mSprites, getHandledPhysicsPositionReference(tPlayer->mPhysicsID), tPlayer->mHeader.mLocalCoordinates.y, tPlayer->mHeader.mLocalCoordinates.y);
-	setDreamRegisteredAnimationCameraPositionReference(tPlayer->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
+	tPlayer->mAnimationID = addMugenAnimation(getMugenAnimation(&tPlayer->mAnimations, 0), &tPlayer->mSprites, makePosition(0, 0, 0));
+	setMugenAnimationBasePosition(tPlayer->mAnimationID, getHandledPhysicsPositionReference(tPlayer->mPhysicsID));
+	setMugenAnimationCameraPositionReference(tPlayer->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	tPlayer->mStateMachineID = registerDreamMugenStateMachine(&tPlayer->mConstants.mStates, tPlayer);
 }
 
@@ -356,7 +357,7 @@ static void updateStandingUp(DreamPlayer* p) {
 static void setPlayerFaceDirection(DreamPlayer* p, FaceDirection tDirection) {
 	if (p->mFaceDirection == tDirection) return;
 
-	setDreamRegisteredAnimationFaceDirection(p->mAnimationID, tDirection);
+	setMugenAnimationFaceDirection(p->mAnimationID, tDirection == FACE_DIRECTION_RIGHT);
 
 	if (!p->mIsHelper) {
 		setDreamMugenCommandFaceDirection(p->mCommandID, tDirection);
@@ -1167,13 +1168,13 @@ int getPlayerTimeInState(DreamPlayer* p)
 
 int getPlayerAnimationNumber(DreamPlayer* p)
 {
-	return getDreamRegisteredAnimationAnimationNumber(p->mAnimationID);
+	return getMugenAnimationAnimationNumber(p->mAnimationID);
 }
 
 int getRemainingPlayerAnimationTime(DreamPlayer* p)
 {
 	// printf("%d %d remaining time %d\n", p->mRootID, p->mID, getDreamRegisteredAnimationRemainingAnimationTime(p->mAnimationID));
-	return getDreamRegisteredAnimationRemainingAnimationTime(p->mAnimationID);
+	return getMugenAnimationRemainingAnimationTime(p->mAnimationID);
 }
 
 Vector3D getPlayerPosition(DreamPlayer* p, int tCoordinateP)
@@ -1520,34 +1521,34 @@ void changePlayerAnimation(DreamPlayer* p, int tNewAnimation)
 void changePlayerAnimationWithStartStep(DreamPlayer* p, int tNewAnimation, int tStartStep)
 {
 	MugenAnimation* newAnimation = getMugenAnimation(&p->mAnimations, tNewAnimation);
-	changeDreamGameMugenAnimationWithStartStep(p->mAnimationID, newAnimation, tStartStep);
+	changeMugenAnimationWithStartStep(p->mAnimationID, newAnimation, tStartStep);
 }
 
 void changePlayerAnimationToPlayer2AnimationWithStartStep(DreamPlayer * p, int tNewAnimation, int tStartStep)
 {
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p);
 	MugenAnimation* newAnimation = getMugenAnimation(&otherPlayer->mAnimations, tNewAnimation);
-	changeDreamGameMugenAnimationWithStartStep(p->mAnimationID, newAnimation, tStartStep);
+	changeMugenAnimationWithStartStep(p->mAnimationID, newAnimation, tStartStep);
 }
 
 int isPlayerStartingAnimationElementWithID(DreamPlayer* p, int tStepID)
 {
-	return isDreamStartingHandledAnimationElementWithID(p->mAnimationID, tStepID);
+	return isStartingMugenAnimationElementWithID(p->mAnimationID, tStepID);
 }
 
 int getPlayerTimeFromAnimationElement(DreamPlayer* p, int tStep)
 {
-	return getDreamTimeFromHandledAnimationElement(p->mAnimationID, tStep);
+	return getTimeFromMugenAnimationElement(p->mAnimationID, tStep);
 }
 
 int getPlayerAnimationElementFromTimeOffset(DreamPlayer* p, int tTime)
 {
-	return getDreamHandledAnimationElementFromTimeOffset(p->mAnimationID, tTime);
+	return getMugenAnimationElementFromTimeOffset(p->mAnimationID, tTime);
 }
 
 void setPlayerSpritePriority(DreamPlayer* p, int tPriority)
 {
-	setDreamRegisteredAnimationSpritePriority(p->mAnimationID, tPriority);
+	//setMugenAnimationSpritePriority(p->mAnimationID, tPriority); // TODO: reimplement
 }
 
 void setPlayerNoWalkFlag(DreamPlayer* p)
@@ -1562,7 +1563,7 @@ void setPlayerNoAutoTurnFlag(DreamPlayer* p)
 
 void setPlayerInvisibleFlag(DreamPlayer * p)
 {
-	setDreamRegisteredAnimationInvisibleFlag(p->mAnimationID);
+	setMugenAnimationInvisible(p->mAnimationID); // TODO: one frame only
 }
 
 void setPlayerNoLandFlag(DreamPlayer* p)
@@ -1688,7 +1689,7 @@ static void pausePlayer(DreamPlayer* p) {
 	if (isPlayerPaused(p)) return;
 
 	pausePhysics(p->mPhysicsID);
-	pauseDreamRegisteredAnimation(p->mAnimationID);
+	pauseMugenAnimation(p->mAnimationID);
 	pauseDreamRegisteredStateMachine(p->mStateMachineID);
 }
 
@@ -1696,7 +1697,7 @@ static void unpausePlayer(DreamPlayer* p) {
 	if (isPlayerPaused(p)) return;
 
 	resumePhysics(p->mPhysicsID);
-	unpauseDreamRegisteredAnimation(p->mAnimationID);
+	unpauseMugenAnimation(p->mAnimationID);
 	unpauseDreamRegisteredStateMachine(p->mStateMachineID);
 }
 
@@ -1730,7 +1731,7 @@ void setPlayerUnSuperPaused(DreamPlayer* p)
 	unpausePlayer(p);
 
 	if (!isPlayerPaused(p)) {
-		advanceDreamRegisteredAnimationOneTick(p->mAnimationID); // TODO: fix somehow
+		advanceMugenAnimationOneTick(p->mAnimationID); // TODO: fix somehow
 	}
 }
 
@@ -2350,7 +2351,7 @@ static void removePlayerBoundHelpers(DreamPlayer* p) {
 
 static void destroyGeneralPlayer(DreamPlayer* p) {
 	removeDreamRegisteredStateMachine(p->mStateMachineID);
-	removeDreamRegisteredAnimation(p->mAnimationID);
+	removeMugenAnimation(p->mAnimationID);
 	removeFromPhysicsHandler(p->mPhysicsID);
 	removePlayerHitData(p);
 	freeMemory(p);
@@ -2434,22 +2435,22 @@ int getPlayerControlTime(DreamPlayer * p)
 
 void setPlayerDrawScale(DreamPlayer * p, Vector3D tScale)
 {
-	setDreamRegisteredAnimationOneFrameDrawScale(p->mAnimationID, tScale);
+	setMugenAnimationDrawScale(p->mAnimationID, tScale); // TODO: one frame only
 }
 
 void setPlayerDrawAngle(DreamPlayer * p, double tAngle)
 {
-	setDreamRegisteredAnimationOneFrameDrawAngle(p->mAnimationID, tAngle);
+	setMugenAnimationDrawAngle(p->mAnimationID, tAngle); // TODO: one frame only and non-fixed
 }
 
 void addPlayerDrawAngle(DreamPlayer * p, double tAngle)
 {
-	addDreamRegisteredAnimationOneFrameDrawAngle(p->mAnimationID, tAngle);
+	addMugenAnimationDrawAngle(p->mAnimationID, tAngle); // TODO: one frame only
 }
 
 void setPlayerFixedDrawAngle(DreamPlayer * p, double tAngle)
 {
-	setDreamRegisteredAnimationOneFrameFixedDrawAngle(p->mAnimationID, tAngle);
+	setMugenAnimationDrawAngle(p->mAnimationID, tAngle); // TODO: one frame only and fixed
 }
 
 static void bindHelperToPlayer(DreamPlayer* tHelper, DreamPlayer* tBind, int tTime, int tFacing, Vector3D tOffset, DreamPlayerBindPositionType tType) {

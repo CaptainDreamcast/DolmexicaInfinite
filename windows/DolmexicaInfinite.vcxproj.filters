@@ -78,9 +78,6 @@
     <ClCompile Include="..\mugenassignment.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugenanimationhandler.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\menuscreen.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -103,6 +100,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ai.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mugentexthandler.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\menubackground.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -129,9 +132,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\menuscreen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\mugenanimationhandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\mugenassignment.h">
@@ -192,6 +192,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\warningscreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mugentexthandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\menubackground.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

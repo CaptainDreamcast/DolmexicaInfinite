@@ -258,9 +258,9 @@ static int isActionGroup(MugenDefScriptGroup* tGroup) {
 static void addBackgroundElementToStageHandler(StageBackgroundElement* e) {
 	e->mStart.z = e->mListPosition + e->mLayerNo * 30; // TODO
 	if (e->mType == STAGE_BACKGROUND_STATIC) {
-		addDreamMugenStageHandlerStaticBackgroundElement(e->mStart, e->mSpriteNo.x, e->mSpriteNo.y, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, gData.mStageInfo.mLocalCoordinates);
+		addDreamMugenStageHandlerStaticBackgroundElement(e->mStart, e->mSpriteNo.x, e->mSpriteNo.y, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, BLEND_TYPE_NORMAL, gData.mStageInfo.mLocalCoordinates);
 	} else if (e->mType == STAGE_BACKGROUND_ANIMATED) {
-		addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, e->mActionNumber, &gData.mAnimations, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, gData.mStageInfo.mLocalCoordinates);
+		addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, e->mActionNumber, &gData.mAnimations, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, BLEND_TYPE_NORMAL, gData.mStageInfo.mLocalCoordinates);
 	}
 	else {
 		logError("Unable to determine bg element type");
@@ -543,4 +543,10 @@ int getDreamStageLeftEdgeMinimumPlayerDistance(int tCoordinateP)
 int getDreamStageRightEdgeMinimumPlayerDistance(int tCoordinateP)
 {
 	return (int)transformDreamCoordinates(gData.mBound.mScreenRight, getDreamStageCoordinateP(), tCoordinateP);
+}
+
+void setDreamStageCoordinates(Vector3DI tCoordinates)
+{
+	gData.mStageInfo.mLocalCoordinates = tCoordinates;
+	gData.mStageInfo.mZOffset = 0;
 }

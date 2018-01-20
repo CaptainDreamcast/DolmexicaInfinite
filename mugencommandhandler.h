@@ -1,9 +1,9 @@
 #pragma once
 
 #include <tari/actorhandler.h>
+#include <tari/mugenanimationhandler.h>
 
 #include "mugencommandreader.h"
-#include "mugenanimationhandler.h"
 #include "playerdefinition.h"
 
 int registerDreamMugenCommands(DreamPlayer* tPlayer, DreamMugenCommands* tCommands);

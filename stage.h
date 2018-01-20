@@ -35,3 +35,5 @@ int getDreamGameWidth(int tCoordinateP);
 
 int getDreamStageLeftEdgeMinimumPlayerDistance(int tCoordinateP);
 int getDreamStageRightEdgeMinimumPlayerDistance(int tCoordinateP);
+
+void setDreamStageCoordinates(Vector3DI tCoordinates);

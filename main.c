@@ -12,6 +12,7 @@
 #include "titlescreen.h"
 #include "fightscreen.h"
 #include "playerdefinition.h"
+#include "mugentexthandler.h"
 
 #ifdef DREAMCAST
 KOS_INIT_FLAGS(INIT_DEFAULT);
@@ -45,10 +46,11 @@ int main(int argc, char** argv) {
 	(void)argv;
 
 	setGameName("DOLMEXICA INFINITE");
-	setScreenSize(640, 480);
+	setScreenSize(320, 240);
 	
 	initTariWrapperWithDefaultFlags();
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
+	loadMugenTextHandler();
 
 	logg("Check framerate");
 	FramerateSelectReturnType framerateReturnType = selectFramerate();
@@ -62,7 +64,7 @@ int main(int argc, char** argv) {
 	setPlayerDefinitionPath(1, "assets/kfm/kfm.def");
 	setPlayerHuman(0);
 	setPlayerArtificial(1);
-	setScreenAfterWrapperLogoScreen(&DreamFightScreen);
+	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
 	startScreenHandling(getLogoScreenFromWrapper());
 
 	exitGame();

@@ -70,7 +70,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2-2.0.5\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_image-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_mixer-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\glew-2.1.0\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\LIBTARIPORT\addons\libtari\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2-2.0.7\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_image-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_mixer-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_ttf-2.0.14;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\glew-2.1.0\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\LIBTARIPORT\addons\libtari\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\LIBTARIPORT\addons\libtari\windows\vs17\LIB;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -100,7 +100,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;winmm.lib;version.lib;imm32.lib;libjpeg.lib;libpng16.lib;zlib.lib;libwebp.lib;OpenGL32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;winmm.lib;version.lib;imm32.lib;libjpeg.lib;libpng16.lib;zlib.lib;libwebp.lib;OpenGL32.lib;glew32s.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -133,8 +133,8 @@
     <ClCompile Include="..\fightui.c" />
     <ClCompile Include="..\gamelogic.c" />
     <ClCompile Include="..\gameoverscreen.c" />
+    <ClCompile Include="..\menubackground.c" />
     <ClCompile Include="..\menuscreen.c" />
-    <ClCompile Include="..\mugenanimationhandler.c" />
     <ClCompile Include="..\mugenassignment.c" />
     <ClCompile Include="..\mugenassignmentevaluator.c" />
     <ClCompile Include="..\mugencommandhandler.c" />
@@ -145,6 +145,7 @@
     <ClCompile Include="..\mugenstatecontrollers.c" />
     <ClCompile Include="..\mugenstatehandler.c" />
     <ClCompile Include="..\mugenstatereader.c" />
+    <ClCompile Include="..\mugentexthandler.c" />
     <ClCompile Include="..\pausecontrollers.c" />
     <ClCompile Include="..\playerdefinition.c" />
     <ClCompile Include="..\playerhitdata.c" />
@@ -165,8 +166,8 @@
     <ClInclude Include="..\fightui.h" />
     <ClInclude Include="..\gamelogic.h" />
     <ClInclude Include="..\gameoverscreen.h" />
+    <ClInclude Include="..\menubackground.h" />
     <ClInclude Include="..\menuscreen.h" />
-    <ClInclude Include="..\mugenanimationhandler.h" />
     <ClInclude Include="..\mugenassignment.h" />
     <ClInclude Include="..\mugenassignmentevaluator.h" />
     <ClInclude Include="..\mugencommandhandler.h" />
@@ -177,6 +178,7 @@
     <ClInclude Include="..\mugenstatecontrollers.h" />
     <ClInclude Include="..\mugenstatehandler.h" />
     <ClInclude Include="..\mugenstatereader.h" />
+    <ClInclude Include="..\mugentexthandler.h" />
     <ClInclude Include="..\pausecontrollers.h" />
     <ClInclude Include="..\playerdefinition.h" />
     <ClInclude Include="..\playerhitdata.h" />
