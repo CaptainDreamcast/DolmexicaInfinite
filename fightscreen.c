@@ -2,12 +2,13 @@
 
 #include <stdio.h>
 
-#include <tari/input.h>
-#include <tari/stagehandler.h>
-#include <tari/collisionhandler.h>
-#include <tari/system.h>
-#include <tari/mugenanimationreader.h>
-#include <tari/mugenanimationhandler.h>
+#include <prism/input.h>
+#include <prism/stagehandler.h>
+#include <prism/collisionhandler.h>
+#include <prism/system.h>
+#include <prism/mugenanimationreader.h>
+#include <prism/mugenanimationhandler.h>
+#include <prism/mugentexthandler.h>
 
 #include "stage.h"
 #include "mugencommandreader.h"
@@ -26,27 +27,20 @@
 #include "ai.h"
 #include "titlescreen.h"
 
-static Screen* getNextFightScreenScreen() {
-	if (hasPressedAbortFlank()) {
-		return &DreamTitleScreen;
-	}
-
-	return NULL;
-}
-
 static void loadFightScreen() {
 	setupDreamGameCollisions();
-	
+	instantiateActor(getMugenAnimationHandlerActorBlueprint());
+	instantiateActor(MugenTextHandler);
+
 	instantiateActor(DreamAIHandler);
 	instantiateActor(DreamMugenConfig);
 	instantiateActor(HitDataHandler);
 	instantiateActor(ProjectileHandler);
-	instantiateActor(getMugenAnimationHandlerActorBlueprint());
 	instantiateActor(DreamMugenCommandHandler);
 	instantiateActor(DreamMugenStateHandler);
 	instantiateActor(DreamExplodHandler);
 
-	setDreamStageMugenDefinition("assets/stages/stage0.def");
+	setDreamStageMugenDefinition("assets/stages/kfm.def");
 	instantiateActor(DreamStageBP);
 
 	
@@ -73,12 +67,39 @@ static void loadFightScreen() {
 
 }
 
+
+static void stopFightScreen(Screen* tNextScreen);
+
 static void updateFightScreen() {
 	updatePlayers();
+
+	if (hasPressedAbortFlank()) {
+		stopFightScreen(&DreamTitleScreen);
+	}
 }
 
-Screen DreamFightScreen = {
+static Screen DreamFightScreen = {
 	.mLoad = loadFightScreen,
-	.mGetNextScreen = getNextFightScreenScreen,
 	.mUpdate = updateFightScreen,
 };
+
+static void loadFightFonts(void* tCaller) {
+	(void)tCaller;
+	unloadMugenFonts();
+	loadMugenFightFonts();
+}
+
+static void loadSystemFonts(void* tCaller) {
+	unloadMugenFonts();
+	loadMugenSystemFonts();
+}
+
+void startFightScreen() {
+	setWrapperBetweenScreensCB(loadFightFonts, NULL);
+	setNewScreen(&DreamFightScreen);
+}
+
+static void stopFightScreen(Screen* tNextScreen) {
+	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
+	setNewScreen(tNextScreen);
+}

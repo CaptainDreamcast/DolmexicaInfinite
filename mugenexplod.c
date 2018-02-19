@@ -1,9 +1,9 @@
 #include "mugenexplod.h"
 
-#include <tari/geometry.h>
-#include <tari/physics.h>
-#include <tari/datastructures.h>
-#include <tari/memoryhandler.h>
+#include <prism/geometry.h>
+#include <prism/physics.h>
+#include <prism/datastructures.h>
+#include <prism/memoryhandler.h>
 
 typedef struct {
 	DreamPlayer* mPlayer;

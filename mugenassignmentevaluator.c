@@ -2,9 +2,9 @@
 
 #include <assert.h>
 
-#include <tari/log.h>
-#include <tari/system.h>
-#include <tari/math.h>
+#include <prism/log.h>
+#include <prism/system.h>
+#include <prism/math.h>
 
 #include "gamelogic.h"
 #include "stage.h"
@@ -237,6 +237,56 @@ static AssignmentReturnValue evaluateAnimElemAssignment(AssignmentReturnValue tC
 	else {
 		return evaluateAnimElemNumberAssignment(tCommand, tPlayer);
 	}
+}
+
+static AssignmentReturnValue evaluateTimeModAssignment(AssignmentReturnValue tCommand, DreamPlayer* tPlayer) {
+
+	char divisor[100], comma[10], oper[100], compareNumber[100];
+	printf("timemod: %s\n", tCommand.mValue);
+	int items = sscanf(tCommand.mValue, "%s %s %s %s", oper, divisor, comma, compareNumber);
+	assert(strcmp("", divisor));
+	assert(!strcmp(",", comma));
+	assert(items == 4);
+
+
+	int divisorValue = atoi(divisor);
+	int compareValue = atoi(compareNumber);
+	int stateTime = getPlayerTimeInState(tPlayer);
+
+	if (divisorValue == 0) {
+		return makeBooleanAssignmentReturn(0);
+	}
+
+	int modValue = stateTime % divisorValue;
+	int ret;
+	if (!strcmp("=", oper)) {
+		ret = modValue == compareValue;
+	}
+	else if (!strcmp("!=", oper)) {
+		ret = modValue != compareValue;
+	}
+	else if (!strcmp("<", oper)) {
+		ret = modValue < compareValue;
+	}
+	else if (!strcmp(">", oper)) {
+		ret = modValue > compareValue;
+	}
+	else if (!strcmp("<=", oper)) {
+		ret = modValue <= compareValue;
+	}
+	else if (!strcmp(">=", oper)) {
+		ret = modValue >= compareValue;
+	}
+	else {
+		logError("Unrecognized operator.");
+		logErrorString(oper);
+		abortSystem();
+		ret = 0;
+	}
+
+
+
+	return makeBooleanAssignmentReturn(ret);
 }
 
 static DreamPlayer* getPlayerFromFirstVectorPartOrNullIfNonexistant(AssignmentReturnValue a, DreamPlayer* tPlayer) {
@@ -496,6 +546,9 @@ static AssignmentReturnValue evaluateComparisonAssignmentInternal(DreamMugenAssi
 	}
 	else if (!strcmp("animelem", name)) {
 		return evaluateAnimElemAssignment(b, tPlayer);
+	}
+	else if (!strcmp("timemod", name)) {
+		return evaluateTimeModAssignment(b, tPlayer);
 	}
 	else if (!strcmp("teammode", name)) {
 		return evaluateTeamModeAssignment(b, tPlayer);
@@ -930,7 +983,7 @@ static AssignmentReturnValue evaluateVariableAssignment(DreamMugenAssignment* tA
 	else if (!strcmp("hitdefattr", testString)) {
 		return makeStringAssignmentReturn("hitdefattr");
 	}
-	else if (!strcmp("lma", testString) || !strcmp("lam", testString) || !strcmp("map", testString) || !strcmp("ap", testString) || !strcmp("aa", testString) || !strcmp("miss", testString) || !strcmp("m-", testString) || !strcmp("a-", testString) || !strcmp("nt", testString) || !strcmp("hp", testString) || !strcmp("n", testString) || !strcmp("heavy", testString) || !strcmp("sp", testString) || !strcmp("at", testString) || !strcmp("sca", testString) || !strcmp("h", testString) || !strcmp("i", testString) || !strcmp("a", testString) || !strcmp("m", testString) || !strcmp("trip", testString) || !strcmp("l", testString) || !strcmp("mafd", testString) || !strcmp("med", testString) || !strcmp("hit", testString) || !strcmp("light", testString) || !strcmp("high", testString) || !strcmp("low", testString) || !strcmp("medium", testString) || !strcmp("maf", testString) || !strcmp("ma", testString) || !strcmp("na", testString) || !strcmp("sc", testString) || !strcmp("sa", testString) || !strcmp("ha", testString) || !strcmp("s", testString) || !strcmp("a", testString) || !strcmp("c", testString)) {
+	else if (!strcmp("mf", testString) || !strcmp("af", testString) || !strcmp("la", testString) || !strcmp("lma", testString) || !strcmp("lam", testString) || !strcmp("map", testString) || !strcmp("ap", testString) || !strcmp("aa", testString) || !strcmp("miss", testString) || !strcmp("m-", testString) || !strcmp("a-", testString) || !strcmp("nt", testString) || !strcmp("hp", testString) || !strcmp("n", testString) || !strcmp("heavy", testString) || !strcmp("sp", testString) || !strcmp("at", testString) || !strcmp("sca", testString) || !strcmp("h", testString) || !strcmp("i", testString) || !strcmp("a", testString) || !strcmp("m", testString) || !strcmp("trip", testString) || !strcmp("l", testString) || !strcmp("mafd", testString) || !strcmp("med", testString) || !strcmp("hit", testString) || !strcmp("light", testString) || !strcmp("high", testString) || !strcmp("low", testString) || !strcmp("medium", testString) || !strcmp("maf", testString) || !strcmp("ma", testString) || !strcmp("na", testString) || !strcmp("sc", testString) || !strcmp("sa", testString) || !strcmp("ha", testString) || !strcmp("s", testString) || !strcmp("a", testString) || !strcmp("c", testString)) {
 		return makeStringAssignmentReturn(variable->mName); //TODO
 	}
 	else if (!strcmp("var", testString) || !strcmp("sysvar", testString) || !strcmp("sysfvar", testString) || !strcmp("fvar", testString)) {
@@ -1028,6 +1081,9 @@ static AssignmentReturnValue evaluateVariableAssignment(DreamMugenAssignment* tA
 	}
 	else if (!strcmp("animelemtime", testString)) {
 		return makeStringAssignmentReturn("animelemtime");
+	}
+	else if (!strcmp("timemod", testString)) {
+		return makeStringAssignmentReturn("timemod");
 	}
 	else if (!strcmp("selfanimexist", testString)) {
 		return makeStringAssignmentReturn("selfanimexist");
@@ -1363,7 +1419,7 @@ static AssignmentReturnValue evaluateVariableAssignment(DreamMugenAssignment* tA
 		return makeStringAssignmentReturn("velocity.airjump.y");
 	}
 	// TODO: move somewhere else
-	else if (!strcmp("roundnotover", testString) || !strcmp("isbound", testString) || !strcmp("ctrltime", testString) || !strcmp("addalpha", testString) || !strcmp("diagup", testString) || !strcmp("turns", testString) || !strcmp("single", testString) || !strcmp("simul", testString) || !strcmp("right", testString) || !strcmp("left", testString) || !strcmp("invisible", testString) || !strcmp("back", testString) || !strcmp("<=", testString) || !strcmp(">=", testString) || !strcmp("up", testString) || !strcmp("hard", testString) || !strcmp("fall.recover", testString) || !strcmp("xvel", testString) || !strcmp("hitshaketime", testString) || !strcmp("airtype", testString) || !strcmp("facing", testString) || !strcmp("none", testString) || !strcmp("fall.yvel", testString) || !strcmp("slidetime", testString) || !strcmp("yaccel", testString) || !strcmp("fall", testString) || !strcmp("yvel", testString) || !strcmp("groundtype", testString) || !strcmp("animtype", testString)) {
+	else if (!strcmp("=", testString) || !strcmp(">", testString) || !strcmp("<", testString) || !strcmp("roundnotover", testString) || !strcmp("isbound", testString) || !strcmp("ctrltime", testString) || !strcmp("addalpha", testString) || !strcmp("diagup", testString) || !strcmp("turns", testString) || !strcmp("single", testString) || !strcmp("simul", testString) || !strcmp("right", testString) || !strcmp("left", testString) || !strcmp("invisible", testString) || !strcmp("back", testString) || !strcmp("<=", testString) || !strcmp(">=", testString) || !strcmp("up", testString) || !strcmp("hard", testString) || !strcmp("fall.recover", testString) || !strcmp("xvel", testString) || !strcmp("hitshaketime", testString) || !strcmp("airtype", testString) || !strcmp("facing", testString) || !strcmp("none", testString) || !strcmp("fall.yvel", testString) || !strcmp("slidetime", testString) || !strcmp("yaccel", testString) || !strcmp("fall", testString) || !strcmp("yvel", testString) || !strcmp("groundtype", testString) || !strcmp("animtype", testString)) {
 		return makeStringAssignmentReturn(variable->mName);
 	}
 	else if (testString[0] == 's' || testString[0] == 'f') { // TODO: fix

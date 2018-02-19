@@ -2,11 +2,11 @@
 
 #include <assert.h>
 
-#include <tari/datastructures.h>
-#include <tari/log.h>
-#include <tari/system.h>
-#include <tari/input.h>
-#include <tari/math.h>
+#include <prism/datastructures.h>
+#include <prism/log.h>
+#include <prism/system.h>
+#include <prism/input.h>
+#include <prism/math.h>
 
 typedef struct {
 	char mName[100];

@@ -2,10 +2,10 @@
 
 #include <assert.h>
 
-#include <tari/log.h>
-#include <tari/system.h>
-#include <tari/memoryhandler.h>
-#include <tari/mugendefreader.h>
+#include <prism/log.h>
+#include <prism/system.h>
+#include <prism/memoryhandler.h>
+#include <prism/mugendefreader.h>
 
 #include "mugenstatecontrollers.h"
 
@@ -220,9 +220,8 @@ static void handleSingleMugenStateDefElement(void* tCaller, char* tKey, void* tD
 		handleMugenStatePriority(state, e, group);
 	}
 	else {
-		logError("Unable to determine state def element.");
-		logErrorString(e->mName);
-		abortSystem();
+		logWarning("Unable to determine state def element.");
+		logWarningString(e->mName);
 	}
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tari/mugenspritefilereader.h>
+#include <prism/mugenspritefilereader.h>
 
 void resetDreamStory();
 void startDreamNextStoryPart();

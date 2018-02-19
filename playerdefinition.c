@@ -3,15 +3,15 @@
 #include <assert.h>
 #include <string.h>
 
-#include <tari/file.h>
-#include <tari/physicshandler.h>
-#include <tari/log.h>
-#include <tari/system.h>
-#include <tari/timer.h>
-#include <tari/math.h>
-#include <tari/mugendefreader.h>
-#include <tari/mugenanimationreader.h>
-#include <tari/mugenanimationhandler.h>
+#include <prism/file.h>
+#include <prism/physicshandler.h>
+#include <prism/log.h>
+#include <prism/system.h>
+#include <prism/timer.h>
+#include <prism/math.h>
+#include <prism/mugendefreader.h>
+#include <prism/mugenanimationreader.h>
+#include <prism/mugenanimationhandler.h>
 
 #include "mugencommandreader.h"
 #include "mugenstatereader.h"
@@ -25,6 +25,7 @@
 #include "mugenstagehandler.h"
 #include "gamelogic.h"
 #include "ai.h"
+#include "collision.h"
 
 static struct {
 	DreamPlayer mPlayers[2];
@@ -69,9 +70,13 @@ static void setPlayerExternalDependencies(DreamPlayer* tPlayer) {
 	setPlayerStateMoveType(tPlayer, MUGEN_STATE_MOVE_TYPE_IDLE);
 	setPlayerStateType(tPlayer, MUGEN_STATE_TYPE_STANDING);
 
-	tPlayer->mAnimationID = addMugenAnimation(getMugenAnimation(&tPlayer->mAnimations, 0), &tPlayer->mSprites, makePosition(0, 0, 0));
+	Position p = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(tPlayer));
+	p.z = 10;
+	tPlayer->mAnimationID = addMugenAnimation(getMugenAnimation(&tPlayer->mAnimations, 0), &tPlayer->mSprites, p);
 	setMugenAnimationBasePosition(tPlayer->mAnimationID, getHandledPhysicsPositionReference(tPlayer->mPhysicsID));
 	setMugenAnimationCameraPositionReference(tPlayer->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
+	setMugenAnimationAttackCollisionActive(tPlayer->mAnimationID, getDreamPlayerAttackCollisionList(tPlayer), NULL, NULL, getPlayerHitDataReference(tPlayer));
+	setMugenAnimationPassiveCollisionActive(tPlayer->mAnimationID, getDreamPlayerPassiveCollisionList(tPlayer), playerHitCB, tPlayer, getPlayerHitDataReference(tPlayer));
 	tPlayer->mStateMachineID = registerDreamMugenStateMachine(&tPlayer->mConstants.mStates, tPlayer);
 }
 
@@ -937,6 +942,11 @@ void setPlayerDefinitionPath(int i, char * tDefinitionPath)
 	strcpy(gData.mPlayers[i].mDefinitionPath, tDefinitionPath);
 }
 
+void getPlayerDefinitionPath(char* tDst, int i)
+{
+	strcpy(tDst, gData.mPlayers[i].mDefinitionPath);
+}
+
 DreamPlayer * getRootPlayer(int i)
 {
 	return &gData.mPlayers[i];
@@ -1549,6 +1559,7 @@ int getPlayerAnimationElementFromTimeOffset(DreamPlayer* p, int tTime)
 void setPlayerSpritePriority(DreamPlayer* p, int tPriority)
 {
 	//setMugenAnimationSpritePriority(p->mAnimationID, tPriority); // TODO: reimplement
+	
 }
 
 void setPlayerNoWalkFlag(DreamPlayer* p)
@@ -2140,7 +2151,7 @@ void setPlayerHuman(int i)
 void setPlayerArtificial(int i)
 {
 	DreamPlayer* p = getRootPlayer(i);
-	p->mAILevel = 8; // TODO: properly
+	p->mAILevel = 0; // TODO: properly
 }
 
 int getPlayerAILevel(DreamPlayer* p)

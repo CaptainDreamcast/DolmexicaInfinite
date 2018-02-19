@@ -2,8 +2,8 @@
 
 #include <assert.h>
 
-#include <tari/datastructures.h>
-#include <tari/math.h>
+#include <prism/datastructures.h>
+#include <prism/math.h>
 
 #include "mugencommandhandler.h"
 

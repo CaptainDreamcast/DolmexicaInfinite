@@ -102,10 +102,16 @@
     <ClCompile Include="..\ai.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugentexthandler.c">
+    <ClCompile Include="..\menubackground.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\menubackground.c">
+    <ClCompile Include="..\characterselectscreen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\versusscreen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\arcademode.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -194,10 +200,16 @@
     <ClInclude Include="..\warningscreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\mugentexthandler.h">
+    <ClInclude Include="..\menubackground.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\menubackground.h">
+    <ClInclude Include="..\characterselectscreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\versusscreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\arcademode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

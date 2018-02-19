@@ -1,7 +1,7 @@
 #pragma once
 
-#include <tari/actorhandler.h>
-#include <tari/geometry.h>
+#include <prism/actorhandler.h>
+#include <prism/geometry.h>
 
 #include "playerdefinition.h"
 

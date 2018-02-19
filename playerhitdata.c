@@ -2,7 +2,7 @@
 
 #include <assert.h>
 
-#include <tari/datastructures.h>
+#include <prism/datastructures.h>
 
 #include "mugensound.h"
 

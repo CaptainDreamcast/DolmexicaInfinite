@@ -4,10 +4,10 @@
 #include <assert.h>
 #include <string.h>
 
-#include <tari/system.h>
-#include <tari/log.h>
-#include <tari/memoryhandler.h>
-#include <tari/mugendefreader.h>
+#include <prism/system.h>
+#include <prism/log.h>
+#include <prism/memoryhandler.h>
+#include <prism/mugendefreader.h>
 
 
 static struct {

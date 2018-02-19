@@ -2,7 +2,7 @@
 
 #include "playerdefinition.h"
 
-#include <tari/actorhandler.h>
+#include <prism/actorhandler.h>
 
 extern ActorBlueprint ProjectileHandler;
 

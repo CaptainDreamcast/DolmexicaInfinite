@@ -2,8 +2,8 @@
 
 #include <assert.h>
 
-#include <tari/mugenanimationreader.h>
-#include <tari/mugenanimationhandler.h>
+#include <prism/mugenanimationreader.h>
+#include <prism/mugenanimationhandler.h>
 
 #include "playerdefinition.h"
 #include "fightui.h"

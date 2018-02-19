@@ -1,5 +1,8 @@
 #pragma once
 
-#include <tari/wrapper.h>
+#include <prism/wrapper.h>
 
-extern Screen DreamStoryScreen;
+extern Screen StoryScreen;
+
+void setStoryDefinitionFile(char* tPath);
+void setStoryScreenFinishedCB(void(*tCB)());

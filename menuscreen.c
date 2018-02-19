@@ -1,9 +1,9 @@
 #include "menuscreen.h"
 
-#include <tari/optionhandler.h>
-#include <tari/screeneffect.h>
-#include <tari/input.h>
-#include <tari/mugenanimationhandler.h>
+#include <prism/optionhandler.h>
+#include <prism/screeneffect.h>
+#include <prism/input.h>
+#include <prism/mugenanimationhandler.h>
 
 #include "fightscreen.h"
 #include "titlescreen.h"
@@ -38,9 +38,9 @@ static void selectStoryOption() {
 	setPlayerHuman(0);
 	setPlayerArtificial(1);
 
-	setDreamScreenAfterFightScreen(&DreamStoryScreen);
+	setDreamScreenAfterFightScreen(&StoryScreen);
 
-	fadeOut(&DreamFightScreen);
+	startFightScreen();
 }
 
 static void selectTwoPlayerOption() {

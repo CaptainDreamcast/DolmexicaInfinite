@@ -1,9 +1,9 @@
 #pragma once
 
-#include <tari/datastructures.h>
+#include <prism/datastructures.h>
 
-#include <tari/mugenspritefilereader.h>
-#include <tari/mugenanimationreader.h>
+#include <prism/mugenspritefilereader.h>
+#include <prism/mugenanimationreader.h>
 
 #include "mugenstatereader.h"
 #include "mugencommandreader.h"
@@ -153,6 +153,7 @@ void updatePlayers();
 void playerHitCB(DreamPlayer* p, void* tHitData);
 
 void setPlayerDefinitionPath(int i, char* tDefinitionPath);
+void getPlayerDefinitionPath(char* tDst, int i);
 DreamPlayer* getRootPlayer(int i);
 DreamPlayer* getPlayerRoot(DreamPlayer* p);
 DreamPlayer* getPlayerParent(DreamPlayer* p);

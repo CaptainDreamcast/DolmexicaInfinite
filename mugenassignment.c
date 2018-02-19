@@ -5,10 +5,10 @@
 #include <assert.h>
 #include <math.h>
 
-#include <tari/memoryhandler.h>
-#include <tari/log.h>
-#include <tari/system.h>
-#include <tari/math.h>
+#include <prism/memoryhandler.h>
+#include <prism/log.h>
+#include <prism/system.h>
+#include <prism/math.h>
 
 #include "playerdefinition.h"
 #include "stage.h"
@@ -567,6 +567,7 @@ static int isVariable(char* tText) {
 	if (!strcmp("animtime", testText)) return 1;
 	if (!strcmp("animelem", testText)) return 1;
 	if (!strcmp("animelemno", testText)) return 1;
+	if (!strcmp("timemod", testText)) return 1;
 	if (!strcmp("command", testText)) return 1;
 	if (!strcmp("pos x", testText)) return 1;
 	if (!strcmp("pos y", testText)) return 1;
@@ -772,6 +773,7 @@ static int isVariable(char* tText) {
 	if (!strcmp("ht", testText)) return 1;
 	if (!strcmp("np", testText)) return 1;
 	if (!strcmp("hp", testText)) return 1;
+	if (!strcmp("af", testText)) return 1;
 
 	if (!strcmp("haf", testText)) return 1;
 	if (!strcmp("mafd", testText)) return 1;
@@ -781,7 +783,9 @@ static int isVariable(char* tText) {
 	if (!strcmp("lam", testText)) return 1;
 	if (!strcmp("lma", testText)) return 1;
 	if (!strcmp("ma", testText)) return 1;
+	if (!strcmp("la", testText)) return 1;
 	if (!strcmp("m", testText)) return 1;
+	if (!strcmp("mf", testText)) return 1;
 
 	if (!strcmp("heavy", testText)) return 1;
 	if (!strcmp("light", testText)) return 1;
@@ -816,6 +820,8 @@ static int isVariable(char* tText) {
 	if (!strcmp("=", testText)) return 1;
 	if (!strcmp(">=", testText)) return 1;
 	if (!strcmp("<=", testText)) return 1;
+	if (!strcmp("<", testText)) return 1;
+	if (!strcmp(">", testText)) return 1;
 
 
 	// TODO: kinda problematic
@@ -868,10 +874,15 @@ static DreamMugenAssignment* parseArrayFromString(char* tText) {
 }
 
 static int isVectorAssignment(char* tText) {
-	if (!doDreamAssignmentStringsBeginsWithPattern("AnimElem", tText)) return 0;
+	char text[200];
+	strcpy(text, tText);
+	turnStringLowercase(text);
+
+	if (doDreamAssignmentStringsBeginsWithPattern("animelem", text)) return 1;
+	if (doDreamAssignmentStringsBeginsWithPattern("timemod", text)) return 1;
 
 	// TODO: properly
-	return 1;
+	return 0;
 }
 
 static int isVectorTarget(char* tText) {
@@ -983,6 +994,20 @@ static int isOperatorAndReturnType(char* tText, char* tDst) {
 	isDifferent = strcmp("=", tText);
 	if (isThere && isDifferent && position == 0) {
 		strcpy(tDst, "=");
+		return 1;
+	}
+
+	isThere = isOnHighestLevel(tText, "<", &position);
+	isDifferent = strcmp("<", tText);
+	if (isThere && isDifferent && position == 0) {
+		strcpy(tDst, "<");
+		return 1;
+	}
+
+	isThere = isOnHighestLevel(tText, ">", &position);
+	isDifferent = strcmp(">", tText);
+	if (isThere && isDifferent && position == 0) {
+		strcpy(tDst, ">");
 		return 1;
 	}
 

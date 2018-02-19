@@ -2,17 +2,20 @@
 
 #include <assert.h>
 
-#include <tari/animation.h>
-#include <tari/screeneffect.h>
-#include <tari/input.h>
-#include <tari/mugendefreader.h>
-#include <tari/file.h>
-#include <tari/mugenanimationhandler.h>
-#include <tari/math.h>
+#include <prism/animation.h>
+#include <prism/screeneffect.h>
+#include <prism/input.h>
+#include <prism/mugendefreader.h>
+#include <prism/file.h>
+#include <prism/mugenanimationhandler.h>
+#include <prism/math.h>
+#include <prism/mugensoundfilereader.h>
+#include <prism/mugentexthandler.h>
 
 #include "menuscreen.h"
-#include "mugentexthandler.h"
 #include "menubackground.h"
+#include "characterselectscreen.h"
+#include "arcademode.h"
 
 typedef struct {
 	void(*mCB)();
@@ -38,11 +41,16 @@ typedef struct {
 
 	int mVisibleItemAmount;
 
+	Vector3DI mCursorMoveSound;
+	Vector3DI mCursorDoneSound;
+	Vector3DI mCancelSound;
+
 } MenuHeader;
 
 static struct {
 	MugenDefScript mScript;
 	MugenSpriteFile mSprites;
+	MugenSounds mSounds;
 
 	MenuHeader mHeader;
 	Vector mMenus;
@@ -53,12 +61,16 @@ static struct {
 
 	int mTopOption;
 	int mSelected;
-
-
 } gData;
 
-static void arcadeCB() {
+static void gotoArcadeMode(void* tCaller) {
+	(void)tCaller;
+	startArcadeMode();
+}
 
+static void arcadeCB() {
+	startArcadeMode();
+	addFadeOut(gData.mHeader.mFadeOutTime, gotoArcadeMode, NULL);
 }
 
 static void loadMenuHeader() {
@@ -84,6 +96,9 @@ static void loadMenuHeader() {
 	gData.mHeader.mBoxCursorCoordinates.mBottomRight.x = atof(boxCoordinateVector.mElement[2]);
 	gData.mHeader.mBoxCursorCoordinates.mBottomRight.y = atof(boxCoordinateVector.mElement[3]);
 
+	gData.mHeader.mCursorMoveSound = getMugenDefVectorIOrDefault(&gData.mScript, "Title Info", "cursor.move.snd", makeVector3DI(0, 0, 0));
+	gData.mHeader.mCursorDoneSound = getMugenDefVectorIOrDefault(&gData.mScript, "Title Info", "cursor.done.snd", makeVector3DI(0, 0, 0));
+	gData.mHeader.mCancelSound = getMugenDefVectorIOrDefault(&gData.mScript, "Title Info", "cancel.snd", makeVector3DI(0, 0, 0));
 }
 
 static void addMenuPoint(char* tVariableName, void(*tCB)()) {
@@ -150,6 +165,10 @@ static void loadTitleScreen() {
 	gData.mSprites = loadMugenSpriteFileWithoutPalette(text);
 	freeMemory(text);
 
+	text = getAllocatedMugenDefStringVariable(&gData.mScript, "Files", "snd");
+	gData.mSounds = loadMugenSoundFile(text);
+	freeMemory(text);
+
 	loadMenuHeader();
 	loadMenuBackground(&gData.mScript, &gData.mSprites, NULL, "TitleBGdef", "TitleBG");
 
@@ -186,12 +205,14 @@ static void updateItemSelection() {
 		setSelectedMenuElementInactive();
 		gData.mSelected = (gData.mSelected + 1) % vector_size(&gData.mMenus);
 		setSelectedMenuElementActive();
+		playMugenSound(&gData.mSounds, gData.mHeader.mCursorMoveSound.x, gData.mHeader.mCursorMoveSound.y);
 	}
 	else if (hasPressedUpFlank()) {
 		setSelectedMenuElementInactive();
 		gData.mSelected--;
 		if (gData.mSelected < 0) gData.mSelected += vector_size(&gData.mMenus);
 		setSelectedMenuElementActive();
+		playMugenSound(&gData.mSounds, gData.mHeader.mCursorMoveSound.x, gData.mHeader.mCursorMoveSound.y);
 	}
 
 }
@@ -209,10 +230,19 @@ static void updateMenuElementPositions() {
 	}
 }
 
+static void updateItemSelectionConfirmation() {
+	if (hasPressedAFlank() || hasPressedStartFlank()) {
+		MenuText* e = vector_get(&gData.mMenus, gData.mSelected);
+		playMugenSound(&gData.mSounds, gData.mHeader.mCursorDoneSound.x, gData.mHeader.mCursorDoneSound.y);
+		e->mCB();
+	}
+}
+
 static void updateTitleScreen() {
 	updateItemSelection();
 	updateMenuBasePosition();
 	updateMenuElementPositions();
+	updateItemSelectionConfirmation();
 
 	if (hasPressedAbortFlank()) {
 		abortScreenHandling();

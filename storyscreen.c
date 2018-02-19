@@ -1,243 +1,264 @@
 #include "storyscreen.h"
 
 #include <assert.h>
+#include <prism/mugenanimationhandler.h>
+#include <prism/mugendefreader.h>
+#include <prism/input.h>
+#include <prism/math.h>
+#include <prism/screeneffect.h>
+#include <prism/mugentexthandler.h>
 
-#include <tari/log.h>
-#include <tari/system.h>
-#include <tari/animation.h>
-#include <tari/texthandler.h>
-#include <tari/math.h>
-#include <tari/input.h>
-#include <tari/screeneffect.h>
-#include <tari/mugendefreader.h>
-#include <tari/mugenspritefilereader.h>
-#include <tari/mugenanimationreader.h>
-#include <tari/mugenanimationhandler.h>
-
-#include "story.h"
 #include "titlescreen.h"
-#include "playerdefinition.h"
-#include "fightscreen.h"
-#include "gamelogic.h"
-#include "warningscreen.h"
+#include "versusscreen.h"
 
+typedef struct {
+	int mIsActive;
+	int mStage;
+
+	MugenAnimation* mAnimation;
+	Vector3D mOffset;
+	int mTime;
+
+	int mAnimationID;
+} Layer;
+
+typedef struct {
+	int mEndTime;
+	
+	int mFadeInTime;
+	Vector3DI mFadeInColor;
+
+	int mFadeOutTime;
+	Vector3DI mFadeOutColor;
+
+	Vector3DI mClearColor;
+
+	Vector3D mLayerAllPosition;
+
+	Layer mLayers[10];
+} Scene;
 
 static struct {
+	char mDefinitionPath[1024];
 	MugenDefScript mScript;
-	MugenDefScriptGroup* mCurrentGroup;
+	MugenAnimations mAnimations;
 	MugenSpriteFile mSprites;
+	void(*mCB)();
 
-	MugenAnimation* mOldAnimation;
-	MugenAnimation* mAnimation;
-	int mAnimationID;
-	int mOldAnimationID;
+	Vector mScenes;
 
-	Position mOldAnimationBasePosition;
-	Position mAnimationBasePosition;
-
-	int mSpeakerID;
-	int mTextID;
-
-	int mIsStoryOver;
+	int mCurrentScene;
+	Duration mNow;
+	int mIsFadingOut;
 } gData;
 
-static int isImageGroup() {
-	char* name = gData.mCurrentGroup->mName;
-	char firstW[100];
-	sscanf(name, "%s", firstW);
+static void loadScriptAndSprites() {
+	gData.mScript = loadMugenDefScript(gData.mDefinitionPath);
+	gData.mAnimations = loadMugenAnimationFile(gData.mDefinitionPath);
 
-	return !strcmp("Image", firstW);
-}
+	char folder[1024];
+	getPathToFile(folder, gData.mDefinitionPath);
+	setWorkingDirectory(folder);
 
-static void increaseGroup() {
-	gData.mCurrentGroup = gData.mCurrentGroup->mNext;
-}
-
-static void loadImageGroup() {
-	if (gData.mOldAnimationID != -1) {
-		removeMugenAnimation(gData.mOldAnimationID);
-		destroyMugenAnimation(gData.mOldAnimation);
-	}
-
-	if (gData.mAnimationID != -1) {
-		setMugenAnimationBasePosition(gData.mAnimationID, &gData.mOldAnimationBasePosition);
-	}
-
-	gData.mOldAnimationID = gData.mAnimationID;
-	gData.mOldAnimation = gData.mAnimation;
-	
-
-	int group = getMugenDefNumberVariableAsGroup(gData.mCurrentGroup, "group");
-	int item =  getMugenDefNumberVariableAsGroup(gData.mCurrentGroup, "item");
-	gData.mAnimation = createOneFrameMugenAnimationForSprite(group, item);
-
-	gData.mAnimationID = addMugenAnimation(gData.mAnimation, &gData.mSprites, makePosition(0, 0, 0));
-	setMugenAnimationBasePosition(gData.mAnimationID, &gData.mAnimationBasePosition);
-
-	increaseGroup();
-}
-
-static int isTextGroup() {
-	char* name = gData.mCurrentGroup->mName;
-	char firstW[100];
-	sscanf(name, "%s", firstW);
-
-	return !strcmp("Text", firstW);
-}
-
-static void loadTextGroup() {
-	if (gData.mTextID != -1) {
-		removeHandledText(gData.mTextID);
-		removeHandledText(gData.mSpeakerID);
-	}
-
-	char* speaker = getAllocatedMugenDefStringVariableAsGroup(gData.mCurrentGroup, "speaker");
-	char* text = getAllocatedMugenDefStringVariableAsGroup(gData.mCurrentGroup, "text");
-
-	gData.mSpeakerID = addHandledText(makePosition(40, 340, 3), speaker, 0, COLOR_WHITE, makePosition(20, 20, 1), makePosition(-5, 0, 0), makePosition(INF, INF, 1), INF);
-
-	int dur = strlen(text);
-	gData.mTextID = addHandledTextWithBuildup(makePosition(50, 360, 3), text, 0, COLOR_WHITE, makePosition(20, 20, 1), makePosition(-5, 0, 0), makePosition(540, 480, 1), INF, dur);
-	
-	freeMemory(speaker);
+	char* text = getAllocatedMugenDefStringVariable(&gData.mScript, "SceneDef", "spr");
+	gData.mSprites = loadMugenSpriteFileWithoutPalette(text);
 	freeMemory(text);
 
-	increaseGroup();
+	setWorkingDirectory("/");
 }
 
-static int isFightGroup() {
-	char* name = gData.mCurrentGroup->mName;
+static int isSceneGroup(MugenDefScriptGroup* tGroup) {
 	char firstW[100];
-	sscanf(name, "%s", firstW);
+	int items = sscanf(tGroup->mName, "%s", firstW);
+	if (items != 1) return 0;
 
-	return !strcmp("Fight", firstW);
+	return !strcmp("Scene", firstW);
 }
 
-static void goToFight(void* tCaller) {
-	(void)tCaller;
-	setNewScreen(&DreamFightScreen);
+static void loadSingleLayer(MugenDefScriptGroup* tGroup, Scene* tScene, int i) {
+	Layer* e = &tScene->mLayers[i];
+	char variableName[100];
+	
+	sprintf(variableName, "layer%d.anim", i);
+	e->mIsActive = isMugenDefNumberVariableAsGroup(tGroup, variableName);
+
+	if (!e->mIsActive) return;
+
+	sprintf(variableName, "layer%d.anim", i);
+	int animation = getMugenDefIntegerOrDefaultAsGroup(tGroup, variableName, -1);
+	e->mAnimation = getMugenAnimation(&gData.mAnimations, animation);
+
+	sprintf(variableName, "layer%d.offset", i);
+	e->mOffset = getMugenDefVectorOrDefaultAsGroup(tGroup, variableName, makePosition(0, 0, 0));
+
+	sprintf(variableName, "layer%d.starttime", i);
+	e->mTime = getMugenDefIntegerOrDefaultAsGroup(tGroup, variableName, 0);
+
+	e->mStage = 0;
 }
 
-static void loadFightGroup() {
-	char* player = getAllocatedMugenDefStringVariableAsGroup(gData.mCurrentGroup, "player");
-	char* enemy = getAllocatedMugenDefStringVariableAsGroup(gData.mCurrentGroup, "enemy");
+static void loadSingleScene(MugenDefScriptGroup* tGroup) {
+	Scene* e = allocMemory(sizeof(Scene));
 
-	setPlayerDefinitionPath(0, player);
-	setPlayerDefinitionPath(1, enemy);
-	setPlayerHuman(0);
-	setPlayerArtificial(1);
+	e->mEndTime = getMugenDefIntegerOrDefaultAsGroup(tGroup, "end.time", INF);
+	e->mFadeInTime = getMugenDefIntegerOrDefaultAsGroup(tGroup, "fadein.time", 0);
+	e->mFadeInColor = getMugenDefVectorIOrDefaultAsGroup(tGroup, "fadein.col", makeVector3DI(0,0,0));
 
-	freeMemory(player);
-	freeMemory(enemy);
+	e->mFadeOutTime = getMugenDefIntegerOrDefaultAsGroup(tGroup, "fadeout.time", 0);
+	e->mFadeOutColor = getMugenDefVectorIOrDefaultAsGroup(tGroup, "fadeout.col", makeVector3DI(0, 0, 0));
 
-	setDreamScreenAfterFightScreen(&DreamStoryScreen);
-	setDreamGameModeStory();
+	if (vector_size(&gData.mScenes)) {
+		Scene* previousScene = vector_get(&gData.mScenes, vector_size(&gData.mScenes) - 1);
+		e->mClearColor = getMugenDefVectorIOrDefaultAsGroup(tGroup, "clearcolor", previousScene->mClearColor);
+		e->mLayerAllPosition = getMugenDefVectorOrDefaultAsGroup(tGroup, "layerall.pos", previousScene->mLayerAllPosition);
+	}
+	else {
+		e->mClearColor = getMugenDefVectorIOrDefaultAsGroup(tGroup, "clearcolor", makeVector3DI(0, 0, 0));
+		e->mLayerAllPosition = getMugenDefVectorOrDefaultAsGroup(tGroup, "layerall.pos", makePosition(0, 0, 0));
+	}
 
-	gData.mIsStoryOver = 1;
-	addFadeOut(30, goToFight, NULL);
+	int i;
+	for (i = 0; i < 10; i++) {
+		loadSingleLayer(tGroup, e, i);
+	}
+
+	vector_push_back_owned(&gData.mScenes, e);
 }
 
-static int isEndingGroup() {
-	char* name = gData.mCurrentGroup->mName;
-	char firstW[100];
-	sscanf(name, "%s", firstW);
-
-	return !strcmp("Ending", firstW);
-}
-
-static void goToStoryOver(void* tCaller) {
-	(void)tCaller;
-	setNewScreen(&DreamWarningScreen);
-}
-
-static void loadEndingGroup() {
-	gData.mIsStoryOver = 1;
-	addFadeOut(30, goToStoryOver, NULL);
-}
-
-static void loadNextStoryGroup() {
-	int isRunning = 1;
-	while (isRunning) {
-		if (isImageGroup()) {
-			loadImageGroup();
+static void loadScenes() {
+	gData.mScenes = new_vector();
+	
+	MugenDefScriptGroup* group = gData.mScript.mFirstGroup;
+	while (group != NULL) {
+		if (isSceneGroup(group)) {
+			loadSingleScene(group);
 		}
-		else if (isTextGroup()) {
-			loadTextGroup();
-			break;
-		}
-		else if (isFightGroup()) {
-			loadFightGroup();
-			break;
-		}
-		else if (isEndingGroup()) {
-			loadEndingGroup();
-			break;
-		}
-		else {
-			logError("Unidentified group type.");
-			logErrorString(gData.mCurrentGroup->mName);
-			abortSystem();
-		}
+
+		group = group->mNext;
 	}
 }
 
-static void findStartOfStoryBoard() {
-	gData.mCurrentGroup = gData.mScript.mFirstGroup;
-
-	while (gData.mCurrentGroup && strcmp("STORYSTART", gData.mCurrentGroup->mName)) {
-		gData.mCurrentGroup = gData.mCurrentGroup->mNext;
-	}
-
-	assert(gData.mCurrentGroup);
-	gData.mCurrentGroup = gData.mCurrentGroup->mNext;
-	assert(gData.mCurrentGroup);
-
-	gData.mAnimationID = -1;
-	gData.mOldAnimationID = -1;
-	gData.mTextID = -1;
-
-	gData.mOldAnimationBasePosition = makePosition(0, 0, 1);
-	gData.mAnimationBasePosition = makePosition(0, 0, 2);
-
-	loadNextStoryGroup();
-}
-
-
+static void startScene();
 
 static void loadStoryScreen() {
-	startDreamNextStoryPart();
-	gData.mIsStoryOver = 0;
-	
+	instantiateActor(MugenTextHandler);
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
 
-	char* defPath = getCurrentDreamStoryDefinitionFile();
-	gData.mScript = loadMugenDefScript(defPath);
+	loadScriptAndSprites();
+	loadScenes();
 
-	char* spritePath = getAllocatedMugenDefStringVariable(&gData.mScript, "Header", "sprites");
-	gData.mSprites = loadMugenSpriteFileWithoutPalette(spritePath);
-	freeMemory(spritePath);
-
-	findStartOfStoryBoard();
+	gData.mCurrentScene = 0;
+	startScene();
 }
 
+static void startScene() {
+	assert(gData.mCurrentScene < vector_size(&gData.mScenes));
+	Scene* scene = vector_get(&gData.mScenes, gData.mCurrentScene);
 
-static void updateText() {
-	if (gData.mIsStoryOver) return;
-	if (gData.mTextID == -1) return;
+	gData.mNow = 0;
+	gData.mIsFadingOut = 0;
 
-	if (hasPressedAFlank() || hasPressedStart()) {
-		if (isHandledTextBuiltUp(gData.mTextID)) {
-			loadNextStoryGroup();
-		}
-		else {
-			setHandledTextBuiltUp(gData.mTextID);
-		}
+	setScreenBackgroundColorRGB(scene->mClearColor.x / 255.0, scene->mClearColor.y / 255.0, scene->mClearColor.z / 255.0);
+	setFadeColorRGB(scene->mFadeInColor.x / 255.0, scene->mFadeInColor.y / 255.0, scene->mFadeInColor.z / 255.0);
+	addFadeIn(scene->mFadeInTime, NULL, NULL);
+}
+
+static void activateLayer(Scene* tScene, Layer* tLayer, int i) {
+	Position pos = vecAdd(tScene->mLayerAllPosition, tLayer->mOffset);
+	pos.z = 10 + i;
+
+	tLayer->mAnimationID = addMugenAnimation(tLayer->mAnimation, &gData.mSprites, pos);
+	tLayer->mStage = 1;
+}
+
+static void updateLayerActivation(Scene* tScene, Layer* tLayer, int i) {
+	if (isDurationOver(gData.mNow, tLayer->mTime)) {
+		activateLayer(tScene, tLayer, i);
+	}
+}
+
+static void updateSingleLayer(int i) {
+	Scene* scene = vector_get(&gData.mScenes, gData.mCurrentScene);
+	Layer* layer = &scene->mLayers[i];
+
+	if (!layer->mIsActive) return;
+
+	if (layer->mStage == 0) {
+		updateLayerActivation(scene, layer, i);
+	}
+}
+
+static void updateLayers() {
+	int i;
+	for (i = 0; i < 10; i++) {
+		updateSingleLayer(i);
+	}
+}
+
+static void unloadLayer(int i) {
+	Scene* scene = vector_get(&gData.mScenes, gData.mCurrentScene);
+	Layer* layer = &scene->mLayers[i];
+
+	if (!layer->mIsActive) return;
+	if (layer->mStage != 1) return;
+
+	removeMugenAnimation(layer->mAnimationID);
+}
+
+static void unloadScene() {
+	int i;
+	for (i = 0; i < 10; i++) {
+		unloadLayer(i);
+	}
+}
+
+static void gotoNextScreen() {
+	gData.mCB();
+}
+
+static void fadeOutSceneOver(void* tCaller) {
+	(void)tCaller;
+	unloadScene();
+	enableDrawing();
+
+	gData.mCurrentScene++;
+
+	if (gData.mCurrentScene < vector_size(&gData.mScenes)) {
+		startScene();
+	}
+	else {
+		gData.mCurrentScene--; // TODO: check
+		gotoNextScreen();
+	}
+}
+
+static void fadeOutScene() {
+	Scene* scene = vector_get(&gData.mScenes, gData.mCurrentScene);
+
+	setFadeColorRGB(scene->mFadeOutColor.x / 255.0, scene->mFadeOutColor.y / 255.0, scene->mFadeOutColor.z / 255.0);
+	addFadeOut(scene->mFadeOutTime, fadeOutSceneOver, NULL);
+
+	gData.mIsFadingOut = 1;
+}
+
+static void updateScene() {
+	if (gData.mIsFadingOut) return;
+
+	Scene* scene = vector_get(&gData.mScenes, gData.mCurrentScene);
+	if (isDurationOver(gData.mNow, scene->mEndTime)) {
+		fadeOutScene();
 	}
 }
 
 static void updateStoryScreen() {
+	updateLayers();
+	updateScene();
 
-	updateText();
+	handleDurationAndCheckIfOver(&gData.mNow, INF);
+
+	if (hasPressedAFlank()) {
+		gotoNextScreen();
+	}
 
 	if (hasPressedAbortFlank()) {
 		setNewScreen(&DreamTitleScreen);
@@ -245,7 +266,16 @@ static void updateStoryScreen() {
 
 }
 
-Screen DreamStoryScreen = {
+Screen StoryScreen = {
 	.mLoad = loadStoryScreen,
 	.mUpdate = updateStoryScreen,
 };
+
+void setStoryDefinitionFile(char* tPath) {
+	strcpy(gData.mDefinitionPath, tPath);
+}
+
+void setStoryScreenFinishedCB(void(*tCB)())
+{
+	gData.mCB = tCB;
+}

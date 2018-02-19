@@ -1,7 +1,7 @@
 #pragma once
 
-#include <tari/actorhandler.h>
-#include <tari/wrapper.h>
+#include <prism/actorhandler.h>
+#include <prism/wrapper.h>
 
 extern ActorBlueprint DreamGameLogic;
 

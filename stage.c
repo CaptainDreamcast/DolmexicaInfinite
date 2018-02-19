@@ -3,15 +3,15 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include <tari/memoryhandler.h>
-#include <tari/log.h>
-#include <tari/system.h>
-#include <tari/animation.h>
-#include <tari/stagehandler.h>
-#include <tari/math.h>
-#include <tari/input.h>
-#include <tari/mugendefreader.h>
-#include <tari/mugenspritefilereader.h>
+#include <prism/memoryhandler.h>
+#include <prism/log.h>
+#include <prism/system.h>
+#include <prism/animation.h>
+#include <prism/stagehandler.h>
+#include <prism/math.h>
+#include <prism/input.h>
+#include <prism/mugendefreader.h>
+#include <prism/mugenspritefilereader.h>
 
 #include "playerdefinition.h"
 #include "mugenstagehandler.h"
@@ -115,6 +115,7 @@ typedef struct {
 	Vector3DI mTile;
 	Vector3DI mTileSpacing;
 	int mListPosition;
+	BlendType mBlendType;
 
 	int mActionNumber;
 } StageBackgroundElement;
@@ -258,15 +259,45 @@ static int isActionGroup(MugenDefScriptGroup* tGroup) {
 static void addBackgroundElementToStageHandler(StageBackgroundElement* e) {
 	e->mStart.z = e->mListPosition + e->mLayerNo * 30; // TODO
 	if (e->mType == STAGE_BACKGROUND_STATIC) {
-		addDreamMugenStageHandlerStaticBackgroundElement(e->mStart, e->mSpriteNo.x, e->mSpriteNo.y, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, BLEND_TYPE_NORMAL, gData.mStageInfo.mLocalCoordinates);
+		addDreamMugenStageHandlerStaticBackgroundElement(e->mStart, e->mSpriteNo.x, e->mSpriteNo.y, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), makePosition(0, 0, 0), gData.mStageInfo.mLocalCoordinates);
 	} else if (e->mType == STAGE_BACKGROUND_ANIMATED) {
-		addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, e->mActionNumber, &gData.mAnimations, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, BLEND_TYPE_NORMAL, gData.mStageInfo.mLocalCoordinates);
+		addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, e->mActionNumber, &gData.mAnimations, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), makePosition(0, 0, 0), gData.mStageInfo.mLocalCoordinates);
 	}
 	else {
 		logError("Unable to determine bg element type");
 		logErrorInteger(e->mType);
 		abortSystem();
 	}
+}
+
+static BlendType getBackgroundBlendType(MugenDefScript* tScript, char* tGroupName) {
+	MugenDefScriptGroup* tGroup = string_map_get(&tScript->mGroups, tGroupName);
+
+	if (!isMugenDefStringVariableAsGroup(tGroup, "trans")) return BLEND_TYPE_NORMAL;
+
+	BlendType ret;
+	char* text = getAllocatedMugenDefStringVariableAsGroup(tGroup, "trans");
+	turnStringLowercase(text);
+
+	if (!strcmp("add", text) || !strcmp("addalpha", text)) {
+		ret = BLEND_TYPE_ADDITION;
+	}
+	else if (!strcmp("sub", text)) {
+		ret = BLEND_TYPE_SUBTRACTION;
+	}
+	else if (!strcmp("none", text)) {
+		ret = BLEND_TYPE_NORMAL;
+	}
+	else {
+		ret = BLEND_TYPE_NORMAL;
+		logError("Unknown transparency type.");
+		logErrorString(text);
+		abortSystem();
+	}
+
+	freeMemory(text);
+
+	return ret;
 }
 
 static void loadBackgroundElement(MugenDefScript* s, char* tName, int i) {
@@ -296,6 +327,7 @@ static void loadBackgroundElement(MugenDefScript* s, char* tName, int i) {
 	e->mMask = getMugenDefIntegerOrDefault(s, tName, "mask", 0);
 	e->mTile = getMugenDefVectorIOrDefault(s, tName, "tile", makeVector3DI(0, 0, 0));
 	e->mTileSpacing = getMugenDefVectorIOrDefault(s, tName, "tilespacing", makeVector3DI(0, 0, 0));
+	e->mBlendType = getBackgroundBlendType(s, tName);
 	e->mListPosition = i;
 
 	addBackgroundElementToStageHandler(e);

@@ -1,5 +1,5 @@
 #pragma once
 
-#include <tari/wrapper.h>
+#include <prism/wrapper.h>
 
 extern Screen DreamGameOverScreen;

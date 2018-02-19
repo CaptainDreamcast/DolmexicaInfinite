@@ -1,10 +1,10 @@
 #pragma once
 
-#include <tari/geometry.h>
-#include <tari/datastructures.h>
-#include <tari/actorhandler.h>
+#include <prism/geometry.h>
+#include <prism/datastructures.h>
+#include <prism/actorhandler.h>
 
-#include <tari/mugenspritefilereader.h>
+#include <prism/mugenspritefilereader.h>
 
 // documentation at http://www.elecbyte.com/mugendocs-11b1/bgs.html
 

@@ -1,12 +1,12 @@
 #include "twoplayerselectscreen.h"
 
-#include <tari/geometry.h>
-#include <tari/animation.h>
-#include <tari/input.h>
-#include <tari/screeneffect.h>
-#include <tari/texthandler.h>
-#include <tari/math.h>
-#include <tari/mugenanimationhandler.h>
+#include <prism/geometry.h>
+#include <prism/animation.h>
+#include <prism/input.h>
+#include <prism/screeneffect.h>
+#include <prism/texthandler.h>
+#include <prism/math.h>
+#include <prism/mugenanimationhandler.h>
 
 #include "titlescreen.h"
 #include "fightscreen.h"
@@ -153,7 +153,7 @@ static void goToFight(void* tCaller) {
 	setPlayerHuman(0);
 	setPlayerHuman(1);
 
-	setNewScreen(&DreamFightScreen);
+	startFightScreen();
 }
 
 static void goToMenu(void* tCaller) {

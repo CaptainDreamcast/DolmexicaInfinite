@@ -1,7 +1,7 @@
 #pragma once
 
-#include <tari/datastructures.h>
-#include <tari/animation.h>
+#include <prism/datastructures.h>
+#include <prism/animation.h>
 
 typedef enum {
 	MUGEN_COMMAND_INPUT_STEP_TYPE_PRESS,

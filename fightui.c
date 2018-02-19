@@ -2,14 +2,14 @@
 
 #include <assert.h>
 
-#include <tari/file.h>
-#include <tari/texthandler.h>
-#include <tari/math.h>
-#include <tari/input.h>
-#include <tari/mugendefreader.h>
-#include <tari/mugenspritefilereader.h>
-#include <tari/mugenanimationreader.h>
-#include <tari/mugenanimationhandler.h>
+#include <prism/file.h>
+#include <prism/math.h>
+#include <prism/input.h>
+#include <prism/mugendefreader.h>
+#include <prism/mugenspritefilereader.h>
+#include <prism/mugenanimationreader.h>
+#include <prism/mugenanimationhandler.h>
+#include <prism/mugentexthandler.h>
 
 #include "stage.h"
 #include "playerdefinition.h"
@@ -77,6 +77,8 @@ typedef struct {
 
 	Position mTextPosition;
 	int mTextID;
+
+	Vector3DI mFont;
 } DisplayName;
 
 typedef struct {
@@ -87,6 +89,8 @@ typedef struct {
 
 	Position mBGPosition;
 	int mBGAnimationID;
+
+	Vector3DI mFont;
 
 	int mTextID;
 	int mFramesPerCount;
@@ -101,8 +105,7 @@ typedef struct {
 	MugenAnimation* mDefaultAnimation;
 	int mDefaultFaceDirection;
 	int mHasDefaultAnimation;
-	int mDefaultTextSize;
-	int mDefaultBreakSize;
+	Vector3DI mFont;
 
 	int mHasCustomRoundAnimation[10];
 	MugenAnimation* mCustomRoundAnimations[10];
@@ -159,8 +162,7 @@ typedef struct {
 	int mNow;
 	int mDisplayTime;
 
-	int mTextSize;
-	int mBreakSize;
+	Vector3DI mFont;
 
 	int mIsDisplaying;
 	void(*mCB)();
@@ -255,7 +257,6 @@ static int loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(
 	*oPosition = getMugenDefVectorOrDefault(tScript, tGroupName, name, makePosition(0, 0, 0));
 	oPosition->z = tZ;
 	*oPosition = vecAdd(*oPosition, tBasePosition);
-	*oPosition = vecSub(*oPosition, getDreamStageCoordinateSystemOffset(COORD_P)); // TODO: think better
 
 	sprintf(name, "%s.facing", tComponentName);
 	*oFaceDirection = getMugenDefIntegerOrDefault(tScript, tGroupName, name, 1);
@@ -288,14 +289,13 @@ static void loadSingleUIComponent(int i, MugenDefScript* tScript, MugenSpriteFil
 	loadSingleUIComponentWithFullComponentName(tScript, tSprites, tAnimations, tBasePosition, tGroupName, name, tZ, oAnimationID, oPosition, tScaleCoordinateP);
 }
 
-static void loadSingleUITextWithFullComponentNameForStorage(MugenDefScript* tScript, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, Position* oPosition, int tIsReadingText, char* tText, int tTextSize, int tBreakSize) {
+static void loadSingleUITextWithFullComponentNameForStorage(MugenDefScript* tScript, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, Position* oPosition, int tIsReadingText, char* tText, Vector3DI* oFontData) {
 	char name[1024];
 
 	sprintf(name, "%s.offset", tComponentName);
 	*oPosition = getMugenDefVectorOrDefault(tScript, tGroupName, name, makePosition(0, 0, 0));
 	oPosition->z = tZ;
 	*oPosition = vecAdd(*oPosition, tBasePosition);
-	*oPosition = vecScale(*oPosition, 480.0 / COORD_P); // TODO: non-hardcoded
 
 	if (tIsReadingText) {
 		sprintf(name, "%s.text", tComponentName);
@@ -304,35 +304,25 @@ static void loadSingleUITextWithFullComponentNameForStorage(MugenDefScript* tScr
 		freeMemory(text);
 	}
 
-	Vector3DI fontData;
 	sprintf(name, "%s.font", tComponentName);
-	fontData = getMugenDefVectorIOrDefault(tScript, tGroupName, name, makeVector3DI(0, 0, 1));
-
-	*oPosition = vecSub(*oPosition, makePosition(0, tTextSize + tBreakSize, 0));
-	if (fontData.z == -1) {
-		int n = strlen(tText);
-		double len = tTextSize*n + tBreakSize*(n - 1);
-		*oPosition = vecSub(*oPosition, makePosition(len, 0, 0));
-	} else if (fontData.z == 0) {
-		int n = strlen(tText);
-		double len = tTextSize*n + tBreakSize*(n - 1);
-		*oPosition = vecSub(*oPosition, makePosition(len / 2, 0, 0));
-	}
+	*oFontData = getMugenDefVectorIOrDefault(tScript, tGroupName, name, makeVector3DI(1, 0, 0));
 }
 
 
-static void loadSingleUITextWithFullComponentName(MugenDefScript* tScript, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, int* oTextID, Position* oPosition, int tIsReadingText, char* tText, int tTextSize, int tBreakSize) {
-	loadSingleUITextWithFullComponentNameForStorage(tScript, tBasePosition, tGroupName, tComponentName, tZ, oPosition, tIsReadingText, tText, tTextSize, tBreakSize);
+static void loadSingleUITextWithFullComponentName(MugenDefScript* tScript, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, int* oTextID, Position* oPosition, int tIsReadingText, char* tText, Vector3DI* oFontData) {
+	loadSingleUITextWithFullComponentNameForStorage(tScript, tBasePosition, tGroupName, tComponentName, tZ, oPosition, tIsReadingText, tText, oFontData);
 
-	*oTextID = addHandledText(*oPosition, tText, 0, COLOR_WHITE, makePosition(tTextSize, tTextSize, 1), makePosition(tBreakSize, tBreakSize, 0), makePosition(640, 480, 1), INF);
+	*oTextID = addMugenText(tText, *oPosition, oFontData->x);
+	setMugenTextColor(*oTextID, getMugenTextColorFromMugenTextColorIndex(oFontData->y));
+	setMugenTextAlignment(*oTextID, getMugenTextAlignmentFromMugenAlignmentIndex(oFontData->z));
 }
 
 
-static void loadSingleUIText(int i, MugenDefScript* tScript, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, int* oTextID, Position* oPosition, int tIsReadingText, char* tText, int tTextSize, int tBreakSize) {
+static void loadSingleUIText(int i, MugenDefScript* tScript, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, int* oTextID, Position* oPosition, int tIsReadingText, char* tText, Vector3DI* oFontData) {
 	char name[1024];
 
 	sprintf(name, "p%d.%s", i + 1, tComponentName);
-	loadSingleUITextWithFullComponentName(tScript, tBasePosition, tGroupName, name, tZ, oTextID, oPosition, tIsReadingText, tText, tTextSize, tBreakSize);
+	loadSingleUITextWithFullComponentName(tScript, tBasePosition, tGroupName, name, tZ, oTextID, oPosition, tIsReadingText, tText, oFontData);
 }
 
 static void loadSingleHealthBar(int i, MugenDefScript* tScript) {
@@ -416,8 +406,8 @@ static void loadSingleName(int i, MugenDefScript* tScript) {
 	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Name", "bg", 0, &displayName->mBGAnimationID, &displayName->mBGPosition, coordP);
 
 	char displayNameText[1024];
-	sprintf(displayNameText, "%s by %s", getPlayerDisplayName(getRootPlayer(i)), getPlayerAuthorName(getRootPlayer(i)));
-	loadSingleUIText(i, tScript, basePosition, "Name", "name", 0, &displayName->mTextID, &displayName->mTextPosition, 0, displayNameText, 15, -5);
+	sprintf(displayNameText, "%s", getPlayerDisplayName(getRootPlayer(i)));
+	loadSingleUIText(i, tScript, basePosition, "Name", "name", 10, &displayName->mTextID, &displayName->mTextPosition, 0, displayNameText, &displayName->mFont);
 }
 
 static void loadPlayerUIs(MugenDefScript* tScript) {
@@ -432,6 +422,8 @@ static void loadPlayerUIs(MugenDefScript* tScript) {
 	}
 }
 
+static void playDisplayText(int* oTextID, char* tText, Position tPosition, Vector3DI tFont);
+
 static void loadTimer(MugenDefScript* tScript) {
 	Position basePosition;
 	basePosition = getMugenDefVectorOrDefault(tScript, "Time", "pos", makePosition(0, 0, 0));
@@ -442,18 +434,16 @@ static void loadTimer(MugenDefScript* tScript) {
 
 	gData.mTime.mPosition = getMugenDefVectorOrDefault(tScript, "Time", "counter.offset", makePosition(0, 0, 0));
 	gData.mTime.mPosition = vecAdd(gData.mTime.mPosition, basePosition);
-	gData.mTime.mPosition = vecScale(gData.mTime.mPosition, 480.0 / coordP);
-	gData.mTime.mPosition.z++;
+	gData.mTime.mPosition.z+=10;
 
 	gData.mTime.mFramesPerCount = getMugenDefIntegerOrDefault(tScript, "Time", "framespercount", 60);
 
-	int textSize = 25;
-	int breakSize = -5;
-
-	gData.mTime.mPosition = vecSub(gData.mTime.mPosition, makePosition(textSize + breakSize / 2, textSize + breakSize, 0));
 	gData.mTime.mIsActive = 0;
 
-	gData.mTime.mTextID = addHandledText(gData.mTime.mPosition, "99", 0, COLOR_WHITE, makePosition(textSize, textSize, 1), makePosition(breakSize, breakSize, 1), makePosition(640, 640, 1), INF);
+	gData.mTime.mFont = getMugenDefVectorIOrDefault(tScript, "Time", "counter.font", makeVector3DI(1, 0, 0));
+
+	playDisplayText(&gData.mTime.mTextID, "99", gData.mTime.mPosition, gData.mTime.mFont);
+
 	gData.mTime.mValue = 99;
 	gData.mTime.mNow = 0;
 	resetDreamTimer();
@@ -467,15 +457,13 @@ static void loadRound(MugenDefScript* tScript) {
 	gData.mRound.mRoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "round.time", 0);
 	gData.mRound.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "Round", "round.default.displaytime", 0);
 
-	gData.mRound.mDefaultTextSize = 40;
-	gData.mRound.mDefaultBreakSize = -5;
 	if (isMugenDefVariable(tScript, "Round", "round.default.anim")) {
 		gData.mRound.mHasDefaultAnimation = 1;
 		assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "round.default", 1, &gData.mRound.mDefaultAnimation, &gData.mRound.mPosition, &gData.mRound.mDefaultFaceDirection));
 	}
 	else {
 		gData.mRound.mHasDefaultAnimation = 0;
-		loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "Round", "round.default", 1, &gData.mRound.mPosition, 1, gData.mRound.mText, gData.mRound.mDefaultTextSize, gData.mRound.mDefaultBreakSize);
+		loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "Round", "round.default", 1, &gData.mRound.mPosition, 1, gData.mRound.mText, &gData.mRound.mFont);
 	}
 
 
@@ -521,9 +509,7 @@ static void loadWinDisplay(MugenDefScript* tScript) {
 	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
 	basePosition.z = 20;
 
-	gData.mWin.mTextSize = 20;
-	gData.mWin.mBreakSize = -5;
-	loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "Round", "win", 1, &gData.mWin.mPosition, 1, gData.mWin.mText, gData.mWin.mTextSize, gData.mWin.mBreakSize);
+	loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "Round", "win", 1, &gData.mWin.mPosition, 1, gData.mWin.mText, &gData.mWin.mFont);
 
 	gData.mWin.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "Round", "win.displaytime", 0);
 
@@ -634,12 +620,14 @@ static void removeDisplayedAnimation(int tAnimationID) {
 }
 
 
-static void playDisplayText(int* oTextID, char* tText, Position tPosition, int tTextSize, int tBreakSize) {
-	*oTextID = addHandledText(tPosition, tText, 0, COLOR_WHITE, makePosition(tTextSize, tTextSize, 1), makePosition(tBreakSize, tBreakSize, 1), makePosition(640, 640, 1), INF);
+static void playDisplayText(int* oTextID, char* tText, Position tPosition, Vector3DI tFont) {
+	*oTextID = addMugenText(tText, tPosition, tFont.x);
+	setMugenTextColor(*oTextID, getMugenTextColorFromMugenTextColorIndex(tFont.y));
+	setMugenTextAlignment(*oTextID, getMugenTextAlignmentFromMugenAlignmentIndex(tFont.z));
 }
 
 static void removeDisplayedText(int tTextID) {
-	removeHandledText(tTextID);
+	removeMugenText(tTextID);
 }
 
 static void updateRoundDisplay() {
@@ -714,7 +702,7 @@ static void updateTimeDisplayText() {
 	char text[10];
 	if(gData.mTime.mValue < 10) sprintf(text, "0%d", gData.mTime.mValue);
 	else sprintf(text, "%d", gData.mTime.mValue);
-	setHandledText(gData.mTime.mTextID, text);
+	changeMugenText(gData.mTime.mTextID, text);
 }
 
 static void updateTimeDisplay() {
@@ -734,20 +722,17 @@ static void updateTimeDisplay() {
 }
 
 static void setContinueInactive() {
-	removeHandledText(gData.mContinue.mContinueTextID);
-	removeHandledText(gData.mContinue.mValueTextID);
+	removeMugenText(gData.mContinue.mContinueTextID);
+	removeMugenText(gData.mContinue.mValueTextID);
 	gData.mContinue.mIsActive = 0;
 }
 
 
 static void decreaseContinueCounter() {
-
-	removeHandledText(gData.mContinue.mValueTextID);
-
 	gData.mContinue.mValue--;
 	char text[10];
 	sprintf(text, "%d", gData.mContinue.mValue);
-	gData.mContinue.mValueTextID = addHandledText(makePosition(307, 200, 20), text, 0, COLOR_WHITE, makePosition(40, 40, 1), makePosition(-5, -5, 0), makePosition(INF, INF, 1), INF);
+	changeMugenText(gData.mContinue.mValueTextID, text);
 }
 
 static void updateContinueDisplay() {
@@ -811,7 +796,7 @@ void playDreamHitSpark(Position tPosition, DreamPlayer* tPlayer, int tIsInPlayer
 	
 	e->mPosition = tPosition;
 	e->mPosition.z = 16;
-	e->mAnimationID = addMugenAnimation(anim, spriteFile, makePosition(0, 0, 0));
+	e->mAnimationID = addMugenAnimation(anim, spriteFile, getDreamStageCoordinateSystemOffset(tPositionCoordinateP));
 	setMugenAnimationBasePosition(e->mAnimationID, &e->mPosition);
 	setMugenAnimationCameraPositionReference(e->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	if (!tIsFacingRight) {
@@ -898,7 +883,7 @@ void playDreamRoundAnimation(int tRound, void(*tFunc)())
 		gData.mRound.mHasActiveAnimation = 0;
 		parseRoundText(gData.mRound.mDisplayedText, gData.mRound.mText, tRound + 1);
 
-		playDisplayText(&gData.mRound.mTextID, gData.mRound.mDisplayedText, gData.mRound.mPosition, gData.mRound.mDefaultTextSize, gData.mRound.mDefaultBreakSize);
+		playDisplayText(&gData.mRound.mTextID, gData.mRound.mDisplayedText, gData.mRound.mPosition, gData.mRound.mFont);
 	}
 
 	gData.mRound.mCB = tFunc;
@@ -922,7 +907,7 @@ void playDreamKOAnimation(void(*tFunc)())
 	gData.mKO.mIsDisplaying = 1;
 }
 
-static void parseWinText(char* tDst, char* tSrc, char* tName, Position* oDisplayPosition, Position tPosition, int tSize, int tBreakSize) {
+static void parseWinText(char* tDst, char* tSrc, char* tName, Position* oDisplayPosition, Position tPosition) {
 	int i, o = 0;
 	int bonus = 0;
 	int n = strlen(tSrc);
@@ -941,13 +926,12 @@ static void parseWinText(char* tDst, char* tSrc, char* tName, Position* oDisplay
 	tDst[o] = '\0';
 
 	*oDisplayPosition = tPosition;
-	oDisplayPosition->x -= (bonus * (double)(tSize + tBreakSize)) / 2;
 }
 
 void playDreamWinAnimation(char * tName, void(*tFunc)())
 {
-	parseWinText(gData.mWin.mDisplayedText, gData.mWin.mText, tName, &gData.mWin.mDisplayPosition, gData.mWin.mPosition, gData.mWin.mTextSize, gData.mWin.mBreakSize);
-	playDisplayText(&gData.mWin.mTextID, gData.mWin.mDisplayedText, gData.mWin.mDisplayPosition, gData.mWin.mTextSize, gData.mWin.mBreakSize);
+	parseWinText(gData.mWin.mDisplayedText, gData.mWin.mText, tName, &gData.mWin.mDisplayPosition, gData.mWin.mPosition);
+	playDisplayText(&gData.mWin.mTextID, gData.mWin.mDisplayedText, gData.mWin.mDisplayPosition, gData.mWin.mFont);
 	
 	gData.mWin.mNow = 0;
 	gData.mWin.mCB = tFunc;
@@ -963,8 +947,9 @@ void playDreamContinueAnimation(void(*tAnimationFinishedFunc)(), void(*tContinue
 	gData.mContinue.mNow = 0;
 	gData.mContinue.mDuration = 60;
 
-	gData.mContinue.mContinueTextID = addHandledText(makePosition(170, 150, 20), "Continue?", 0, COLOR_WHITE, makePosition(40, 40, 1), makePosition(-5, -5, 0), makePosition(INF, INF, 1), INF);
-	gData.mContinue.mValueTextID = addHandledText(makePosition(290, 200, 20), "10", 0, COLOR_WHITE, makePosition(40, 40, 1), makePosition(-5, -5, 0), makePosition(INF, INF, 1), INF);
+	playDisplayText(&gData.mContinue.mContinueTextID, "Continue?", makePosition(160, 100, 20), makeVector3DI(2, 0, 0));
+	playDisplayText(&gData.mContinue.mValueTextID, "10", makePosition(160, 120, 20), makeVector3DI(2, 0, 0));
+
 
 	gData.mContinue.mIsActive = 1;
 }

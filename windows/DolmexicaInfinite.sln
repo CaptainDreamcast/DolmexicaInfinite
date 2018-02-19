@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DolmexicaInfinite", "DolmexicaInfinite.vcxproj", "{1F70946A-55A5-4CA3-88C5-7DA417B967FF}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtari", "..\..\addons\libtari\windows\vs17\libtari.vcxproj", "{3572E463-893D-4815-8ECC-E65F3B8C6D90}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "prism", "..\..\addons\prism\windows\vs17\prism.vcxproj", "{3572E463-893D-4815-8ECC-E65F3B8C6D90}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

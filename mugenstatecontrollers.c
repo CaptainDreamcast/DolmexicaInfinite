@@ -3,9 +3,9 @@
 #include <assert.h>
 #include <string.h>
 
-#include <tari/memoryhandler.h>
-#include <tari/log.h>
-#include <tari/system.h>
+#include <prism/memoryhandler.h>
+#include <prism/log.h>
+#include <prism/system.h>
 
 #include "playerdefinition.h"
 #include "playerhitdata.h"
@@ -1295,6 +1295,9 @@ void parseStateControllerType(DreamMugenStateController* tController, MugenDefSc
 		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_MULTIPLY_VELOCITY;
 		parse2DPhysicsController(tController, tGroup);
 	}
+	else if (!strcmp("targetveladd", type)) {
+		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_TARGET_ADD_VELOCITY;
+	}
 	else if (!strcmp("afterimage", type)) {
 		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_AFTER_IMAGE;
 		parseNullController(tController); // TODO
@@ -1365,6 +1368,10 @@ void parseStateControllerType(DreamMugenStateController* tController, MugenDefSc
 	}
 	else if (!strcmp("varadd", type)) {
 		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ADD_VARIABLE;
+		parseVarSetController(tController, tGroup);
+	}
+	else if (!strcmp("parentvaradd", type)) {
+		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PARENT_ADD_VARIABLE;
 		parseVarSetController(tController, tGroup);
 	}
 	else if (!strcmp("fallenvshake", type)) {

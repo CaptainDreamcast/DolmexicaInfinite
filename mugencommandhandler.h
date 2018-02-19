@@ -1,7 +1,7 @@
 #pragma once
 
-#include <tari/actorhandler.h>
-#include <tari/mugenanimationhandler.h>
+#include <prism/actorhandler.h>
+#include <prism/mugenanimationhandler.h>
 
 #include "mugencommandreader.h"
 #include "playerdefinition.h"

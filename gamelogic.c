@@ -2,8 +2,8 @@
 
 #include <assert.h>
 
-#include <tari/screeneffect.h>
-#include <tari/wrapper.h>
+#include <prism/screeneffect.h>
+#include <prism/wrapper.h>
 
 #include "playerdefinition.h"
 #include "fightui.h"

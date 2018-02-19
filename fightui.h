@@ -1,10 +1,10 @@
 #pragma once
 
-#include <tari/actorhandler.h>
-#include <tari/geometry.h>
+#include <prism/actorhandler.h>
+#include <prism/geometry.h>
 
-#include <tari/mugenspritefilereader.h>
-#include <tari/mugenanimationreader.h>
+#include <prism/mugenspritefilereader.h>
+#include <prism/mugenanimationreader.h>
 
 #include "playerdefinition.h"
 

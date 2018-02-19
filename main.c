@@ -1,18 +1,19 @@
-#include <tari/framerateselectscreen.h>
-#include <tari/pvr.h>
-#include <tari/physics.h>
-#include <tari/file.h>
-#include <tari/drawing.h>
-#include <tari/log.h>
-#include <tari/wrapper.h>
-#include <tari/system.h>
-#include <tari/stagehandler.h>
-#include <tari/logoscreen.h>
+#include <prism/framerateselectscreen.h>
+#include <prism/pvr.h>
+#include <prism/physics.h>
+#include <prism/file.h>
+#include <prism/drawing.h>
+#include <prism/log.h>
+#include <prism/wrapper.h>
+#include <prism/system.h>
+#include <prism/stagehandler.h>
+#include <prism/logoscreen.h>
+#include <prism/mugentexthandler.h>
 
 #include "titlescreen.h"
 #include "fightscreen.h"
 #include "playerdefinition.h"
-#include "mugentexthandler.h"
+
 
 #ifdef DREAMCAST
 KOS_INIT_FLAGS(INIT_DEFAULT);
@@ -24,7 +25,7 @@ KOS_INIT_ROMDISK(romdisk);
 
 
 void exitGame() {
-	shutdownTariWrapper();
+	shutdownPrismWrapper();
 
 #ifdef DEVELOP
 	abortSystem();
@@ -48,9 +49,10 @@ int main(int argc, char** argv) {
 	setGameName("DOLMEXICA INFINITE");
 	setScreenSize(320, 240);
 	
-	initTariWrapperWithDefaultFlags();
+	initPrismWrapperWithDefaultFlags();
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
 	loadMugenTextHandler();
+	loadMugenSystemFonts();
 
 	logg("Check framerate");
 	FramerateSelectReturnType framerateReturnType = selectFramerate();

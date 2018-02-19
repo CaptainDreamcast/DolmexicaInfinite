@@ -70,8 +70,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2-2.0.7\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_image-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_mixer-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_ttf-2.0.14;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\glew-2.1.0\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\LIBTARIPORT\addons\libtari\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\LIBTARIPORT\addons\libtari\windows\vs17\LIB;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2-2.0.7\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_image-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_mixer-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_ttf-2.0.14;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\glew-2.1.0\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\LIBTARIPORT\addons\prism\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\LIBTARIPORT\addons\prism\windows\vs17\LIB;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -121,12 +121,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\addons\libtari\windows\vs17\libtari.vcxproj">
-      <Project>{3572e463-893d-4815-8ecc-e65f3b8c6d90}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\ai.c" />
+    <ClCompile Include="..\arcademode.c" />
+    <ClCompile Include="..\characterselectscreen.c" />
     <ClCompile Include="..\collision.c" />
     <ClCompile Include="..\config.c" />
     <ClCompile Include="..\fightscreen.c" />
@@ -145,7 +142,6 @@
     <ClCompile Include="..\mugenstatecontrollers.c" />
     <ClCompile Include="..\mugenstatehandler.c" />
     <ClCompile Include="..\mugenstatereader.c" />
-    <ClCompile Include="..\mugentexthandler.c" />
     <ClCompile Include="..\pausecontrollers.c" />
     <ClCompile Include="..\playerdefinition.c" />
     <ClCompile Include="..\playerhitdata.c" />
@@ -155,11 +151,14 @@
     <ClCompile Include="..\storyscreen.c" />
     <ClCompile Include="..\titlescreen.c" />
     <ClCompile Include="..\twoplayerselectscreen.c" />
+    <ClCompile Include="..\versusscreen.c" />
     <ClCompile Include="..\warningscreen.c" />
     <ClCompile Include="..\main.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ai.h" />
+    <ClInclude Include="..\arcademode.h" />
+    <ClInclude Include="..\characterselectscreen.h" />
     <ClInclude Include="..\collision.h" />
     <ClInclude Include="..\config.h" />
     <ClInclude Include="..\fightscreen.h" />
@@ -178,7 +177,6 @@
     <ClInclude Include="..\mugenstatecontrollers.h" />
     <ClInclude Include="..\mugenstatehandler.h" />
     <ClInclude Include="..\mugenstatereader.h" />
-    <ClInclude Include="..\mugentexthandler.h" />
     <ClInclude Include="..\pausecontrollers.h" />
     <ClInclude Include="..\playerdefinition.h" />
     <ClInclude Include="..\playerhitdata.h" />
@@ -188,7 +186,13 @@
     <ClInclude Include="..\storyscreen.h" />
     <ClInclude Include="..\titlescreen.h" />
     <ClInclude Include="..\twoplayerselectscreen.h" />
+    <ClInclude Include="..\versusscreen.h" />
     <ClInclude Include="..\warningscreen.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\addons\prism\windows\vs17\prism.vcxproj">
+      <Project>{3572e463-893d-4815-8ecc-e65f3b8c6d90}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
