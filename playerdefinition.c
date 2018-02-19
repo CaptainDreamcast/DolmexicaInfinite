@@ -909,9 +909,10 @@ static int checkActiveHitDefAttributeSlots(DreamPlayer* p, DreamPlayer* p2) {
 	return 1;
 }
 
-void playerHitCB(DreamPlayer* p, void* tHitData)
+void playerHitCB(void* tData, void* tHitData)
 {
 	// TOOD: reversaldef
+	DreamPlayer* p = tData;
 
 	DreamPlayer* otherPlayer = getReceivedHitDataPlayer(tHitData);
 

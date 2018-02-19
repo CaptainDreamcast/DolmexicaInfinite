@@ -1,5 +1,5 @@
 include Makefile.common
-include $(KOS_BASE)/addons/libtari/Makefile.commondc
+include $(KOS_BASE)/addons/prism/Makefile.commondc
 
 all: complete
 

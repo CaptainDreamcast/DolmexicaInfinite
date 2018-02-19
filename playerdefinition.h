@@ -150,7 +150,7 @@ void resetPlayers();
 void resetPlayersEntirely();
 void updatePlayers();
 
-void playerHitCB(DreamPlayer* p, void* tHitData);
+void playerHitCB(void* tData, void* tHitData);
 
 void setPlayerDefinitionPath(int i, char* tDefinitionPath);
 void getPlayerDefinitionPath(char* tDst, int i);

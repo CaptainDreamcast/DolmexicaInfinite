@@ -73,6 +73,10 @@ static void arcadeCB() {
 	addFadeOut(gData.mHeader.mFadeOutTime, gotoArcadeMode, NULL);
 }
 
+static void exitCB() {
+	abortScreenHandling();
+}
+
 static void loadMenuHeader() {
 	gData.mHeader.mFadeInTime = getMugenDefIntegerOrDefault(&gData.mScript, "Title Info", "fadein.time", 30);
 	gData.mHeader.mFadeOutTime = getMugenDefIntegerOrDefault(&gData.mScript, "Title Info", "fadeout.time", 30);
@@ -183,7 +187,7 @@ static void loadTitleScreen() {
 	addMenuPoint("menu.itemname.training", arcadeCB);
 	addMenuPoint("menu.itemname.watch", arcadeCB);
 	addMenuPoint("menu.itemname.options", arcadeCB);
-	addMenuPoint("menu.itemname.exit", arcadeCB);
+	addMenuPoint("menu.itemname.exit", exitCB);
 
 	gData.mMenuBasePosition = gData.mHeader.mMenuPosition;
 	gData.mMenuTargetPosition = gData.mMenuBasePosition;
@@ -239,6 +243,7 @@ static void updateItemSelectionConfirmation() {
 }
 
 static void updateTitleScreen() {
+
 	updateItemSelection();
 	updateMenuBasePosition();
 	updateMenuElementPositions();

@@ -21,6 +21,7 @@ KOS_INIT_FLAGS(INIT_DEFAULT);
 extern uint8 romdisk[];
 KOS_INIT_ROMDISK(romdisk);
 
+#define DEVELOP
 #endif
 
 
@@ -50,6 +51,7 @@ int main(int argc, char** argv) {
 	setScreenSize(320, 240);
 	
 	initPrismWrapperWithDefaultFlags();
+	setMainFileSystem();	
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
 	loadMugenTextHandler();
 	loadMugenSystemFonts();
@@ -60,10 +62,10 @@ int main(int argc, char** argv) {
 		exitGame();
 	}
 
-	setMainFileSystem();
 	
-	setPlayerDefinitionPath(0, "assets/kfm/kfm.def");
-	setPlayerDefinitionPath(1, "assets/kfm/kfm.def");
+	setMemoryHandlerCompressionActive();
+	setPlayerDefinitionPath(0, "assets/chars/kfm/kfm.def");
+	setPlayerDefinitionPath(1, "assets/chars/kfm/kfm.def");
 	setPlayerHuman(0);
 	setPlayerArtificial(1);
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
