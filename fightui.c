@@ -220,7 +220,9 @@ static void loadFightDefFilesFromScript(MugenDefScript* tScript, char* tDefPath)
 	char fileName[1024], fullPath[1024];
 	getMugenDefStringOrDefault(fileName, tScript, "Files", "sff", "NO_FILE");
 	sprintf(fullPath, "%s%s", directory, fileName);
+	setMugenSpriteFileReaderToUsePalette(3); // TODO: check
 	gData.mFightSprites = loadMugenSpriteFileWithoutPalette(fullPath);
+	setMugenSpriteFileReaderToNotUsePalette();
 
 	gData.mFightAnimations = loadMugenAnimationFile(tDefPath);
 

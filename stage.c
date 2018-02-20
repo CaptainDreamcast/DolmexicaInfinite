@@ -362,7 +362,10 @@ static void loadStageTextures(char* tPath) {
 			abortSystem();
 		}
 	}
+
+	setMugenSpriteFileReaderToUsePalette(2); // TODO: check
 	gData.mSprites = loadMugenSpriteFileWithoutPalette(sffFile);
+	setMugenSpriteFileReaderToNotUsePalette();
 }
 
 static void loadStageBackgroundElements(char* tPath, MugenDefScript* s) {

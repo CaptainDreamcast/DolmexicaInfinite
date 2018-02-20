@@ -127,7 +127,10 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	getMugenDefStringOrDefault(file, tScript, "Files", "sprite", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
+
+	setMugenSpriteFileReaderToUsePalette(tPlayer->mRootID);
 	tPlayer->mSprites = loadMugenSpriteFile(scriptPath, preferredPalette, hasPalettePath, palettePath);
+	setMugenSpriteFileReaderToNotUsePalette();
 
 	setPlayerExternalDependencies(tPlayer);
 	tPlayer->mCommandID = registerDreamMugenCommands(tPlayer, &tPlayer->mCommands);
