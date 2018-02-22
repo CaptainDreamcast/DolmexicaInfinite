@@ -43,11 +43,12 @@ void setExplodOwnPalette(int tID, int tUsesOwnPalette);
 void setExplodRemoveOnGetHit(int tID, int tIsRemovedOnGetHit);
 void setExplodIgnoreHitPause(int tID, int tIgnoreHitPause);
 void setExplodTransparencyType(int tID, int tHasTransparencyType, DreamExplodTransparencyType tTransparencyType);
+void finalizeExplod(int tID);
 
 int getExplodAmount(DreamPlayer* tPlayer);
 int getExplodAmountWithID(DreamPlayer* tPlayer, int tID);
 
+
 extern ActorBlueprint DreamExplodHandler;
 
-
-
+Position getFinalPositionFromPositionType(DreamExplodPositionType tPositionType, Position mOffset, DreamPlayer* tPlayer);

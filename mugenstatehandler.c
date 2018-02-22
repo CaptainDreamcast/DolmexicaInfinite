@@ -58,6 +58,15 @@ static void updateSingleController(void* tCaller, void* tData) {
 	if (caller->mHasChangedState) return;
 	if (!evaluateTrigger(&controller->mTrigger, caller->mRegisteredState->mPlayer)) return;
 
+	controller->mAccessAmount++;
+	int testValue = controller->mAccessAmount - 1;
+	if (controller->mPersistence) {
+		if (testValue % controller->mPersistence != 0) return;
+	}
+	else {
+		if (testValue) return;
+	}
+
 	caller->mHasChangedState = handleDreamMugenStateControllerAndReturnWhetherStateChanged(controller, caller->mRegisteredState->mPlayer);
 }
 
@@ -235,6 +244,16 @@ int hasDreamHandledStateMachineStateSelf(int tID, int tNewState)
 	return int_map_contains(&e->mStates->mStates, tNewState);
 }
 
+static void resetSingleStateController(void* tCaller, void* tData) {
+	(void)tCaller;
+	DreamMugenStateController* controller = tData;
+	controller->mAccessAmount = 0;
+}
+
+static void resetStateControllers(DreamMugenState* e) {
+	vector_map(&e->mControllers, resetSingleStateController, NULL);
+}
+
 void changeDreamHandledStateMachineState(int tID, int tNewState)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
@@ -288,6 +307,7 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 		addPlayerPower(e->mPlayer, power);
 	}
 
+	resetStateControllers(newState);
 }
 
 void changeDreamHandledStateMachineStateToOtherPlayerStateMachine(int tID, int tTemporaryID, int tNewState)

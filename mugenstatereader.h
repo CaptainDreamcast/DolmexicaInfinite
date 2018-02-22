@@ -99,6 +99,8 @@ typedef struct {
 typedef struct {
 	DreamMugenStateControllerType mType;
 	DreamMugenStateControllerTrigger mTrigger;
+	int mPersistence;
+	int mAccessAmount;
 
 	void* mData;
 } DreamMugenStateController;

@@ -1563,7 +1563,6 @@ int getPlayerAnimationElementFromTimeOffset(DreamPlayer* p, int tTime)
 void setPlayerSpritePriority(DreamPlayer* p, int tPriority)
 {
 	//setMugenAnimationSpritePriority(p->mAnimationID, tPriority); // TODO: reimplement
-	
 }
 
 void setPlayerNoWalkFlag(DreamPlayer* p)

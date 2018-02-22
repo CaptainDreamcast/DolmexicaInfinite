@@ -723,7 +723,12 @@ static void parseExplodController(DreamMugenStateController* tController, MugenD
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mHorizontalFacing, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("vfacing", tGroup, &e->mVerticalFacing, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("bindtime", tGroup, &e->mBindTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("vel", tGroup, &e->mVelocity, "");
+	if (string_map_contains(&tGroup->mElements, "vel")) {
+		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("vel", tGroup, &e->mVelocity, "");
+	}
+	else {
+		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("velocity", tGroup, &e->mVelocity, "");
+	}
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("accel", tGroup, &e->mAcceleration, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("random", tGroup, &e->mRandomOffset, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("removetime", tGroup, &e->mRemoveTime, "");
@@ -1531,11 +1536,17 @@ void parseStateControllerType(DreamMugenStateController* tController, MugenDefSc
 	freeMemory(type);
 }
 
+static void parseStateControllerPersistence(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
+	tController->mPersistence = getMugenDefIntegerOrDefaultAsGroup(tGroup, "persistent", 1);
+	tController->mAccessAmount = 0;
+}
+
 DreamMugenStateController * parseDreamMugenStateControllerFromGroup(MugenDefScriptGroup* tGroup)
 {
 	DreamMugenStateController* ret = allocMemory(sizeof(DreamMugenStateController));
 	parseStateControllerType(ret, tGroup);
 	parseStateControllerTriggers(ret, tGroup);
+	parseStateControllerPersistence(ret, tGroup);
 
 	return ret;
 }
@@ -2621,6 +2632,7 @@ static void handleExplod(DreamMugenStateController* tController, DreamPlayer* tP
 	handleExplodOneIntegerElement(e->mIgnoreHitPause, tPlayer, id, setExplodIgnoreHitPause, 1);
 	handleExplodTransparencyType(e->mTransparencyType, e->mHasTransparencyType, tPlayer, id);
 
+	finalizeExplod(id);
 }
 
 static void handleHitFallDamage() {
@@ -2867,55 +2879,6 @@ static void handleSuperPause(DreamMugenStateController* tController, DreamPlayer
 	getSingleIntegerValueOrDefaultFunctionCall(e->mSetPlayerUnhittable, tPlayer, setDreamSuperPausePlayerUnhittability, 1);
 
 	setDreamSuperPauseActive();
-}
-
-// TOOD: move somewhere better
-static Position getFinalPositionFromPositionType(DreamExplodPositionType tPositionType, Position mOffset, DreamPlayer* tPlayer) {
-	if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P1) {
-		DreamPlayer* target = getRootPlayer(0);
-		Position p = getPlayerPosition(target, getPlayerCoordinateP(tPlayer));
-		int isReversed = !getPlayerIsFacingRight(target);
-		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p, mOffset);
-	} else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P2) {
-		DreamPlayer* target = getRootPlayer(1);
-		Position p = getPlayerPosition(target, getPlayerCoordinateP(tPlayer));
-		int isReversed = !getPlayerIsFacingRight(target);
-		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p, mOffset);
-	}
-	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_FRONT) {
-		DreamPlayer* target = tPlayer;
-		Position p = makePosition(getPlayerScreenEdgeInFrontX(target), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(target)), 0);
-		int isReversed = !getPlayerIsFacingRight(target);
-		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p, mOffset);
-	}
-	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_BACK) {
-		DreamPlayer* target = tPlayer;
-		Position p = makePosition(getPlayerScreenEdgeInBackX(target), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(target)), 0);
-		int isReversed = getPlayerIsFacingRight(target);
-		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p, mOffset);
-	}
-	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT) {
-		Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), 0);
-		return vecAdd(p, mOffset);
-	}
-	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT) {
-		Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), 0);
-		return vecAdd(p, mOffset);
-	}
-	else if (tPositionType == EXPLOD_POSITION_TYPE_NONE) {
-		return mOffset;
-	}
-	else {
-		logError("Unrecognized position type.");
-		logErrorInteger(tPositionType);
-		abortSystem();
-		return makePosition(0, 0, 0);
-	}
-
 }
 
 static void handleHelperOneFloatElement(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, double), double tDefault) {
