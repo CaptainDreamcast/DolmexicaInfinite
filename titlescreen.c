@@ -12,6 +12,9 @@
 #include <prism/mugensoundfilereader.h>
 #include <prism/mugentexthandler.h>
 
+#define DEBUG
+#include <prism/log.h>
+
 #include "menuscreen.h"
 #include "menubackground.h"
 #include "characterselectscreen.h"
@@ -198,9 +201,12 @@ static void loadTitleScreen() {
 	setWorkingDirectory("/");
 
 
-
+	
 
 	addFadeIn(gData.mHeader.mFadeInTime, NULL, NULL);
+
+	logTextureMemoryState();
+	logMemoryState();
 }
 
 static void updateItemSelection() {

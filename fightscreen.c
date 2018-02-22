@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+
 #include <prism/input.h>
 #include <prism/stagehandler.h>
 #include <prism/collisionhandler.h>
@@ -9,6 +10,10 @@
 #include <prism/mugenanimationreader.h>
 #include <prism/mugenanimationhandler.h>
 #include <prism/mugentexthandler.h>
+
+#define DEBUG
+#include <prism/log.h>
+
 
 #include "stage.h"
 #include "mugencommandreader.h"
@@ -95,11 +100,11 @@ static void loadSystemFonts(void* tCaller) {
 }
 
 void startFightScreen() {
-	setWrapperBetweenScreensCB(loadFightFonts, NULL);
+	//setWrapperBetweenScreensCB(loadFightFonts, NULL);
 	setNewScreen(&DreamFightScreen);
 }
 
 static void stopFightScreen(Screen* tNextScreen) {
-	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
+	//setWrapperBetweenScreensCB(loadSystemFonts, NULL);
 	setNewScreen(tNextScreen);
 }
