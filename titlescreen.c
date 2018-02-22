@@ -163,6 +163,8 @@ static void loadTitleScreen() {
 	instantiateActor(MugenTextHandler);
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
 
+
+
 	char folder[1024];
 	gData.mScript = loadMugenDefScript("assets/data/system.def");
 	getPathToFile(folder, "assets/data/system.def");
@@ -199,9 +201,6 @@ static void loadTitleScreen() {
 	setSelectedMenuElementActive();
 
 	setWorkingDirectory("/");
-
-
-	
 
 	addFadeIn(gData.mHeader.mFadeInTime, NULL, NULL);
 

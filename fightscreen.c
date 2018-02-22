@@ -69,7 +69,6 @@ static void loadFightScreen() {
 	instantiateActor(DreamGameLogic);
 	
 	// activateCollisionHandlerDebugMode();
-
 }
 
 
@@ -100,11 +99,11 @@ static void loadSystemFonts(void* tCaller) {
 }
 
 void startFightScreen() {
-	//setWrapperBetweenScreensCB(loadFightFonts, NULL);
+	setWrapperBetweenScreensCB(loadFightFonts, NULL);
 	setNewScreen(&DreamFightScreen);
 }
 
 static void stopFightScreen(Screen* tNextScreen) {
-	//setWrapperBetweenScreensCB(loadSystemFonts, NULL);
+	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
 	setNewScreen(tNextScreen);
 }
