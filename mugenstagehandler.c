@@ -5,6 +5,7 @@
 #include <prism/datastructures.h>
 #include <prism/math.h>
 #include <prism/mugenanimationhandler.h>
+#include <prism/geometry.h>
 
 #include "stage.h"
 
@@ -25,6 +26,9 @@ typedef struct {
 	MugenSpriteFile* mSprites;
 	MugenAnimation* mAnimation;
 	List mAnimationReferences;
+
+	double mStartScaleY;
+	double mScaleDeltaY;
 
 	Vector3DI mTileSize;
 } StaticStageHandlerElement;
@@ -95,23 +99,19 @@ static void updateSingleStaticStageElementTileVelocity(StaticStageHandlerElement
 
 	double right = tSingleAnimation->mOffset.x + e->mTileSize.x - offset.x + (e->mCoordinates.x / 2);
 	if (right < minCam.x) {
-		//printf("left over %f %f\n", right, minCam.x);
 		tSingleAnimation->mOffset.x += amount.x*e->mTileSize.x;
 	}
 	double left = tSingleAnimation->mOffset.x - offset.x + (e->mCoordinates.x / 2);
 	if (left > maxCam.x) {
-		//printf("right over %f %f\n", left, maxCam.x);
 		tSingleAnimation->mOffset.x -= amount.x*e->mTileSize.x;
 	}
 
 	double down = tSingleAnimation->mOffset.y + e->mTileSize.y - offset.y;
 	if (down < minCam.y) {
-		//printf("up over %f %f\n", down, minCam.y);
 		tSingleAnimation->mOffset.y += amount.y*e->mTileSize.y;
 	}
 	double up = tSingleAnimation->mOffset.y - offset.y;
 	if (up > maxCam.y) {
-		//printf("down over %f %f\n", up, maxCam.y);
 		tSingleAnimation->mOffset.y -= amount.y*e->mTileSize.y;
 	}
 }
@@ -130,6 +130,10 @@ static void updateSingleStaticStageElementTileReferencePosition(StaticStageHandl
 	tSingleAnimation->mReferencePosition = vecAdd(tSingleAnimation->mReferencePosition, tSingleAnimation->mOffset);
 	tSingleAnimation->mReferencePosition = vecSub(tSingleAnimation->mReferencePosition, makePosition(-e->mCoordinates.x / 2, 0, 0));
 	tSingleAnimation->mReferencePosition.z++;
+
+	double heightDelta = -getDreamCameraPositionY(e->mCoordinates.y); // TODO: camera start position
+	double heightScale = e->mStartScaleY + (e->mScaleDeltaY * heightDelta);
+	setMugenAnimationDrawScale(tSingleAnimation->mID, makePosition(1, heightScale, 1));
 }
 
 static void updateSingleStaticStageElementTile(StaticStageHandlerElement* e, StageElementAnimationReference* tSingleAnimation) {
@@ -197,13 +201,23 @@ void setDreamMugenStageHandlerCameraPosition(Position p)
 void addDreamMugenStageHandlerCameraPositionX(double tX)
 {
 	gData.mCameraTargetPosition.x += tX;
+	gData.mCameraTargetPosition = clampPositionToGeoRectangle(gData.mCameraTargetPosition, gData.mCameraRange);
 	gData.mCameraPosition.x = gData.mCameraTargetPosition.x;
+
 }
 
 void setDreamMugenStageHandlerCameraPositionX(double tX)
 {
 	gData.mCameraTargetPosition.x = tX;
+	gData.mCameraTargetPosition = clampPositionToGeoRectangle(gData.mCameraTargetPosition, gData.mCameraRange);
 	gData.mCameraPosition.x = gData.mCameraTargetPosition.x;
+}
+
+void setDreamMugenStageHandlerCameraPositionY(double tY)
+{
+	gData.mCameraTargetPosition.y = tY;
+	gData.mCameraTargetPosition = clampPositionToGeoRectangle(gData.mCameraTargetPosition, gData.mCameraRange);
+	gData.mCameraPosition.y = gData.mCameraTargetPosition.y;
 }
 
 void resetDreamMugenStageHandlerCameraPosition()
@@ -245,6 +259,7 @@ static void addSingleMugenStageHandlerBackgroundElementTile(StaticStageHandlerEl
 	newAnimation->mOffset = tOffset;
 	setMugenAnimationBlendType(newAnimation->mID, tBlendType);
 	setMugenAnimationConstraintRectangle(newAnimation->mID, tConstraintRectangle);
+	setMugenAnimationDrawScale(newAnimation->mID, makePosition(1, e->mStartScaleY, 1));
 
 	list_push_back_owned(&e->mAnimationReferences, newAnimation);
 }
@@ -271,13 +286,14 @@ static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement
 		for (i = 0; i < amountX; i++) {
 			addSingleMugenStageHandlerBackgroundElementTile(e, tSprites, tBlendType, tConstraintRectangle, offset);
 			offset.x += size.x;
+			offset.z += 0.01;
 		}
 		offset.y += size.y;
 	}
 
 }
 
-static void addMugenStageHandlerBackgroundElement(Position tStart, MugenAnimation* tAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, Vector3DI tCoordinates) {
+static void addMugenStageHandlerBackgroundElement(Position tStart, MugenAnimation* tAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, double tStartScaleY, double tScaleDeltaY, Vector3DI tCoordinates) {
 	StaticStageHandlerElement* e = allocMemory(sizeof(StaticStageHandlerElement));
 	e->mStart = tStart;
 	e->mDelta = tDelta;
@@ -289,6 +305,9 @@ static void addMugenStageHandlerBackgroundElement(Position tStart, MugenAnimatio
 	e->mAnimation = tAnimation;
 	e->mAnimationReferences = new_list();
 	e->mTileSize = getAnimationFirstElementSpriteSize(e->mAnimation, tSprites);
+	
+	e->mStartScaleY = tStartScaleY;
+	e->mScaleDeltaY = tScaleDeltaY;
 
 	addMugenStageHandlerBackgroundElementTiles(e, tSprites, tTile, tTileSpacing, tBlendType, tConstraintRectangle);
 	updateSingleStaticStageElement(e);
@@ -296,14 +315,9 @@ static void addMugenStageHandlerBackgroundElement(Position tStart, MugenAnimatio
 	vector_push_back_owned(&gData.mStaticElements, e);
 }
 
-void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, int tAnimationID, MugenAnimations* tAnimations, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, Vector3DI tCoordinates)
+void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAnimation* tAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, double tStartScaleY, double tScaleDeltaY, Vector3DI tCoordinates)
 {
-	addMugenStageHandlerBackgroundElement(tStart, getMugenAnimation(tAnimations, tAnimationID), tSprites, tDelta, tTile, tTileSpacing, tBlendType, tConstraintRectangle, tVelocity, tCoordinates);
-}
-
-void addDreamMugenStageHandlerStaticBackgroundElement(Position tStart, int tSpriteGroup, int tSpriteItem, MugenSpriteFile* tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, Vector3DI tCoordinates)
-{
-	addMugenStageHandlerBackgroundElement(tStart, createOneFrameMugenAnimationForSprite(tSpriteGroup, tSpriteItem), tSprites, tDelta, tTile, tTileSpacing, tBlendType, tConstraintRectangle, tVelocity, tCoordinates);
+	addMugenStageHandlerBackgroundElement(tStart, tAnimation, tSprites, tDelta, tTile, tTileSpacing, tBlendType, tConstraintRectangle, tVelocity, tStartScaleY, tScaleDeltaY, tCoordinates);
 }
 
 Position * getDreamMugenStageHandlerCameraPositionReference()

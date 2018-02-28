@@ -6,7 +6,11 @@ romdisk_boot
 dc-tool_*
 *.kmg
 *.pkg
+*.psd
+*.ogg
+
 filesystem
+concept
 
 web/*
 *.html

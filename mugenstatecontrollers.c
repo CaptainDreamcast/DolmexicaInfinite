@@ -389,13 +389,32 @@ static void parseHitDefinitionController(DreamMugenStateController* tController,
 }
 
 typedef struct {
-	int mDummy; // TODO
+	DreamMugenAssignment* mValue;
+
+	DreamMugenAssignment* mVolumeScale;
+	DreamMugenAssignment* mChannel;
+	DreamMugenAssignment* mLowPriority;
+	DreamMugenAssignment* mFrequencyMultiplier;
+	DreamMugenAssignment* mLoop;
+	DreamMugenAssignment* mPanning;
+	DreamMugenAssignment* mAbsolutePanning;
+
 } PlaySoundController;
 
 
 static void parsePlaySoundController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	PlaySoundController* e = allocMemory(sizeof(PlaySoundController));
-	e->mDummy = 0; // TODO
+
+	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
+
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("volumescale", tGroup, &e->mVolumeScale, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("channel", tGroup, &e->mChannel, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("lowpriority", tGroup, &e->mLowPriority, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("freqmul", tGroup, &e->mFrequencyMultiplier, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("loop", tGroup, &e->mLoop, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pan", tGroup, &e->mPanning, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("abspan", tGroup, &e->mAbsolutePanning, "");
+
 	tController->mData = e;
 	(void)tGroup;
 }
@@ -1680,12 +1699,39 @@ static void handleTargetStateChange(DreamMugenStateController* tController, Drea
 	changePlayerTargetState(tPlayer, id, state);
 }
 
+static void handleSoundEffectValue(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
+	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	turnStringLowercase(flag);
+
+	MugenSounds* soundFile;
+	int group;
+	int item;
+
+	char firstW[20], comma[10];
+	int items = sscanf(flag, "%s", firstW);
+	assert(items == 1);
+
+	if (!strcmp("isinotherfile", firstW)) {
+		soundFile = getDreamCommonSounds();
+		int items = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
+		assert(items == 4);
+	}
+	else {
+		soundFile = getPlayerSounds(tPlayer);
+		int items = sscanf(flag, "%d %s %d", &group, comma, &item);
+		assert(items == 3);
+	}
+
+	playMugenSound(soundFile, group, item);
+
+	freeMemory(flag);
+}
+
 static void handlePlaySound(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	PlaySoundController* e = tController->mData;
 
-	// TODO
-	(void)e;
-	(void)tPlayer;
+	handleSoundEffectValue(e->mValue, tPlayer); // TODO: other parameters
+
 }
 
 static void handleHitDefinitionAttribute(HitDefinitionController* e, DreamPlayer* tPlayer) {

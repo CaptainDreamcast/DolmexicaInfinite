@@ -10,6 +10,8 @@
 #include "mugenstagehandler.h"
 #include "gameoverscreen.h"
 
+#include "fightscreen.h"
+
 static struct {
 	int mGameTime;
 	int mRoundNumber;
@@ -21,8 +23,6 @@ static struct {
 	int mRoundNotOverFlag;
 
 	DreamPlayer* mRoundWinner;
-
-	Screen* mNextScreen;
 
 	int mIsInSinglePlayerMode;
 } gData;
@@ -124,14 +124,13 @@ static void updateIntro() {
 
 static void goToNextScreen(void* tCaller) {
 	(void)tCaller;
-	if (!gData.mNextScreen) return;
 
-	setNewScreen(gData.mNextScreen);
+	stopFightScreen();
 }
 
 static void goToGameOverScreen(void* tCaller) {
 	(void)tCaller;
-	setNewScreen(&DreamGameOverScreen);
+	stopFightScreenToFixedScreen(&DreamGameOverScreen);
 }
 
 static void continueAnimationFinishedCB() {
@@ -281,12 +280,7 @@ void setDreamRoundNotOverFlag()
 	gData.mRoundNotOverFlag = 1; // TODO: use
 }
 
-void setDreamScreenAfterFightScreen(Screen * tScreen)
-{
-	gData.mNextScreen = tScreen;
-}
-
-void setDreamGameModeStory()
+void setDreamGameModeSinglePlayer()
 {
 	gData.mIsInSinglePlayerMode = 1;
 }

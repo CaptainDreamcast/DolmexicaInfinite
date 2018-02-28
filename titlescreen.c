@@ -11,6 +11,7 @@
 #include <prism/math.h>
 #include <prism/mugensoundfilereader.h>
 #include <prism/mugentexthandler.h>
+#include <prism/tweening.h>
 
 #define DEBUG
 #include <prism/log.h>
@@ -61,6 +62,13 @@ static struct {
 	Position mMenuBasePosition;
 	Position mMenuTargetPosition;
 
+	int mBoxCursorAnimationID;
+	Position mBoxCursorBasePosition;
+
+	TextureData mWhiteTexture;
+	int mCreditBGAnimationID;
+	int mLeftCreditTextID;
+	int mRightCreditTextID;
 
 	int mTopOption;
 	int mSelected;
@@ -159,11 +167,38 @@ static void setSelectedMenuElementInactive() {
 	setMugenTextAlignment(e->mTextID, getMugenTextAlignmentFromMugenAlignmentIndex(gData.mHeader.mItemFont.z));
 }
 
+static void loadCredits() {
+	gData.mCreditBGAnimationID = playOneFrameAnimationLoop(makePosition(0, 230, 50), &gData.mWhiteTexture);
+	setAnimationSize(gData.mCreditBGAnimationID, makePosition(320, 20, 1), makePosition(0, 0, 0));
+	setAnimationColor(gData.mCreditBGAnimationID, 0, 0, 0.5);
+
+	gData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 1", makePosition(0, 240, 51), 1);
+
+	gData.mRightCreditTextID = addMugenText("03/02/18 Presented by Dogma", makePosition(320, 240, 51), 1);
+	setMugenTextAlignment(gData.mRightCreditTextID, MUGEN_TEXT_ALIGNMENT_RIGHT);
+}
+
+static void boxCursorCB1(void* tCaller);
+
+static void loadBoxCursor() {
+	if (gData.mHeader.mIsBoxCursorVisible) {
+		gData.mBoxCursorBasePosition = makePosition(0, 0, 0);
+		gData.mBoxCursorAnimationID = playOneFrameAnimationLoop(makePosition(gData.mHeader.mBoxCursorCoordinates.mTopLeft.x, gData.mHeader.mBoxCursorCoordinates.mTopLeft.y + 7.5, 49), &gData.mWhiteTexture); // TODO: fix the "+ 7"
+		double w = gData.mHeader.mBoxCursorCoordinates.mBottomRight.x - gData.mHeader.mBoxCursorCoordinates.mTopLeft.x;
+		double h = gData.mHeader.mBoxCursorCoordinates.mBottomRight.y - gData.mHeader.mBoxCursorCoordinates.mTopLeft.y;
+		setAnimationSize(gData.mBoxCursorAnimationID, makePosition(w, h, 1), makePosition(0, 0, 0));
+		setAnimationBasePositionReference(gData.mBoxCursorAnimationID, &gData.mBoxCursorBasePosition);
+		setAnimationColor(gData.mBoxCursorAnimationID, 0, 1, 1);
+		setAnimationTransparency(gData.mBoxCursorAnimationID, 1);
+		boxCursorCB1(NULL);
+	}
+}
+
 static void loadTitleScreen() {
 	instantiateActor(MugenTextHandler);
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
 
-
+	gData.mWhiteTexture = createWhiteTexture();
 
 	char folder[1024];
 	gData.mScript = loadMugenDefScript("assets/data/system.def");
@@ -194,11 +229,15 @@ static void loadTitleScreen() {
 	addMenuPoint("menu.itemname.options", arcadeCB);
 	addMenuPoint("menu.itemname.exit", exitCB);
 
+	loadBoxCursor();
+
 	gData.mMenuBasePosition = gData.mHeader.mMenuPosition;
 	gData.mMenuTargetPosition = gData.mMenuBasePosition;
 	gData.mTopOption = 0;
 	gData.mSelected = 0,
 	setSelectedMenuElementActive();
+
+	loadCredits();
 
 	setWorkingDirectory("/");
 
@@ -206,6 +245,14 @@ static void loadTitleScreen() {
 
 	logTextureMemoryState();
 	logMemoryState();
+}
+
+static void boxCursorCB2(void* tCaller) {
+	tweenDouble(getAnimationTransparencyReference(gData.mBoxCursorAnimationID), 0.2, 0.1, linearTweeningFunction, 20, boxCursorCB1, NULL);
+}
+
+static void boxCursorCB1(void* tCaller) {
+	tweenDouble(getAnimationTransparencyReference(gData.mBoxCursorAnimationID), 0.1, 0.2, linearTweeningFunction, 20, boxCursorCB2, NULL);
 }
 
 static void updateItemSelection() {
@@ -247,11 +294,25 @@ static void updateItemSelectionConfirmation() {
 	}
 }
 
+static void updateSelectionBoxPosition() {
+	MenuText* e = vector_get(&gData.mMenus, gData.mSelected);
+
+	gData.mBoxCursorBasePosition = getMugenTextPosition(e->mTextID);
+	gData.mBoxCursorBasePosition.z = 0;
+}
+
+static void updateSelectionBox() {
+	if (!gData.mHeader.mIsBoxCursorVisible) return;
+
+	updateSelectionBoxPosition();
+}
+
 static void updateTitleScreen() {
 
 	updateItemSelection();
 	updateMenuBasePosition();
 	updateMenuElementPositions();
+	updateSelectionBox();
 	updateItemSelectionConfirmation();
 
 	if (hasPressedAbortFlank()) {

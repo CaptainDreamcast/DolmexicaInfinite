@@ -114,7 +114,9 @@ Position getActiveHitDataSparkXY(DreamPlayer* tPlayer);
 Position getHitDataSparkXY(DreamPlayer* tPlayer);
 void setHitDataSparkXY(DreamPlayer* tPlayer, int tX, int tY);
 
+void getActiveHitDataHitSound(DreamPlayer* tPlayer, int* oIsInPlayerFile, Vector3DI* oSound);
 void setHitDataHitSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tGroup, int tItem);
+void getActiveHitDataGuardSound(DreamPlayer* tPlayer, int* oIsInPlayerFile, Vector3DI* oSound);
 void setHitDataGuardSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tGroup, int tItem);
 
 MugenAttackHeight getActiveHitDataGroundType(DreamPlayer* tPlayer);

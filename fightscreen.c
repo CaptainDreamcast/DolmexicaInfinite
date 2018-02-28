@@ -32,6 +32,11 @@
 #include "ai.h"
 #include "titlescreen.h"
 
+static struct {
+	void(*mFinishedCB)();
+
+} gData;
+
 static void loadFightScreen() {
 	setupDreamGameCollisions();
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
@@ -72,13 +77,11 @@ static void loadFightScreen() {
 }
 
 
-static void stopFightScreen(Screen* tNextScreen);
-
 static void updateFightScreen() {
 	updatePlayers();
 
 	if (hasPressedAbortFlank()) {
-		stopFightScreen(&DreamTitleScreen);
+		stopFightScreenToFixedScreen(&DreamTitleScreen);
 	}
 }
 
@@ -103,7 +106,19 @@ void startFightScreen() {
 	setNewScreen(&DreamFightScreen);
 }
 
-static void stopFightScreen(Screen* tNextScreen) {
+void stopFightScreen() {
+	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
+	if (!gData.mFinishedCB) return;
+
+	gData.mFinishedCB();
+ }
+
+
+void stopFightScreenToFixedScreen(Screen* tNextScreen) {
 	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
 	setNewScreen(tNextScreen);
+}
+
+void setFightScreenFinishedCB(void(*tCB)()) {
+	gData.mFinishedCB = tCB;
 }

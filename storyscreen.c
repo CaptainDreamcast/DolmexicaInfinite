@@ -256,7 +256,7 @@ static void updateStoryScreen() {
 
 	handleDurationAndCheckIfOver(&gData.mNow, INF);
 
-	if (hasPressedAFlank()) {
+	if (hasPressedAFlank() || hasPressedStartFlank()) {
 		gotoNextScreen();
 	}
 

@@ -38,8 +38,6 @@ static void selectStoryOption() {
 	setPlayerHuman(0);
 	setPlayerArtificial(1);
 
-	setDreamScreenAfterFightScreen(&StoryScreen);
-
 	startFightScreen();
 }
 

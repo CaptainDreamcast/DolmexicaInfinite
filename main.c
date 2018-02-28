@@ -13,7 +13,7 @@
 #include "titlescreen.h"
 #include "fightscreen.h"
 #include "playerdefinition.h"
-
+#include "warningscreen.h"
 
 #ifdef DREAMCAST
 KOS_INIT_FLAGS(INIT_DEFAULT);
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 	setPlayerHuman(0);
 	setPlayerArtificial(1);
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
-	startScreenHandling(getLogoScreenFromWrapper());
+	startScreenHandling(&DreamTitleScreen);
 
 	exitGame();
 	

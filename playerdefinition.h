@@ -4,6 +4,7 @@
 
 #include <prism/mugenspritefilereader.h>
 #include <prism/mugenanimationreader.h>
+#include <prism/mugensoundfilereader.h>
 
 #include "mugenstatereader.h"
 #include "mugencommandreader.h"
@@ -65,6 +66,7 @@ typedef struct Player_t{
 	DreamMugenConstants mConstants;
 	MugenAnimations mAnimations;
 	MugenSpriteFile mSprites;
+	MugenSounds mSounds;
 
 	int mVars[100];
 	int mSystemVars[100];
@@ -294,6 +296,7 @@ void setPlayerPositionFrozen(DreamPlayer* p);
 MugenSpriteFile* getPlayerSprites(DreamPlayer* p);
 MugenAnimations* getPlayerAnimations(DreamPlayer* p);
 MugenAnimation* getPlayerAnimation(DreamPlayer* p, int tNumber);
+MugenSounds* getPlayerSounds(DreamPlayer* p);
 
 int getPlayerCoordinateP(DreamPlayer* p);
 char* getPlayerDisplayName(DreamPlayer* p);

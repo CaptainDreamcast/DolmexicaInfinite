@@ -544,12 +544,28 @@ void setHitDataSparkXY(DreamPlayer* tPlayer, int tX, int tY)
 	e->mSparkOffset = makePosition(tX, tY, 0);
 }
 
+void getActiveHitDataHitSound(DreamPlayer * tPlayer, int * oIsInPlayerFile, Vector3DI * oSound)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	*oIsInPlayerFile = e->mIsHitSoundInPlayerFile;
+	*oSound = makeVector3DI(e->mHitSound.mGroup, e->mHitSound.mItem, 0);
+}
+
 void setHitDataHitSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tGroup, int tItem)
 {
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = int_map_get(&gData.mPassiveHitDataMap, tPlayer->mHitDataID);
 	e->mIsHitSoundInPlayerFile = tIsInPlayerFile;
 	e->mHitSound = makeDreamMugenSound(tGroup, tItem);
+}
+
+void getActiveHitDataGuardSound(DreamPlayer * tPlayer, int * oIsInPlayerFile, Vector3DI * oSound)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	*oIsInPlayerFile = e->mIsGuardSoundInPlayerFile;
+	*oSound = makeVector3DI(e->mGuardSound.mGroup, e->mGuardSound.mItem, 0);
 }
 
 void setHitDataGuardSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tGroup, int tItem)

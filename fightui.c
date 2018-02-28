@@ -54,7 +54,15 @@ typedef struct {
 	int mFrontAnimationID;
 
 	Vector3D mPowerRangeX;
-	Position mCounterOffset;
+
+	int mLevel;
+
+	int mCounterTextID;
+	Position mCounterPosition;
+	Vector3DI mCounterFont;
+	char mCounterText[10];
+
+	Vector3DI mLevelSounds[4];
 } PowerBar;
 
 typedef struct {
@@ -112,28 +120,41 @@ typedef struct {
 	Position mCustomRoundPositions[10];
 	int mCustomRoundFaceDirection[10];
 
+	int mHasRoundSound[10];
+	Vector3DI mRoundSounds[10];
+	int mSoundTime;
+
 	char mText[1024];
 	char mDisplayedText[1024];
 	int mDisplayTime;
 
 	int mIsDisplayingRound;
 	int mDisplayNow;
+	int mHasPlayedSound;
+	int mRoundIndex;
 
 	int mHasActiveAnimation;
 	int mAnimationID;
 	int mTextID;
 
+
 	void(*mCB)();
 } Round;
 
+// TODO: Double KO, etc.
 typedef struct {
 	Position mPosition;
 	MugenAnimation* mAnimation;
 	int mFaceDirection;
 
+	int mDisplayNow;
 	int mIsDisplayingFight;
 
 	int mAnimationID;
+
+	int mHasPlayedSound;
+	int mSoundTime;
+	Vector3DI mSound;
 
 	void(*mCB)();
 
@@ -144,7 +165,12 @@ typedef struct {
 	MugenAnimation* mAnimation;
 	int mFaceDirection;
 
+	int mDisplayNow;
 	int mIsDisplaying;
+
+	int mHasPlayedSound;
+	int mSoundTime;
+	Vector3DI mSound;
 
 	int mAnimationID;
 
@@ -189,9 +215,13 @@ typedef struct {
 
 } Continue;
 
+// TODO: "time" component for everything, which offsets when single element is shown after call
 static struct {
 	MugenSpriteFile mFightSprites;
 	MugenAnimations mFightAnimations;
+	MugenSounds mFightSounds;
+
+	MugenSounds mCommonSounds;
 
 	MugenSpriteFile mFightFXSprites;
 	MugenAnimations mFightFXAnimations;
@@ -233,6 +263,14 @@ static void loadFightDefFilesFromScript(MugenDefScript* tScript, char* tDefPath)
 	getMugenDefStringOrDefault(fileName, tScript, "Files", "fightfx.air", "NO_FILE");
 	sprintf(fullPath, "%s%s", directory, fileName);
 	gData.mFightFXAnimations = loadMugenAnimationFile(fullPath);
+
+	getMugenDefStringOrDefault(fileName, tScript, "Files", "snd", "NO_FILE");
+	sprintf(fullPath, "%s%s", directory, fileName);
+	gData.mFightSounds = loadMugenSoundFile(fullPath);
+
+	getMugenDefStringOrDefault(fileName, tScript, "Files", "common.snd", "NO_FILE");
+	sprintf(fullPath, "%s%s", directory, fileName);
+	gData.mCommonSounds = loadMugenSoundFile(fullPath);
 
 }
 
@@ -367,12 +405,20 @@ static void loadSinglePowerBar(int i, MugenDefScript* tScript) {
 	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "bg1", 2, &bar->mBG1AnimationID, &bar->mBG1Position, coordP);
 	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "mid", 3, &bar->mMidAnimationID, &bar->mMidPosition, coordP);
 	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "front", 4, &bar->mFrontAnimationID, &bar->mFrontPosition, coordP);
+	
+	strcpy(bar->mCounterText, "0");
+	loadSingleUIText(i, tScript, basePosition, "Powerbar", "counter", 5, &bar->mCounterTextID, &bar->mCounterPosition, 0, bar->mCounterText, &bar->mCounterFont);
 
 	sprintf(name, "p%d.range.x", i + 1);
 	bar->mPowerRangeX = getMugenDefVectorOrDefault(tScript, "Powerbar", name, makePosition(0, 0, 0));
 
-	sprintf(name, "p%d.counter.offset", i + 1);
-	bar->mCounterOffset = getMugenDefVectorOrDefault(tScript, "Powerbar", name, makePosition(0, 0, 0));
+	int j; // TODO: move to general powerbar header
+	for (j = 0; j < 3; j++) {
+		sprintf(name, "level%d.snd", j + 1);
+		bar->mLevelSounds[j] = getMugenDefVectorIOrDefault(tScript, "Powerbar", name, makeVector3DI(1, 0, 0));
+	}
+
+	bar->mLevel = 0;
 }
 
 static void loadSingleFace(int i, MugenDefScript* tScript) {
@@ -420,7 +466,7 @@ static void loadPlayerUIs(MugenDefScript* tScript) {
 		loadSingleFace(i, tScript);
 		loadSingleName(i, tScript);
 		setDreamLifeBarPercentage(getRootPlayer(i), 1);
-		setDreamPowerBarPercentage(getRootPlayer(i), 0);
+		setDreamPowerBarPercentage(getRootPlayer(i), 0, 0);
 	}
 }
 
@@ -458,6 +504,7 @@ static void loadRound(MugenDefScript* tScript) {
 
 	gData.mRound.mRoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "round.time", 0);
 	gData.mRound.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "Round", "round.default.displaytime", 0);
+	gData.mRound.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "round.sndtime", 0);
 
 	if (isMugenDefVariable(tScript, "Round", "round.default.anim")) {
 		gData.mRound.mHasDefaultAnimation = 1;
@@ -481,6 +528,15 @@ static void loadRound(MugenDefScript* tScript) {
 			sprintf(name, "round%d", i + 1);
 			assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", name, 1, &gData.mRound.mCustomRoundAnimations[i], &gData.mRound.mCustomRoundPositions[i], &gData.mRound.mCustomRoundFaceDirection[i]));
 		}
+
+		sprintf(name, "round%d.snd", i + 1);
+		if (!isMugenDefVariable(tScript, "Round", name)) {
+			gData.mRound.mHasRoundSound[i] = 0;
+		}
+		else {
+			gData.mRound.mHasRoundSound[i] = 1;
+			gData.mRound.mRoundSounds[i] = getMugenDefVectorIVariable(tScript, "Round", name);
+		}
 	}
 
 	gData.mRound.mIsDisplayingRound = 0;
@@ -492,6 +548,8 @@ static void loadFight(MugenDefScript* tScript) {
 	basePosition.z = 20;
 
 	assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "fight", 1, &gData.mFight.mAnimation, &gData.mFight.mPosition, &gData.mFight.mFaceDirection));
+	gData.mFight.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "fight.sndtime", 0);
+	gData.mFight.mSound = getMugenDefVectorIOrDefault(tScript, "Round", "fight.snd", makeVector3DI(1, 0, 0));
 
 	gData.mFight.mIsDisplayingFight = 0;
 }
@@ -502,6 +560,8 @@ static void loadKO(MugenDefScript* tScript) {
 	basePosition.z = 20;
 
 	assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "ko", 1, &gData.mKO.mAnimation, &gData.mKO.mPosition, &gData.mKO.mFaceDirection));
+	gData.mKO.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "ko.sndtime", 0);
+	gData.mKO.mSound = getMugenDefVectorIOrDefault(tScript, "Round", "ko.snd", makeVector3DI(1, 0, 0));
 
 	gData.mKO.mIsDisplaying = 0;
 }
@@ -632,12 +692,17 @@ static void removeDisplayedText(int tTextID) {
 	removeMugenText(tTextID);
 }
 
-static void updateRoundDisplay() {
-	if (!gData.mRound.mIsDisplayingRound) return;
+static void updateRoundSound() {
+	int round = gData.mRound.mRoundIndex;
+	if (gData.mRound.mDisplayNow >= gData.mRound.mSoundTime && gData.mRound.mHasRoundSound[round] && !gData.mRound.mHasPlayedSound) {
+		playMugenSound(&gData.mFightSounds, gData.mRound.mRoundSounds[round].x, gData.mRound.mRoundSounds[round].y);
+		gData.mRound.mHasPlayedSound = 1;
+	}
+}
 
-	gData.mRound.mDisplayNow++;
+static void updateRoundFinish() {
 	if (gData.mRound.mDisplayNow >= gData.mRound.mDisplayTime) {
-	
+
 		if (gData.mRound.mHasActiveAnimation) {
 			removeDisplayedAnimation(gData.mRound.mAnimationID);
 		}
@@ -650,14 +715,30 @@ static void updateRoundDisplay() {
 	}
 }
 
+static void updateRoundDisplay() {
+	if (!gData.mRound.mIsDisplayingRound) return;
+
+	gData.mRound.mDisplayNow++;
+
+	updateRoundSound();
+	updateRoundFinish();
+}
+
 static void startControlCountdown() {
 	gData.mControl.mNow = 0;
 	gData.mControl.mIsCountingDownControl = 1;
 }
 
-static void updateFightDisplay() {
-	if (!gData.mFight.mIsDisplayingFight) return;
+static void updateFightSound() {
 
+	if (gData.mFight.mDisplayNow >= gData.mFight.mSoundTime && !gData.mFight.mHasPlayedSound) {
+		playMugenSound(&gData.mFightSounds, gData.mFight.mSound.x, gData.mFight.mSound.y);
+		gData.mFight.mHasPlayedSound = 1;
+	}
+}
+
+
+static void updateFightFinish() {
 	if (!getMugenAnimationRemainingAnimationTime(gData.mFight.mAnimationID)) {
 		removeDisplayedAnimation(gData.mFight.mAnimationID);
 		gData.mFight.mCB();
@@ -666,14 +747,36 @@ static void updateFightDisplay() {
 	}
 }
 
-static void updateKODisplay() {
-	if (!gData.mKO.mIsDisplaying) return;
+static void updateFightDisplay() {
+	if (!gData.mFight.mIsDisplayingFight) return;
 
+	gData.mFight.mDisplayNow++;
+	updateFightSound();
+	updateFightFinish();
+}
+
+static void updateKOSound() {
+
+	if (gData.mKO.mDisplayNow >= gData.mKO.mSoundTime && !gData.mKO.mHasPlayedSound) {
+		playMugenSound(&gData.mFightSounds, gData.mKO.mSound.x, gData.mKO.mSound.y);
+		gData.mKO.mHasPlayedSound = 1;
+	}
+}
+
+static void updateKOFinish() {
 	if (!getMugenAnimationRemainingAnimationTime(gData.mKO.mAnimationID)) {
 		removeDisplayedAnimation(gData.mKO.mAnimationID);
 		gData.mKO.mCB();
 		gData.mKO.mIsDisplaying = 0;
 	}
+}
+
+static void updateKODisplay() {
+	if (!gData.mKO.mIsDisplaying) return;
+
+	gData.mKO.mDisplayNow++;
+	updateKOSound();
+	updateKOFinish();
 }
 
 
@@ -818,10 +921,20 @@ void setDreamLifeBarPercentage(DreamPlayer* tPlayer, double tPercentage)
 	bar->mPauseNow = 0;
 }
 
-void setDreamPowerBarPercentage(DreamPlayer* tPlayer, double tPercentage)
+void setDreamPowerBarPercentage(DreamPlayer* tPlayer, double tPercentage, int tValue)
 {
 	PowerBar* bar = &gData.mPowerBars[tPlayer->mRootID];
 	setBarToPercentage(bar->mFrontAnimationID, bar->mPowerRangeX, tPercentage);
+
+	int newLevel = tValue / 1000;
+
+	if (newLevel >= 1 && newLevel > bar->mLevel) {
+		playMugenSound(&gData.mFightSounds, bar->mLevelSounds[newLevel - 1].x, bar->mLevelSounds[newLevel - 1].y);
+	}
+	sprintf(bar->mCounterText, "%d", newLevel);
+	changeMugenText(bar->mCounterTextID, bar->mCounterText);
+
+	bar->mLevel = newLevel;
 }
 
 void enableDreamTimer()
@@ -849,6 +962,11 @@ MugenAnimation * getDreamFightEffectAnimation(int tNumber)
 MugenSpriteFile * getDreamFightEffectSprites()
 {
 	return &gData.mFightFXSprites;
+}
+
+MugenSounds * getDreamCommonSounds()
+{
+	return &gData.mCommonSounds;
 }
 
 static void parseRoundText(char* tDst, char* tSrc, int tRoundNumber) {
@@ -890,6 +1008,8 @@ void playDreamRoundAnimation(int tRound, void(*tFunc)())
 
 	gData.mRound.mCB = tFunc;
 	gData.mRound.mDisplayNow = 0;
+	gData.mRound.mHasPlayedSound = 0;
+	gData.mRound.mRoundIndex = tRound;
 	gData.mRound.mIsDisplayingRound = 1;
 }
 
@@ -898,6 +1018,8 @@ void playDreamFightAnimation(void(*tFunc)())
 	playDisplayAnimation(&gData.mFight.mAnimationID, gData.mFight.mAnimation, &gData.mFight.mPosition, gData.mFight.mFaceDirection);
 
 	gData.mFight.mCB = tFunc;
+	gData.mFight.mDisplayNow = 0;
+	gData.mFight.mHasPlayedSound = 0;
 	gData.mFight.mIsDisplayingFight = 1;
 }
 
@@ -905,6 +1027,8 @@ void playDreamKOAnimation(void(*tFunc)())
 {
 	playDisplayAnimation(&gData.mKO.mAnimationID, gData.mKO.mAnimation, &gData.mKO.mPosition, gData.mKO.mFaceDirection);
 
+	gData.mKO.mDisplayNow = 0;
+	gData.mKO.mHasPlayedSound = 0;
 	gData.mKO.mCB = tFunc;
 	gData.mKO.mIsDisplaying = 1;
 }
@@ -949,7 +1073,7 @@ void playDreamContinueAnimation(void(*tAnimationFinishedFunc)(), void(*tContinue
 	gData.mContinue.mNow = 0;
 	gData.mContinue.mDuration = 60;
 
-	playDisplayText(&gData.mContinue.mContinueTextID, "Continue?", makePosition(160, 100, 20), makeVector3DI(2, 0, 0));
+	playDisplayText(&gData.mContinue.mContinueTextID, "Continue?", makePosition(160, 100, 20), makeVector3DI(3, 0, 0));
 	playDisplayText(&gData.mContinue.mValueTextID, "10", makePosition(160, 120, 20), makeVector3DI(2, 0, 0));
 
 

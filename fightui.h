@@ -10,13 +10,14 @@
 
 void playDreamHitSpark(Position tPosition, DreamPlayer* tPlayer, int tIsInPlayerFile, int tNumber, int tIsFacingRight, int tPositionCoordinateP, int tScaleCoordinateP);
 void setDreamLifeBarPercentage(DreamPlayer* tPlayer, double tPercentage);
-void setDreamPowerBarPercentage(DreamPlayer* tPlayer, double tPercentage);
+void setDreamPowerBarPercentage(DreamPlayer* tPlayer, double tPercentage, int tValue);
 void enableDreamTimer();
 void disableDreamTimer();
 void resetDreamTimer();
 
 MugenAnimation* getDreamFightEffectAnimation(int tNumber);
 MugenSpriteFile* getDreamFightEffectSprites();
+MugenSounds* getDreamCommonSounds();
 
 void playDreamRoundAnimation(int tRound, void(*tFunc)());
 void playDreamFightAnimation(void(*tFunc)());

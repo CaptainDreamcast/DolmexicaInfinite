@@ -11,6 +11,7 @@
 #include "playerdefinition.h"
 #include "versusscreen.h"
 #include "fightscreen.h"
+#include "gamelogic.h"
 
 typedef struct {
 	char mDefinitionPath[1024];
@@ -22,7 +23,10 @@ static struct {
 	int mCurrentEnemy;
 } gData;
 
+static void fightFinishedCB();
+
 static void versusScreenFinishedCB() {
+	setFightScreenFinishedCB(fightFinishedCB); 
 	startFightScreen();
 }
 
@@ -122,8 +126,44 @@ static void generateEnemies() {
 	unloadMugenDefScript(script);
 }
 
+static void endingScreenFinishedCB() {
+	startArcadeMode();
+}
+
+static void startEnding() {
+	char folder[1024];
+	char path[1024];
+	getPlayerDefinitionPath(path, 0);
+	getPathToFile(folder, path);
+	MugenDefScript script = loadMugenDefScript(path);
+	int hasEnding;
+	char* endingDefinitionFile;
+	hasEnding = isMugenDefStringVariable(&script, "Arcade", "ending.storyboard");
+
+
+	if (hasEnding) {
+		endingDefinitionFile = getAllocatedMugenDefStringVariable(&script, "Arcade", "ending.storyboard");
+		sprintf(path, "%s%s", folder, endingDefinitionFile);
+		if (isFile(path)) {
+			setStoryDefinitionFile(path);
+			setStoryScreenFinishedCB(endingScreenFinishedCB);
+			setNewScreen(&StoryScreen);
+			return;
+		}
+	}
+
+	endingScreenFinishedCB();
+
+}
+
 static void fightFinishedCB() {
 	gData.mCurrentEnemy++;
+
+	if (gData.mCurrentEnemy == 1) { // TODO: proper value
+		startEnding();
+		return;
+	}
+
 	setPlayerDefinitionPath(1, gData.mEnemies[gData.mCurrentEnemy].mDefinitionPath);
 	// TODO: set stage
 	setVersusScreenFinishedCB(versusScreenFinishedCB);
@@ -164,6 +204,7 @@ static void characterSelectFinishedCB() {
 
 void startArcadeMode()
 {
+	setDreamGameModeSinglePlayer();
 	setCharacterSelectScreenModeName("Arcade");
 	setCharacterSelectFinishedCB(characterSelectFinishedCB);
 	setNewScreen(&CharacterSelectScreen);

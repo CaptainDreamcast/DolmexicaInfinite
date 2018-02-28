@@ -14,6 +14,5 @@ int getDreamMatchNumber();
 int isDreamMatchOver();
 void setDreamRoundNotOverFlag();
 
-void setDreamScreenAfterFightScreen(Screen* tScreen);
-void setDreamGameModeStory();
+void setDreamGameModeSinglePlayer();
 void setDreamGameModeTwoPlayer();

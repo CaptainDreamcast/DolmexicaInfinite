@@ -40,17 +40,17 @@ static void startFadeIn(void* tCaller) {
 
 static void loadWarningScreen() {
 	gData.mWarningTexture = loadTexture("assets/warning/WARNING.pkg");
-	gData.mWarningID = playOneFrameAnimationLoop(makePosition(188, 40, 1), &gData.mWarningTexture);
+	gData.mWarningID = playOneFrameAnimationLoop(makePosition(94, 20, 1), &gData.mWarningTexture);
 	gData.mWarningTrans = 0;
 	setAnimationTransparency(gData.mWarningID, gData.mWarningTrans);
 
 	gData.mThisIsTexture = loadTexture("assets/warning/THISIS.pkg");
-	gData.mThisIsID = playOneFrameAnimationLoop(makePosition(59, 193, 1), &gData.mThisIsTexture);
+	gData.mThisIsID = playOneFrameAnimationLoop(makePosition(29, 96, 1), &gData.mThisIsTexture);
 	gData.mThisIsTrans = 0;
 	setAnimationTransparency(gData.mThisIsID, gData.mThisIsTrans);
 
 	gData.mExplanationTexture = loadTexture("assets/warning/EXPLANATION.pkg");
-	gData.mExplanationID = playOneFrameAnimationLoop(makePosition(0, 301, 1), &gData.mExplanationTexture);
+	gData.mExplanationID = playOneFrameAnimationLoop(makePosition(0, 150, 1), &gData.mExplanationTexture);
 	gData.mExplanationTrans = 0;
 	setAnimationTransparency(gData.mExplanationID, gData.mExplanationTrans);
 

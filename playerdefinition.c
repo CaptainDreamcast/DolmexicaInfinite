@@ -26,6 +26,7 @@
 #include "gamelogic.h"
 #include "ai.h"
 #include "collision.h"
+#include "mugensound.h"
 
 static struct {
 	DreamPlayer mPlayers[2];
@@ -131,6 +132,11 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	setMugenSpriteFileReaderToUsePalette(tPlayer->mRootID);
 	tPlayer->mSprites = loadMugenSpriteFile(scriptPath, preferredPalette, hasPalettePath, palettePath);
 	setMugenSpriteFileReaderToNotUsePalette();
+
+	getMugenDefStringOrDefault(file, tScript, "Files", "sound", "");
+	assert(strcmp("", file));
+	sprintf(scriptPath, "%s%s", path, file);
+	tPlayer->mSounds = loadMugenSoundFile(scriptPath);
 
 	setPlayerExternalDependencies(tPlayer);
 	tPlayer->mCommandID = registerDreamMugenCommands(tPlayer, &tPlayer->mCommands);
@@ -282,7 +288,7 @@ static void resetSinglePlayerEntirely(DreamPlayer* p) {
 	p->mRoundsWon = 0;
 	p->mRoundsExisted = 0;
 	p->mPower = 0;
-	setDreamPowerBarPercentage(p, 0);
+	setDreamPowerBarPercentage(p, 0, p->mPower);
 }
 
 void resetPlayersEntirely()
@@ -912,6 +918,22 @@ static int checkActiveHitDefAttributeSlots(DreamPlayer* p, DreamPlayer* p2) {
 	return 1;
 }
 
+static void playPlayerHitSound(DreamPlayer* p, void(*tFunc)(DreamPlayer*,int*,Vector3DI*)) {
+	int isInPlayerFile;
+	Vector3DI sound;
+	tFunc(p, &isInPlayerFile, &sound);
+
+	MugenSounds* soundFile;
+	if (isInPlayerFile) {
+		soundFile = getPlayerSounds(p);
+	}
+	else {
+		soundFile = getDreamCommonSounds();
+	}
+
+	playMugenSound(soundFile, sound.x, sound.y);
+}
+
 void playerHitCB(void* tData, void* tHitData)
 {
 	// TOOD: reversaldef
@@ -927,10 +949,12 @@ void playerHitCB(void* tData, void* tHitData)
 	setReceivedHitDataInactive(tHitData);
 	
 	if (isPlayerGuarding(p)) {
+		playPlayerHitSound(p, getActiveHitDataGuardSound);
 		playPlayerHitSpark(p, otherPlayer, isActiveHitDataGuardSparkInPlayerFile(p), getActiveHitDataGuardSparkNumber(p), getActiveHitDataSparkXY(p));
 	}
 	else {
 		increasePlayerHitCount(otherPlayer);
+		playPlayerHitSound(p, getActiveHitDataHitSound);
 		playPlayerHitSpark(p, otherPlayer, isActiveHitDataSparkInPlayerFile(p), getActiveHitDataSparkNumber(p), getActiveHitDataSparkXY(p));
 	}
 	
@@ -1674,6 +1698,11 @@ MugenAnimation * getPlayerAnimation(DreamPlayer* p, int tNumber)
 	return getMugenAnimation(&p->mAnimations, tNumber);
 }
 
+MugenSounds * getPlayerSounds(DreamPlayer * p)
+{
+	return &p->mSounds;
+}
+
 int getPlayerCoordinateP(DreamPlayer* p)
 {
 	return p->mHeader.mLocalCoordinates.y;
@@ -2154,7 +2183,7 @@ void setPlayerHuman(int i)
 void setPlayerArtificial(int i)
 {
 	DreamPlayer* p = getRootPlayer(i);
-	p->mAILevel = 0; // TODO: properly
+	p->mAILevel = 8; // TODO: properly
 }
 
 int getPlayerAILevel(DreamPlayer* p)
@@ -2189,7 +2218,7 @@ void addPlayerPower(DreamPlayer* p, int tPower)
 	p->mPower = max(0, min(getPlayerPowerMax(p), p->mPower));
 
 	double perc = p->mPower / (double)p->mConstants.mHeader.mPower;
-	setDreamPowerBarPercentage(p, perc);
+	setDreamPowerBarPercentage(p, perc, p->mPower);
 
 }
 

@@ -117,6 +117,9 @@ typedef struct {
 	int mListPosition;
 	BlendType mBlendType;
 
+	double mStartScaleY;
+	double mScaleDeltaY;
+
 	int mActionNumber;
 } StageBackgroundElement;
 
@@ -256,18 +259,9 @@ static int isActionGroup(MugenDefScriptGroup* tGroup) {
 	return !strcmp("begin", firstW) && !strcmp("action", secondW);
 }
 
-static void addBackgroundElementToStageHandler(StageBackgroundElement* e) {
+static void addBackgroundElementToStageHandler(StageBackgroundElement* e, MugenAnimation* tAnimation) {
 	e->mStart.z = e->mListPosition + e->mLayerNo * 30; // TODO
-	if (e->mType == STAGE_BACKGROUND_STATIC) {
-		addDreamMugenStageHandlerStaticBackgroundElement(e->mStart, e->mSpriteNo.x, e->mSpriteNo.y, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), makePosition(0, 0, 0), gData.mStageInfo.mLocalCoordinates);
-	} else if (e->mType == STAGE_BACKGROUND_ANIMATED) {
-		addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, e->mActionNumber, &gData.mAnimations, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), makePosition(0, 0, 0), gData.mStageInfo.mLocalCoordinates);
-	}
-	else {
-		logError("Unable to determine bg element type");
-		logErrorInteger(e->mType);
-		abortSystem();
-	}
+	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), makePosition(0, 0, 0), e->mStartScaleY, e->mScaleDeltaY, gData.mStageInfo.mLocalCoordinates);
 }
 
 static BlendType getBackgroundBlendType(MugenDefScript* tScript, char* tGroupName) {
@@ -308,17 +302,7 @@ static void loadBackgroundElement(MugenDefScript* s, char* tName, int i) {
 
 	char type[100];
 	getMugenDefStringOrDefault(type, s, tName, "type", "normal");
-	if (!strcmp("normal", type) || !strcmp("parallax", type)) { // TODO: parallax
-		e->mType = STAGE_BACKGROUND_STATIC;
-	} else if (!strcmp("anim", type)) {
-		e->mType = STAGE_BACKGROUND_ANIMATED;
-		e->mActionNumber = getMugenDefIntegerOrDefault(s, tName, "actionno", -1);
-	}
-	else {
-		logError("Unknown type.");
-		logErrorString(type);
-		abortSystem();
-	}
+
 
 	e->mSpriteNo = getMugenDefVectorIOrDefault(s, tName, "spriteno", makeVector3DI(0, 0, 0));
 	e->mLayerNo = getMugenDefIntegerOrDefault(s, tName, "layerno", 0);
@@ -330,7 +314,23 @@ static void loadBackgroundElement(MugenDefScript* s, char* tName, int i) {
 	e->mBlendType = getBackgroundBlendType(s, tName);
 	e->mListPosition = i;
 
-	addBackgroundElementToStageHandler(e);
+	e->mStartScaleY = getMugenDefFloatOrDefault(s, tName, "yscalestart", 100) / 100.0;
+	e->mScaleDeltaY = getMugenDefFloatOrDefault(s, tName, "yscaledelta", 0) / 100.0;
+
+	if (!strcmp("normal", type) || !strcmp("parallax", type)) { // TODO: parallax
+		e->mType = STAGE_BACKGROUND_STATIC;
+		addBackgroundElementToStageHandler(e, createOneFrameMugenAnimationForSprite(e->mSpriteNo.x, e->mSpriteNo.y));
+	}
+	else if (!strcmp("anim", type)) {
+		e->mType = STAGE_BACKGROUND_ANIMATED;
+		e->mActionNumber = getMugenDefIntegerOrDefault(s, tName, "actionno", -1);
+		addBackgroundElementToStageHandler(e, getMugenAnimation(&gData.mAnimations, e->mActionNumber));
+	}
+	else {
+		logError("Unknown type.");
+		logErrorString(type);
+		abortSystem();
+	}
 
 	list_push_back_owned(&gData.mBackgroundElements, e);
 }
@@ -363,7 +363,7 @@ static void loadStageTextures(char* tPath) {
 		}
 	}
 
-	setMugenSpriteFileReaderToUsePalette(2); // TODO: check
+	//setMugenSpriteFileReaderToUsePalette(2); // TODO: check
 	gData.mSprites = loadMugenSpriteFileWithoutPalette(sffFile);
 	setMugenSpriteFileReaderToNotUsePalette();
 }
@@ -415,19 +415,17 @@ static void loadStage(void* tData)
 	unloadMugenDefScript(s);
 }
 
-static void updateCameraMovement() {
+static void updateCameraMovementX() {
 	double x1 = getPlayerPositionX(getRootPlayer(0), gData.mStageInfo.mLocalCoordinates.y);
 	double x2 = getPlayerPositionX(getRootPlayer(1), gData.mStageInfo.mLocalCoordinates.y);
 	double minX = min(x1, x2);
 	double maxX = max(x1, x2);
 	minX -= gData.mStageInfo.mLocalCoordinates.x / 2;
 	maxX -= gData.mStageInfo.mLocalCoordinates.x / 2;
-	minX -= getDreamCameraPositionX(gData.mStageInfo.mLocalCoordinates.y);
-	maxX -= getDreamCameraPositionX(gData.mStageInfo.mLocalCoordinates.y);
 
 	double right = getDreamCameraPositionX(gData.mStageInfo.mLocalCoordinates.y) + gData.mStageInfo.mLocalCoordinates.x / 2;
 	double left = getDreamCameraPositionX(gData.mStageInfo.mLocalCoordinates.y) - gData.mStageInfo.mLocalCoordinates.x / 2;
-	
+
 	double lx = (left + gData.mCamera.mTension) - minX;
 	double rx = maxX - (right - gData.mCamera.mTension);
 
@@ -442,6 +440,20 @@ static void updateCameraMovement() {
 		double delta = min(lx, -rx);
 		addDreamMugenStageHandlerCameraPositionX(-delta);
 	}
+}
+
+static void updateCameraMovementY() {
+	double y1 = getPlayerPositionY(getRootPlayer(0), gData.mStageInfo.mLocalCoordinates.y);
+	double y2 = getPlayerPositionY(getRootPlayer(1), gData.mStageInfo.mLocalCoordinates.y);
+	double mini = min(y1, y2);
+
+	double cameraY = mini*gData.mCamera.mVerticalFollow;
+	setDreamMugenStageHandlerCameraPositionY(cameraY);
+}
+
+static void updateCameraMovement() {
+	updateCameraMovementX();
+	updateCameraMovementY();
 }
 
 static void updateStage(void* tData) {

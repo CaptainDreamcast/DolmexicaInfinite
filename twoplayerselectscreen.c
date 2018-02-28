@@ -149,7 +149,6 @@ static void goToFight(void* tCaller) {
 	for (i = 0; i < 2; i++) {
 		setPlayerDefinitionPath(i, gData.mCharacters[gData.mSelectors[i].mSelected].mDefinitionPath);
 	}
-	setDreamScreenAfterFightScreen(&DreamTwoPlayerSelectScreen);
 	setPlayerHuman(0);
 	setPlayerHuman(1);
 
