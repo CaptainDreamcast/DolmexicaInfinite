@@ -188,11 +188,15 @@
     <ClInclude Include="..\twoplayerselectscreen.h" />
     <ClInclude Include="..\versusscreen.h" />
     <ClInclude Include="..\warningscreen.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\addons\prism\windows\vs17\prism.vcxproj">
       <Project>{3572e463-893d-4815-8ecc-e65f3b8c6d90}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DolmexicaInfinite.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
