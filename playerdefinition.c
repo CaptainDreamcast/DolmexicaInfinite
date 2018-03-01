@@ -28,6 +28,9 @@
 #include "collision.h"
 #include "mugensound.h"
 
+// TODO: move to proper place
+#define PLAYER_Z 10
+
 static struct {
 	DreamPlayer mPlayers[2];
 } gData;
@@ -72,7 +75,7 @@ static void setPlayerExternalDependencies(DreamPlayer* tPlayer) {
 	setPlayerStateType(tPlayer, MUGEN_STATE_TYPE_STANDING);
 
 	Position p = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(tPlayer));
-	p.z = 10;
+	p.z = PLAYER_Z;
 	tPlayer->mAnimationID = addMugenAnimation(getMugenAnimation(&tPlayer->mAnimations, 0), &tPlayer->mSprites, p);
 	setMugenAnimationBasePosition(tPlayer->mAnimationID, getHandledPhysicsPositionReference(tPlayer->mPhysicsID));
 	setMugenAnimationCameraPositionReference(tPlayer->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
@@ -1586,7 +1589,9 @@ int getPlayerAnimationElementFromTimeOffset(DreamPlayer* p, int tTime)
 
 void setPlayerSpritePriority(DreamPlayer* p, int tPriority)
 {
-	//setMugenAnimationSpritePriority(p->mAnimationID, tPriority); // TODO: reimplement
+	Position pos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
+	pos.z = PLAYER_Z + tPriority * 0.1 + p->mRootID * 0.01; // TODO: properly
+	setMugenAnimationPosition(p->mAnimationID, pos);
 }
 
 void setPlayerNoWalkFlag(DreamPlayer* p)
