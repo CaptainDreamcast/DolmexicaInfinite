@@ -2187,8 +2187,8 @@ static void handleHitDefinitionWithController(HitDefinitionController* e, DreamP
 	handleHitDefinitionSparkNumberSingle(e->mSparkNumber, tPlayer, setHitDataSparkNumber, getDefaultPlayerSparkNumberIsInPlayerFile(tPlayer), getDefaultPlayerSparkNumber(tPlayer));
 	handleHitDefinitionSparkNumberSingle(e->mGuardSparkNumber, tPlayer, setHitDataGuardSparkNumber, getDefaultPlayerGuardSparkNumberIsInPlayerFile(tPlayer), getDefaultPlayerGuardSparkNumber(tPlayer));
 	handleHitDefinitionSparkXY(e->mSparkXY, tPlayer);
-	handleHitDefinitionSingleSound(e->mHitSound, tPlayer, setHitDataHitSound, 0, 0); // TODO: proper default
-	handleHitDefinitionSingleSound(e->mGuardSound, tPlayer, setHitDataGuardSound, 0, 0); // TODO: proper default
+	handleHitDefinitionSingleSound(e->mHitSound, tPlayer, setHitDataHitSound, 5, 0); // TODO: proper default
+	handleHitDefinitionSingleSound(e->mGuardSound, tPlayer, setHitDataGuardSound, 6, 0); // TODO: proper default
 
 	handleHitDefinitionSingleAttackHeight(e->mGroundType, tPlayer, setHitDataGroundType, MUGEN_ATTACK_HEIGHT_HIGH);
 	handleHitDefinitionSingleAttackHeight(e->mAirType, tPlayer, setHitDataAirType, getHitDataGroundType(tPlayer));
