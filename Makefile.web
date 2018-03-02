@@ -4,6 +4,6 @@ all: complete
 
 clean_user:
 	
-TARI_PATH = ..\addons\libtari
+PRISM_PATH = ..\addons\prism
 ADDITIONAL_PRELOADS = --preload-file assets
-include ../addons/libtari/Makefile.commonweb
+include ../addons/prism/Makefile.commonweb

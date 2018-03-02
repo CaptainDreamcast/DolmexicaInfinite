@@ -13,7 +13,7 @@ static struct {
 } gData;
 
 static void loadGameOverScreen() {
-	gData.mTexture = loadTexture("assets/main/fight/gameover/BG.pkg");
+	gData.mTexture = loadTexture("assets/gameover/BG.pkg");
 	gData.mAnimationID = playOneFrameAnimationLoop(makePosition(0,0,1), &gData.mTexture);
 	addFadeIn(30, NULL, NULL);
 }
@@ -27,7 +27,7 @@ static void updateGameOverScreen() {
 	if (hasPressedStartFlank()) {
 		addFadeOut(30, goToTitleScreen, NULL);
 	}
-
+	
 	if (hasPressedAbortFlank()) {
 		setNewScreen(&DreamTitleScreen);
 	}

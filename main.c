@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 	setPlayerHuman(0);
 	setPlayerArtificial(1);
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
-	startScreenHandling(&DreamTitleScreen);
+	startScreenHandling(&DreamWarningScreen);
 
 	exitGame();
 	
