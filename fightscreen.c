@@ -11,7 +11,6 @@
 #include <prism/mugenanimationhandler.h>
 #include <prism/mugentexthandler.h>
 
-#define DEBUG
 #include <prism/log.h>
 
 

@@ -13,7 +13,6 @@
 #include <prism/mugentexthandler.h>
 #include <prism/tweening.h>
 
-#define DEBUG
 #include <prism/log.h>
 
 #include "menuscreen.h"
