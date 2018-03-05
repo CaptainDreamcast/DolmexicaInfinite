@@ -947,6 +947,301 @@ static AssignmentReturnValue evaluateRangeAssignment(DreamMugenAssignment* tAssi
 	return ret;
 }
 
+typedef AssignmentReturnValue(*VariableFunction)(DreamPlayer*);
+
+
+
+static struct {
+	StringMap mVariables; // contains VariableFunction
+} gVariableHandler;
+
+static AssignmentReturnValue absFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue acosFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue aiLevelFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue aliveFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue animFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue animElemFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue animElemNoFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue animElemTimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue animExistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue animTimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue asinFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue atanFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue authorNameFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue backEdgeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue backEdgeBodyDistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue backEdgeDistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue bottomEdgeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue cameraPosFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue cameraZoomFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue canRecoverFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue ceilFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue commandFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue condFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue constFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue const240pFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue const480pFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue const720pFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue cosFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue ctrlFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue drawGameFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue eFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue expFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue facingFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue floorFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue frontEdgeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue frontEdgeBodyDistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue frontEdgeDistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue fVarFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue gameHeightFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue gameTimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue gameWidthFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue getHitVarFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue hitCountFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue hitDefAttrFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue hitFallFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue hitOverFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue hitPauseTimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue hitShakeOverFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue hitVelFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue idFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue ifElseFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue inGuardDistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue isHelperFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue isHomeTeamFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue leftEdgeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue lifeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue lifeMaxFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue lnFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue logFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue loseFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue matchNoFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue matchOverFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue moveContactFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue moveGuardedFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue moveHitFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue moveTypeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue moveReversedFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue nameFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue numEnemyFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue numExplodFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue numHelperFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue numPartnerFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue numProjFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue numProjIDFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue numTargetFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue p1NameFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue p2BodyDistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue p2DistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue p2LifeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue p2MoveTypeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue p2NameFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue p2StateNoFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue p2StateTypeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue p3NameFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue p4NameFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue palNoFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue parentDistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue piFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue posFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue powerFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue powerMaxFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue playerIDExistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue prevStateNoFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue projCancelTimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue projContactFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue projContactTimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue projGuardedFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue projGuardedTimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue projHitFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue projHitTimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue randomFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue rightEdgeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue rootDistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue roundNoFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue roundsExistedFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue roundStateFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue screenPosFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue screenHeightFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue screenWidthFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue selfAnimExistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue sinFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue stateNoFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue stateTypeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue stageVarFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue sysFVarFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue sysVarFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue tanFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue teamModeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue teamSideFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue ticksPerSecondFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue timeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue timeModFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue topEdgeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue uniqHitCountFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue varFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue velFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+static AssignmentReturnValue winFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
+
+
+
+static void setupVariableAssignment() {
+	gVariableHandler.mVariables = new_string_map();
+	string_map_push(&gVariableHandler.mVariables, "abs", absFunction);
+	string_map_push(&gVariableHandler.mVariables, "acos", acosFunction);
+	string_map_push(&gVariableHandler.mVariables, "ailevel", aiLevelFunction);
+	string_map_push(&gVariableHandler.mVariables, "alive", aliveFunction);
+	string_map_push(&gVariableHandler.mVariables, "anim", animFunction);
+	string_map_push(&gVariableHandler.mVariables, "animelem", animElemFunction);
+	string_map_push(&gVariableHandler.mVariables, "animelemno", animElemNoFunction);
+	string_map_push(&gVariableHandler.mVariables, "animelemtime", animElemTimeFunction);
+	string_map_push(&gVariableHandler.mVariables, "animexist", animExistFunction);
+	string_map_push(&gVariableHandler.mVariables, "animtime", animTimeFunction);
+	string_map_push(&gVariableHandler.mVariables, "asin", asinFunction);
+	string_map_push(&gVariableHandler.mVariables, "atan", atanFunction);
+	string_map_push(&gVariableHandler.mVariables, "authorname", authorNameFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "backedge", backEdgeFunction);
+	string_map_push(&gVariableHandler.mVariables, "backedgebodydist", backEdgeBodyDistFunction);
+	string_map_push(&gVariableHandler.mVariables, "backedgedist", backEdgeDistFunction);
+	string_map_push(&gVariableHandler.mVariables, "bottomedge", bottomEdgeFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "camerapos", cameraPosFunction);
+	string_map_push(&gVariableHandler.mVariables, "camerazoom", cameraZoomFunction);
+	string_map_push(&gVariableHandler.mVariables, "canrecover", canRecoverFunction);
+	string_map_push(&gVariableHandler.mVariables, "ceil", ceilFunction);
+	string_map_push(&gVariableHandler.mVariables, "command", commandFunction);
+	string_map_push(&gVariableHandler.mVariables, "cond", condFunction);
+	string_map_push(&gVariableHandler.mVariables, "const", constFunction);
+	string_map_push(&gVariableHandler.mVariables, "const240p", const240pFunction);
+	string_map_push(&gVariableHandler.mVariables, "const480p", const480pFunction);
+	string_map_push(&gVariableHandler.mVariables, "const720p", const720pFunction);
+	string_map_push(&gVariableHandler.mVariables, "cos", cosFunction);
+	string_map_push(&gVariableHandler.mVariables, "ctrl", ctrlFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "drawgame", drawGameFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "e", eFunction);
+	string_map_push(&gVariableHandler.mVariables, "exp", expFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "facing", facingFunction);
+	string_map_push(&gVariableHandler.mVariables, "floor", floorFunction);
+	string_map_push(&gVariableHandler.mVariables, "frontedge", frontEdgeFunction);
+	string_map_push(&gVariableHandler.mVariables, "frontedgebodydist", frontEdgeBodyDistFunction);
+	string_map_push(&gVariableHandler.mVariables, "frontedgedist", frontEdgeDistFunction);
+	string_map_push(&gVariableHandler.mVariables, "fvar", fVarFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "gameheight", gameHeightFunction);
+	string_map_push(&gVariableHandler.mVariables, "gametime", gameTimeFunction);
+	string_map_push(&gVariableHandler.mVariables, "gamewidth", gameWidthFunction);
+	string_map_push(&gVariableHandler.mVariables, "gethitvar", getHitVarFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "hitcount", hitCountFunction);
+	string_map_push(&gVariableHandler.mVariables, "hitdefattr", hitDefAttrFunction);
+	string_map_push(&gVariableHandler.mVariables, "hitfall", hitFallFunction);
+	string_map_push(&gVariableHandler.mVariables, "hitover", hitOverFunction);
+	string_map_push(&gVariableHandler.mVariables, "hitpausetime", hitPauseTimeFunction);
+	string_map_push(&gVariableHandler.mVariables, "hitshakeover", hitShakeOverFunction);
+	string_map_push(&gVariableHandler.mVariables, "hitvel", hitVelFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "id", idFunction);
+	string_map_push(&gVariableHandler.mVariables, "ifelse", ifElseFunction);
+	string_map_push(&gVariableHandler.mVariables, "inguarddist", inGuardDistFunction);
+	string_map_push(&gVariableHandler.mVariables, "ishelper", isHelperFunction);
+	string_map_push(&gVariableHandler.mVariables, "ishometeam", isHomeTeamFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "leftedge", leftEdgeFunction);
+	string_map_push(&gVariableHandler.mVariables, "life", lifeFunction);
+	string_map_push(&gVariableHandler.mVariables, "lifemax", lifeMaxFunction);
+	string_map_push(&gVariableHandler.mVariables, "ln", lnFunction);
+	string_map_push(&gVariableHandler.mVariables, "log", logFunction);
+	string_map_push(&gVariableHandler.mVariables, "lose", loseFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "matchno", matchNoFunction);
+	string_map_push(&gVariableHandler.mVariables, "matchover", matchOverFunction);
+	string_map_push(&gVariableHandler.mVariables, "movecontact", moveContactFunction);
+	string_map_push(&gVariableHandler.mVariables, "moveguarded", moveGuardedFunction);
+	string_map_push(&gVariableHandler.mVariables, "movehit", moveHitFunction);
+	string_map_push(&gVariableHandler.mVariables, "movetype", moveTypeFunction);
+	string_map_push(&gVariableHandler.mVariables, "movereversed", moveReversedFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "name", nameFunction);
+	string_map_push(&gVariableHandler.mVariables, "numenemy", numEnemyFunction);
+	string_map_push(&gVariableHandler.mVariables, "numexplod", numExplodFunction);
+	string_map_push(&gVariableHandler.mVariables, "numhelper", numHelperFunction);
+	string_map_push(&gVariableHandler.mVariables, "numpartner", numPartnerFunction);
+	string_map_push(&gVariableHandler.mVariables, "numproj", numProjFunction);
+	string_map_push(&gVariableHandler.mVariables, "numprojid", numProjIDFunction);
+	string_map_push(&gVariableHandler.mVariables, "numtarget", numTargetFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "p1name", p1NameFunction);
+	string_map_push(&gVariableHandler.mVariables, "p2bodydist", p2BodyDistFunction);
+	string_map_push(&gVariableHandler.mVariables, "p2dist", p2DistFunction);
+	string_map_push(&gVariableHandler.mVariables, "p2life", p2LifeFunction);
+	string_map_push(&gVariableHandler.mVariables, "p2movetype", p2MoveTypeFunction);
+	string_map_push(&gVariableHandler.mVariables, "p2name", p2NameFunction);
+	string_map_push(&gVariableHandler.mVariables, "p2stateno", p2StateNoFunction);
+	string_map_push(&gVariableHandler.mVariables, "p2statetype", p2StateTypeFunction);
+	string_map_push(&gVariableHandler.mVariables, "p3name", p3NameFunction);
+	string_map_push(&gVariableHandler.mVariables, "p4name", p4NameFunction);
+	string_map_push(&gVariableHandler.mVariables, "palno", palNoFunction);
+	string_map_push(&gVariableHandler.mVariables, "parentdist", parentDistFunction);
+	string_map_push(&gVariableHandler.mVariables, "pi", piFunction);
+	string_map_push(&gVariableHandler.mVariables, "pos", posFunction);
+	string_map_push(&gVariableHandler.mVariables, "power", powerFunction);
+	string_map_push(&gVariableHandler.mVariables, "powermax", powerMaxFunction);
+	string_map_push(&gVariableHandler.mVariables, "playeridexist", playerIDExistFunction);
+	string_map_push(&gVariableHandler.mVariables, "prevstateno", prevStateNoFunction);
+	string_map_push(&gVariableHandler.mVariables, "projcanceltime", projCancelTimeFunction);
+	string_map_push(&gVariableHandler.mVariables, "projcontact", projContactFunction);
+	string_map_push(&gVariableHandler.mVariables, "projcontacttime", projContactTimeFunction);
+	string_map_push(&gVariableHandler.mVariables, "projguarded", projGuardedFunction);
+	string_map_push(&gVariableHandler.mVariables, "projguardedtime", projGuardedTimeFunction);
+	string_map_push(&gVariableHandler.mVariables, "projhit", projHitFunction);
+	string_map_push(&gVariableHandler.mVariables, "projhittime", projHitTimeFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "random", randomFunction);
+	string_map_push(&gVariableHandler.mVariables, "rightedge", rightEdgeFunction);
+	string_map_push(&gVariableHandler.mVariables, "rootdist", rootDistFunction);
+	string_map_push(&gVariableHandler.mVariables, "roundno", roundNoFunction);
+	string_map_push(&gVariableHandler.mVariables, "roundsexisted", roundsExistedFunction);
+	string_map_push(&gVariableHandler.mVariables, "roundstate", roundStateFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "screenpos", screenPosFunction);
+	string_map_push(&gVariableHandler.mVariables, "screenheight", screenHeightFunction);
+	string_map_push(&gVariableHandler.mVariables, "screenwidth", screenWidthFunction);
+	string_map_push(&gVariableHandler.mVariables, "selfanimexist", selfAnimExistFunction);
+	string_map_push(&gVariableHandler.mVariables, "sin", sinFunction);
+	string_map_push(&gVariableHandler.mVariables, "stateno", stateNoFunction);
+	string_map_push(&gVariableHandler.mVariables, "statetype", stateTypeFunction);
+	string_map_push(&gVariableHandler.mVariables, "stagevar", stageVarFunction);
+	string_map_push(&gVariableHandler.mVariables, "sysfvar", sysFVarFunction);
+	string_map_push(&gVariableHandler.mVariables, "sysvar", sysVarFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "tan", tanFunction);
+	string_map_push(&gVariableHandler.mVariables, "teammode", teamModeFunction);
+	string_map_push(&gVariableHandler.mVariables, "teamside", teamSideFunction);
+	string_map_push(&gVariableHandler.mVariables, "tickspersecond", ticksPerSecondFunction);
+	string_map_push(&gVariableHandler.mVariables, "time", timeFunction);
+	string_map_push(&gVariableHandler.mVariables, "timemod", timeModFunction);
+	string_map_push(&gVariableHandler.mVariables, "topedge", topEdgeFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "uniquehitcount", uniqHitCountFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "var", varFunction);
+	string_map_push(&gVariableHandler.mVariables, "vel", velFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "win", winFunction);
+
+
+
+
+
+
+	
+
+}
+
 static AssignmentReturnValue evaluateVariableAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
 	DreamMugenVariableAssignment* variable = tAssignment->mData;
 	char testString[100];
