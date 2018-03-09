@@ -20,8 +20,15 @@ int doesDreamPlayerStartFacingLeft(int i);
 
 double getDreamCameraPositionX(int tCoordinateP);
 double getDreamCameraPositionY(int tCoordinateP);
+double getDreamCameraZoom(int tCoordinateP);
 double getDreamScreenFactorFromCoordinateP(int tCoordinateP);
 int getDreamStageCoordinateP();
+
+double getDreamStageLeftEdgeX(int tCoordinateP);
+double getDreamStageRightEdgeX(int tCoordinateP);
+double getDreamStageTopEdgeY(int tCoordinateP);
+double getDreamStageBottomEdgeY(int tCoordinateP);
+
 
 double transformDreamCoordinates(double tVal, int tSrcP, int tDstP);
 Vector3D transformDreamCoordinatesVector(Vector3D tVal, int tSrcP, int tDstP);
@@ -32,6 +39,13 @@ double getDreamStageRightOfScreenBasedOnPlayer(int tCoordinateP);
 Position getDreamStageCenterOfScreenBasedOnPlayer(int tCoordinateP);
 
 int getDreamGameWidth(int tCoordinateP);
+int getDreamGameHeight(int tCoordinateP);
+int getDreamScreenWidth(int tCoordinateP);
+int getDreamScreenHeight(int tCoordinateP);
+
+char* getDreamStageAuthor();
+char* getDreamStageDisplayName();
+char* getDreamStageName();
 
 int getDreamStageLeftEdgeMinimumPlayerDistance(int tCoordinateP);
 int getDreamStageRightEdgeMinimumPlayerDistance(int tCoordinateP);

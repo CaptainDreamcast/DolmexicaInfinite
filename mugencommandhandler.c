@@ -308,22 +308,6 @@ static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, ch
 	state->mIsActive = 1;
 	state->mNow = 0;
 	state->mBufferTime = tBufferTime;
-
-	/*
-	if (!strcmp("holdfwd", tName)) return;
-	if (!strcmp("holdback", tName)) return;
-	if (!strcmp("holdup", tName)) return;
-	if (!strcmp("holddown", tName)) return;
-	if (!strcmp("a", tName)) return;
-	if (!strcmp("b", tName)) return;
-	if (!strcmp("c", tName)) return;
-	if (!strcmp("x", tName)) return;
-	if (!strcmp("y", tName)) return;
-	if (!strcmp("z", tName)) return;
-	if (!strcmp("FF", tName)) return;
-	if (!strcmp("BB", tName)) return;
-	printf("%d set Active %s\n", tRegisteredCommand->i, tName);
-	*/
 }
 
 static void setCommandStateInactive(MugenCommandState* tState) {

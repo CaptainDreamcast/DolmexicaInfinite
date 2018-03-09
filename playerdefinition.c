@@ -33,6 +33,7 @@
 
 static struct {
 	DreamPlayer mPlayers[2];
+	int mUniqueIDCounter;
 } gData;
 
 static void loadPlayerHeaderFromScript(DreamPlayerHeader* tHeader, MugenDefScript* tScript) {
@@ -1230,6 +1231,16 @@ double getPlayerPositionBasedOnScreenCenterX(DreamPlayer * p, int tCoordinateP)
 	return ret.x;
 }
 
+double getPlayerScreenPositionX(DreamPlayer * p, int tCoordinateP)
+{
+	double scale = tCoordinateP / getPlayerCoordinateP(p);
+	double physicsPosition = getHandledPhysicsPositionReference(p->mPhysicsID)->x;
+	double cameraPosition = getDreamMugenStageHandlerCameraPositionReference()->x;
+	double animationPosition = getMugenAnimationPosition(p->mAnimationID).x;
+	double unscaledPosition = physicsPosition + animationPosition - cameraPosition;
+	return unscaledPosition * scale;
+}
+
 double getPlayerPositionX(DreamPlayer* p, int tCoordinateP)
 {
 	double scale = tCoordinateP / getPlayerCoordinateP(p);
@@ -1241,6 +1252,16 @@ double getPlayerPositionBasedOnStageFloorY(DreamPlayer * p, int tCoordinateP)
 	Position pos = getDreamStageCenterOfScreenBasedOnPlayer(tCoordinateP);
 	Position ret = vecSub(getPlayerPosition(p, tCoordinateP), pos);
 	return ret.y;
+}
+
+double getPlayerScreenPositionY(DreamPlayer * p, int tCoordinateP)
+{
+	double scale = tCoordinateP / getPlayerCoordinateP(p);
+	double physicsPosition = getHandledPhysicsPositionReference(p->mPhysicsID)->y;
+	double cameraPosition = getDreamMugenStageHandlerCameraPositionReference()->y;
+	double animationPosition = getMugenAnimationPosition(p->mAnimationID).y;
+	double unscaledPosition = physicsPosition + animationPosition - cameraPosition;
+	return unscaledPosition * scale;
 }
 
 double getPlayerPositionY(DreamPlayer* p, int tCoordinateP)
@@ -1648,6 +1669,11 @@ int isPlayerInIntro(DreamPlayer * p)
 	return ret;
 }
 
+int doesPlayerHaveAnimation(DreamPlayer * p, int tAnimation)
+{
+	return hasMugenAnimation(&p->mAnimations, tAnimation); // TODO: check active animations; implement animation setting
+}
+
 int doesPlayerHaveAnimationHimself(DreamPlayer* p, int tAnimation)
 {
 	return hasMugenAnimation(&p->mAnimations, tAnimation);
@@ -1661,6 +1687,18 @@ int isPlayerHitShakeOver(DreamPlayer* p)
 int isPlayerHitOver(DreamPlayer* p)
 {
 	return p->mIsHitOver;
+}
+
+double getPlayerHitVelocityX(DreamPlayer * p, int tCoordinateP)
+{
+	if (isPlayerHitOver(p)) return 0.0;
+	return -getPlayerVelocityX(p, tCoordinateP);	
+}
+
+double getPlayerHitVelocityY(DreamPlayer * p, int tCoordinateP)
+{
+	if (isPlayerHitOver(p)) return 0.0;
+	return -getPlayerVelocityY(p, tCoordinateP);
 }
 
 int isPlayerFalling(DreamPlayer* p) {
@@ -1876,6 +1914,33 @@ int getPlayerProjectileAmountWithID(DreamPlayer * p, int tID)
 	return 0; // TODO
 }
 
+int getPlayerProjectileTimeSinceCancel(DreamPlayer * p, int tID)
+{
+	(void)p;
+	(void)tID;
+	return 0; // TODO
+}
+
+int getPlayerProjectileTimeSinceContact(DreamPlayer * p, int tID)
+{
+	(void)p;
+	(void)tID;
+	return 0; // TODO
+}
+
+int getPlayerProjectileTimeSinceGuarded(DreamPlayer * p, int tID)
+{
+	(void)p;
+	(void)tID;
+	return 0; // TODO
+}
+
+int getPlayerProjectileTimeSinceHit(DreamPlayer * p, int tID)
+{
+	(void)p;
+	(void)tID;
+	return 0; // TODO
+}
 
 int getPlayerTimeLeftInHitPause(DreamPlayer* p)
 {
@@ -1900,7 +1965,7 @@ double getPlayerBackAxisDistanceToScreen(DreamPlayer* p)
 	return fabs(screenX - x);
 }
 
-double getPlayerFrontDistanceToScreen(DreamPlayer* p)
+double getPlayerFrontBodyDistanceToScreen(DreamPlayer* p)
 {
 	double x = getPlayerFrontX(p);
 	double screenX = getPlayerScreenEdgeInFrontX(p);
@@ -1908,7 +1973,7 @@ double getPlayerFrontDistanceToScreen(DreamPlayer* p)
 	return fabs(screenX - x);
 }
 
-double getPlayerBackDistanceToScreen(DreamPlayer* p)
+double getPlayerBackBodyDistanceToScreen(DreamPlayer* p)
 {
 	double x = getPlayerBackX(p);
 	double screenX = getPlayerScreenEdgeInBackX(p);
@@ -1992,6 +2057,20 @@ double getPlayerDistanceToRootX(DreamPlayer * p)
 double getPlayerDistanceToRootY(DreamPlayer * p)
 {
 	DreamPlayer* otherPlayer = p->mRoot;
+	return getPlayerAxisDistanceForTwoReferencesY(p, otherPlayer);
+}
+
+double getPlayerDistanceToParentX(DreamPlayer * p)
+{
+	if (!p->mParent) return 0;
+	DreamPlayer* otherPlayer = p->mParent;
+	return getPlayerAxisDistanceForTwoReferencesX(p, otherPlayer);
+}
+
+double getPlayerDistanceToParentY(DreamPlayer * p)
+{
+	if (!p->mParent) return 0;
+	DreamPlayer* otherPlayer = p->mParent;
 	return getPlayerAxisDistanceForTwoReferencesY(p, otherPlayer);
 }
 
@@ -2098,6 +2177,11 @@ int hasPlayerLost(DreamPlayer* p)
 	return hasPlayerWon(otherPlayer); 
 }
 
+int hasPlayerDrawn(DreamPlayer * p)
+{
+	return 0; // TODO
+}
+
 int hasPlayerMoveHitOtherPlayer(DreamPlayer* p)
 {
 	DreamMugenStateMoveType type = getPlayerStateMoveType(p);
@@ -2119,6 +2203,11 @@ int hasPlayerMoveBeenReversedByOtherPlayer(DreamPlayer * p)
 	return p->mHasMoveBeenReversed;
 }
 
+int getPlayerMoveHit(DreamPlayer * p)
+{
+	return p->mMoveHit;
+}
+
 void setPlayerMoveHit(DreamPlayer * p)
 {
 	p->mMoveHit = 1;
@@ -2131,6 +2220,13 @@ void setPlayerMoveHitReset(DreamPlayer * p)
 	p->mMoveGuarded = 0;
 	p->mHasMoveBeenReversed = 0;
 }
+
+int getPlayerMoveGuarded(DreamPlayer * p)
+{
+	return p->mMoveGuarded;
+}
+
+
 
 void setPlayerMoveGuarded(DreamPlayer * p)
 {
@@ -2155,6 +2251,11 @@ void resetPlayerFallAmountInCombo(DreamPlayer* p)
 int getPlayerHitCount(DreamPlayer* p)
 {
 	return p->mHitCount;
+}
+
+int getPlayerUniqueHitCount(DreamPlayer * p)
+{
+	return getPlayerHitCount(p); // TODO: fix when teams are implemented
 }
 
 void increasePlayerHitCount(DreamPlayer* p)
@@ -2188,7 +2289,7 @@ void setPlayerHuman(int i)
 void setPlayerArtificial(int i)
 {
 	DreamPlayer* p = getRootPlayer(i);
-	p->mAILevel = 8; // TODO: properly
+	p->mAILevel = 0; // TODO: properly
 }
 
 int getPlayerAILevel(DreamPlayer* p)
@@ -2745,4 +2846,9 @@ int getDefaultPlayerGuardSparkNumber(DreamPlayer * p)
 int isPlayerProjectile(DreamPlayer * p)
 {
 	return p->mIsProjectile;
+}
+
+int isPlayerHomeTeam(DreamPlayer * p)
+{
+	return p->mRootID; // TODO: properly after teams are implemented
 }

@@ -16,3 +16,5 @@ void setDreamRoundNotOverFlag();
 
 void setDreamGameModeSinglePlayer();
 void setDreamGameModeTwoPlayer();
+
+int getDreamTicksPerSecond();

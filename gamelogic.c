@@ -4,6 +4,7 @@
 
 #include <prism/screeneffect.h>
 #include <prism/wrapper.h>
+#include <prism/framerate.h>
 
 #include "playerdefinition.h"
 #include "fightui.h"
@@ -288,5 +289,10 @@ void setDreamGameModeSinglePlayer()
 void setDreamGameModeTwoPlayer()
 {
 	gData.mIsInSinglePlayerMode = 0;
+}
+
+int getDreamTicksPerSecond()
+{
+	return 60; // TODO: variable framerate
 }
 

@@ -198,8 +198,10 @@ int getRemainingPlayerAnimationTime(DreamPlayer* p);
 
 Vector3D getPlayerPosition(DreamPlayer* p, int tCoordinateP);
 double getPlayerPositionBasedOnScreenCenterX(DreamPlayer* p, int tCoordinateP);
+double getPlayerScreenPositionX(DreamPlayer* p, int tCoordinateP);
 double getPlayerPositionX(DreamPlayer* p, int tCoordinateP);
 double getPlayerPositionBasedOnStageFloorY(DreamPlayer* p, int tCoordinateP);
+double getPlayerScreenPositionY(DreamPlayer* p, int tCoordinateP);
 double getPlayerPositionY(DreamPlayer* p, int tCoordinateP);
 double getPlayerVelocityX(DreamPlayer* p, int tCoordinateP);
 double getPlayerVelocityY(DreamPlayer* p, int tCoordinateP);
@@ -281,12 +283,15 @@ void setPlayerNoAirGuardFlag(DreamPlayer* p);
 
 int isPlayerInIntro(DreamPlayer* p);
 
+int doesPlayerHaveAnimation(DreamPlayer* p, int tAnimation);
 int doesPlayerHaveAnimationHimself(DreamPlayer* p, int tAnimation);
 
 int isPlayerFalling(DreamPlayer* p);
 int canPlayerRecoverFromFalling(DreamPlayer* p);
 int isPlayerHitShakeOver(DreamPlayer* p);
 int isPlayerHitOver(DreamPlayer* p);
+double getPlayerHitVelocityX(DreamPlayer* p, int tCoordinateP);
+double getPlayerHitVelocityY(DreamPlayer* p, int tCoordinateP);
 
 int getPlayerSlideTime(DreamPlayer* p);
 
@@ -320,14 +325,18 @@ DreamPlayer* getPlayerHelperOrNullIfNonexistant(DreamPlayer* p, int tID);
 
 int getPlayerProjectileAmount(DreamPlayer* p);
 int getPlayerProjectileAmountWithID(DreamPlayer* p, int tID);
+int getPlayerProjectileTimeSinceCancel(DreamPlayer* p, int tID);
+int getPlayerProjectileTimeSinceContact(DreamPlayer* p, int tID);
+int getPlayerProjectileTimeSinceGuarded(DreamPlayer* p, int tID);
+int getPlayerProjectileTimeSinceHit(DreamPlayer* p, int tID);
 
 int getPlayerTimeLeftInHitPause(DreamPlayer* p);
 
 double getPlayerFrontAxisDistanceToScreen(DreamPlayer* p);
 double getPlayerBackAxisDistanceToScreen(DreamPlayer* p);
 
-double getPlayerFrontDistanceToScreen(DreamPlayer* p);
-double getPlayerBackDistanceToScreen(DreamPlayer* p);
+double getPlayerFrontBodyDistanceToScreen(DreamPlayer* p);
+double getPlayerBackBodyDistanceToScreen(DreamPlayer* p);
 
 double getPlayerFrontX(DreamPlayer* p);
 double getPlayerBackX(DreamPlayer* p);
@@ -340,6 +349,8 @@ double getPlayerAxisDistanceX(DreamPlayer* p);
 double getPlayerAxisDistanceY(DreamPlayer* p);
 double getPlayerDistanceToRootX(DreamPlayer* p);
 double getPlayerDistanceToRootY(DreamPlayer* p);
+double getPlayerDistanceToParentX(DreamPlayer* p);
+double getPlayerDistanceToParentY(DreamPlayer* p);
 
 int getPlayerGroundSizeFront(DreamPlayer* p);
 void setPlayerGroundSizeFront(DreamPlayer* p, int tGroundSizeFront);
@@ -359,12 +370,15 @@ int hasPlayerLostByKO(DreamPlayer* p);
 int hasPlayerWonPerfectly(DreamPlayer* p);
 int hasPlayerWon(DreamPlayer* p);
 int hasPlayerLost(DreamPlayer* p);
+int hasPlayerDrawn(DreamPlayer* p);
 
 int hasPlayerMoveHitOtherPlayer(DreamPlayer* p);
-int isPlayerHit(DreamPlayer* p);
+int isPlayerHit(DreamPlayer* p); // TODO: this or getPlayerMoveHit
 int hasPlayerMoveBeenReversedByOtherPlayer(DreamPlayer* p);
+int getPlayerMoveHit(DreamPlayer* p); // TODO: this or isPlayerHit
 void setPlayerMoveHit(DreamPlayer* p);
 void setPlayerMoveHitReset(DreamPlayer* p);
+int getPlayerMoveGuarded(DreamPlayer* p);
 void setPlayerMoveGuarded(DreamPlayer* p);
 
 
@@ -373,6 +387,7 @@ void increasePlayerFallAmountInCombo(DreamPlayer* p);
 void resetPlayerFallAmountInCombo(DreamPlayer* p);
 
 int getPlayerHitCount(DreamPlayer* p);
+int getPlayerUniqueHitCount(DreamPlayer* p);
 void increasePlayerHitCount(DreamPlayer* p);
 void resetPlayerHitCount(DreamPlayer* p);
 
@@ -468,3 +483,4 @@ int getDefaultPlayerGuardSparkNumberIsInPlayerFile(DreamPlayer* p);
 int getDefaultPlayerGuardSparkNumber(DreamPlayer* p);
 
 int isPlayerProjectile(DreamPlayer* p);
+int isPlayerHomeTeam(DreamPlayer* p);

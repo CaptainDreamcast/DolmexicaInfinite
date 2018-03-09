@@ -523,6 +523,12 @@ double getDreamCameraPositionY(int tCoordinateP)
 	return p.y;
 }
 
+double getDreamCameraZoom(int tCoordinateP)
+{
+	(void)tCoordinateP;
+	return 1.0; // TODO: implement zoom
+}
+
 double getDreamScreenFactorFromCoordinateP(int tCoordinateP)
 {
 	ScreenSize sz = getScreenSize();
@@ -532,6 +538,28 @@ double getDreamScreenFactorFromCoordinateP(int tCoordinateP)
 int getDreamStageCoordinateP()
 {
 	return gData.mStageInfo.mLocalCoordinates.y;
+}
+
+double getDreamStageLeftEdgeX(int tCoordinateP)
+{
+	Position center = getDreamStageCenterOfScreenBasedOnPlayer(tCoordinateP);
+	return center.x - (getDreamGameWidth(tCoordinateP) / 2);
+}
+
+double getDreamStageRightEdgeX(int tCoordinateP)
+{
+	Position center = getDreamStageCenterOfScreenBasedOnPlayer(tCoordinateP);
+	return center.x + (getDreamGameWidth(tCoordinateP) / 2);
+}
+
+double getDreamStageTopEdgeY(int tCoordinateP)
+{
+	return getDreamCameraPositionY(tCoordinateP);
+}
+
+double getDreamStageBottomEdgeY(int tCoordinateP)
+{
+	return getDreamCameraPositionY(tCoordinateP) + getDreamGameHeight(tCoordinateP);
 }
 
 double transformDreamCoordinates(double tVal, int tSrcP, int tDstP)
@@ -579,7 +607,37 @@ Position getDreamStageCenterOfScreenBasedOnPlayer(int tCoordinateP)
 
 int getDreamGameWidth(int tCoordinateP)
 {
+	return (int)transformDreamCoordinates(640, 480, tCoordinateP); // TODO: non-hardcoded + zoom
+}
+
+int getDreamGameHeight(int tCoordinateP)
+{
+	return (int)transformDreamCoordinates(480, 480, tCoordinateP); // TODO: non-hardcoded + zoom
+}
+
+int getDreamScreenWidth(int tCoordinateP)
+{
 	return (int)transformDreamCoordinates(640, 480, tCoordinateP); // TODO: non-hardcoded
+}
+
+int getDreamScreenHeight(int tCoordinateP)
+{
+	return (int)transformDreamCoordinates(480, 480, tCoordinateP); // TODO: non-hardcoded
+}
+
+char * getDreamStageAuthor()
+{
+	return gData.mInfo.mAuthor;
+}
+
+char * getDreamStageDisplayName()
+{
+	return gData.mInfo.mDisplayName;
+}
+
+char * getDreamStageName()
+{
+	return gData.mInfo.mName;
 }
 
 int getDreamStageLeftEdgeMinimumPlayerDistance(int tCoordinateP)
