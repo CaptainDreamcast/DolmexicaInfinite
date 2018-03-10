@@ -1688,130 +1688,15 @@ static AssignmentReturnValue evaluateCeilArrayAssignment(AssignmentReturnValue t
 static AssignmentReturnValue evaluateConstArrayAssignment(AssignmentReturnValue tIndex, DreamPlayer* tPlayer) {
 	char* var = tIndex.mValue;
 
-
-	if (!strcmp("data.fall.defence_mul", var)) {
-		return makeFloatAssignmentReturn(getPlayerFallDefenseMultiplier(tPlayer));
-	}
-	else if (!strcmp("data.power", var)) {
-		return makeNumberAssignmentReturn(getPlayerPowerMax(tPlayer));
-	}
-	else if (!strcmp("size.ground.back", var)) {
-		return makeNumberAssignmentReturn(getPlayerGroundSizeBack(tPlayer));
-	}
-	else if (!strcmp("size.ground.front", var)) {
-		return makeNumberAssignmentReturn(getPlayerGroundSizeFront(tPlayer));
-	}
-	else if (!strcmp("size.height", var)) {
-		return makeNumberAssignmentReturn(getPlayerHeight(tPlayer));
-	}
-	else if (!strcmp("size.head.pos.x", var)) {
-		return makeFloatAssignmentReturn(getPlayerHeadPositionX(tPlayer));
-	}
-	else if (!strcmp("size.head.pos.y", var)) {
-		return makeFloatAssignmentReturn(getPlayerHeadPositionY(tPlayer));
-	}
-	else if (!strcmp("size.mid.pos.x", var)) {
-		return makeFloatAssignmentReturn(getPlayerMiddlePositionX(tPlayer));
-	}
-	else if (!strcmp("size.mid.pos.y", var)) {
-		return makeFloatAssignmentReturn(getPlayerMiddlePositionY(tPlayer));
-	}
-	else if (!strcmp("size.xscale", var)) {
-		return makeFloatAssignmentReturn(getPlayerScaleX(tPlayer));
-	}
-	else if (!strcmp("size.yscale", var)) {
-		return makeFloatAssignmentReturn(getPlayerScaleY(tPlayer));
-	}
-	else if (!strcmp("movement.stand.friction.threshold", var)) {
-		return makeFloatAssignmentReturn(getPlayerStandFrictionThreshold(tPlayer));
-	}
-	else if (!strcmp("movement.crouch.friction.threshold", var)) {
-		return makeFloatAssignmentReturn(getPlayerCrouchFrictionThreshold(tPlayer));
-	}
-	else if (!strcmp("movement.air.gethit.groundlevel", var)) {
-		return makeFloatAssignmentReturn(getPlayerAirGetHitGroundLevelY(tPlayer));
-	}
-	else if (!strcmp("movement.air.gethit.groundrecover.groundlevel", var)) {
-		return makeFloatAssignmentReturn(getPlayerAirGetHitGroundRecoveryGroundLevelY(tPlayer));
-	}
-	else if (!strcmp("movement.air.gethit.groundrecover.ground.threshold", var)) {
-		return makeFloatAssignmentReturn(getPlayerAirGetHitGroundRecoveryGroundYTheshold(tPlayer));
-	}
-	else if (!strcmp("movement.air.gethit.airrecover.threshold", var)) {
-		return makeFloatAssignmentReturn(getPlayerAirGetHitAirRecoveryVelocityYThreshold(tPlayer));
-	}
-	else if (!strcmp("movement.air.gethit.trip.groundlevel", var)) {
-		return makeFloatAssignmentReturn(getPlayerAirGetHitTripGroundLevelY(tPlayer));
-	}
-	else if (!strcmp("movement.down.bounce.offset.x", var)) {
-		return makeFloatAssignmentReturn(getPlayerDownBounceOffsetX(tPlayer));
-	}
-	else if (!strcmp("movement.down.bounce.offset.y", var)) {
-		return makeFloatAssignmentReturn(getPlayerDownBounceOffsetY(tPlayer));
-	}
-	else if (!strcmp("movement.down.bounce.yaccel", var)) {
-		return makeFloatAssignmentReturn(getPlayerDownVerticalBounceAcceleration(tPlayer));
-	}
-	else if (!strcmp("movement.down.bounce.groundlevel", var)) {
-		return makeFloatAssignmentReturn(getPlayerDownBounceGroundLevel(tPlayer));
-	}
-	else if (!strcmp("movement.down.friction.threshold", var)) {
-		return makeFloatAssignmentReturn(getPlayerLyingDownFrictionThreshold(tPlayer));
-	}
-	else if (!strcmp("movement.yaccel", var)) {
-		return makeFloatAssignmentReturn(getPlayerVerticalAcceleration(tPlayer));
-	}
-	else if (!strcmp("velocity.walk.fwd.x", var)) {
-		return makeFloatAssignmentReturn(getPlayerForwardWalkVelocityX(tPlayer));
-	}
-	else if (!strcmp("velocity.walk.back.x", var)) {
-		return makeFloatAssignmentReturn(getPlayerBackwardWalkVelocityX(tPlayer));
-	}
-	else if (!strcmp("velocity.run.fwd.x", var)) {
-		return makeFloatAssignmentReturn(getPlayerForwardRunVelocityX(tPlayer));
-	}
-	else if (!strcmp("velocity.run.fwd.y", var)) {
-		return makeFloatAssignmentReturn(getPlayerForwardRunVelocityY(tPlayer));
-	}
-	else if (!strcmp("velocity.run.back.x", var)) {
-		return makeFloatAssignmentReturn(getPlayerBackwardRunVelocityX(tPlayer));
-	}
-	else if (!strcmp("velocity.run.back.y", var)) {
-		return makeFloatAssignmentReturn(getPlayerBackwardRunVelocityY(tPlayer));
-	}
-	else if (!strcmp("velocity.runjump.fwd.x", var)) {
-		return makeFloatAssignmentReturn(getPlayerForwardRunJumpVelocityX(tPlayer));
-	}
-	else if (!strcmp("velocity.jump.neu.x", var)) {
-		return makeFloatAssignmentReturn(getPlayerNeutralJumpVelocityX(tPlayer));
-	}
-	else if (!strcmp("velocity.jump.fwd.x", var)) {
-		return makeFloatAssignmentReturn(getPlayerForwardJumpVelocityX(tPlayer));
-	}
-	else if (!strcmp("velocity.jump.back.x", var)) {
-		return makeFloatAssignmentReturn(getPlayerBackwardJumpVelocityX(tPlayer));
-	}
-	else if (!strcmp("velocity.jump.y", var)) {
-		return makeFloatAssignmentReturn(getPlayerJumpVelocityY(tPlayer));
-	}
-	else if (!strcmp("velocity.airjump.neu.x", var)) {
-		return makeFloatAssignmentReturn(getPlayerNeutralAirJumpVelocityX(tPlayer));
-	}
-	else if (!strcmp("velocity.airjump.fwd.x", var)) {
-		return makeFloatAssignmentReturn(getPlayerForwardAirJumpVelocityX(tPlayer));
-	}
-	else if (!strcmp("velocity.airjump.back.x", var)) {
-		return makeFloatAssignmentReturn(getPlayerBackwardAirJumpVelocityX(tPlayer));
-	}
-	else if (!strcmp("velocity.airjump.y", var)) {
-		return makeFloatAssignmentReturn(getPlayerAirJumpVelocityY(tPlayer));
-	}
-	else {
+	if(!string_map_contains(&gVariableHandler.mConstants, var)) {
 		logError("Unrecognized Constant");
 		logErrorString(var);
 		abortSystem();
 		return makeBooleanAssignmentReturn(0);
 	}
+
+	VariableFunction func = string_map_get(&gVariableHandler.mConstants, var);
+	return func(tPlayer);
 }
 
 static AssignmentReturnValue evaluateGetHitVarArrayAssignment(DreamMugenAssignment* tIndexAssignment, DreamPlayer* tPlayer) {
