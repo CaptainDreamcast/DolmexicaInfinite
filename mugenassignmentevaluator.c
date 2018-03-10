@@ -1046,26 +1046,19 @@ static AssignmentReturnValue evaluateRangeAssignment(DreamMugenAssignment* tAssi
 }
 
 typedef AssignmentReturnValue(*VariableFunction)(DreamPlayer*);
-
-
+typedef AssignmentReturnValue(*ArrayFunction)(DreamMugenDependOnTwoAssignment*, DreamPlayer*);
 
 static struct {
 	StringMap mVariables; // contains VariableFunction
 	StringMap mConstants; // contains VariableFunction
+	StringMap mArrays; // contains ArrayFunction
 } gVariableHandler;
 
-//static AssignmentReturnValue absFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue acosFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue aiLevelFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerAILevel(tPlayer)); }
 static AssignmentReturnValue aliveFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(isPlayerAlive(tPlayer)); }
 static AssignmentReturnValue animFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerAnimationNumber(tPlayer)); }
 //static AssignmentReturnValue animElemFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue animElemNoFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue animElemTimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue animExistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue animTimeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getRemainingPlayerAnimationTime(tPlayer)); }
-//static AssignmentReturnValue asinFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue atanFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue authorNameFunction(DreamPlayer* tPlayer) { return makeStringAssignmentReturn(getPlayerAuthorName(tPlayer)); }
 static AssignmentReturnValue backEdgeFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScreenEdgeInBackX(tPlayer)); }
 static AssignmentReturnValue backEdgeBodyDistFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackBodyDistanceToScreen(tPlayer)); }
@@ -1075,28 +1068,17 @@ static AssignmentReturnValue cameraPosXFunction(DreamPlayer* tPlayer) { return m
 static AssignmentReturnValue cameraPosYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamCameraPositionY(getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue cameraZoomFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamCameraZoom(getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue canRecoverFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(canPlayerRecoverFromFalling(tPlayer)); }
-//static AssignmentReturnValue ceilFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 //static AssignmentReturnValue commandFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue condFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue constFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue const240pFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue const480pFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue const720pFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue cosFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue ctrlFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(getPlayerControl(tPlayer)); }
 static AssignmentReturnValue drawGameFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(hasPlayerDrawn(tPlayer)); }
 static AssignmentReturnValue eFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(M_E); }
-//static AssignmentReturnValue expFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue facingFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerIsFacingRight(tPlayer) ? 1 : -1); }
-//static AssignmentReturnValue floorFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue frontEdgeFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScreenEdgeInFrontX(tPlayer)); }
 static AssignmentReturnValue frontEdgeBodyDistFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerFrontBodyDistanceToScreen(tPlayer)); }
 static AssignmentReturnValue frontEdgeDistFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerFrontAxisDistanceToScreen(tPlayer)); }
-//static AssignmentReturnValue fVarFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue gameHeightFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamGameHeight(getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue gameTimeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getDreamGameTime()); }
 static AssignmentReturnValue gameWidthFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamGameWidth(getPlayerCoordinateP(tPlayer))); }
-//static AssignmentReturnValue getHitVarFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue hitCountFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerHitCount(tPlayer)); }
 //static AssignmentReturnValue hitDefAttrFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue hitFallFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(isPlayerFalling(tPlayer)); }
@@ -1106,15 +1088,12 @@ static AssignmentReturnValue hitShakeOverFunction(DreamPlayer* tPlayer) { return
 static AssignmentReturnValue hitVelXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerHitVelocityX(tPlayer, getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue hitVelYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerHitVelocityY(tPlayer, getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue idFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(tPlayer->mID); }
-//static AssignmentReturnValue ifElseFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue inGuardDistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(isPlayerInGuardDistance(tPlayer)); }
 static AssignmentReturnValue isHelperFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(isPlayerHelper(tPlayer)); }
 static AssignmentReturnValue isHomeTeamFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(isPlayerHomeTeam(tPlayer)); }
 static AssignmentReturnValue leftEdgeFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamStageLeftEdgeX(getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue lifeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerLife(tPlayer)); }
 static AssignmentReturnValue lifeMaxFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerLifeMax(tPlayer)); }
-//static AssignmentReturnValue lnFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue logFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue loseFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(hasPlayerLost(tPlayer)); }
 static AssignmentReturnValue matchNoFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getDreamMatchNumber()); }
 static AssignmentReturnValue matchOverFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(isDreamMatchOver(tPlayer)); }
@@ -1129,7 +1108,6 @@ static AssignmentReturnValue numExplodFunction(DreamPlayer* tPlayer) { return ma
 static AssignmentReturnValue numHelperFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerHelperAmount(tPlayer)); }
 static AssignmentReturnValue numPartnerFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(0); } // TODO: fix when partners are implemented
 static AssignmentReturnValue numProjFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerProjectileAmount(tPlayer)); }
-//static AssignmentReturnValue numProjIDFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue numTargetFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerTargetAmount(tPlayer)); }
 static AssignmentReturnValue p1NameFunction(DreamPlayer* tPlayer) { return nameFunction(tPlayer); }
 static AssignmentReturnValue p2BodyDistFunctionX(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDistanceToFrontOfOtherPlayerX(tPlayer)); }
@@ -1151,15 +1129,10 @@ static AssignmentReturnValue posXFunction(DreamPlayer* tPlayer) { return makeFlo
 static AssignmentReturnValue posYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerPositionBasedOnStageFloorY(tPlayer, getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue powerFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerPower(tPlayer)); }
 static AssignmentReturnValue powerMaxFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerPowerMax(tPlayer)); }
-//static AssignmentReturnValue playerIDExistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue prevStateNoFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerPreviousState(tPlayer)); }
-//static AssignmentReturnValue projCancelTimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 //static AssignmentReturnValue projContactFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue projContactTimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 //static AssignmentReturnValue projGuardedFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue projGuardedTimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 //static AssignmentReturnValue projHitFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue projHitTimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue randomFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(randfromInteger(0, 999)); }
 static AssignmentReturnValue rightEdgeFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamStageRightEdgeX(getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue rootDistXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDistanceToRootX(tPlayer)); }
@@ -1171,14 +1144,8 @@ static AssignmentReturnValue screenPosXFunction(DreamPlayer* tPlayer) { return m
 static AssignmentReturnValue screenPosYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScreenPositionY(tPlayer, getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue screenHeightFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamScreenHeight(getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue screenWidthFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamScreenWidth(getPlayerCoordinateP(tPlayer))); }
-//static AssignmentReturnValue selfAnimExistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue sinFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue stateNoFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerState(tPlayer)); }
 //static AssignmentReturnValue stateTypeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue stageVarFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue sysFVarFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue sysVarFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-//static AssignmentReturnValue tanFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 //static AssignmentReturnValue teamModeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue teamSideFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(tPlayer->mRootID + 1); }
 static AssignmentReturnValue ticksPerSecondFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getDreamTicksPerSecond()); }
@@ -1186,7 +1153,6 @@ static AssignmentReturnValue timeFunction(DreamPlayer* tPlayer) { return makeNum
 //static AssignmentReturnValue timeModFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue topEdgeFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamStageTopEdgeY(getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue uniqHitCountFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerUniqueHitCount(tPlayer)); }
-//static AssignmentReturnValue varFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue velXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityX(tPlayer, getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue velYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityY(tPlayer, getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue winFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(hasPlayerWon(tPlayer)); }
@@ -1512,9 +1478,13 @@ static void setupConstantAssignments() {
 	string_map_push(&gVariableHandler.mConstants, "movement.down.friction.threshold", movementDownFrictionThresholdFunction);
 }
 
+
+static void setupArrayAssignments();
+
 void setupDreamAssignmentEvaluator() {
 	setupVariableAssignments();
 	setupConstantAssignments();
+	setupArrayAssignments();
 }
 
 static int isIsInOtherFileVariable(char* tName) {
@@ -1905,10 +1875,106 @@ static AssignmentReturnValue evaluateProjectileHitTimeArrayAssignment(Assignment
 	return makeNumberAssignmentReturn(getPlayerProjectileTimeSinceHit(tPlayer, id));
 }
 
+
+
+
+
+static AssignmentReturnValue varFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateVarArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue sysVarFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateSysVarArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue fVarFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateFVarArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue sysFVarFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateSysFVarArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue stageVarFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateStageVarArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue absFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateAbsArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+static AssignmentReturnValue expFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateExpArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+static AssignmentReturnValue lnFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateNaturalLogArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+static AssignmentReturnValue logFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateLogArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+static AssignmentReturnValue cosFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateCosineArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+static AssignmentReturnValue acosFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateAcosineArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+static AssignmentReturnValue sinFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateSineArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+static AssignmentReturnValue asinFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateAsineArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+static AssignmentReturnValue tanFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateTangentArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+static AssignmentReturnValue atanFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateAtangentArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+static AssignmentReturnValue floorFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateFloorArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+static AssignmentReturnValue ceilFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateCeilArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+static AssignmentReturnValue constFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateConstArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue getHitVarFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateGetHitVarArrayAssignment(tArrays->b, tPlayer); }
+static AssignmentReturnValue animElemTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateAnimationElementTimeArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue animElemNoFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateAnimationElementNumberArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue ifElseFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateIfElseArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+static AssignmentReturnValue condFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateCondArrayAssignment(tArrays->b, tPlayer); }
+static AssignmentReturnValue animExistFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateAnimationExistArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue selfAnimExistFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateSelfAnimationExistArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue const240pFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), 240); }
+static AssignmentReturnValue const480pFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), 480); }
+static AssignmentReturnValue const720pFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), 720); }
+static AssignmentReturnValue externalFileFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateExternalFileAnimationArrayAssignment(evaluateAssignmentInternal(tArrays->a, tPlayer), evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+static AssignmentReturnValue numTargetArrayFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateNumTargetArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue numHelperArrayFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateNumHelperArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue numExplodArrayFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateNumExplodArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue isHelperArrayFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateIsHelperArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue helperFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateTargetArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), "helper"); }
+static AssignmentReturnValue enemyNearFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateTargetArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), "enemynear"); }
+static AssignmentReturnValue playerIDFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateTargetArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), "playerid"); }
+static AssignmentReturnValue playerIDExistFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluatePlayerIDExistArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue numProjIDFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateNumberOfProjectilesWithIDArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue projCancelTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateProjectileCancelTimeArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue projContactTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateProjectileContactTimeArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue projGuardedTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateProjectileGuardedTimeArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue projHitTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateProjectileGuardedTimeArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+
+
+static void setupArrayAssignments() {
+	gVariableHandler.mArrays = new_string_map();
+
+	string_map_push(&gVariableHandler.mArrays, "var", varFunction);
+	string_map_push(&gVariableHandler.mArrays, "sysvar", sysVarFunction);
+	string_map_push(&gVariableHandler.mArrays, "fvar", fVarFunction);
+	string_map_push(&gVariableHandler.mArrays, "sysfvar", sysFVarFunction);
+	string_map_push(&gVariableHandler.mArrays, "stagevar", stageVarFunction);
+	string_map_push(&gVariableHandler.mArrays, "abs", absFunction);
+	string_map_push(&gVariableHandler.mArrays, "exp", expFunction);
+	string_map_push(&gVariableHandler.mArrays, "ln", lnFunction);
+	string_map_push(&gVariableHandler.mArrays, "log", logFunction);
+	string_map_push(&gVariableHandler.mArrays, "cos", cosFunction);
+	string_map_push(&gVariableHandler.mArrays, "acos", acosFunction);
+	string_map_push(&gVariableHandler.mArrays, "sin", sinFunction);
+	string_map_push(&gVariableHandler.mArrays, "asin", asinFunction);
+	string_map_push(&gVariableHandler.mArrays, "tan", tanFunction);
+	string_map_push(&gVariableHandler.mArrays, "atan", atanFunction);
+	string_map_push(&gVariableHandler.mArrays, "floor", floorFunction);
+	string_map_push(&gVariableHandler.mArrays, "ceil", ceilFunction);
+	string_map_push(&gVariableHandler.mArrays, "const", constFunction);
+	string_map_push(&gVariableHandler.mArrays, "gethitvar", getHitVarFunction);
+	string_map_push(&gVariableHandler.mArrays, "animelemtime", animElemTimeFunction);
+	string_map_push(&gVariableHandler.mArrays, "animelemno", animElemNoFunction);
+	string_map_push(&gVariableHandler.mArrays, "ifelse", ifElseFunction);
+	string_map_push(&gVariableHandler.mArrays, "sifelse", ifElseFunction);
+	string_map_push(&gVariableHandler.mArrays, "cond", condFunction);
+	string_map_push(&gVariableHandler.mArrays, "animexist", animExistFunction);
+	string_map_push(&gVariableHandler.mArrays, "selfanimexist", selfAnimExistFunction);
+	string_map_push(&gVariableHandler.mArrays, "const240p", const240pFunction);
+	string_map_push(&gVariableHandler.mArrays, "const480p", const480pFunction);
+	string_map_push(&gVariableHandler.mArrays, "const720p", const720pFunction);
+	string_map_push(&gVariableHandler.mArrays, "f", externalFileFunction);
+	string_map_push(&gVariableHandler.mArrays, "s", externalFileFunction);
+	string_map_push(&gVariableHandler.mArrays, "numtarget", numTargetArrayFunction);
+	string_map_push(&gVariableHandler.mArrays, "numhelper", numHelperArrayFunction);
+	string_map_push(&gVariableHandler.mArrays, "numexplod", numExplodArrayFunction);
+	string_map_push(&gVariableHandler.mArrays, "ishelper", isHelperArrayFunction);
+	string_map_push(&gVariableHandler.mArrays, "helper", helperFunction);
+	string_map_push(&gVariableHandler.mArrays, "enemynear", enemyNearFunction);
+	string_map_push(&gVariableHandler.mArrays, "playerid", playerIDFunction);
+	string_map_push(&gVariableHandler.mArrays, "playeridexist", playerIDExistFunction);
+	string_map_push(&gVariableHandler.mArrays, "numprojid", numProjIDFunction);
+	string_map_push(&gVariableHandler.mArrays, "projcanceltime", projCancelTimeFunction);
+	string_map_push(&gVariableHandler.mArrays, "projcontacttime", projContactTimeFunction);
+	string_map_push(&gVariableHandler.mArrays, "projguardedtime", projGuardedTimeFunction);
+	string_map_push(&gVariableHandler.mArrays, "projhittime", projHitTimeFunction);
+}
+
+
 static AssignmentReturnValue evaluateArrayAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
 	DreamMugenDependOnTwoAssignment* arrays = tAssignment->mData;
-
-	AssignmentReturnValue a = evaluateAssignmentInternal(arrays->a, tPlayer); // TODO: remove once CHECK FOR CONSISTENCY no longer required
 
 	char test[100];
 	assert(arrays->a->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE);
@@ -1916,175 +1982,16 @@ static AssignmentReturnValue evaluateArrayAssignment(DreamMugenAssignment* tAssi
 	strcpy(test, arrayName->mName);
 	turnStringLowercase(test);
 
-	if (!strcmp("var", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateVarArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("sysvar", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateSysVarArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("fvar", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateFVarArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("sysfvar", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateSysFVarArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("stagevar", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateStageVarArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("abs", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateAbsArrayAssignment(b);
-	}
-	else if (!strcmp("exp", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateExpArrayAssignment(b);
-	}
-	else if (!strcmp("ln", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateNaturalLogArrayAssignment(b);
-	}
-	else if (!strcmp("log", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateLogArrayAssignment(b);
-	}
-	else if (!strcmp("cos", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateCosineArrayAssignment(b);
-	}
-	else if (!strcmp("acos", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateAcosineArrayAssignment(b);
-	}
-	else if (!strcmp("sin", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateSineArrayAssignment(b);
-	}
-	else if (!strcmp("asin", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateAsineArrayAssignment(b);
-	}
-	else if (!strcmp("tan", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateTangentArrayAssignment(b);
-	}
-	else if (!strcmp("atan", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateAtangentArrayAssignment(b);
-	}
-	else if (!strcmp("floor", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateFloorArrayAssignment(b);
-	}
-	else if (!strcmp("ceil", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-
-		return evaluateCeilArrayAssignment(b);
-	}
-	else if (!strcmp("const", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateConstArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("gethitvar", test)) {
-		return evaluateGetHitVarArrayAssignment(arrays->b, tPlayer);
-	}
-	else if (!strcmp("animelemtime", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateAnimationElementTimeArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("animelemno", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateAnimationElementNumberArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("ifelse", test) || !strcmp("sifelse", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateIfElseArrayAssignment(b);
-	}
-	else if (!strcmp("cond", test)) {
-		return evaluateCondArrayAssignment(arrays->b, tPlayer);
-	}
-	else if (!strcmp("animexist", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateAnimationExistArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("selfanimexist", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateSelfAnimationExistArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("const240p", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateConstCoordinatesArrayAssignment(b, 240);
-	}
-	else if (!strcmp("const720p", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateConstCoordinatesArrayAssignment(b, 720);
-	}
-	else if (!strcmp("f", test) || !strcmp("s", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateExternalFileAnimationArrayAssignment(a, b);
-	}
-	else if (!strcmp("numtarget", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateNumTargetArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("numhelper", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateNumHelperArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("numexplod", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateNumExplodArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("ishelper", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateIsHelperArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("helper", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateTargetArrayAssignment(b, "helper");
-	}
-	else if (!strcmp("enemynear", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateTargetArrayAssignment(b, "enemynear");
-	}
-	else if (!strcmp("playerid", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateTargetArrayAssignment(b, "playerid");
-	}
-	else if (!strcmp("playeridexist", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluatePlayerIDExistArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("numprojid", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateNumberOfProjectilesWithIDArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("projcanceltime", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateProjectileCancelTimeArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("projcontacttime", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateProjectileContactTimeArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("projguardedtime", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateProjectileGuardedTimeArrayAssignment(b, tPlayer);
-	}
-	else if (!strcmp("projhittime", test)) {
-		AssignmentReturnValue b = evaluateAssignmentInternal(arrays->b, tPlayer);
-		return evaluateProjectileHitTimeArrayAssignment(b, tPlayer);
-	}
-	else {
+	
+	if(!string_map_contains(&gVariableHandler.mArrays, test)) {
 		logError("Unknown array.");
 		logErrorString(test);
 		abortSystem();
 		return makeBooleanAssignmentReturn(0);
 	}
+
+	ArrayFunction func = string_map_get(&gVariableHandler.mArrays, test);
+	return func(arrays, tPlayer);
 }
 
 static AssignmentReturnValue evaluateUnaryMinusAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
