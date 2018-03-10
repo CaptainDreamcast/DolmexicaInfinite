@@ -179,6 +179,7 @@ typedef struct {
 	double mCrouchFriction;
 	double mStandFrictionThreshold;
 	double mCrouchFrictionThreshold;
+	double mJumpChangeAnimThreshold;
 
 	int mAirGetHitGroundLevelY;
 	int mAirGetHitGroundRecoveryGroundYTheshold;

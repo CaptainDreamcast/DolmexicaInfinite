@@ -6,6 +6,7 @@
 #include <prism/system.h>
 #include <prism/memoryhandler.h>
 #include <prism/mugendefreader.h>
+#include <prism/math.h>
 
 #include "mugenstatecontrollers.h"
 
@@ -415,6 +416,7 @@ static void loadMugenConstantsMovementData(DreamMugenConstantsMovementData* tMov
 	tMovementData->mCrouchFriction = getMugenDefFloatOrDefault(tScript, "Movement", "crouch.friction", 0.2);
 	tMovementData->mStandFrictionThreshold = getMugenDefFloatOrDefault(tScript, "Movement", "stand.friction.threshold", 0.1);
 	tMovementData->mCrouchFrictionThreshold = getMugenDefFloatOrDefault(tScript, "Movement", "crouch.friction.threshold", 0.1);
+	tMovementData->mJumpChangeAnimThreshold = getMugenDefFloatOrDefault(tScript, "Movement", "jump.changeanim.threshold", INF);
 
 	tMovementData->mAirGetHitGroundLevelY = getMugenDefIntegerOrDefault(tScript, "Movement", "air.gethit.groundlevel", 10);
 	tMovementData->mAirGetHitGroundRecoveryGroundYTheshold = getMugenDefIntegerOrDefault(tScript, "Movement", "air.gethit.groundrecover.ground.threshold", 10);

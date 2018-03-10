@@ -1051,6 +1051,7 @@ typedef AssignmentReturnValue(*VariableFunction)(DreamPlayer*);
 
 static struct {
 	StringMap mVariables; // contains VariableFunction
+	StringMap mConstants; // contains VariableFunction
 } gVariableHandler;
 
 //static AssignmentReturnValue absFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
@@ -1192,7 +1193,7 @@ static AssignmentReturnValue winFunction(DreamPlayer* tPlayer) { return makeBool
 
 
 
-static void setupVariableAssignment() {
+static void setupVariableAssignments() {
 	gVariableHandler.mVariables = new_string_map();
 	//string_map_push(&gVariableHandler.mVariables, "abs", animElemFunction);
 	//string_map_push(&gVariableHandler.mVariables, "acos", animElemFunction);
@@ -1351,8 +1352,169 @@ static void setupVariableAssignment() {
 	string_map_push(&gVariableHandler.mVariables, "win", winFunction);
 }
 
+
+static AssignmentReturnValue dataLifeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerDataLife(tPlayer)); }
+static AssignmentReturnValue dataPowerFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerPowerMax(tPlayer)); }
+static AssignmentReturnValue dataAttackFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerDataAttack(tPlayer)); }
+static AssignmentReturnValue dataDefenceFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerDataDefense(tPlayer)); }
+static AssignmentReturnValue dataFallDefenceMultiplierFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerFallDefenseMultiplier(tPlayer)); }
+static AssignmentReturnValue dataLiedownTimeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerDataLiedownTime(tPlayer)); }
+static AssignmentReturnValue dataAirjuggleFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerDataAirjuggle(tPlayer)); }
+static AssignmentReturnValue dataSparkNoFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerDataSparkNo(tPlayer)); }
+static AssignmentReturnValue dataGuardSparkNoFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerDataGuardSparkNo(tPlayer)); }
+static AssignmentReturnValue dataKOEchoFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerDataKOEcho(tPlayer)); }
+static AssignmentReturnValue dataIntPersistIndexFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerDataIntPersistIndex(tPlayer)); }
+static AssignmentReturnValue dataFloatPersistIndexFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerDataFloatPersistIndex(tPlayer)); }
+
+static AssignmentReturnValue sizeXScaleFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScaleX(tPlayer)); }
+static AssignmentReturnValue sizeYScaleFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScaleY(tPlayer)); }
+static AssignmentReturnValue sizeGroundBackFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerGroundSizeBack(tPlayer)); }
+static AssignmentReturnValue sizeGroundFrontFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerGroundSizeFront(tPlayer)); }
+static AssignmentReturnValue sizeAirBackFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeAirBack(tPlayer)); }
+static AssignmentReturnValue sizeAirFrontFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeAirFront(tPlayer)); }
+static AssignmentReturnValue sizeHeightFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerHeight(tPlayer)); }
+static AssignmentReturnValue sizeAttackDistFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeAttackDist(tPlayer)); }
+static AssignmentReturnValue sizeProjAttackDistFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeProjectileAttackDist(tPlayer)); }
+static AssignmentReturnValue sizeProjDoScaleFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeProjectilesDoScale(tPlayer)); }
+static AssignmentReturnValue sizeHeadPosXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerHeadPositionX(tPlayer)); }
+static AssignmentReturnValue sizeHeadPosYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerHeadPositionY(tPlayer)); }
+static AssignmentReturnValue sizeMidPosXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerMiddlePositionX(tPlayer)); }
+static AssignmentReturnValue sizeMidPosYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerMiddlePositionY(tPlayer)); }
+static AssignmentReturnValue sizeShadowOffsetFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeShadowOffset(tPlayer)); }
+static AssignmentReturnValue sizeDrawOffsetXFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeDrawOffsetX(tPlayer)); }
+static AssignmentReturnValue sizeDrawOffsetYFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeDrawOffsetY(tPlayer)); }
+
+static AssignmentReturnValue velocityWalkFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardWalkVelocityX(tPlayer)); }
+static AssignmentReturnValue velocityWalkBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardWalkVelocityX(tPlayer)); }
+static AssignmentReturnValue velocityRunFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardRunVelocityX(tPlayer)); }
+static AssignmentReturnValue velocityRunFwdYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardRunVelocityY(tPlayer)); }
+static AssignmentReturnValue velocityRunBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardRunVelocityX(tPlayer)); }
+static AssignmentReturnValue velocityRunBackYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardRunVelocityY(tPlayer));; }
+static AssignmentReturnValue velocityJumpYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerJumpVelocityY(tPlayer)); }
+static AssignmentReturnValue velocityJumpNeuXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerNeutralJumpVelocityX(tPlayer)); }
+static AssignmentReturnValue velocityJumpBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardJumpVelocityX(tPlayer)); }
+static AssignmentReturnValue velocityJumpFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardJumpVelocityX(tPlayer)); }
+static AssignmentReturnValue velocityRunJumpBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardRunJumpVelocityX(tPlayer)); }
+static AssignmentReturnValue velocityRunJumpFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardRunJumpVelocityX(tPlayer)); }
+static AssignmentReturnValue velocityAirJumpYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirJumpVelocityY(tPlayer)); }
+static AssignmentReturnValue velocityAirJumpNeuXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerNeutralAirJumpVelocityX(tPlayer)); }
+static AssignmentReturnValue velocityAirJumpBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardAirJumpVelocityX(tPlayer)); }
+static AssignmentReturnValue velocityAirJumpFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardAirJumpVelocityX(tPlayer)); }
+static AssignmentReturnValue velocityAirGetHitGroundRecoverXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitGroundRecoverX(tPlayer)); }
+static AssignmentReturnValue velocityAirGetHitGroundRecoverYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitGroundRecoverY(tPlayer)); }
+static AssignmentReturnValue velocityAirGetHitAirRecoverMulXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverMulX(tPlayer)); }
+static AssignmentReturnValue velocityAirGetHitAirRecoverMulYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverMulY(tPlayer)); }
+static AssignmentReturnValue velocityAirGetHitAirRecoverAddXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverAddX(tPlayer)); }
+static AssignmentReturnValue velocityAirGetHitAirRecoverAddYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverAddY(tPlayer)); }
+static AssignmentReturnValue velocityAirGetHitAirRecoverBackFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverBack(tPlayer)); }
+static AssignmentReturnValue velocityAirGetHitAirRecoverFwdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverFwd(tPlayer)); }
+static AssignmentReturnValue velocityAirGetHitAirRecoverUpFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverUp(tPlayer)); }
+static AssignmentReturnValue velocityAirGetHitAirRecoverDownFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverDown(tPlayer)); }
+
+static AssignmentReturnValue movementAirJumpNumFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerMovementAirJumpNum(tPlayer)); }
+static AssignmentReturnValue movementAirJumpHeightFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerMovementAirJumpHeight(tPlayer)); }
+static AssignmentReturnValue movementYAccelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVerticalAcceleration(tPlayer)); }
+static AssignmentReturnValue movementStandFrictionFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerStandFriction(tPlayer)); }
+static AssignmentReturnValue movementCrouchFrictionFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerCrouchFriction(tPlayer)); }
+static AssignmentReturnValue movementStandFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerStandFrictionThreshold(tPlayer)); }
+static AssignmentReturnValue movementCrouchFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerCrouchFrictionThreshold(tPlayer)); }
+static AssignmentReturnValue movementJumpChangeAnimThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerMovementJumpChangeAnimThreshold(tPlayer)); }
+static AssignmentReturnValue movementAirGetHitGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitGroundLevelY(tPlayer)); }
+static AssignmentReturnValue movementAirGetHitGroundRecoverGroundThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitGroundRecoveryGroundYTheshold(tPlayer)); }
+static AssignmentReturnValue movementAirGetHitGroundRecoverGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitGroundRecoveryGroundLevelY(tPlayer)); }
+static AssignmentReturnValue movementAirGetHitAirRecoverThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitAirRecoveryVelocityYThreshold(tPlayer)); }
+static AssignmentReturnValue movementAirGetHitAirRecoverYAccelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerMovementAirGetHitAirRecoverYAccel(tPlayer)); }
+static AssignmentReturnValue movementAirGetHitTripGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitTripGroundLevelY(tPlayer)); }
+static AssignmentReturnValue movementDownBounceOffsetXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceOffsetX(tPlayer)); }
+static AssignmentReturnValue movementDownBounceOffsetYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceOffsetY(tPlayer)); }
+static AssignmentReturnValue movementDownBounceYAccelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownVerticalBounceAcceleration(tPlayer)); }
+static AssignmentReturnValue movementDownBounceGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceGroundLevel(tPlayer)); }
+static AssignmentReturnValue movementDownFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerLyingDownFrictionThreshold(tPlayer)); }
+
+static void setupConstantAssignments() { 
+	gVariableHandler.mConstants = new_string_map();
+	string_map_push(&gVariableHandler.mConstants, "data.life", dataLifeFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.power", dataPowerFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.attack", dataAttackFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.defence", dataDefenceFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.fall.defence_mul", dataFallDefenceMultiplierFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.liedown.time", dataLiedownTimeFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.airjuggle", dataAirjuggleFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.sparkno", dataSparkNoFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.guard.sparkno", dataGuardSparkNoFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.ko.echo", dataKOEchoFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.intpersistindex", dataIntPersistIndexFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.floatpersistindex", dataFloatPersistIndexFunction);
+	
+	string_map_push(&gVariableHandler.mConstants, "size.xscale", sizeXScaleFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.yscale", sizeYScaleFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.ground.back", sizeGroundBackFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.ground.front", sizeGroundFrontFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.air.back", sizeAirBackFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.air.front", sizeAirFrontFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.height", sizeHeightFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.attack.dist", sizeAttackDistFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.proj.attack.dist", sizeProjAttackDistFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.proj.doscale", sizeProjDoScaleFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.head.pos.x", sizeHeadPosXFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.head.pos.y", sizeHeadPosYFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.mid.pos.x", sizeMidPosXFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.mid.pos.y", sizeMidPosYFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.shadowoffset", sizeShadowOffsetFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.draw.offset.x", sizeDrawOffsetXFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.draw.offset.y", sizeDrawOffsetYFunction);
+
+	string_map_push(&gVariableHandler.mConstants, "velocity.walk.fwd.x", velocityWalkFwdXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.walk.back.x", velocityWalkBackXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.run.fwd.x", velocityRunFwdXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.run.fwd.y", velocityRunFwdYFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.run.back.x", velocityRunBackXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.run.back.y", velocityRunBackYFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.jump.y", velocityJumpYFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.jump.neu.x", velocityJumpNeuXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.jump.back.x", velocityJumpBackXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.jump.fwd.x", velocityJumpFwdXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.runjump.back.x", velocityRunJumpBackXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.runjump.fwd.x", velocityRunJumpFwdXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.y", velocityAirJumpYFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.neu.x", velocityAirJumpNeuXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.back.x", velocityAirJumpBackXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.fwd.x", velocityAirJumpFwdXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.groundrecover.x", velocityAirGetHitGroundRecoverXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.groundrecover.y", velocityAirGetHitGroundRecoverYFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.mul.x", velocityAirGetHitAirRecoverMulXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.mul.y", velocityAirGetHitAirRecoverMulYFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.add.x", velocityAirGetHitAirRecoverAddXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.add.y", velocityAirGetHitAirRecoverAddYFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.back", velocityAirGetHitAirRecoverBackFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.fwd", velocityAirGetHitAirRecoverFwdFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.up", velocityAirGetHitAirRecoverUpFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.down", velocityAirGetHitAirRecoverDownFunction);
+
+	string_map_push(&gVariableHandler.mConstants, "movement.airjump.num", movementAirJumpNumFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.airjump.height", movementAirJumpHeightFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.yaccel", movementYAccelFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.stand.friction", movementStandFrictionFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.crouch.friction", movementCrouchFrictionFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.stand.friction.threshold", movementStandFrictionThresholdFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.crouch.friction.threshold", movementCrouchFrictionThresholdFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.jump.changeanim.threshold", movementJumpChangeAnimThresholdFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.groundlevel", movementAirGetHitGroundLevelFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.groundrecover.ground.threshold", movementAirGetHitGroundRecoverGroundThresholdFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.groundrecover.groundlevel", movementAirGetHitGroundRecoverGroundLevelFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.airrecover.threshold", movementAirGetHitAirRecoverThresholdFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.airrecover.yaccel", movementAirGetHitAirRecoverYAccelFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.trip.groundlevel", movementAirGetHitTripGroundLevelFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.offset.x", movementDownBounceOffsetXFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.offset.y", movementDownBounceOffsetYFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.yaccel", movementDownBounceYAccelFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.groundlevel", movementDownBounceGroundLevelFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.down.friction.threshold", movementDownFrictionThresholdFunction);
+}
+
 void setupDreamAssignmentEvaluator() {
-	setupVariableAssignment();
+	setupVariableAssignments();
+	setupConstantAssignments();
 }
 
 static int isIsInOtherFileVariable(char* tName) {

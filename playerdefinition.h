@@ -206,7 +206,45 @@ double getPlayerPositionY(DreamPlayer* p, int tCoordinateP);
 double getPlayerVelocityX(DreamPlayer* p, int tCoordinateP);
 double getPlayerVelocityY(DreamPlayer* p, int tCoordinateP);
 
+int getPlayerDataLife(DreamPlayer* p); // TODO: check rename
+int getPlayerDataAttack(DreamPlayer* p); // TODO: check rename
+int getPlayerDataDefense(DreamPlayer* p); 
+int getPlayerDataLiedownTime(DreamPlayer* p);
+int getPlayerDataAirjuggle(DreamPlayer* p);
+int getPlayerDataSparkNo(DreamPlayer* p);
+int getPlayerDataGuardSparkNo(DreamPlayer* p);
+int getPlayerDataKOEcho(DreamPlayer* p);
+int getPlayerDataIntPersistIndex(DreamPlayer* p);
+int getPlayerDataFloatPersistIndex(DreamPlayer* p);
+
+int getPlayerSizeAirBack(DreamPlayer* p);
+int getPlayerSizeAirFront(DreamPlayer* p);
+int getPlayerSizeAttackDist(DreamPlayer* p);
+int getPlayerSizeProjectileAttackDist(DreamPlayer* p);
+int getPlayerSizeProjectilesDoScale(DreamPlayer* p);
+int getPlayerSizeShadowOffset(DreamPlayer* p);
+int getPlayerSizeDrawOffsetX(DreamPlayer* p);
+int getPlayerSizeDrawOffsetY(DreamPlayer* p);
+
+double getPlayerVelocityAirGetHitGroundRecoverX(DreamPlayer* p);
+double getPlayerVelocityAirGetHitGroundRecoverY(DreamPlayer* p);
+double getPlayerVelocityAirGetHitAirRecoverMulX(DreamPlayer* p);
+double getPlayerVelocityAirGetHitAirRecoverMulY(DreamPlayer* p);
+double getPlayerVelocityAirGetHitAirRecoverAddX(DreamPlayer* p);
+double getPlayerVelocityAirGetHitAirRecoverAddY(DreamPlayer* p);
+double getPlayerVelocityAirGetHitAirRecoverBack(DreamPlayer* p);
+double getPlayerVelocityAirGetHitAirRecoverFwd(DreamPlayer* p);
+double getPlayerVelocityAirGetHitAirRecoverUp(DreamPlayer* p);
+double getPlayerVelocityAirGetHitAirRecoverDown(DreamPlayer* p);
+
+int getPlayerMovementAirJumpNum(DreamPlayer* p);
+int getPlayerMovementAirJumpHeight(DreamPlayer* p);
+double getPlayerMovementJumpChangeAnimThreshold(DreamPlayer* p);
+double getPlayerMovementAirGetHitAirRecoverYAccel(DreamPlayer* p);
+
+double getPlayerStandFriction(DreamPlayer* p);
 double getPlayerStandFrictionThreshold(DreamPlayer* p);
+double getPlayerCrouchFriction(DreamPlayer* p);
 double getPlayerCrouchFrictionThreshold(DreamPlayer* p);
 double getPlayerAirGetHitGroundLevelY(DreamPlayer* p);
 double getPlayerAirGetHitGroundRecoveryGroundLevelY(DreamPlayer* p);
@@ -226,6 +264,7 @@ double getPlayerForwardRunVelocityX(DreamPlayer* p);
 double getPlayerForwardRunVelocityY(DreamPlayer* p);
 double getPlayerBackwardRunVelocityX(DreamPlayer* p);
 double getPlayerBackwardRunVelocityY(DreamPlayer* p);
+double getPlayerBackwardRunJumpVelocityX(DreamPlayer* p);
 double getPlayerForwardRunJumpVelocityX(DreamPlayer* p);
 double getPlayerNeutralJumpVelocityX(DreamPlayer* p);
 double getPlayerForwardJumpVelocityX(DreamPlayer* p);

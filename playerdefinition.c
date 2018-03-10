@@ -1285,9 +1285,179 @@ double getPlayerVelocityY(DreamPlayer* p, int tCoordinateP)
 	return getHandledPhysicsVelocityReference(p->mPhysicsID)->y * scale;
 }
 
+int getPlayerDataLife(DreamPlayer * p)
+{
+	return p->mConstants.mHeader.mLife;
+}
+
+int getPlayerDataAttack(DreamPlayer * p)
+{
+	return p->mConstants.mHeader.mAttack;
+}
+
+int getPlayerDataDefense(DreamPlayer * p)
+{
+	return p->mConstants.mHeader.mDefense;
+}
+
+int getPlayerDataLiedownTime(DreamPlayer * p)
+{
+	return (int)p->mConstants.mHeader.mLiedownTime; // TODO: fix
+}
+
+int getPlayerDataAirjuggle(DreamPlayer * p)
+{
+	return p->mConstants.mHeader.mAirJugglePoints;
+}
+
+int getPlayerDataSparkNo(DreamPlayer * p)
+{
+	return p->mConstants.mHeader.mSparkNo;
+}
+
+int getPlayerDataGuardSparkNo(DreamPlayer * p)
+{
+	return p->mConstants.mHeader.mGuardSparkNo;
+}
+
+int getPlayerDataKOEcho(DreamPlayer * p)
+{
+	return p->mConstants.mHeader.mKOEcho;
+}
+
+int getPlayerDataIntPersistIndex(DreamPlayer * p)
+{
+	return p->mConstants.mHeader.mIntPersistIndex;
+}
+
+int getPlayerDataFloatPersistIndex(DreamPlayer * p)
+{
+	return p->mConstants.mHeader.mFloatPersistIndex;
+}
+
+int getPlayerSizeAirBack(DreamPlayer * p)
+{
+	return p->mConstants.mSizeData.mAirBackWidth;
+}
+
+int getPlayerSizeAirFront(DreamPlayer * p)
+{
+	return p->mConstants.mSizeData.mAirFrontWidth;
+}
+
+int getPlayerSizeAttackDist(DreamPlayer * p)
+{
+	return p->mConstants.mSizeData.mAttackDistance;
+}
+
+int getPlayerSizeProjectileAttackDist(DreamPlayer * p)
+{
+	return p->mConstants.mSizeData.mProjectileAttackDistance;
+}
+
+int getPlayerSizeProjectilesDoScale(DreamPlayer * p)
+{
+	return p->mConstants.mSizeData.mDoesScaleProjectiles;
+}
+
+int getPlayerSizeShadowOffset(DreamPlayer * p)
+{
+	return p->mConstants.mSizeData.mShadowOffset;
+}
+
+int getPlayerSizeDrawOffsetX(DreamPlayer * p)
+{
+	return p->mConstants.mSizeData.mDrawOffset.x;
+}
+
+int getPlayerSizeDrawOffsetY(DreamPlayer * p)
+{
+	return p->mConstants.mSizeData.mDrawOffset.y;
+}
+
+double getPlayerVelocityAirGetHitGroundRecoverX(DreamPlayer * p)
+{
+	return p->mConstants.mVelocityData.mAirGetHitGroundRecovery.x;
+}
+
+double getPlayerVelocityAirGetHitGroundRecoverY(DreamPlayer * p)
+{
+	return p->mConstants.mVelocityData.mAirGetHitGroundRecovery.y;
+}
+
+double getPlayerVelocityAirGetHitAirRecoverMulX(DreamPlayer * p)
+{
+	return p->mConstants.mVelocityData.mAirGetHitAirRecoveryMultiplier.x;
+}
+
+double getPlayerVelocityAirGetHitAirRecoverMulY(DreamPlayer * p)
+{
+	return p->mConstants.mVelocityData.mAirGetHitAirRecoveryMultiplier.y;
+}
+
+double getPlayerVelocityAirGetHitAirRecoverAddX(DreamPlayer * p)
+{
+	return p->mConstants.mVelocityData.mAirGetHitAirRecoveryOffset.x;
+}
+
+double getPlayerVelocityAirGetHitAirRecoverAddY(DreamPlayer * p)
+{
+	return p->mConstants.mVelocityData.mAirGetHitAirRecoveryOffset.y;
+}
+
+double getPlayerVelocityAirGetHitAirRecoverBack(DreamPlayer * p)
+{
+	return p->mConstants.mVelocityData.mAirGetHitExtraXWhenHoldingBackward;
+}
+
+double getPlayerVelocityAirGetHitAirRecoverFwd(DreamPlayer * p)
+{
+	return p->mConstants.mVelocityData.mAirGetHitExtraXWhenHoldingForward;
+}
+
+double getPlayerVelocityAirGetHitAirRecoverUp(DreamPlayer * p)
+{
+	return p->mConstants.mVelocityData.mAirGetHitExtraYWhenHoldingUp;
+}
+
+double getPlayerVelocityAirGetHitAirRecoverDown(DreamPlayer * p)
+{
+	return p->mConstants.mVelocityData.mAirGetHitExtraYWhenHoldingDown;
+}
+
+int getPlayerMovementAirJumpNum(DreamPlayer * p)
+{
+	return p->mConstants.mMovementData.mAllowedAirJumpAmount;
+}
+
+int getPlayerMovementAirJumpHeight(DreamPlayer * p)
+{
+	return p->mConstants.mMovementData.mAirJumpMinimumHeight;
+}
+
+double getPlayerMovementJumpChangeAnimThreshold(DreamPlayer * p)
+{
+	return p->mConstants.mMovementData.mJumpChangeAnimThreshold;
+}
+
+double getPlayerMovementAirGetHitAirRecoverYAccel(DreamPlayer * p)
+{
+	return p->mConstants.mMovementData.mAirGetHitAirRecoveryVerticalAcceleration;
+}
+
+double getPlayerStandFriction(DreamPlayer * p)
+{
+	return p->mConstants.mMovementData.mStandFiction;
+}
+
 double getPlayerStandFrictionThreshold(DreamPlayer* p)
 {
 	return p->mConstants.mMovementData.mStandFrictionThreshold;
+}
+
+double getPlayerCrouchFriction(DreamPlayer * p)
+{
+	return p->mConstants.mMovementData.mCrouchFriction;
 }
 
 double getPlayerCrouchFrictionThreshold(DreamPlayer* p)
@@ -1378,6 +1548,11 @@ double getPlayerBackwardRunVelocityX(DreamPlayer* p)
 double getPlayerBackwardRunVelocityY(DreamPlayer* p)
 {
 	return p->mConstants.mVelocityData.mRunBackward.y;
+}
+
+double getPlayerBackwardRunJumpVelocityX(DreamPlayer * p)
+{
+	return p->mConstants.mVelocityData.mRunJumpBackward.x;
 }
 
 double getPlayerForwardRunJumpVelocityX(DreamPlayer* p)
