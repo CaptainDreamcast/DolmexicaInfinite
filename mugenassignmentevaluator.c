@@ -1161,18 +1161,10 @@ static AssignmentReturnValue winFunction(DreamPlayer* tPlayer) { return makeBool
 
 static void setupVariableAssignments() {
 	gVariableHandler.mVariables = new_string_map();
-	//string_map_push(&gVariableHandler.mVariables, "abs", animElemFunction);
-	//string_map_push(&gVariableHandler.mVariables, "acos", animElemFunction);
 	string_map_push(&gVariableHandler.mVariables, "ailevel", aiLevelFunction);
 	string_map_push(&gVariableHandler.mVariables, "alive", aliveFunction);
 	string_map_push(&gVariableHandler.mVariables, "anim", animFunction);
-	//string_map_push(&gVariableHandler.mVariables, "animelem", animElemFunction);
-	//string_map_push(&gVariableHandler.mVariables, "animelemno", animElemNoFunction);
-	//string_map_push(&gVariableHandler.mVariables, "animelemtime", animElemTimeFunction);
-	//string_map_push(&gVariableHandler.mVariables, "animexist", animExistFunction);
 	string_map_push(&gVariableHandler.mVariables, "animtime", animTimeFunction);
-	//string_map_push(&gVariableHandler.mVariables, "asin", asinFunction);
-	//string_map_push(&gVariableHandler.mVariables, "atan", atanFunction);
 	string_map_push(&gVariableHandler.mVariables, "authorname", authorNameFunction);
 
 	string_map_push(&gVariableHandler.mVariables, "backedge", backEdgeFunction);
@@ -1184,35 +1176,22 @@ static void setupVariableAssignments() {
 	string_map_push(&gVariableHandler.mVariables, "camerapos y", cameraPosYFunction);
 	string_map_push(&gVariableHandler.mVariables, "camerazoom", cameraZoomFunction);
 	string_map_push(&gVariableHandler.mVariables, "canrecover", canRecoverFunction);
-	//string_map_push(&gVariableHandler.mVariables, "ceil", ceilFunction);
-	//string_map_push(&gVariableHandler.mVariables, "command", commandFunction);
-	//string_map_push(&gVariableHandler.mVariables, "cond", condFunction);
-	//string_map_push(&gVariableHandler.mVariables, "const", constFunction);
-	//string_map_push(&gVariableHandler.mVariables, "const240p", const240pFunction);
-	//string_map_push(&gVariableHandler.mVariables, "const480p", const480pFunction);
-	//string_map_push(&gVariableHandler.mVariables, "const720p", const720pFunction);
-	//string_map_push(&gVariableHandler.mVariables, "cos", cosFunction);
 	string_map_push(&gVariableHandler.mVariables, "ctrl", ctrlFunction);
 
 	string_map_push(&gVariableHandler.mVariables, "drawgame", drawGameFunction);
 
 	string_map_push(&gVariableHandler.mVariables, "e", eFunction);
-	//string_map_push(&gVariableHandler.mVariables, "exp", expFunction);
 
 	string_map_push(&gVariableHandler.mVariables, "facing", facingFunction);
-	//string_map_push(&gVariableHandler.mVariables, "floor", floorFunction);
 	string_map_push(&gVariableHandler.mVariables, "frontedge", frontEdgeFunction);
 	string_map_push(&gVariableHandler.mVariables, "frontedgebodydist", frontEdgeBodyDistFunction);
 	string_map_push(&gVariableHandler.mVariables, "frontedgedist", frontEdgeDistFunction);
-	//string_map_push(&gVariableHandler.mVariables, "fvar", fVarFunction);
 
 	string_map_push(&gVariableHandler.mVariables, "gameheight", gameHeightFunction);
 	string_map_push(&gVariableHandler.mVariables, "gametime", gameTimeFunction);
 	string_map_push(&gVariableHandler.mVariables, "gamewidth", gameWidthFunction);
-	//string_map_push(&gVariableHandler.mVariables, "gethitvar", getHitVarFunction);
 
 	string_map_push(&gVariableHandler.mVariables, "hitcount", hitCountFunction);
-	//string_map_push(&gVariableHandler.mVariables, "hitdefattr", hitDefAttrFunction);
 	string_map_push(&gVariableHandler.mVariables, "hitfall", hitFallFunction);
 	string_map_push(&gVariableHandler.mVariables, "hitover", hitOverFunction);
 	string_map_push(&gVariableHandler.mVariables, "hitpausetime", hitPauseTimeFunction);
@@ -1221,7 +1200,6 @@ static void setupVariableAssignments() {
 	string_map_push(&gVariableHandler.mVariables, "hitvel y", hitVelYFunction);
 
 	string_map_push(&gVariableHandler.mVariables, "id", idFunction);
-	//string_map_push(&gVariableHandler.mVariables, "ifelse", ifElseFunction);
 	string_map_push(&gVariableHandler.mVariables, "inguarddist", inGuardDistFunction);
 	string_map_push(&gVariableHandler.mVariables, "ishelper", isHelperFunction);
 	string_map_push(&gVariableHandler.mVariables, "ishometeam", isHomeTeamFunction);
@@ -1229,8 +1207,6 @@ static void setupVariableAssignments() {
 	string_map_push(&gVariableHandler.mVariables, "leftedge", leftEdgeFunction);
 	string_map_push(&gVariableHandler.mVariables, "life", lifeFunction);
 	string_map_push(&gVariableHandler.mVariables, "lifemax", lifeMaxFunction);
-	//string_map_push(&gVariableHandler.mVariables, "ln", lnFunction);
-	//string_map_push(&gVariableHandler.mVariables, "log", logFunction);
 	string_map_push(&gVariableHandler.mVariables, "lose", loseFunction);
 
 	string_map_push(&gVariableHandler.mVariables, "matchno", matchNoFunction);
@@ -1238,7 +1214,6 @@ static void setupVariableAssignments() {
 	string_map_push(&gVariableHandler.mVariables, "movecontact", moveContactFunction);
 	string_map_push(&gVariableHandler.mVariables, "moveguarded", moveGuardedFunction);
 	string_map_push(&gVariableHandler.mVariables, "movehit", moveHitFunction);
-	//string_map_push(&gVariableHandler.mVariables, "movetype", moveTypeFunction);
 	string_map_push(&gVariableHandler.mVariables, "movereversed", moveReversedFunction);
 
 	string_map_push(&gVariableHandler.mVariables, "name", nameFunction);
@@ -1247,7 +1222,6 @@ static void setupVariableAssignments() {
 	string_map_push(&gVariableHandler.mVariables, "numhelper", numHelperFunction);
 	string_map_push(&gVariableHandler.mVariables, "numpartner", numPartnerFunction);
 	string_map_push(&gVariableHandler.mVariables, "numproj", numProjFunction);
-	//string_map_push(&gVariableHandler.mVariables, "numprojid", numProjIDFunction);
 	string_map_push(&gVariableHandler.mVariables, "numtarget", numTargetFunction);
 
 	string_map_push(&gVariableHandler.mVariables, "p1name", p1NameFunction);
@@ -1256,10 +1230,8 @@ static void setupVariableAssignments() {
 	string_map_push(&gVariableHandler.mVariables, "p2dist x", p2DistFunctionX);
 	string_map_push(&gVariableHandler.mVariables, "p2dist y", p2DistFunctionY);
 	string_map_push(&gVariableHandler.mVariables, "p2life", p2LifeFunction);
-	//string_map_push(&gVariableHandler.mVariables, "p2movetype", p2MoveTypeFunction);
 	string_map_push(&gVariableHandler.mVariables, "p2name", p2NameFunction);
 	string_map_push(&gVariableHandler.mVariables, "p2stateno", p2StateNoFunction);
-	//string_map_push(&gVariableHandler.mVariables, "p2statetype", p2StateTypeFunction);
 	string_map_push(&gVariableHandler.mVariables, "p3name", p3NameFunction);
 	string_map_push(&gVariableHandler.mVariables, "p4name", p4NameFunction);
 	string_map_push(&gVariableHandler.mVariables, "palno", palNoFunction);
@@ -1270,15 +1242,7 @@ static void setupVariableAssignments() {
 	string_map_push(&gVariableHandler.mVariables, "pos y", posYFunction);
 	string_map_push(&gVariableHandler.mVariables, "power", powerFunction);
 	string_map_push(&gVariableHandler.mVariables, "powermax", powerMaxFunction);
-	//string_map_push(&gVariableHandler.mVariables, "playeridexist", playerIDExistFunction);
 	string_map_push(&gVariableHandler.mVariables, "prevstateno", prevStateNoFunction);
-	//string_map_push(&gVariableHandler.mVariables, "projcanceltime", projCancelTimeFunction);
-	//string_map_push(&gVariableHandler.mVariables, "projcontact", projContactFunction);
-	//string_map_push(&gVariableHandler.mVariables, "projcontacttime", projContactTimeFunction);
-	//string_map_push(&gVariableHandler.mVariables, "projguarded", projGuardedFunction);
-	//string_map_push(&gVariableHandler.mVariables, "projguardedtime", projGuardedTimeFunction);
-	//string_map_push(&gVariableHandler.mVariables, "projhit", projHitFunction);
-	//string_map_push(&gVariableHandler.mVariables, "projhittime", projHitTimeFunction);
 
 	string_map_push(&gVariableHandler.mVariables, "random", randomFunction);
 	string_map_push(&gVariableHandler.mVariables, "rightedge", rightEdgeFunction);
@@ -1292,26 +1256,16 @@ static void setupVariableAssignments() {
 	string_map_push(&gVariableHandler.mVariables, "screenpos y", screenPosYFunction);
 	string_map_push(&gVariableHandler.mVariables, "screenheight", screenHeightFunction);
 	string_map_push(&gVariableHandler.mVariables, "screenwidth", screenWidthFunction);
-	//string_map_push(&gVariableHandler.mVariables, "selfanimexist", selfAnimExistFunction);
-	//string_map_push(&gVariableHandler.mVariables, "sin", sinFunction);
 	string_map_push(&gVariableHandler.mVariables, "stateno", stateNoFunction);
 	string_map_push(&gVariableHandler.mVariables, "statetime", timeFunction);
-	//string_map_push(&gVariableHandler.mVariables, "statetype", stateTypeFunction);
-	//string_map_push(&gVariableHandler.mVariables, "stagevar", stageVarFunction);
-	//string_map_push(&gVariableHandler.mVariables, "sysfvar", sysFVarFunction);
-	//string_map_push(&gVariableHandler.mVariables, "sysvar", sysVarFunction);
 
-	//string_map_push(&gVariableHandler.mVariables, "tan", tanFunction);
-	//string_map_push(&gVariableHandler.mVariables, "teammode", teamModeFunction);
 	string_map_push(&gVariableHandler.mVariables, "teamside", teamSideFunction);
 	string_map_push(&gVariableHandler.mVariables, "tickspersecond", ticksPerSecondFunction);
 	string_map_push(&gVariableHandler.mVariables, "time", timeFunction);
-	//string_map_push(&gVariableHandler.mVariables, "timemod", timeModFunction);
 	string_map_push(&gVariableHandler.mVariables, "topedge", topEdgeFunction);
 
 	string_map_push(&gVariableHandler.mVariables, "uniquehitcount", uniqHitCountFunction);
 
-	//string_map_push(&gVariableHandler.mVariables, "var", varFunction);
 	string_map_push(&gVariableHandler.mVariables, "vel x", velXFunction);
 	string_map_push(&gVariableHandler.mVariables, "vel y", velYFunction);
 
