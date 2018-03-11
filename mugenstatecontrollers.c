@@ -1219,7 +1219,9 @@ static void parseProjectileController(DreamMugenStateController* tController, Mu
 }
 
 
-void parseStateControllerType(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
+
+
+static void parseStateControllerType(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	assert(string_map_contains(&tGroup->mElements, "type"));
 	MugenDefScriptGroupElement* e = string_map_get(&tGroup->mElements, "type");
 	tController->mData = NULL;
@@ -3467,4 +3469,112 @@ int handleDreamMugenStateControllerAndReturnWhetherStateChanged(DreamMugenStateC
 	}
 	 
 	return 0;
+}
+
+
+typedef void(*StateControllerParseFunction)(DreamMugenStateController*, MugenDefScriptGroup*);
+typedef int(*StateControllerHandleFunction)(DreamMugenStateController*, DreamPlayer*); // return 1 iff state changed
+
+static struct {
+	StringMap mStateControllerParsers; // contains StateControllerParseFunction
+	IntMap mStateControllerHandlers; // contains StateControllerHandleFunction
+} gVariableHandler;
+
+void afterImageParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void afterImageTimeParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void allPalFXParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void angleAddParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void angleDrawParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void angleMulParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void angleSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void appendToClipboardParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void assertSpecialParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void attackDistParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void attackMulSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void bgPalFXParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void bindToParentParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void bindToRootParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void bindToTargetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void changeAnimParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void changeAnim2ParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void changeStateParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void clearClipboardParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void ctrlSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void defenceMulSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void destroySelfParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void displayToClipboardParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void envColorParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void envShakeParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void explodParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void explodBindTimeParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void forceFeedbackParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void fallEnvShakeParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void gameMakeAnimParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void gravityParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void helperParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void hitAddParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void hitByParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void hitDefParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void hitFallDamageParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void hitFallSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void hitFallVelParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void hitOverrideParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void hitVelSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void lifeAddParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void lifeSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void makeDustParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void modifyExplodParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void moveHitResetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void notHitByParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void nullParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void offsetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void palFXParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void parentVarAddParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void parentVarSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void pauseParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void playerPushParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void playSndParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void posAddParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void posFreezeParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void posSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void powerAddParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void powerSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void projectileParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void remapPalParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void removeExplodParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void reversalDefParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void screenBoundParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void selfStateParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void sprPriorityParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void stateTypeSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void sndPanParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void stopSndParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void superPauseParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void targetBindParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void targetDropParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void targetFacingParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void targetLifeAddParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void targetPowerAddParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void targetStateParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void targetVelAddParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void targetVelSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void transParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void turnParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void varAddParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void varRandomParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void varRangeSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void varSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void velAddParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void velMulParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void velSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void victoryQuoteParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+void widthParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* t) {}
+
+
+static void loadStateControllerParsers() {
+	gVariableHandler.mStateControllerParsers = new_string_map();
+}
+
+void loadDreamMugenStateControllerHandler() {
+
 }
