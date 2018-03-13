@@ -555,10 +555,6 @@ int doDreamAssignmentStringsBeginsWithPattern(char* tPattern, char* tText) {
 	return 1;
 }
 
-static int isVariable() {
-	return 1;
-}
-
 static DreamMugenAssignment* parseMugenVariableFromString(char* tText) {
 	DreamMugenVariableAssignment* data = allocMemory(sizeof(DreamMugenVariableAssignment));
 	strcpy(data->mName, tText);
@@ -873,16 +869,9 @@ DreamMugenAssignment * parseDreamMugenAssignmentFromString(char * tText)
 	else if (isArray(tText)) {
 		return parseArrayFromString(tText);
 	}
-	else if (isVariable()) {
+	else {
 		return parseMugenVariableFromString(tText);
 	}
-	else {
-		logError("Unable to determine Mugen assignment.");
-		logErrorString(tText);
-		abortSystem();
-	}
-	
-	return NULL;
 }
 
 
