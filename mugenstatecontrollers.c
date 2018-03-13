@@ -19,6 +19,15 @@
 #include "gamelogic.h"
 #include "projectile.h"
 
+typedef void(*StateControllerParseFunction)(DreamMugenStateController*, MugenDefScriptGroup*);
+typedef int(*StateControllerHandleFunction)(DreamMugenStateController*, DreamPlayer*); // return 1 iff state changed
+
+static struct {
+	StringMap mStateControllerParsers; // contains StateControllerParseFunction
+	IntMap mStateControllerHandlers; // contains StateControllerHandleFunction
+} gVariableHandler;
+
+
 typedef struct {
 
 	char mName[100];
@@ -1630,330 +1639,14 @@ static void parseStateControllerType(DreamMugenStateController* tController, Mug
 	char* type = getAllocatedMugenDefStringVariableAsElement(e);
 	turnStringLowercase(type);
 
-	if (!strcmp("nothitby", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_NOT_HIT_BY;
-		parseNotHitByController(tController, tGroup);
-	}
-	else if (!strcmp("hitby", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_HIT_BY;
-		parseNotHitByController(tController, tGroup);
-	}
-	else if (!strcmp("changestate", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_CHANGE_STATE;
-		parseChangeStateController(tController, tGroup);
-	}
-	else if (!strcmp("changeanim", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_CHANGE_ANIMATION;
-		parseChangeAnimationController(tController, tGroup);
-	}
-	else if (!strcmp("assertspecial", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ASSERT_SPECIAL;
-		parseSpecialAssertController(tController, tGroup);
-	}
-	else if (!strcmp("explod", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_EXPLOD;
-		parseExplodController(tController, tGroup);
-	}
-	else if (!strcmp("playsnd", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PLAY_SOUND;
-		parsePlaySoundController(tController, tGroup);
-	}
-	else if (!strcmp("ctrlset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_CONTROL;
-		parseControlSettingController(tController, tGroup);
-	}
-	else if (!strcmp("hitdef", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_HIT_DEFINITION;
-		parseHitDefinitionController(tController, tGroup);
-	}
-	else if (!strcmp("width", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_WIDTH;
-		parseWidthController(tController, tGroup);
-	}
-	else if (!strcmp("sprpriority", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SPRITE_PRIORITY;
-		parseSpritePriorityController(tController, tGroup);
-	}
-	else if (!strcmp("posadd", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ADD_POSITION;
-		parse2DPhysicsController(tController, tGroup);
-	}
-	else if (!strcmp("varset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE;
-		parseVarSetController(tController, tGroup);
-	}
-	else if (!strcmp("targetbind", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_BIND_TARGET;
-		parseBindController(tController, tGroup);
-	}
-	else if (!strcmp("turn", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_TURN;
-		parseNullController(tController);
-	}
-	else if (!strcmp("targetfacing", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_TARGET_FACING;
-		parseSetTargetFacingController(tController, tGroup);
-	}
-	else if (!strcmp("targetlifeadd", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ADD_TARGET_LIFE;
-		parseTargetLifeAddController(tController, tGroup);
-	}
-	else if (!strcmp("targetstate", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_TARGET_STATE;
-		parseTargetChangeStateController(tController, tGroup);
-	}
-	else if (!strcmp("changeanim2", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_CHANGE_ANIMATION_2;
-		parseChangeAnimationController(tController, tGroup);
-	}
-	else if (!strcmp("selfstate", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_SELF_STATE;
-		parseChangeStateController(tController, tGroup);
-	}
-	else if (!strcmp("veladd", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ADD_VELOCITY;
-		parse2DPhysicsController(tController, tGroup);
-	}
-	else if (!strcmp("velset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_VELOCITY;
-		parse2DPhysicsController(tController, tGroup);
-	}
-	else if (!strcmp("velmul", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_MULTIPLY_VELOCITY;
-		parse2DPhysicsController(tController, tGroup);
-	}
-	else if (!strcmp("targetveladd", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_TARGET_ADD_VELOCITY;
-	}
-	else if (!strcmp("afterimage", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_AFTER_IMAGE;
-		parseNullController(tController); // TODO
-	}
-	else if (!strcmp("afterimagetime", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_AFTER_IMAGE_TIME;
-		parseNullController(tController); // TODO
-	}
-	else if (!strcmp("palfx", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT;
-		parseNullController(tController); // TODO
-	}
-	else if (!strcmp("hitvelset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_HIT_VELOCITY;
-		parse2DPhysicsController(tController, tGroup);
-	}
-	else if (!strcmp("screenbound", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SCREEN_BOUND;
-		parseScreenBoundController(tController, tGroup);
-	}
-	else if (!strcmp("posfreeze", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_FREEZE_POSITION;
-		parsePositionFreezeController(tController, tGroup);
-	}
-	else if (!strcmp("null", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_NULL;
-		parseNullController(tController);
-	}
-	else if (!strcmp("posset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_POSITION;
-		parse2DPhysicsController(tController, tGroup);
-	}
-	else if (!strcmp("envshake", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ENVIRONMENT_SHAKE;
-		parseEnvironmentShakeController(tController, tGroup);
-	}
-	else if (!strcmp("reversaldef", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_REVERSAL_DEFINITION;
-		parseReversalDefinitionController(tController, tGroup);
-	}
-	else if (!strcmp("hitoverride", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_HIT_OVERRIDE;
-		parseNullController(tController); // TODO
-	}
-	else if (!strcmp("pause", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PAUSE;
-		parseNullController(tController); // TODO
-	}
-	else if (!strcmp("superpause", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SUPER_PAUSE;
-		parseSuperPauseController(tController, tGroup);
-	}
-	else if (!strcmp("makedust", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_MAKE_DUST;
-		parseMakeDustController(tController, tGroup);
-	}
-	else if (!strcmp("statetypeset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_STATE_TYPE;
-		parseStateTypeSetController(tController, tGroup);
-	}
-	else if (!strcmp("forcefeedback", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_FORCE_FEEDBACK;
-		parseForceFeedbackController(tController);
-	}
-	else if (!strcmp("defencemulset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_DEFENSE_MULTIPLIER;
-		parseDefenseMultiplierController(tController, tGroup);
-	}
-	else if (!strcmp("varadd", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ADD_VARIABLE;
-		parseVarSetController(tController, tGroup);
-	}
-	else if (!strcmp("parentvaradd", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PARENT_ADD_VARIABLE;
-		parseVarSetController(tController, tGroup);
-	}
-	else if (!strcmp("fallenvshake", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_FALL_ENVIRONMENT_SHAKE;
-		parseNullController(tController);
-	}
-	else if (!strcmp("hitfalldamage", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_HIT_FALL_DAMAGE;
-		parseNullController(tController);
-	}
-	else if (!strcmp("hitfallvel", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_HIT_FALL_VELOCITY;
-		parseNullController(tController);
-	}
-	else if (!strcmp("hitfallset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_HIT_FALL;
-		parseHitFallSetController(tController, tGroup);
-	}
-	else if (!strcmp("varrangeset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANGE;
-		parseVarRangeSetController(tController, tGroup);
-	}
-	else if (!strcmp("remappal", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_REMAP_PALETTE;
-		parseNullController(tController); // TODO
-	}
-	else if (!strcmp("playerpush", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PLAYER_PUSH;
-		parseSingleRequiredValueController(tController, tGroup);
-	}
-	else if (!strcmp("poweradd", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ADD_POWER;
-		parseSingleRequiredValueController(tController, tGroup);
-	}
-	else if (!strcmp("helper", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_HELPER;
-		parseHelperController(tController, tGroup);
-	}
-	else if (!strcmp("stopsnd", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_STOP_SOUND;
-		parseNullController(tController); // TODO: Sound
-	}
-	else if (!strcmp("removeexplod", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_REMOVE_EXPLOD;
-		parseRemoveExplodController(tController, tGroup);
-	}
-	else if (!strcmp("destroyself", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_DESTROY_SELF;
-		parseNullController(tController);
-	}
-	else if (!strcmp("allpalfx", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT_ALL;
-	}
-	else if (!strcmp("envcolor", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ENVIRONMENT_COLOR;
-	}
-	else if (!strcmp("victoryquote", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_VICTORY_QUOTE;
-		parseNullController(tController); // TODO
-	}
-	else if (!strcmp("attackmulset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_ATTACK_MULTIPLIER;
-		parseSingleRequiredValueController(tController, tGroup);
-	}
-	else if (!strcmp("lifeadd", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ADD_LIFE;
-		parseLifeAddController(tController, tGroup);
-	}
-	else if (!strcmp("sndpan", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PAN_SOUND;
-		parseNullController(tController); // TODO
-	}
-	else if (!strcmp("displaytoclipboard", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_DISPLAY_TO_CLIPBOARD;
-		parseNullController(tController); // TODO
-	}
-	else if (!strcmp("appendtoclipboard", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_APPEND_TO_CLIPBOARD;
-		parseNullController(tController); // TODO
-	}
-	else if (!strcmp("gravity", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_GRAVITY;
-		parseNullController(tController);
-	}
-	else if (!strcmp("attackdist", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_ATTACK_DISTANCE;
-		parseSingleRequiredValueController(tController, tGroup);
-	}
-	else if (!strcmp("targetpoweradd", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ADD_TARGET_POWER;
-	}
-	else if (!strcmp("movehitreset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_RESET_MOVE_HIT;
-		parseNullController(tController);
-	}
-	else if (!strcmp("modifyexplod", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_MODIFY_EXPLOD;
-		parseModifyExplodController(tController, tGroup);
-	}
-	else if (!strcmp("bgpalfx", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT_BACKGROUND;
-		parseNullController(tController); // TODO: maybe
-	}
-	else if (!strcmp("hitadd", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ADD_HIT;
-	}
-	else if (!strcmp("bindtoroot", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_BIND_TO_ROOT;
-		parseBindController(tController, tGroup);
-	}
-	else if (!strcmp("trans", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_TRANSPARENCY;
-		parseNullController(tController); // NULL
-	}
-	else if (!strcmp("bindtoparent", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_BIND_TO_PARENT;
-		parseBindController(tController, tGroup);
-	}
-	else if (!strcmp("angleset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_ANGLE;
-		parseSingleRequiredValueController(tController, tGroup);
-	}
-	else if (!strcmp("angleadd", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ADD_ANGLE;
-		parseSingleRequiredValueController(tController, tGroup);
-	}
-	else if (!strcmp("angledraw", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_DRAW_ANGLE;
-		parseAngleDrawController(tController, tGroup);
-	}
-	else if (!strcmp("gamemakeanim", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_MAKE_GAME_ANIMATION;
-	}
-	else if (!strcmp("varrandom", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANDOM;
-	}
-	else if (!strcmp("parentvarset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_PARENT_VARIABLE;
-		parseVarSetController(tController, tGroup);
-	}
-	else if (!strcmp("projectile", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PROJECTILE;
-		parseProjectileController(tController, tGroup);
-	}
-	else if (!strcmp("powerset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_POWER;
-	}
-	else if (!strcmp("offset", type)) {
-		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_OFFSET;
-	}
-	else {
+	if(!string_map_contains(&gVariableHandler.mStateControllerParsers, type)) {
 		logError("Unable to determine state controller type.");
 		logErrorString(type);
 		abortSystem();
 	}
+
+	StateControllerParseFunction func = string_map_get(&gVariableHandler.mStateControllerParsers, type);
+	func(tController, tGroup);
 
 	freeMemory(type);
 }
@@ -3872,15 +3565,6 @@ int handleDreamMugenStateControllerAndReturnWhetherStateChanged(DreamMugenStateC
 	return 0;
 }
 
-
-typedef void(*StateControllerParseFunction)(DreamMugenStateController*, MugenDefScriptGroup*);
-typedef int(*StateControllerHandleFunction)(DreamMugenStateController*, DreamPlayer*); // return 1 iff state changed
-
-static struct {
-	StringMap mStateControllerParsers; // contains StateControllerParseFunction
-	IntMap mStateControllerHandlers; // contains StateControllerHandleFunction
-} gVariableHandler;
-
 void afterImageParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAfterImageController(tController, tGroup);}
 void afterImageTimeParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAfterImageTimeController(tController, tGroup); }
 void allPalFXParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parsePalFXController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT_ALL); }
@@ -3972,10 +3656,100 @@ void victoryQuoteParseFunction(DreamMugenStateController* tController, MugenDefS
 void widthParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseWidthController(tController, tGroup); }
 
 
-static void loadStateControllerParsers() {
+static void setupStateControllerParsers() {
 	gVariableHandler.mStateControllerParsers = new_string_map();
+
+	string_map_push(&gVariableHandler.mStateControllerParsers, "afterimage", afterImageParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "afterimagetime", afterImageTimeParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "allpalfx", allPalFXParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "angleadd", angleAddParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "angledraw", angleDrawParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "anglemul", angleMulParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "angleset", angleSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "appendtoclipboard", appendToClipboardParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "assertspecial", assertSpecialParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "attackdist", attackDistParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "attackmulset", attackMulSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "bgpalfx", bgPalFXParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "bindtoparent", bindToParentParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "bindtoroot", bindToRootParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "bindtotarget", bindToTargetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "changeanim", changeAnimParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "changeanim2", changeAnim2ParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "changestate", changeStateParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "clearclipboard", clearClipboardParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "ctrlset", ctrlSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "defencemulset", defenceMulSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "destroyself", destroySelfParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "displaytoclipboard", displayToClipboardParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "envcolor", envColorParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "envshake", envShakeParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "explod", explodParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "explodbindtime", explodBindTimeParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "forcefeedback", forceFeedbackParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "fallenvshake", fallEnvShakeParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "gamemakeanim", gameMakeAnimParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "gravity", gravityParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "helper", helperParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "hitadd", hitAddParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "hitby", hitByParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "hitdef", hitDefParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "hitfalldamage", hitFallDamageParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "hitfallset", hitFallSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "hitfallvel", hitFallVelParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "hitoverride", hitOverrideParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "hitvelset", hitVelSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "lifeadd", lifeAddParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "lifeset", lifeSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "makedust", makeDustParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "modifyexplod", modifyExplodParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "movehitreset", moveHitResetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "nothitby", notHitByParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "null", nullParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "offset", offsetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "palfx", palFXParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "parentvaradd", parentVarAddParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "parentvarset", parentVarSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "pause", pauseParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "playerpush", playerPushParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "playsnd", playSndParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "posadd", posAddParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "posfreeze", posFreezeParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "posset", posSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "poweradd", powerAddParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "powerset", powerSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "projectile", projectileParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "remappal", remapPalParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "removeexplod", removeExplodParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "reversaldef", reversalDefParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "screenbound", screenBoundParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "selfstate", selfStateParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "sprpriority", sprPriorityParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "statetypeset", stateTypeSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "sndpan", sndPanParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "stopsnd", stopSndParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "superpause", superPauseParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "targetbind", targetBindParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "targetdrop", targetDropParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "targetfacing", targetFacingParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "targetlifeadd", targetLifeAddParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "targetpoweradd", targetPowerAddParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "targetstate", targetStateParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "targetveladd", targetVelAddParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "targetvelset", targetVelSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "trans", transParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "turn", turnParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "varadd", varAddParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "varrandom", varRandomParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "varrangeset", varRangeSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "varset", varSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "veladd", velAddParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "velmul", velMulParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "velset", velSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "victoryquote", victoryQuoteParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "width", widthParseFunction);
 }
 
-void loadDreamMugenStateControllerHandler() {
-
+void setupDreamMugenStateControllerHandler() {
+	setupStateControllerParsers();
 }

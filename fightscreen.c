@@ -31,6 +31,7 @@
 #include "ai.h"
 #include "titlescreen.h"
 #include "mugenassignmentevaluator.h"
+#include "mugenstatecontrollers.h"
 
 static struct {
 	void(*mFinishedCB)();
@@ -40,6 +41,7 @@ static struct {
 static void loadFightScreen() {
 	setupDreamGameCollisions();
 	setupDreamAssignmentEvaluator();
+	setupDreamMugenStateControllerHandler();
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
 	instantiateActor(MugenTextHandler);
 
