@@ -32,6 +32,7 @@
 #include "titlescreen.h"
 #include "mugenassignmentevaluator.h"
 #include "mugenstatecontrollers.h"
+#include "clipboardhandler.h"
 
 static struct {
 	void(*mFinishedCB)();
@@ -44,6 +45,7 @@ static void loadFightScreen() {
 	setupDreamMugenStateControllerHandler();
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
 	instantiateActor(MugenTextHandler);
+	instantiateActor(ClipboardHandler);
 
 	instantiateActor(DreamAIHandler);
 	instantiateActor(DreamMugenConfig);

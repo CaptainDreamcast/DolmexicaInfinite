@@ -19,6 +19,7 @@
 #include "menubackground.h"
 #include "characterselectscreen.h"
 #include "arcademode.h"
+#include "clipboardhandler.h"
 
 typedef struct {
 	void(*mCB)();
@@ -196,7 +197,8 @@ static void loadBoxCursor() {
 static void loadTitleScreen() {
 	instantiateActor(MugenTextHandler);
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
-
+	instantiateActor(ClipboardHandler);
+	
 	gData.mWhiteTexture = createWhiteTexture();
 
 	char folder[1024];

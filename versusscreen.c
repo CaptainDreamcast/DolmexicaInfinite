@@ -12,6 +12,7 @@
 #include "menubackground.h"
 #include "titlescreen.h"
 #include "playerdefinition.h"
+#include "clipboardhandler.h"
 
 typedef struct {
 	Position mPosition;
@@ -132,6 +133,7 @@ static void screenTimeFinishedCB(void* tCaller);
 static void loadVersusScreen() {
 	instantiateActor(MugenTextHandler);
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
+	instantiateActor(ClipboardHandler);
 
 	// TODO: properly
 	char folder[1024];

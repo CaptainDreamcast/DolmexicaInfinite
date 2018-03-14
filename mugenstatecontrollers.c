@@ -18,6 +18,7 @@
 #include "fightui.h"
 #include "gamelogic.h"
 #include "projectile.h"
+#include "clipboardhandler.h"
 
 typedef void(*StateControllerParseFunction)(DreamMugenStateController*, MugenDefScriptGroup*);
 typedef int(*StateControllerHandleFunction)(DreamMugenStateController*, DreamPlayer*); // return 1 iff state changed
@@ -3125,7 +3126,7 @@ static void handleAddingTargetLife(DreamMugenStateController* tController, Dream
 	addPlayerTargetLife(tPlayer, id, val, canKill, isAbsolute);
 }
 
-static void handleAngleDrawController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleAngleDrawController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	AngleDrawController* e = tController->mData;
 
 	if (e->mHasScale) {
@@ -3137,22 +3138,35 @@ static void handleAngleDrawController(DreamMugenStateController* tController, Dr
 		double val = evaluateDreamAssignmentAndReturnAsFloat(e->mValue, tPlayer);
 		setPlayerDrawAngle(tPlayer, val);
 	}
+
+	return 0;
 }
 
-static void handleAngleAddController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleAngleAddController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	SingleRequiredValueController* e = tController->mData;
 
 	double angle = evaluateDreamAssignmentAndReturnAsFloat(e->mValue, tPlayer);
-
 	addPlayerDrawAngle(tPlayer, angle);
+
+	return 0;
 }
 
-static void handleAngleSetController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleAngleMulController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	SingleRequiredValueController* e = tController->mData;
 
 	double angle = evaluateDreamAssignmentAndReturnAsFloat(e->mValue, tPlayer);
+	multiplyPlayerDrawAngle(tPlayer, angle);
 
+	return 0;
+}
+
+static int handleAngleSetController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	SingleRequiredValueController* e = tController->mData;
+
+	double angle = evaluateDreamAssignmentAndReturnAsFloat(e->mValue, tPlayer);
 	setPlayerFixedDrawAngle(tPlayer, angle);
+
+	return 0;
 }
 
 static void handleRemovingExplod(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -3564,6 +3578,137 @@ int handleDreamMugenStateControllerAndReturnWhetherStateChanged(DreamMugenStateC
 	 
 	return 0;
 }
+
+
+static int handleAfterImage(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	(void)tController;
+	(void)tPlayer;
+	// TODO
+
+	return 0;
+}
+
+static int handleAfterImageTime(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	(void)tController;
+	(void)tPlayer;
+	// TODO
+
+	return 0;
+}
+
+static int handlePaletteEffect(DreamMugenStateController* tController, DreamPlayer* tPlayer, int tDoesAffectCharacters, int tDoesAffectBackground) {
+	(void)tController;
+	(void)tPlayer;
+	(void)tDoesAffectCharacters;
+	(void)tDoesAffectBackground;
+	// TODO
+
+	return 0;
+}
+
+static void handleAppendToClipboardController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	ClipboardController* e = tController->mData;
+
+	char* formatString = evaluateDreamAssignmentAndReturnAsAllocatedString(e->mText, tPlayer);
+	char* parameterString = evaluateDreamAssignmentAndReturnAsAllocatedString(e->mParams, tPlayer);
+
+	addClipboardLineFormatString(formatString, parameterString);
+
+	freeMemory(formatString);
+	freeMemory(parameterString);
+}
+
+int afterImageHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAfterImage(tController, tPlayer); }
+int afterImageTimeHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAfterImageTime(tController, tPlayer); }
+int allPalFXHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handlePaletteEffect(tController, tPlayer, 1, 1); }
+int angleAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAngleAddController(tController, tPlayer); }
+int angleDrawHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAngleDrawController(tController, tPlayer); }
+int angleMulHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAngleMulController(tController, tPlayer); }
+int angleSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAngleSetController(tController, tPlayer); }
+int appendToClipboardHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int assertSpecialHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int attackDistHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int attackMulSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int bgPalFXHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int bindToParentHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int bindToRootHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int bindToTargetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int changeAnimHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int changeAnim2HandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int changeStateHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int clearClipboardHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int ctrlSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int defenceMulSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int destroySelfHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int displayToClipboardHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int envColorHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int envShakeHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int explodHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int explodBindTimeHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int forceFeedbackHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int fallEnvShakeHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int gameMakeAnimHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int gravityHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int helperHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int hitAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int hitByHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int hitDefHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int hitFallDamageHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int hitFallSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int hitFallVelHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int hitOverrideHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int hitVelSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int lifeAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int lifeSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int makeDustHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int modifyExplodHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int moveHitResetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int notHitByHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int nullHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int offsetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int palFXHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int parentVarAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int parentVarSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int pauseHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int playerPushHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int playSndHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int posAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int posFreezeHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int posSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int powerAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int powerSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int projectileHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int remapPalHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int removeExplodHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int reversalDefHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int screenBoundHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int selfStateHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int sprPriorityHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int stateTypeSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int sndPanHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int stopSndHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int superPauseHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int targetBindHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int targetDropHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int targetFacingHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int targetLifeAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int targetPowerAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int targetStateHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int targetVelAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int targetVelSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int transHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int turnHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int varAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int varRandomHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int varRangeSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int varSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int velAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int velMulHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int velSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int victoryQuoteHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int widthHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+
+
 
 void afterImageParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAfterImageController(tController, tGroup);}
 void afterImageTimeParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAfterImageTimeController(tController, tGroup); }

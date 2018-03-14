@@ -2769,7 +2769,16 @@ void setPlayerDrawAngle(DreamPlayer * p, double tAngle)
 
 void addPlayerDrawAngle(DreamPlayer * p, double tAngle)
 {
-	addMugenAnimationDrawAngle(p->mAnimationID, tAngle); // TODO: one frame only
+	double angle = getMugenAnimationDrawAngle(p->mAnimationID);
+	angle += tAngle;
+	setMugenAnimationDrawAngle(p->mAnimationID, angle); // TODO: one frame only
+}
+
+void multiplyPlayerDrawAngle(DreamPlayer * p, double tFactor)
+{
+	double angle = getMugenAnimationDrawAngle(p->mAnimationID);
+	angle *= tFactor;
+	setMugenAnimationDrawAngle(p->mAnimationID, angle); // TODO: one frame only
 }
 
 void setPlayerFixedDrawAngle(DreamPlayer * p, double tAngle)

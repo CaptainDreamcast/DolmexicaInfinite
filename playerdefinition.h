@@ -489,6 +489,7 @@ int getPlayerControlTime(DreamPlayer* p);
 void setPlayerDrawScale(DreamPlayer* p, Vector3D tScale);
 void setPlayerDrawAngle(DreamPlayer* p, double tAngle);
 void addPlayerDrawAngle(DreamPlayer* p, double tAngle);
+void multiplyPlayerDrawAngle(DreamPlayer* p, double tFactor);
 void setPlayerFixedDrawAngle(DreamPlayer* p, double tAngle);
 
 void bindPlayerToRoot(DreamPlayer* p, int tTime, int tFacing, Vector3D tOffset);

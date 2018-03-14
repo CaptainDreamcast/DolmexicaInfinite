@@ -14,6 +14,7 @@
 #include "titlescreen.h"
 #include "storyscreen.h"
 #include "playerdefinition.h"
+#include "clipboardhandler.h"
 
 typedef struct {
 	Vector3DI mCursorStartCell;
@@ -360,6 +361,7 @@ static void loadModeText() {
 static void loadCharacterSelectScreen() {
 	instantiateActor(MugenTextHandler);
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
+	instantiateActor(ClipboardHandler);
 
 	gData.mCharacterScript = loadMugenDefScript("assets/data/select.def");
 

@@ -10,6 +10,7 @@
 
 #include "titlescreen.h"
 #include "versusscreen.h"
+#include "clipboardhandler.h"
 
 typedef struct {
 	int mIsActive;
@@ -143,6 +144,7 @@ static void startScene();
 static void loadStoryScreen() {
 	instantiateActor(MugenTextHandler);
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
+	instantiateActor(ClipboardHandler);
 
 	loadScriptAndSprites();
 	loadScenes();

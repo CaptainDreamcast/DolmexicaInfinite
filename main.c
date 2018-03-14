@@ -14,6 +14,7 @@
 #include "fightscreen.h"
 #include "playerdefinition.h"
 #include "warningscreen.h"
+#include "clipboardhandler.h"
 
 #ifdef DREAMCAST
 KOS_INIT_FLAGS(INIT_DEFAULT);
@@ -61,8 +62,8 @@ int main(int argc, char** argv) {
 		exitGame();
 	}
 
-	
 	setMemoryHandlerCompressionActive();
+	initClipboardForGame();
 	setPlayerDefinitionPath(0, "assets/chars/kfm/kfm.def");
 	setPlayerDefinitionPath(1, "assets/chars/kfm/kfm.def");
 	setPlayerHuman(0);
