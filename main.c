@@ -16,6 +16,9 @@
 #include "playerdefinition.h"
 #include "warningscreen.h"
 
+char romdisk_buffer[1];
+int romdisk_buffer_length;
+
 #ifdef DREAMCAST
 KOS_INIT_FLAGS(INIT_DEFAULT);
 
