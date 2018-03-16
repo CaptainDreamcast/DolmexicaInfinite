@@ -96,6 +96,12 @@ typedef struct Player_t{
 	int mPushDisabledFlag;
 	int mNoJuggleCheckFlag;
 	int mIntroFlag;
+	int mNoAirGuardFlag;
+	int mNoCrouchGuardFlag;
+	int mNoStandGuardFlag;
+	int mNoKOSoundFlag;
+	int mNoKOSlowdownFlag;
+	int mUnguardableFlag;
 
 	int mIsHitShakeOver;
 	int mIsHitOver;
@@ -315,10 +321,19 @@ void setPlayerNoAutoTurnFlag(DreamPlayer* p);
 void setPlayerInvisibleFlag(DreamPlayer* p);
 void setPlayerNoLandFlag(DreamPlayer* p);
 void setPlayerNoShadow(DreamPlayer* p);
+void setAllPlayersNoShadow();
 void setPlayerPushDisabledFlag(DreamPlayer* p, int tIsDisabled);
 void setPlayerNoJuggleCheckFlag(DreamPlayer* p);
 void setPlayerIntroFlag(DreamPlayer* p);
-void setPlayerNoAirGuardFlag(DreamPlayer* p);
+void setPlayerNoAirGuardFlag(DreamPlayer* p); 
+void setPlayerNoCrouchGuardFlag(DreamPlayer* p);
+void setPlayerNoStandGuardFlag(DreamPlayer* p);
+void setPlayerNoKOSoundFlag(DreamPlayer* p);
+void setPlayerNoKOSlowdownFlag(DreamPlayer* p);
+void setPlayerUnguardableFlag(DreamPlayer* p);
+
+int getPlayerNoKOSlowdownFlag(DreamPlayer* p);
+int getPlayerUnguardableFlag(DreamPlayer* p);
 
 int isPlayerInIntro(DreamPlayer* p);
 

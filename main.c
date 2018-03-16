@@ -9,12 +9,12 @@
 #include <prism/stagehandler.h>
 #include <prism/logoscreen.h>
 #include <prism/mugentexthandler.h>
+#include <prism/clipboardhandler.h>
 
 #include "titlescreen.h"
 #include "fightscreen.h"
 #include "playerdefinition.h"
 #include "warningscreen.h"
-#include "clipboardhandler.h"
 
 #ifdef DREAMCAST
 KOS_INIT_FLAGS(INIT_DEFAULT);

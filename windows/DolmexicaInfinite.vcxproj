@@ -124,7 +124,6 @@
     <ClCompile Include="..\ai.c" />
     <ClCompile Include="..\arcademode.c" />
     <ClCompile Include="..\characterselectscreen.c" />
-    <ClCompile Include="..\clipboardhandler.c" />
     <ClCompile Include="..\collision.c" />
     <ClCompile Include="..\config.c" />
     <ClCompile Include="..\fightscreen.c" />
@@ -160,7 +159,6 @@
     <ClInclude Include="..\ai.h" />
     <ClInclude Include="..\arcademode.h" />
     <ClInclude Include="..\characterselectscreen.h" />
-    <ClInclude Include="..\clipboardhandler.h" />
     <ClInclude Include="..\collision.h" />
     <ClInclude Include="..\config.h" />
     <ClInclude Include="..\fightscreen.h" />

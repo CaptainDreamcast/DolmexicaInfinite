@@ -103,6 +103,7 @@ typedef struct {
 	int mTextID;
 	int mFramesPerCount;
 	int mNow;
+	int mTimerFreezeFlag;
 
 	void(*mFinishedCB)();
 } TimeCounter;
@@ -215,6 +216,25 @@ typedef struct {
 
 } Continue;
 
+typedef struct {
+	TextureData mWhiteTexture;
+	int mAnimationID;
+
+	int mIsActive;
+	int mNow;
+	int mDuration;
+} EnvironmentColorEffect;
+
+typedef struct {
+	double mFrequency;
+	int mAmplitude;
+	double mPhaseOffset;
+
+	int mIsActive;
+	int mNow;
+	int mDuration;
+} EnvironmentShakeEffect;
+
 // TODO: "time" component for everything, which offsets when single element is shown after call
 static struct {
 	MugenSpriteFile mFightSprites;
@@ -239,6 +259,8 @@ static struct {
 
 	ControlCountdown mControl;
 
+	EnvironmentColorEffect mEnvironmentEffects;
+	EnvironmentShakeEffect mEnvironmentShake;
 
 	List mHitSparks;
 } gData;
@@ -494,6 +516,7 @@ static void loadTimer(MugenDefScript* tScript) {
 
 	gData.mTime.mValue = 99;
 	gData.mTime.mNow = 0;
+	gData.mTime.mTimerFreezeFlag = 0;
 	resetDreamTimer();
 }
 
@@ -592,6 +615,18 @@ static void loadContinue() {
 	gData.mContinue.mIsActive = 0;
 }
 
+static void loadEnvironmentColorEffects() {
+	gData.mEnvironmentEffects.mWhiteTexture = createWhiteTexture();
+	gData.mEnvironmentEffects.mAnimationID = playOneFrameAnimationLoop(makePosition(0, 0, 0), &gData.mEnvironmentEffects.mWhiteTexture);
+	setAnimationScale(gData.mEnvironmentEffects.mAnimationID, makePosition(0, 0, 0), makePosition(0, 0, 0));
+
+	gData.mEnvironmentEffects.mIsActive = 0;
+}
+
+static void loadEnvironmentShakeEffects() {
+	gData.mEnvironmentShake.mIsActive = 0;
+}
+
 static void loadFightUI(void* tData) {
 	(void)tData;
 
@@ -611,6 +646,8 @@ static void loadFightUI(void* tData) {
 	unloadMugenDefScript(script);
 
 	loadHitSparks();
+	loadEnvironmentColorEffects();
+	loadEnvironmentShakeEffects();
 }
 
 
@@ -812,6 +849,10 @@ static void updateTimeDisplayText() {
 
 static void updateTimeDisplay() {
 	if (!gData.mTime.mIsActive) return;
+	if (gData.mTime.mTimerFreezeFlag) {
+		gData.mTime.mTimerFreezeFlag = 0;
+		return;
+	}
 
 	gData.mTime.mNow++;
 	if (gData.mTime.mNow >= gData.mTime.mFramesPerCount) {
@@ -862,6 +903,18 @@ static void updateContinueDisplay() {
 	}
 }
 
+static void updateEnvironmentColor() {
+	if (!gData.mEnvironmentEffects.mIsActive) return;
+
+	setDreamStageLayer1InvisibleForOneFrame();
+
+	gData.mEnvironmentEffects.mNow++;
+	if (gData.mEnvironmentEffects.mNow >= gData.mEnvironmentEffects.mDuration) {
+		setAnimationScale(gData.mEnvironmentEffects.mAnimationID, makePosition(0, 0, 0), makePosition(0, 0, 0));
+		gData.mEnvironmentEffects.mIsActive = 0;
+	}
+}
+
 static void updateFightUI(void* tData) {
 	(void)tData;
 	updateHitSparks();
@@ -873,6 +926,7 @@ static void updateFightUI(void* tData) {
 	updateControlCountdown();
 	updateTimeDisplay();
 	updateContinueDisplay();
+	updateEnvironmentColor();
 }
 
 
@@ -1108,4 +1162,38 @@ void setDreamBarInvisibleForOneFrame()
 		setSingleUIComponentInvisibleForOneFrame(gData.mFaces[i].mBG1AnimationID);
 		setSingleUIComponentInvisibleForOneFrame(gData.mFaces[i].mFaceAnimationID);
 	}
+}
+
+void setDreamNoMusicFlag()
+{
+	// TODO: BGM
+}
+
+void setTimerFreezeFlag()
+{
+	gData.mTime.mTimerFreezeFlag = 1;
+}
+
+void setEnvironmentColor(Vector3DI tColors, int tTime, int tIsUnderCharacters)
+{
+	setAnimationPosition(gData.mEnvironmentEffects.mAnimationID, makePosition(0, 0, tIsUnderCharacters ? 20 : 80));
+	setAnimationSize(gData.mEnvironmentEffects.mAnimationID, makePosition(640, 480, 1), makePosition(0, 0, 0));
+	setAnimationColor(gData.mEnvironmentEffects.mAnimationID, tColors.x / 255.0, tColors.y / 255.0, tColors.z / 255.0);
+
+	gData.mEnvironmentEffects.mDuration = tTime;
+	gData.mEnvironmentEffects.mNow = 0;
+	gData.mEnvironmentEffects.mIsActive = 1;
+
+}
+
+// TODO: use environment shake
+void setEnvironmentShake(int tDuration, double tFrequency, int tAmplitude, double tPhaseOffset)
+{
+	gData.mEnvironmentShake.mFrequency = tFrequency;
+	gData.mEnvironmentShake.mAmplitude = tAmplitude;
+	gData.mEnvironmentShake.mPhaseOffset = tPhaseOffset;
+
+	gData.mEnvironmentShake.mNow = 0;
+	gData.mEnvironmentShake.mDuration = tDuration;
+	gData.mEnvironmentShake.mIsActive = 1;
 }

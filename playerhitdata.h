@@ -58,9 +58,12 @@ void copyHitDataToActive(DreamPlayer* tPlayer, void* tHitData);
 
 int isReceivedHitDataActive(void* tHitData);
 int isHitDataActive(DreamPlayer* tPlayer);
+int isActiveHitDataActive(DreamPlayer* tPlayer);
 void setHitDataActive(DreamPlayer* tPlayer);
 void setReceivedHitDataInactive(void* tHitData);
 void setHitDataInactive(DreamPlayer* tPlayer);
+void setActiveHitDataInactive(DreamPlayer* tPlayer);
+
 
 void* getPlayerHitDataReference(DreamPlayer* tPlayer);
 DreamPlayer* getReceivedHitDataPlayer(void* tHitData);
@@ -217,6 +220,7 @@ int getActiveHitDataFallRecovery(DreamPlayer* tPlayer);
 int getHitDataFallRecovery(DreamPlayer* tPlayer);
 void setHitDataFallRecovery(DreamPlayer* tPlayer, int tCanRecover);
 void setHitDataFallRecoveryTime(DreamPlayer* tPlayer, int tRecoverTime);
+int getActiveHitDataFallDamage(DreamPlayer* tPlayer);
 void setHitDataFallDamage(DreamPlayer* tPlayer, int tDamage);
 int getActiveHitDataAirFall(DreamPlayer* tPlayer);
 void setHitDataAirFall(DreamPlayer* tPlayer, int tIsCausingPlayer2ToFall);
@@ -253,9 +257,14 @@ void setHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer, double tFrequency
 void setHitDataEnvironmentShakeAmplitude(DreamPlayer* tPlayer, int tAmplitude);
 void setHitDataEnvironmentShakePhase(DreamPlayer* tPlayer, double tPhase);
 
+int getActiveHitDataFallEnvironmentShakeTime(DreamPlayer* tPlayer);
+void setActiveHitDataFallEnvironmentShakeTime(DreamPlayer* tPlayer, int tTime);
 void setHitDataFallEnvironmentShakeTime(DreamPlayer* tPlayer, int tTime);
+double getActiveHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer);
 void setHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer, double tFrequency);
+int getActiveHitDataFallEnvironmentShakeAmplitude(DreamPlayer* tPlayer);
 void setHitDataFallEnvironmentShakeAmplitude(DreamPlayer* tPlayer, int tAmplitude);
+double getActiveHitDataFallEnvironmentShakePhase(DreamPlayer* tPlayer);
 void setHitDataFallEnvironmentShakePhase(DreamPlayer* tPlayer, double tPhase);
 
 double getActiveHitDataVelocityX(DreamPlayer* tPlayer);

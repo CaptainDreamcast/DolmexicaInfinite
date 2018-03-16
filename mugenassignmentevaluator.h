@@ -10,3 +10,4 @@ double evaluateDreamAssignmentAndReturnAsFloat(DreamMugenAssignment* tAssignment
 int evaluateDreamAssignmentAndReturnAsInteger(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer);
 char* evaluateDreamAssignmentAndReturnAsAllocatedString(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer);
 Vector3D evaluateDreamAssignmentAndReturnAsVector3D(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer);
+Vector3DI evaluateDreamAssignmentAndReturnAsVector3DI(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer);

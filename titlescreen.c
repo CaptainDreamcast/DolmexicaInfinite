@@ -12,6 +12,7 @@
 #include <prism/mugensoundfilereader.h>
 #include <prism/mugentexthandler.h>
 #include <prism/tweening.h>
+#include <prism/clipboardhandler.h>
 
 #include <prism/log.h>
 
@@ -19,7 +20,6 @@
 #include "menubackground.h"
 #include "characterselectscreen.h"
 #include "arcademode.h"
-#include "clipboardhandler.h"
 
 typedef struct {
 	void(*mCB)();
@@ -318,6 +318,10 @@ static void updateTitleScreen() {
 
 	if (hasPressedAbortFlank()) {
 		abortScreenHandling();
+	}
+
+	if (hasPressedXFlank()) {
+		addControllerRumbleBasic(20);
 	}
 }
 

@@ -28,4 +28,10 @@ void setDreamTimeDisplayFinishedCB(void(*tTimeDisplayFinishedFunc)());
 
 void setDreamBarInvisibleForOneFrame();
 
+void setDreamNoMusicFlag();
+void setTimerFreezeFlag();
+
+void setEnvironmentColor(Vector3DI tColors, int tTime, int tIsUnderCharacters);
+void setEnvironmentShake(int tDuration, double tFrequency, int tAmplitude, double tPhaseOffset);
+
 extern ActorBlueprint DreamFightUIBP;

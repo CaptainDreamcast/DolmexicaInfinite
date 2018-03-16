@@ -261,7 +261,7 @@ static int isActionGroup(MugenDefScriptGroup* tGroup) {
 
 static void addBackgroundElementToStageHandler(StageBackgroundElement* e, MugenAnimation* tAnimation) {
 	e->mStart.z = e->mListPosition + e->mLayerNo * 30; // TODO
-	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), makePosition(0, 0, 0), e->mStartScaleY, e->mScaleDeltaY, gData.mStageInfo.mLocalCoordinates);
+	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), makePosition(0, 0, 0), e->mStartScaleY, e->mScaleDeltaY, e->mLayerNo, gData.mStageInfo.mLocalCoordinates);
 }
 
 static BlendType getBackgroundBlendType(MugenDefScript* tScript, char* tGroupName) {

@@ -6,6 +6,10 @@
 #include <prism/memoryhandler.h>
 #include <prism/log.h>
 #include <prism/system.h>
+#include <prism/clipboardhandler.h>
+#include <prism/input.h>
+#include <prism/math.h>
+#include <prism/mugenanimationhandler.h>
 
 #include "playerdefinition.h"
 #include "playerhitdata.h"
@@ -18,7 +22,6 @@
 #include "fightui.h"
 #include "gamelogic.h"
 #include "projectile.h"
-#include "clipboardhandler.h"
 
 typedef void(*StateControllerParseFunction)(DreamMugenStateController*, MugenDefScriptGroup*);
 typedef int(*StateControllerHandleFunction)(DreamMugenStateController*, DreamPlayer*); // return 1 iff state changed
@@ -1412,7 +1415,7 @@ typedef struct {
 static void parseEnvColorController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	EnvironmentColorController* e = allocMemory(sizeof(EnvironmentColorController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue, "255 , 255 , 255");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("under", tGroup, &e->mUnder, "");
 
@@ -1738,7 +1741,7 @@ static void handlePositionAdding(DreamMugenStateController* tController, DreamPl
 }
 
 
-static void handleStateChange(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleStateChange(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	ChangeStateController* e = tController->mData;
 
 	int state = evaluateDreamAssignmentAndReturnAsInteger(e->mState, tPlayer);
@@ -1748,6 +1751,8 @@ static void handleStateChange(DreamMugenStateController* tController, DreamPlaye
 		int control = evaluateDreamAssignmentAndReturnAsInteger(e->mControl, tPlayer);
 		setPlayerControl(tPlayer, control);
 	}
+
+	return 1;
 }
 
 static void handleSelfStateChange(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -2372,33 +2377,41 @@ static void handleHitDefinitionWithController(HitDefinitionController* e, DreamP
 	setHitDataActive(tPlayer);
 }
 
-static void handleHitDefinition(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleHitDefinition(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	HitDefinitionController* e = tController->mData;
 
 	handleHitDefinitionWithController(e, tPlayer);
+
+	return 0;
 }
 
-static void handleAnimationChange(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleAnimationChange(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	ChangeAnimationController* e = tController->mData;
 
 	int animation = evaluateDreamAssignmentAndReturnAsInteger(e->tNewAnimation, tPlayer);
 	int step = evaluateDreamAssignmentAndReturnAsInteger(e->tStep, tPlayer);
 	changePlayerAnimationWithStartStep(tPlayer, animation, step);
+
+	return 0;
 }
 
-static void handleAnimationChange2(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleAnimationChange2(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	ChangeAnimationController* e = tController->mData;
 
 	int animation = evaluateDreamAssignmentAndReturnAsInteger(e->tNewAnimation, tPlayer);
 	int step = evaluateDreamAssignmentAndReturnAsInteger(e->tStep, tPlayer);
 	changePlayerAnimationToPlayer2AnimationWithStartStep(tPlayer, animation, step);
+
+	return 0;
 }
 
-static void handleControlSetting(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleControlSetting(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	ControlSettingController* e = tController->mData;
 
 	int control = evaluateDreamAssignmentAndReturnAsInteger(e->tValue, tPlayer);
 	setPlayerControl(tPlayer, control);
+
+	return 0;
 }
 
 static void handleWidth(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -2420,32 +2433,62 @@ static void handleSingleSpecialAssert(DreamMugenAssignment* tAssignment, DreamPl
 	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
 	turnStringLowercase(flag);
 
-	if (!strcmp("nowalk", flag)) {
-		setPlayerNoWalkFlag(tPlayer);
-	}
-	else if (!strcmp("noautoturn", flag)) {
-		setPlayerNoAutoTurnFlag(tPlayer);
+	if (!strcmp("intro", flag)) {
+		setPlayerIntroFlag(tPlayer);
 	}
 	else if (!strcmp("invisible", flag)) {
 		setPlayerInvisibleFlag(tPlayer);
 	}
-	else if (!strcmp("noshadow", flag)) {
-		setPlayerNoShadow(tPlayer);
-	}
-	else if (!strcmp("nojugglecheck", flag)) {
-		setPlayerNoJuggleCheckFlag(tPlayer);
-	}
-	else if (!strcmp("intro", flag)) {
-		setPlayerIntroFlag(tPlayer);
-	}
-	else if (!strcmp("noairguard", flag)) {
-		setPlayerNoAirGuardFlag(tPlayer);
+	else if (!strcmp("roundnotover", flag)) {
+		setDreamRoundNotOverFlag();
 	}
 	else if (!strcmp("nobardisplay", flag)) {
 		setDreamBarInvisibleForOneFrame();
 	}
-	else if (!strcmp("roundnotover", flag)) {
-		setDreamRoundNotOverFlag();
+	else if (!strcmp("nobg", flag)) {
+		setDreamStageInvisibleForOneFrame();
+	}
+	else if (!strcmp("nofg", flag)) {
+		setDreamStageLayer1InvisibleForOneFrame();
+	}
+	else if (!strcmp("nostandguard", flag)) {
+		setPlayerNoStandGuardFlag(tPlayer);
+	}
+	else if (!strcmp("nocrouchguard", flag)) {
+		setPlayerNoCrouchGuardFlag(tPlayer);
+	}
+	else if (!strcmp("noairguard", flag)) {
+		setPlayerNoAirGuardFlag(tPlayer);
+	}
+	else if (!strcmp("noautoturn", flag)) {
+		setPlayerNoAutoTurnFlag(tPlayer);
+	}
+	else if (!strcmp("nojugglecheck", flag)) {
+		setPlayerNoJuggleCheckFlag(tPlayer);
+	}
+	else if (!strcmp("nokosnd", flag)) {
+		setPlayerNoKOSoundFlag(tPlayer);
+	}
+	else if (!strcmp("nokoslow", flag)) {
+		setPlayerNoKOSlowdownFlag(tPlayer);
+	}
+	else if (!strcmp("noshadow", flag)) {
+		setPlayerNoShadow(tPlayer);
+	}
+	else if (!strcmp("globalnoshadow", flag)) {
+		setAllPlayersNoShadow();
+	}
+	else if (!strcmp("nomusic", flag)) {
+		setDreamNoMusicFlag();
+	}
+	else if (!strcmp("nowalk", flag)) {
+		setPlayerNoWalkFlag(tPlayer);
+	}
+	else if (!strcmp("timerfreeze", flag)) {
+		setTimerFreezeFlag();
+	}
+	else if (!strcmp("unguardable", flag)) {
+		setPlayerUnguardableFlag(tPlayer);
 	}
 	else {
 		logError("Unrecognized special assert flag.");
@@ -2455,7 +2498,7 @@ static void handleSingleSpecialAssert(DreamMugenAssignment* tAssignment, DreamPl
 	freeMemory(flag);
 }
 
-static void handleSpecialAssert(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleSpecialAssert(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	SpecialAssertController* e = tController->mData;
 
 	handleSingleSpecialAssert(e->mFlag, tPlayer);
@@ -2467,6 +2510,7 @@ static void handleSpecialAssert(DreamMugenStateController* tController, DreamPla
 		handleSingleSpecialAssert(e->mFlag3, tPlayer);
 	}
 
+	return 0;
 }
 
 static void handleMakeDust(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -2644,16 +2688,28 @@ static void handleHitVelocitySetting(DreamMugenStateController* tController, Dre
 	}
 }
 
-static void handleDefenseMultiplier(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleDefenseMultiplier(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	DefenseMultiplierController* e = tController->mData;
 
 	double val = evaluateDreamAssignmentAndReturnAsFloat(e->mValue, tPlayer);
 	setPlayerDefenseMultiplier(tPlayer, val);
+
+	return 0;
 }
 
-static void handleFallEnvironmentShake() {
-	// TODO: environment shake
+static int handleFallEnvironmentShake(DreamPlayer* tPlayer) {
 
+	if (!isActiveHitDataActive(tPlayer)) return 0;
+
+	int time = getActiveHitDataFallEnvironmentShakeTime(tPlayer);
+	setActiveHitDataFallEnvironmentShakeTime(tPlayer, 0);
+	double freq = getActiveHitDataFallEnvironmentShakeFrequency(tPlayer);
+	int ampl = getActiveHitDataFallEnvironmentShakeAmplitude(tPlayer);
+	double phase = getActiveHitDataFallEnvironmentShakePhase(tPlayer);
+
+	setEnvironmentShake(time, freq, ampl, phase);
+
+	return 0;
 }
 
 static void handleExplodAnimation(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer, int tID) {
@@ -2747,7 +2803,7 @@ static void handleExplodTransparencyType(DreamMugenAssignment* tAssignment, int 
 	freeMemory(text);
 }
 
-static void handleExplod(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleExplod(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	ExplodController* e = tController->mData;
 
 	int id = addExplod(tPlayer);
@@ -2776,10 +2832,17 @@ static void handleExplod(DreamMugenStateController* tController, DreamPlayer* tP
 	handleExplodTransparencyType(e->mTransparencyType, e->mHasTransparencyType, tPlayer, id);
 
 	finalizeExplod(id);
+
+	return 0;
 }
 
-static void handleHitFallDamage() {
-	// TODO: read out fall damage
+static int handleHitFallDamage(DreamPlayer* tPlayer) {
+	if (!isActiveHitDataActive(tPlayer)) return 0;
+
+	int fallDamage = getActiveHitDataFallDamage(tPlayer);
+	addPlayerDamage(tPlayer, fallDamage);
+
+	return 0;
 }
 
 static void handlePositionFreeze(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -2790,10 +2853,12 @@ static void handlePositionFreeze(DreamMugenStateController* tController, DreamPl
 	if (val) setPlayerPositionFrozen(tPlayer);
 }
 
-static void handleHitFallVelocity(DreamPlayer* tPlayer) {
+static int handleHitFallVelocity(DreamPlayer* tPlayer) {
 
 	addPlayerVelocityX(tPlayer, getActiveHitDataFallXVelocity(tPlayer), getPlayerCoordinateP(tPlayer));
 	addPlayerVelocityY(tPlayer, -getActiveHitDataFallYVelocity(tPlayer), getPlayerCoordinateP(tPlayer)); // TODO: check
+
+	return 0;
 }
 
 
@@ -2835,16 +2900,18 @@ static void handleNotHitBy(DreamMugenStateController* tController, DreamPlayer* 
 	handleSingleNotHitBy(1, e->mHasValue2, e->mValue2, time, tPlayer, resetPlayerNotHitBy);
 }
 
-static void handleHitBy(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleHitBy(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	NotHitByController* e = tController->mData;
 
 	int time = evaluateDreamAssignmentAndReturnAsInteger(e->mTime, tPlayer);
 
 	handleSingleNotHitBy(0, e->mHasValue, e->mValue, time, tPlayer, resetPlayerHitBy);
 	handleSingleNotHitBy(1, e->mHasValue2, e->mValue2, time, tPlayer, resetPlayerHitBy);
+
+	return 0;
 }
 
-static void handleHitFallSet(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleHitFallSet(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	HitFallSetController* e = tController->mData;
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(tPlayer);
 
@@ -2862,15 +2929,19 @@ static void handleHitFallSet(DreamMugenStateController* tController, DreamPlayer
 		double y = evaluateDreamAssignmentAndReturnAsFloat(e->mYVelocity, tPlayer);
 		setActiveHitDataFallYVelocity(otherPlayer, y);
 	}
+
+	return 0;
 }
 
 
-static void handleAttackMultiplierSetting(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleAttackMultiplierSetting(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	SingleRequiredValueController* e = tController->mData;
 
 	double value = evaluateDreamAssignmentAndReturnAsFloat(e->mValue, tPlayer);
 
 	setPlayerAttackMultiplier(tPlayer, value);
+
+	return 0;
 }
 
 static void handlePowerAddition(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -2879,21 +2950,6 @@ static void handlePowerAddition(DreamMugenStateController* tController, DreamPla
 	int value = evaluateDreamAssignmentAndReturnAsInteger(e->mValue, tPlayer);
 
 	addPlayerPower(tPlayer, value);
-}
-
-static void handleEnvironmentShake(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	EnvironmentShakeController* e = tController->mData;
-
-	int time = evaluateDreamAssignmentAndReturnAsInteger(e->mTime, tPlayer);
-
-	double frequency;
-	int amplitude;
-	double phase;
-	getSingleFloatValueOrDefault(e->mFrequency, tPlayer, &frequency, 60);
-	getSingleIntegerValueOrDefault(e->mAmplitude, tPlayer, &amplitude, (int)transformDreamCoordinates(-4, 240, getDreamStageCoordinateP()));
-	getSingleFloatValueOrDefault(e->mPhaseOffset, tPlayer, &phase, 90);
-
-	setDreamMugenStageHandlerScreenShake(time, frequency, amplitude, phase);
 }
 
 static void getSingleIntegerValueOrDefaultFunctionCall(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer, void(tFunc)(int), int tDefault) {
@@ -3055,7 +3111,7 @@ static void handleHelperFacing(DreamMugenAssignment* tAssignment, DreamPlayer* t
 
 }
 
-static void handleHelper(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	HelperController* e = tController->mData;
 	DreamPlayer* helper = clonePlayerAsHelper(tPlayer);
 
@@ -3089,10 +3145,14 @@ static void handleHelper(DreamMugenStateController* tController, DreamPlayer* tP
 
 	setPlayerPosition(helper, position, getPlayerCoordinateP(helper));
 	addHelperToPlayer(tPlayer, helper);
+
+	return 0;
 }
 
-static void handleDestroySelf(DreamPlayer* tPlayer) {
+static int handleDestroySelf(DreamPlayer* tPlayer) {
 	destroyPlayer(tPlayer);
+
+	return 0;
 }
 
 static void handleAddingLife(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -3177,7 +3237,7 @@ static void handleRemovingExplod(DreamMugenStateController* tController, DreamPl
 
 }
 
-static void handleBindToRootController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleBindToRootController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	BindController* e = tController->mData;
 
 	int time, facing;
@@ -3187,9 +3247,11 @@ static void handleBindToRootController(DreamMugenStateController* tController, D
 	getTwoFloatValuesWithDefaultValues(e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
 
 	bindPlayerToRoot(tPlayer, time, facing, offset);
+
+	return 0;
 }
 
-static void handleBindToParentController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleBindToParentController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	BindController* e = tController->mData;
 
 	int time, facing;
@@ -3199,9 +3261,11 @@ static void handleBindToParentController(DreamMugenStateController* tController,
 	getTwoFloatValuesWithDefaultValues(e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
 
 	bindPlayerToParent(tPlayer, time, facing, offset);
+
+	return 0;
 }
 
-static void handleTargetBindController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleTargetBindController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	BindController* e = tController->mData;
 
 	int time, id;
@@ -3211,6 +3275,8 @@ static void handleTargetBindController(DreamMugenStateController* tController, D
 	getTwoFloatValuesWithDefaultValues(e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
 
 	bindPlayerTargets(tPlayer, time, offset, id);
+
+	return 0;
 }
 
 static void handleTurnController(DreamPlayer* tPlayer) {
@@ -3272,16 +3338,20 @@ static void handleMoveHitReset(DreamPlayer* tPlayer) {
 	setPlayerMoveHitReset(tPlayer);
 }
 
-static void handleGravity(DreamPlayer* tPlayer) {
+static int handleGravity(DreamPlayer* tPlayer) {
 	double accel = getPlayerVerticalAcceleration(tPlayer);
 	addPlayerVelocityY(tPlayer, accel, getPlayerCoordinateP(tPlayer));
+
+	return 0;
 }
 
-static void handleSettingAttackDistance(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleSettingAttackDistance(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	SingleRequiredValueController* e = tController->mData;
 
 	int value = evaluateDreamAssignmentAndReturnAsInteger(e->mValue, tPlayer);
 	setHitDataGuardDistance(tPlayer, value);
+
+	return 0;
 }
 
 static void handleSetTargetFacing(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -3433,7 +3503,7 @@ int handleDreamMugenStateControllerAndReturnWhetherStateChanged(DreamMugenStateC
 		handleDefenseMultiplier(tController, tPlayer);
 	}
 	else if (tController->mType == MUGEN_STATE_CONTROLLER_TYPE_FALL_ENVIRONMENT_SHAKE) {
-		handleFallEnvironmentShake();
+		handleFallEnvironmentShake(tPlayer);
 	}
 	else if (tController->mType == MUGEN_STATE_CONTROLLER_TYPE_EXPLOD) {
 		handleExplod(tController, tPlayer);
@@ -3442,7 +3512,7 @@ int handleDreamMugenStateControllerAndReturnWhetherStateChanged(DreamMugenStateC
 		handleNull(); // TODO: modify explod
 	}
 	else if (tController->mType == MUGEN_STATE_CONTROLLER_TYPE_HIT_FALL_DAMAGE) {
-		handleHitFallDamage();
+		handleHitFallDamage(tPlayer);
 	}
 	else if (tController->mType == MUGEN_STATE_CONTROLLER_TYPE_FREEZE_POSITION) {
 		handlePositionFreeze(tController, tPlayer);
@@ -3479,9 +3549,6 @@ int handleDreamMugenStateControllerAndReturnWhetherStateChanged(DreamMugenStateC
 	}
 	else if (tController->mType == MUGEN_STATE_CONTROLLER_TYPE_ADD_POWER) {
 		handlePowerAddition(tController, tPlayer);
-	}
-	else if (tController->mType == MUGEN_STATE_CONTROLLER_TYPE_ENVIRONMENT_SHAKE) {
-		handleEnvironmentShake(tController, tPlayer);
 	}
 	else if (tController->mType == MUGEN_STATE_CONTROLLER_TYPE_SUPER_PAUSE) {
 		handleSuperPause(tController, tPlayer);
@@ -3606,7 +3673,7 @@ static int handlePaletteEffect(DreamMugenStateController* tController, DreamPlay
 	return 0;
 }
 
-static void handleAppendToClipboardController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleAppendToClipboardController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	ClipboardController* e = tController->mData;
 
 	char* formatString = evaluateDreamAssignmentAndReturnAsAllocatedString(e->mText, tPlayer);
@@ -3616,6 +3683,124 @@ static void handleAppendToClipboardController(DreamMugenStateController* tContro
 
 	freeMemory(formatString);
 	freeMemory(parameterString);
+
+	return 0;
+}
+
+static int handleBGPalFXController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	// TODO: Palettes
+	return 0;
+}
+
+static int handleClearClipboardController() {
+	clearClipboard();
+	return 0;
+}
+
+static int handleDisplayToClipboardController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	clearClipboard();
+	handleAppendToClipboardController(tController, tPlayer); // TODO: clean up
+	
+	return 0;
+}
+
+static int handleEnvironmentColorController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	EnvironmentColorController* e = tController->mData;
+
+	int time;
+	int isUnderCharacters;
+	Vector3DI colors = evaluateDreamAssignmentAndReturnAsVector3DI(e->mValue, tPlayer);
+	getSingleIntegerValueOrDefault(e->mTime, tPlayer, &time, 1);
+	getSingleIntegerValueOrDefault(e->mUnder, tPlayer, &isUnderCharacters, 1);
+	
+	setEnvironmentColor(colors, time, isUnderCharacters);
+
+	return 0;
+}
+
+static int handleEnvironmentShakeController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	EnvironmentShakeController* e = tController->mData;
+
+	int time, ampl;
+	double freq, phase;
+
+	getSingleIntegerValueOrDefault(e->mTime, tPlayer, &time, 1);
+	getSingleFloatValueOrDefault(e->mFrequency, tPlayer, &freq, 60);
+	getSingleIntegerValueOrDefault(e->mAmplitude, tPlayer, &ampl, (int)transformDreamCoordinates(-4, 240, getDreamStageCoordinateP()));
+	getSingleFloatValueOrDefault(e->mPhaseOffset, tPlayer, &phase, freq >= 90 ? 90 : 0);
+
+	setEnvironmentShake(time, freq, ampl, phase);
+
+	return 0;
+}
+
+static int handleExplodBindTimeController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	ExplodBindTimeController* e = tController->mData;
+	
+	int id, time;
+
+	getSingleIntegerValueOrDefault(e->mID, tPlayer, &id, -1);
+	getSingleIntegerValueOrDefault(e->mTime, tPlayer, &time, 1);
+
+	setExplodBindTimeForID(tPlayer, id, time);
+
+	return 0;
+}
+
+static int handleForceFeedbackController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	ForceFeedbackController* e = tController->mData;
+
+	int time;
+	getSingleIntegerValueOrDefault(e->mTime, tPlayer, &time, 1);
+	int freq1, freq2;
+	getTwoIntegerValuesWithDefaultValues(e->mFrequency, tPlayer, &freq1, &freq2, 128, 0);
+	int ampl1, ampl2;
+	getTwoIntegerValuesWithDefaultValues(e->mAmplitude, tPlayer, &ampl1, &ampl2, 128, 0);
+	int self;
+	getSingleIntegerValueOrDefault(e->mSelf, tPlayer, &self, 1);
+
+	int i = self ? tPlayer->mRootID : getPlayerOtherPlayer(tPlayer)->mRootID;
+	addControllerRumbleSingle(i, time, freq1, ampl1 / 255.0);
+
+	return 0;
+}
+
+static int handleGameMakeAnimController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	GameMakeAnimController* e = tController->mData;
+	int animationNumber;
+	getSingleIntegerValueOrDefault(e->mValue, tPlayer, &animationNumber, 0);
+
+	int isUnderPlayer;
+	getSingleIntegerValueOrDefault(e->mIsUnderPlayer, tPlayer, &isUnderPlayer, 0);
+
+	Position pos = makePosition(0, 0, 0);
+	getTwoFloatValuesWithDefaultValues(e->mPosOffset, tPlayer, &pos.x, &pos.y, 0, 0);
+
+	int random;
+	getSingleIntegerValueOrDefault(e->mRandomOffset, tPlayer, &random, 0);
+
+	pos = vecAdd(pos, makePosition(randfrom(-random / 2.0, random / 2.0), randfrom(-random / 2.0, random / 2.0), 0));
+	pos = vecAdd(pos, getPlayerPosition(tPlayer, getPlayerCoordinateP(tPlayer)));
+	pos = vecAdd(pos, getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(tPlayer)));
+
+	if (isUnderPlayer) pos.z = 10;
+	else pos.z = 70;
+
+	int id = addMugenAnimation(getDreamFightEffectAnimation(animationNumber), getDreamFightEffectSprites(), pos);
+	setMugenAnimationCameraPositionReference(id, getDreamMugenStageHandlerCameraPositionReference());
+	setMugenAnimationNoLoop(id);
+
+	return 0;
+}
+
+static int handleHitAddController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	SingleRequiredValueController* e = tController->mData;
+
+	int value;
+	getSingleIntegerValueOrDefault(e->mValue, tPlayer, &value, 0);
+
+	// TODO: add to combo counter
+	(void)value;
 }
 
 int afterImageHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAfterImage(tController, tPlayer); }
@@ -3625,37 +3810,37 @@ int angleAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* 
 int angleDrawHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAngleDrawController(tController, tPlayer); }
 int angleMulHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAngleMulController(tController, tPlayer); }
 int angleSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAngleSetController(tController, tPlayer); }
-int appendToClipboardHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int assertSpecialHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int attackDistHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int attackMulSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int bgPalFXHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int bindToParentHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int bindToRootHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int bindToTargetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int changeAnimHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int changeAnim2HandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int changeStateHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int clearClipboardHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int ctrlSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int defenceMulSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int destroySelfHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int displayToClipboardHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int envColorHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int envShakeHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int explodHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int explodBindTimeHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int forceFeedbackHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int fallEnvShakeHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int gameMakeAnimHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int gravityHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int helperHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int hitAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int hitByHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int hitDefHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int hitFallDamageHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int hitFallSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
-int hitFallVelHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
+int appendToClipboardHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAppendToClipboardController(tController, tPlayer); }
+int assertSpecialHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSpecialAssert(tController, tPlayer); }
+int attackDistHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSettingAttackDistance(tController, tPlayer); }
+int attackMulSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAttackMultiplierSetting(tController, tPlayer); }
+int bgPalFXHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleBGPalFXController(tController, tPlayer); }
+int bindToParentHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleBindToParentController(tController, tPlayer); }
+int bindToRootHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleBindToRootController(tController, tPlayer); }
+int bindToTargetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleTargetBindController(tController, tPlayer);}
+int changeAnimHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAnimationChange(tController, tPlayer); }
+int changeAnim2HandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAnimationChange2(tController, tPlayer); }
+int changeStateHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleStateChange(tController, tPlayer); }
+int clearClipboardHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleClearClipboardController(); }
+int ctrlSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleControlSetting(tController, tPlayer); }
+int defenceMulSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleDefenseMultiplier(tController, tPlayer); }
+int destroySelfHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleDestroySelf(tPlayer); }
+int displayToClipboardHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleDisplayToClipboardController(tController, tPlayer); }
+int envColorHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleEnvironmentColorController(tController, tPlayer); }
+int envShakeHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleEnvironmentShakeController(tController, tPlayer); }
+int explodHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleExplod(tController, tPlayer); }
+int explodBindTimeHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleExplodBindTimeController(tController, tPlayer); }
+int forceFeedbackHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleForceFeedbackController(tController, tPlayer); }
+int fallEnvShakeHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleFallEnvironmentShake(tPlayer); }
+int gameMakeAnimHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleGameMakeAnimController(tController, tPlayer); }
+int gravityHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleGravity(tPlayer); }
+int helperHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleHelper(tController, tPlayer); }
+int hitAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleHitAddController(tController, tPlayer); }
+int hitByHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleHitBy(tController, tPlayer); }
+int hitDefHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleHitDefinition(tController, tPlayer); }
+int hitFallDamageHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleHitFallDamage(tPlayer); }
+int hitFallSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleHitFallSet(tController, tPlayer); }
+int hitFallVelHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleHitFallVelocity(tPlayer); }
 int hitOverrideHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
 int hitVelSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }
 int lifeAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { }

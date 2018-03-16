@@ -7,10 +7,10 @@
 #include <prism/math.h>
 #include <prism/screeneffect.h>
 #include <prism/mugentexthandler.h>
+#include <prism/clipboardhandler.h>
 
 #include "titlescreen.h"
 #include "versusscreen.h"
-#include "clipboardhandler.h"
 
 typedef struct {
 	int mIsActive;

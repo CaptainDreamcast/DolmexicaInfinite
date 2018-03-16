@@ -213,6 +213,13 @@ int isHitDataActive(DreamPlayer* tPlayer)
 	return e->mIsActive;
 }
 
+int isActiveHitDataActive(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	return e->mIsActive;
+}
+
 void setHitDataActive(DreamPlayer* tPlayer)
 {
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
@@ -232,6 +239,13 @@ void setHitDataInactive(DreamPlayer* tPlayer)
 {
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = int_map_get(&gData.mPassiveHitDataMap, tPlayer->mHitDataID);
+	e->mIsActive = 0;
+}
+
+void setActiveHitDataInactive(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
 	e->mIsActive = 0;
 }
 
@@ -1174,6 +1188,13 @@ void setHitDataFallRecoveryTime(DreamPlayer* tPlayer, int tRecoverTime)
 	e->mFallRecoveryTime = tRecoverTime;
 }
 
+int getActiveHitDataFallDamage(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	return e->mFallDamage;
+}
+
 void setHitDataFallDamage(DreamPlayer* tPlayer, int tDamage)
 {
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
@@ -1386,11 +1407,32 @@ void setHitDataEnvironmentShakePhase(DreamPlayer* tPlayer, double tPhase)
 	e->mEnvironmentShakePhase = tPhase;
 }
 
+int getActiveHitDataFallEnvironmentShakeTime(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	return e->mFallEnvironmentShakeTime;
+}
+
+void setActiveHitDataFallEnvironmentShakeTime(DreamPlayer * tPlayer, int tTime)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	e->mFallEnvironmentShakeTime = tTime;
+}
+
 void setHitDataFallEnvironmentShakeTime(DreamPlayer* tPlayer, int tTime)
 {
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = int_map_get(&gData.mPassiveHitDataMap, tPlayer->mHitDataID);
 	e->mFallEnvironmentShakeTime = tTime;
+}
+
+double getActiveHitDataFallEnvironmentShakeFrequency(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	return e->mFallEnvironmentShakeFrequency;
 }
 
 void setHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer, double tFrequency)
@@ -1400,11 +1442,25 @@ void setHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer, double tFrequ
 	e->mFallEnvironmentShakeFrequency = tFrequency;
 }
 
+int getActiveHitDataFallEnvironmentShakeAmplitude(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	return e->mFallEnvironmentShakeAmplitude;
+}
+
 void setHitDataFallEnvironmentShakeAmplitude(DreamPlayer* tPlayer, int tAmplitude)
 {
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = int_map_get(&gData.mPassiveHitDataMap, tPlayer->mHitDataID);
 	e->mFallEnvironmentShakeAmplitude = tAmplitude;
+}
+
+double getActiveHitDataFallEnvironmentShakePhase(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	return e->mFallEnvironmentShakePhase;
 }
 
 void setHitDataFallEnvironmentShakePhase(DreamPlayer* tPlayer, double tPhase)

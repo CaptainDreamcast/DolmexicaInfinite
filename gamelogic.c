@@ -5,6 +5,7 @@
 #include <prism/screeneffect.h>
 #include <prism/wrapper.h>
 #include <prism/framerate.h>
+#include <prism/wrapper.h>
 
 #include "playerdefinition.h"
 #include "fightui.h"
@@ -233,6 +234,15 @@ static void updateWinPose() {
 		gData.mIsDisplayingWinPose = 0;
 	}
 
+}
+
+static void updateTimeDilatation() {
+	if (gData.mRoundStateNumber != 3 || getPlayerNoKOSlowdownFlag(gData.mRoundWinner)) {
+		setWrapperTimeDilatation(1);
+	}
+	else {
+		setWrapperTimeDilatation(0.5);
+	}
 }
 
 static void updateGameLogic(void* tData) {

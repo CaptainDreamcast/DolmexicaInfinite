@@ -52,3 +52,5 @@ int getExplodAmountWithID(DreamPlayer* tPlayer, int tID);
 extern ActorBlueprint DreamExplodHandler;
 
 Position getFinalPositionFromPositionType(DreamExplodPositionType tPositionType, Position mOffset, DreamPlayer* tPlayer);
+
+void setExplodBindTimeForID(DreamPlayer* tPlayer, int tExplodID, int tBindTime);

@@ -170,6 +170,12 @@ static void resetHelperState(DreamPlayer* p) {
 	p->mNoAutoTurnFlag = 0;
 	p->mNoLandFlag = 0;
 	p->mPushDisabledFlag = 0;
+	p->mNoAirGuardFlag = 0;
+	p->mNoCrouchGuardFlag = 0;
+	p->mNoStandGuardFlag = 0;
+	p->mNoKOSoundFlag = 0;
+	p->mNoKOSlowdownFlag = 0;
+	p->mUnguardableFlag = 0;
 
 	p->mIsHitOver = 1;
 	p->mIsHitShakeOver = 1;
@@ -485,13 +491,22 @@ static int isPlayerGuarding(DreamPlayer* p) {
 	return getPlayerState(p) >= 120 && getPlayerState(p) <= 155; // TODO: properly
 }
 
+
+static int doesFlagPreventGuarding(DreamPlayer* p) {
+	if (getPlayerStateType(p) == MUGEN_STATE_TYPE_STANDING && p->mNoStandGuardFlag) return 1;
+	if (getPlayerStateType(p) == MUGEN_STATE_TYPE_CROUCHING && p->mNoCrouchGuardFlag) return 1;
+	if (getPlayerStateType(p) == MUGEN_STATE_TYPE_AIR && p->mNoAirGuardFlag) return 1;
+
+	return 0;
+}
+
 static void updateGuarding(DreamPlayer* p) {
 	if (isPlayerPaused(p)) return;
 	if (!p->mIsInControl) return;
 	if (isPlayerGuarding(p)) {
-		
 		return;
 	}
+	if (doesFlagPreventGuarding(p)) return;
 
 	if (isPlayerCommandActive(p, "holdback") && isPlayerBeingAttacked(p) && isPlayerInGuardDistance(p)) {
 		changePlayerState(p, 120);
@@ -524,6 +539,18 @@ static void updateGuardingOver(DreamPlayer* p) {
 
 	setPlayerUnguarding(p);
 }
+
+static void updateGuardingFlags(DreamPlayer* p) {
+	if (isPlayerGuarding(p) && doesFlagPreventGuarding(p)) {
+		setPlayerUnguarding(p);
+	}
+
+	p->mNoAirGuardFlag = 0;
+	p->mNoCrouchGuardFlag = 0;
+	p->mNoStandGuardFlag = 0;
+	p->mUnguardableFlag = 0;
+}
+
 static void updateSinglePlayer(DreamPlayer* p);
 
 static void updateSinglePlayerCB(void* tCaller, void* tData) {
@@ -608,6 +635,11 @@ static void updateStageBorder(DreamPlayer* p) {
 	}
 }
 
+static void updateKOFlags(DreamPlayer* p) {
+	p->mNoKOSoundFlag = 0;
+	p->mNoKOSlowdownFlag = 0;
+}
+
 static void updateSinglePlayer(DreamPlayer* p) {
 	updateWalking(p);
 	updateJumping(p);
@@ -621,9 +653,11 @@ static void updateSinglePlayer(DreamPlayer* p) {
 	updateBinding(p);
 	updateGuarding(p);
 	updateGuardingOver(p);
+	updateGuardingFlags(p);
 	updateHitAttributeSlots(p);
 	updatePush(p);
 	updateStageBorder(p);
+	updateKOFlags(p);
 
 	list_map(&p->mHelpers, updateSinglePlayerCB, NULL);
 }
@@ -641,6 +675,7 @@ void updatePlayers()
 static void setPlayerHitOver(void* tCaller) {
 	DreamPlayer* p = tCaller;
 
+	setActiveHitDataInactive(p);
 	p->mIsHitOver = 1;
 }
 
@@ -748,7 +783,7 @@ static void setPlayerHit(DreamPlayer* p, DreamPlayer* tOtherPlayer, void* tHitDa
 
 	copyHitDataToActive(p, tHitData);
 
-	if (isPlayerGuarding(p) && !checkPlayerHitGuardFlagsAndReturnIfGuardable(p, getActiveHitDataGuardFlag(p))) {
+	if (getPlayerUnguardableFlag(tOtherPlayer) || (isPlayerGuarding(p) && !checkPlayerHitGuardFlagsAndReturnIfGuardable(p, getActiveHitDataGuardFlag(p)))) {
 		setPlayerUnguarding(p);
 	}
 
@@ -1816,6 +1851,11 @@ void setPlayerNoShadow(DreamPlayer * p)
 	// TODO: shadow
 }
 
+void setAllPlayersNoShadow()
+{
+	// TODO: shadows
+}
+
 void setPlayerPushDisabledFlag(DreamPlayer * p, int tIsDisabled)
 {
 	p->mPushDisabledFlag = tIsDisabled;
@@ -1833,8 +1873,43 @@ void setPlayerIntroFlag(DreamPlayer * p)
 
 void setPlayerNoAirGuardFlag(DreamPlayer * p)
 {
-	(void)p;
-	// TODO: guard stuff
+	p->mNoAirGuardFlag = 1;
+}
+
+void setPlayerNoCrouchGuardFlag(DreamPlayer * p)
+{
+	p->mNoCrouchGuardFlag = 1;
+
+}
+
+void setPlayerNoStandGuardFlag(DreamPlayer * p)
+{
+	p->mNoStandGuardFlag = 1;
+}
+
+void setPlayerNoKOSoundFlag(DreamPlayer * p)
+{
+	p->mNoKOSoundFlag = 1;
+}
+
+void setPlayerNoKOSlowdownFlag(DreamPlayer * p)
+{
+	p->mNoKOSlowdownFlag = 1;
+}
+
+void setPlayerUnguardableFlag(DreamPlayer * p)
+{
+	p->mUnguardableFlag = 1;
+}
+
+int getPlayerNoKOSlowdownFlag(DreamPlayer * p)
+{
+	return p->mNoKOSlowdownFlag;
+}
+
+int getPlayerUnguardableFlag(DreamPlayer * p)
+{
+	return p->mUnguardableFlag;
 }
 
 int isPlayerInIntro(DreamPlayer * p)
@@ -1996,11 +2071,19 @@ void setPlayerUnSuperPaused(DreamPlayer* p)
 	}
 }
 
+static void setPlayerDead(DreamPlayer* p) {
+	p->mIsAlive = 0;
+	
+	if (!p->mNoKOSoundFlag) {
+		playMugenSound(&p->mSounds, 11, 0);
+	}
+}
+
 void addPlayerDamage(DreamPlayer* p, int tDamage)
 {
 	p->mLife -= tDamage;
 	if (p->mLife <= 0) {
-		p->mIsAlive = 0;
+		setPlayerDead(p);
 		p->mLife = 0;
 	}
 

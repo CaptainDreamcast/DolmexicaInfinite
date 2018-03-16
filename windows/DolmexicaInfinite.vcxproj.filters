@@ -114,9 +114,6 @@
     <ClCompile Include="..\arcademode.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\clipboardhandler.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ai.h">
@@ -216,9 +213,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\clipboardhandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

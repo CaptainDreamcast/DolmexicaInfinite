@@ -13,9 +13,11 @@ void setDreamMugenStageHandlerCameraPositionX(double tX);
 void setDreamMugenStageHandlerCameraPositionY(double tY);
 void resetDreamMugenStageHandlerCameraPosition();
 
-void setDreamMugenStageHandlerScreenShake(int tTime, double tFrequency, int tAmplitude, double tPhase);
-
-void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAnimation* tAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, double tStartScaleY, double tScaleDeltaY, Vector3DI tCoordinates);
+void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAnimation* tAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, double tStartScaleY, double tScaleDeltaY, int tLayerNo, Vector3DI tCoordinates);
 Position* getDreamMugenStageHandlerCameraPositionReference();
+
+void setDreamStageInvisibleForOneFrame();
+void setDreamStageLayer1InvisibleForOneFrame();
+
 
 extern ActorBlueprint DreamMugenStageHandler;

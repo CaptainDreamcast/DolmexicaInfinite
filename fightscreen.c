@@ -10,6 +10,7 @@
 #include <prism/mugenanimationreader.h>
 #include <prism/mugenanimationhandler.h>
 #include <prism/mugentexthandler.h>
+#include <prism/clipboardhandler.h>
 
 #include <prism/log.h>
 
@@ -32,7 +33,6 @@
 #include "titlescreen.h"
 #include "mugenassignmentevaluator.h"
 #include "mugenstatecontrollers.h"
-#include "clipboardhandler.h"
 
 static struct {
 	void(*mFinishedCB)();

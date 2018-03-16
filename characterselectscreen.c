@@ -9,12 +9,12 @@
 #include <prism/mugenanimationhandler.h>
 #include <prism/mugensoundfilereader.h>
 #include <prism/mugentexthandler.h>
+#include <prism/clipboardhandler.h>
 
 #include "menubackground.h"
 #include "titlescreen.h"
 #include "storyscreen.h"
 #include "playerdefinition.h"
-#include "clipboardhandler.h"
 
 typedef struct {
 	Vector3DI mCursorStartCell;

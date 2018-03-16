@@ -8,11 +8,11 @@
 #include <prism/input.h>
 #include <prism/timer.h>
 #include <prism/mugentexthandler.h>
+#include <prism/clipboardhandler.h>
 
 #include "menubackground.h"
 #include "titlescreen.h"
 #include "playerdefinition.h"
-#include "clipboardhandler.h"
 
 typedef struct {
 	Position mPosition;

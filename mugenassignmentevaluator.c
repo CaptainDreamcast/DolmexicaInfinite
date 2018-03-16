@@ -2117,3 +2117,22 @@ Vector3D evaluateDreamAssignmentAndReturnAsVector3D(DreamMugenAssignment * tAssi
 
 	return makePosition(x, y, z);
 }
+
+Vector3DI evaluateDreamAssignmentAndReturnAsVector3DI(DreamMugenAssignment * tAssignment, DreamPlayer * tPlayer)
+{
+	AssignmentReturnValue ret = evaluateAssignmentInternal(tAssignment, tPlayer);
+
+	int x, y, z;
+	char tX[100], comma1[100], tY[100], comma2[100], tZ[100];
+
+	int items = sscanf(ret.mValue, "%s %s %s %s %s", tX, comma1, tY, comma2, tZ);
+
+	if (items >= 1) x = atoi(tX);
+	else x = 0;
+	if (items >= 3) y = atoi(tY);
+	else y = 0;
+	if (items >= 5) z = atoi(tZ);
+	else z = 0;
+
+	return makeVector3DI(x, y, z);
+}

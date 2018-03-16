@@ -116,6 +116,7 @@ void setExplodVerticalFacing(int tID, int tFacing)
 	e->mIsFlippedVertically = tFacing == -1;
 }
 
+// TODO: use bind time
 void setExplodBindTime(int tID, int tBindTime)
 {
 	Explod* e = int_map_get(&gData.mExplods, tID);
@@ -357,4 +358,31 @@ Position getFinalPositionFromPositionType(DreamExplodPositionType tPositionType,
 		return makePosition(0, 0, 0);
 	}
 
+}
+
+
+// TODO: use bind time
+typedef struct {
+	DreamPlayer* mPlayer;
+	int mID;
+	int mBindTime;
+} BindTimeSetterForIDCaller;
+
+static void setExplodBindTimeForSingleExplod(void* tCaller, void* tData) {
+	BindTimeSetterForIDCaller* caller = tCaller;
+	Explod* e = tData;
+
+	if (e->mPlayer != caller->mPlayer) return;
+	if (caller->mID != -1 && e->mExternalID != caller->mID) return;
+
+	e->mBindTime = caller->mBindTime;
+}
+
+void setExplodBindTimeForID(DreamPlayer * tPlayer, int tExplodID, int tBindTime)
+{
+	BindTimeSetterForIDCaller caller;
+	caller.mPlayer = tPlayer;
+	caller.mID = tExplodID;
+	caller.mBindTime = tBindTime;
+	int_map_map(&gData.mExplods, setExplodBindTimeForSingleExplod, &caller);
 }
