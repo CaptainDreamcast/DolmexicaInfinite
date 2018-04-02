@@ -732,7 +732,7 @@ static void removeDisplayedText(int tTextID) {
 static void updateRoundSound() {
 	int round = gData.mRound.mRoundIndex;
 	if (gData.mRound.mDisplayNow >= gData.mRound.mSoundTime && gData.mRound.mHasRoundSound[round] && !gData.mRound.mHasPlayedSound) {
-		playMugenSound(&gData.mFightSounds, gData.mRound.mRoundSounds[round].x, gData.mRound.mRoundSounds[round].y);
+		tryPlayMugenSound(&gData.mFightSounds, gData.mRound.mRoundSounds[round].x, gData.mRound.mRoundSounds[round].y);
 		gData.mRound.mHasPlayedSound = 1;
 	}
 }
@@ -769,7 +769,7 @@ static void startControlCountdown() {
 static void updateFightSound() {
 
 	if (gData.mFight.mDisplayNow >= gData.mFight.mSoundTime && !gData.mFight.mHasPlayedSound) {
-		playMugenSound(&gData.mFightSounds, gData.mFight.mSound.x, gData.mFight.mSound.y);
+		tryPlayMugenSound(&gData.mFightSounds, gData.mFight.mSound.x, gData.mFight.mSound.y);
 		gData.mFight.mHasPlayedSound = 1;
 	}
 }
@@ -795,7 +795,7 @@ static void updateFightDisplay() {
 static void updateKOSound() {
 
 	if (gData.mKO.mDisplayNow >= gData.mKO.mSoundTime && !gData.mKO.mHasPlayedSound) {
-		playMugenSound(&gData.mFightSounds, gData.mKO.mSound.x, gData.mKO.mSound.y);
+		tryPlayMugenSound(&gData.mFightSounds, gData.mKO.mSound.x, gData.mKO.mSound.y);
 		gData.mKO.mHasPlayedSound = 1;
 	}
 }
@@ -964,6 +964,17 @@ void playDreamHitSpark(Position tPosition, DreamPlayer* tPlayer, int tIsInPlayer
 	list_push_back_owned(&gData.mHitSparks, e);
 }
 
+void addDreamDustCloud(Position tPosition, int tIsFacingRight, int tCoordinateP)
+{
+	Position pos = vecAdd(tPosition, getDreamStageCoordinateSystemOffset(tCoordinateP));
+	int id = addMugenAnimation(getMugenAnimation(&gData.mFightFXAnimations, 120), &gData.mFightFXSprites, pos);
+	setMugenAnimationNoLoop(id);
+	setMugenAnimationCameraPositionReference(id, getDreamMugenStageHandlerCameraPositionReference());
+	if (!tIsFacingRight) {
+		setMugenAnimationFaceDirection(id, tIsFacingRight);
+	}
+}
+
 void setDreamLifeBarPercentage(DreamPlayer* tPlayer, double tPercentage)
 {
 	HealthBar* bar = &gData.mHealthBars[tPlayer->mRootID];
@@ -983,7 +994,7 @@ void setDreamPowerBarPercentage(DreamPlayer* tPlayer, double tPercentage, int tV
 	int newLevel = tValue / 1000;
 
 	if (newLevel >= 1 && newLevel > bar->mLevel) {
-		playMugenSound(&gData.mFightSounds, bar->mLevelSounds[newLevel - 1].x, bar->mLevelSounds[newLevel - 1].y);
+		tryPlayMugenSound(&gData.mFightSounds, bar->mLevelSounds[newLevel - 1].x, bar->mLevelSounds[newLevel - 1].y);
 	}
 	sprintf(bar->mCounterText, "%d", newLevel);
 	changeMugenText(bar->mCounterTextID, bar->mCounterText);

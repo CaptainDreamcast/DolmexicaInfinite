@@ -9,6 +9,7 @@
 #include "playerdefinition.h"
 
 void playDreamHitSpark(Position tPosition, DreamPlayer* tPlayer, int tIsInPlayerFile, int tNumber, int tIsFacingRight, int tPositionCoordinateP, int tScaleCoordinateP);
+void addDreamDustCloud(Position tPosition, int tIsFacingRight, int tCoordinateP);
 void setDreamLifeBarPercentage(DreamPlayer* tPlayer, double tPercentage);
 void setDreamPowerBarPercentage(DreamPlayer* tPlayer, double tPercentage, int tValue);
 void enableDreamTimer();

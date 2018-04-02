@@ -436,7 +436,7 @@ static void moveSelectionToTarget(int i, Vector3DI tTarget) {
 	p.z = 60;
 	setMugenAnimationPosition(gData.mSelectors[i].mSelectorAnimationID, p);
 
-	playMugenSound(&gData.mSounds, player->mCursorMoveSound.x, player->mCursorMoveSound.y);
+	tryPlayMugenSound(&gData.mSounds, player->mCursorMoveSound.x, player->mCursorMoveSound.y);
 
 	SelectCharacter* character = getCellCharacter(gData.mSelectors[i].mSelectedCharacter);
 	if (character->mIsCharacter) {
@@ -507,7 +507,7 @@ static void setSelectionFinished(int i) {
 
 	PlayerHeader* player = &gData.mHeader.mPlayers[i];
 	changeMugenAnimation(gData.mSelectors[i].mSelectorAnimationID, player->mDoneCursorAnimation);
-	playMugenSound(&gData.mSounds, player->mCursorDoneSound.x, player->mCursorDoneSound.y);
+	tryPlayMugenSound(&gData.mSounds, player->mCursorDoneSound.x, player->mCursorDoneSound.y);
 
 	char path[1024];
 	sprintf(path, "assets/chars/%s/%s.def", character->mCharacterName, character->mCharacterName);

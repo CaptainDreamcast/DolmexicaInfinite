@@ -90,7 +90,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -102,6 +102,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;winmm.lib;version.lib;imm32.lib;libjpeg.lib;libpng16.lib;zlib.lib;libwebp.lib;OpenGL32.lib;glew32s.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
       <Command>post_build.bat</Command>
@@ -137,6 +138,7 @@
     <ClCompile Include="..\mugencommandhandler.c" />
     <ClCompile Include="..\mugencommandreader.c" />
     <ClCompile Include="..\mugenexplod.c" />
+    <ClCompile Include="..\mugenlog.c" />
     <ClCompile Include="..\mugensound.c" />
     <ClCompile Include="..\mugenstagehandler.c" />
     <ClCompile Include="..\mugenstatecontrollers.c" />
@@ -172,6 +174,7 @@
     <ClInclude Include="..\mugencommandhandler.h" />
     <ClInclude Include="..\mugencommandreader.h" />
     <ClInclude Include="..\mugenexplod.h" />
+    <ClInclude Include="..\mugenlog.h" />
     <ClInclude Include="..\mugensound.h" />
     <ClInclude Include="..\mugenstagehandler.h" />
     <ClInclude Include="..\mugenstatecontrollers.h" />

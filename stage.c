@@ -78,15 +78,16 @@ typedef struct {
 
 typedef struct {
 	int mIntensity;
-	Vector3D mColor;
+	Vector3DI mColor;
 	double mScaleY;
-	Vector3DI mFadeRange;
+	Vector3D mFadeRange;
 	double mXShear;
 
 } StageShadow;
 
 typedef struct {
 	int mReflect;
+	int mIntensity;
 } StageReflection;
 
 typedef struct {
@@ -208,14 +209,15 @@ static void loadStageStageInfo(MugenDefScript* s) {
 
 static void loadStageShadow(MugenDefScript* s) {
 	gData.mShadow.mIntensity = getMugenDefIntegerOrDefault(s, "Shadow", "intensity", 128);
-	gData.mShadow.mColor = getMugenDefVectorOrDefault(s, "StageInfo", "color", makePosition(1, 1, 1));
-	gData.mShadow.mScaleY = getMugenDefFloatOrDefault(s, "StageInfo", "yscale", 1);
-	gData.mShadow.mFadeRange = getMugenDefVectorIOrDefault(s, "StageInfo", "fade.range", makeVector3DI(0, 0, 0));
-	gData.mShadow.mXShear = getMugenDefFloatOrDefault(s, "StageInfo", "xshear", 0);
+	gData.mShadow.mColor = getMugenDefVectorIOrDefault(s, "Shadow", "color", makeVector3DI(0, 0, 0));
+	gData.mShadow.mScaleY = getMugenDefFloatOrDefault(s, "Shadow", "yscale", 1);
+	gData.mShadow.mFadeRange = getMugenDefVectorOrDefault(s, "Shadow", "fade.range", makePosition(0, 0, 0));
+	gData.mShadow.mXShear = getMugenDefFloatOrDefault(s, "Shadow", "xshear", 0);
 }
 
 static void loadStageReflection(MugenDefScript* s) {
 	gData.mReflection.mReflect = getMugenDefIntegerOrDefault(s, "Reflection", "reflect", 0);
+	gData.mReflection.mIntensity = getMugenDefIntegerOrDefault(s, "Reflection", "intensity", 0);
 }
 
 static void loadStageMusic(MugenDefScript* s) {
@@ -363,9 +365,9 @@ static void loadStageTextures(char* tPath) {
 		}
 	}
 
-	setMugenSpriteFileReaderToUsePalette(2); // TODO: check
+	//setMugenSpriteFileReaderToUsePalette(2); // TODO: check
 	gData.mSprites = loadMugenSpriteFileWithoutPalette(sffFile);
-	setMugenSpriteFileReaderToNotUsePalette();
+	//setMugenSpriteFileReaderToNotUsePalette();
 }
 
 static void loadStageBackgroundElements(char* tPath, MugenDefScript* s) {
@@ -654,4 +656,29 @@ void setDreamStageCoordinates(Vector3DI tCoordinates)
 {
 	gData.mStageInfo.mLocalCoordinates = tCoordinates;
 	gData.mStageInfo.mZOffset = 0;
+}
+
+double getDreamStageShadowTransparency()
+{
+	return gData.mShadow.mIntensity / 255.0;
+}
+
+Vector3D getDreamStageShadowColor()
+{
+	return makePosition(gData.mShadow.mColor.x / 255.0, gData.mShadow.mColor.y / 255.0, gData.mShadow.mColor.z / 255.0);
+}
+
+double getDreamStageShadowScaleY()
+{
+	return gData.mShadow.mScaleY;
+}
+
+Vector3D getDreamStageShadowFadeRange(int tCoordinateP)
+{
+	return transformDreamCoordinatesVector(gData.mShadow.mFadeRange, getDreamStageCoordinateP(), tCoordinateP);
+}
+
+double getDreamStageReflectionTransparency()
+{
+	return gData.mReflection.mIntensity / 256.0;
 }

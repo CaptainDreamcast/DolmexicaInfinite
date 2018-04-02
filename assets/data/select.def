@@ -69,6 +69,8 @@
 kfm, stages/kfm.def
 kfm, stages/kfm.def
 kfm, stages/kfm.def
+;rockFIX, stages/kfm.def
+;DongHwan, stages/kfm.def
 ;Beat, stages/kfm.def
 ;Sonicth, stages/kfm.def
 ;chipp, stages/kfm.def

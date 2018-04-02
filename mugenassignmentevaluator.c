@@ -131,7 +131,6 @@ static AssignmentReturnValue evaluateBitwiseAndAssignment(DreamMugenAssignment* 
 
 static AssignmentReturnValue evaluateCommandAssignment(AssignmentReturnValue tCommand, DreamPlayer* tPlayer) {
 	int ret = isPlayerCommandActive(tPlayer, tCommand.mValue);
-	// printf("%d %d eval command %s as %d\n", tPlayer->mRootID, tPlayer->mID, tCommand.mValue, ret);
 	return makeBooleanAssignmentReturn(ret);
 }
 
@@ -246,50 +245,23 @@ static AssignmentReturnValue evaluateAnimElemAssignment(AssignmentReturnValue tC
 
 static AssignmentReturnValue evaluateTimeModAssignment(AssignmentReturnValue tCommand, DreamPlayer* tPlayer) {
 
-	char divisor[100], comma[10], oper[100], compareNumber[100];
-	int items = sscanf(tCommand.mValue, "%s %s %s %s", oper, divisor, comma, compareNumber);
+	char divisor[100], comma[10], compareNumber[100];
+	int items = sscanf(tCommand.mValue, "%s %s %s", divisor, comma, compareNumber);
 	assert(strcmp("", divisor));
 	assert(!strcmp(",", comma));
-	assert(items == 4);
+	assert(items == 3);
 
 
 	int divisorValue = atoi(divisor);
 	int compareValue = atoi(compareNumber);
 	int stateTime = getPlayerTimeInState(tPlayer);
-
+	
 	if (divisorValue == 0) {
 		return makeBooleanAssignmentReturn(0);
 	}
 
 	int modValue = stateTime % divisorValue;
-	int ret;
-	if (!strcmp("=", oper)) {
-		ret = modValue == compareValue;
-	}
-	else if (!strcmp("!=", oper)) {
-		ret = modValue != compareValue;
-	}
-	else if (!strcmp("<", oper)) {
-		ret = modValue < compareValue;
-	}
-	else if (!strcmp(">", oper)) {
-		ret = modValue > compareValue;
-	}
-	else if (!strcmp("<=", oper)) {
-		ret = modValue <= compareValue;
-	}
-	else if (!strcmp(">=", oper)) {
-		ret = modValue >= compareValue;
-	}
-	else {
-		logError("Unrecognized operator.");
-		logErrorString(oper);
-		abortSystem();
-		ret = 0;
-	}
-
-
-
+	int ret = modValue == compareValue;
 	return makeBooleanAssignmentReturn(ret);
 }
 
@@ -670,7 +642,6 @@ static AssignmentReturnValue evaluateComparisonAssignmentInternal(DreamMugenAssi
 
 static AssignmentReturnValue evaluateComparisonAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
 	DreamMugenDependOnTwoAssignment* comparisonAssignment = tAssignment->mData;
-	//printf("eval assign a\n");
 
 	AssignmentReturnValue b = evaluateAssignmentInternal(comparisonAssignment->b, tPlayer);
 
@@ -1345,10 +1316,10 @@ static AssignmentReturnValue movementAirGetHitGroundRecoverGroundLevelFunction(D
 static AssignmentReturnValue movementAirGetHitAirRecoverThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitAirRecoveryVelocityYThreshold(tPlayer)); }
 static AssignmentReturnValue movementAirGetHitAirRecoverYAccelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerMovementAirGetHitAirRecoverYAccel(tPlayer)); }
 static AssignmentReturnValue movementAirGetHitTripGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitTripGroundLevelY(tPlayer)); }
-static AssignmentReturnValue movementDownBounceOffsetXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceOffsetX(tPlayer)); }
-static AssignmentReturnValue movementDownBounceOffsetYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceOffsetY(tPlayer)); }
+static AssignmentReturnValue movementDownBounceOffsetXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceOffsetX(tPlayer, getPlayerCoordinateP(tPlayer))); }
+static AssignmentReturnValue movementDownBounceOffsetYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceOffsetY(tPlayer, getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue movementDownBounceYAccelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownVerticalBounceAcceleration(tPlayer)); }
-static AssignmentReturnValue movementDownBounceGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceGroundLevel(tPlayer)); }
+static AssignmentReturnValue movementDownBounceGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceGroundLevel(tPlayer, getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue movementDownFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerLyingDownFrictionThreshold(tPlayer)); }
 
 static void setupConstantAssignments() { 

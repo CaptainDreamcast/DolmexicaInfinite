@@ -40,6 +40,24 @@ typedef struct {
 	Vector3DI mLocalCoordinates;
 } DreamPlayerHeader;
 
+typedef struct {
+	int mAnimationID;
+
+	Position mShadowPosition;
+
+} DreamPlayerShadow;
+
+typedef struct {
+	int mAnimationID;
+	Position mPosition;
+
+} DreamPlayerReflection;
+
+typedef struct {
+	int mLastDustTime;
+
+} DreamPlayerDust;
+
 typedef struct Player_t{
 	struct Player_t* mRoot;
 	struct Player_t* mOtherPlayer;
@@ -102,6 +120,10 @@ typedef struct Player_t{
 	int mNoKOSoundFlag;
 	int mNoKOSlowdownFlag;
 	int mUnguardableFlag;
+	int mTransparencyFlag;
+
+	int mJumpFlank;
+	int mAirJumpCounter;
 
 	int mIsHitShakeOver;
 	int mIsHitOver;
@@ -150,7 +172,13 @@ typedef struct Player_t{
 
 	int mIsBoundToScreen;
 
+	DreamPlayerDust mDustClouds[2];
+
 	DreamHitDefAttributeSlot mNotHitBy[2];
+
+	DreamPlayerShadow mShadow;
+	DreamPlayerReflection mReflection;
+
 } DreamPlayer;
 
 void loadPlayers();
@@ -257,10 +285,10 @@ double getPlayerAirGetHitGroundRecoveryGroundLevelY(DreamPlayer* p);
 double getPlayerAirGetHitGroundRecoveryGroundYTheshold(DreamPlayer* p);
 double getPlayerAirGetHitAirRecoveryVelocityYThreshold(DreamPlayer* p);
 double getPlayerAirGetHitTripGroundLevelY(DreamPlayer* p);
-double getPlayerDownBounceOffsetX(DreamPlayer* p);
-double getPlayerDownBounceOffsetY(DreamPlayer* p);
+double getPlayerDownBounceOffsetX(DreamPlayer* p, int tCoordinateP);
+double getPlayerDownBounceOffsetY(DreamPlayer* p, int tCoordinateP);
 double getPlayerDownVerticalBounceAcceleration(DreamPlayer* p);
-double getPlayerDownBounceGroundLevel(DreamPlayer* p);
+double getPlayerDownBounceGroundLevel(DreamPlayer* p, int tCoordinateP);
 double getPlayerLyingDownFrictionThreshold(DreamPlayer* p);
 double getPlayerVerticalAcceleration(DreamPlayer* p);
 
@@ -351,6 +379,7 @@ int getPlayerSlideTime(DreamPlayer* p);
 
 void setPlayerDefenseMultiplier(DreamPlayer* p, double tValue);
 void setPlayerPositionFrozen(DreamPlayer* p);
+void setPlayerPositionUnfrozen(DreamPlayer* p);
 
 MugenSpriteFile* getPlayerSprites(DreamPlayer* p);
 MugenAnimations* getPlayerAnimations(DreamPlayer* p);
@@ -453,10 +482,12 @@ void setPlayerHuman(int i);
 void setPlayerArtificial(int i);
 int getPlayerAILevel(DreamPlayer* p);
 
+void setPlayerLife(DreamPlayer* p, int tLife);
 int getPlayerLife(DreamPlayer* p);
 int getPlayerLifeMax(DreamPlayer* p);
 int getPlayerPower(DreamPlayer* p);
 int getPlayerPowerMax(DreamPlayer* p);
+void setPlayerPower(DreamPlayer* p, int tPower);
 void addPlayerPower(DreamPlayer* p, int tPower);
 
 int isPlayerBeingAttacked(DreamPlayer* p);
@@ -509,10 +540,16 @@ void setPlayerFixedDrawAngle(DreamPlayer* p, double tAngle);
 
 void bindPlayerToRoot(DreamPlayer* p, int tTime, int tFacing, Vector3D tOffset);
 void bindPlayerToParent(DreamPlayer* p, int tTime, int tFacing, Vector3D tOffset);
-void bindPlayerTargets(DreamPlayer* p, int tTime, Vector3D tOffset, int tID);
+void bindPlayerToTarget(DreamPlayer* p, int tTime, Vector3D tOffset, DreamPlayerBindPositionType tBindPositionType, int tID);
 int isPlayerBound(DreamPlayer* p);
 
+void bindPlayerTargetToPlayer(DreamPlayer* p, int tTime, Vector3D tOffset, int tID);
 void addPlayerTargetLife(DreamPlayer* p, int tID, int tLife, int tCanKill, int tIsAbsolute);
+void addPlayerTargetPower(DreamPlayer* p, int tID, int tPower);
+void addPlayerTargetVelocityX(DreamPlayer* p, int tID, double tValue, int tCoordinateP);
+void addPlayerTargetVelocityY(DreamPlayer* p, int tID, double tValue, int tCoordinateP);
+void setPlayerTargetVelocityX(DreamPlayer* p, int tID, double tValue, int tCoordinateP);
+void setPlayerTargetVelocityY(DreamPlayer* p, int tID, double tValue, int tCoordinateP);
 void setPlayerTargetControl(DreamPlayer* p, int tID, int tControl);
 void setPlayerTargetFacing(DreamPlayer* p, int tID, int tFacing);
 void changePlayerTargetState(DreamPlayer* p, int tID, int tNewState);
@@ -539,3 +576,10 @@ int getDefaultPlayerGuardSparkNumber(DreamPlayer* p);
 
 int isPlayerProjectile(DreamPlayer* p);
 int isPlayerHomeTeam(DreamPlayer* p);
+
+void setPlayerDrawOffsetX(DreamPlayer* p, double tValue, int tCoordinateP);
+void setPlayerDrawOffsetY(DreamPlayer* p, double tValue, int tCoordinateP);
+
+void setPlayerOneFrameTransparency(DreamPlayer* p, BlendType tType, int tAlphaSource, int tAlphaDest);
+
+void addPlayerDust(DreamPlayer* p, int tDustIndex, Position tPos, int tSpacing);

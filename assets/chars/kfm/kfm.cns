@@ -71,7 +71,7 @@ air.gethit.airrecover.up = -2         ;Extra y-velocity for holding up during ai
 air.gethit.airrecover.down = 1.5      ;Extra y-velocity for holding down during air recovery **MUGEN 1.0**
 
 [Movement]
-airjump.num = 1       ;Number of air jumps allowed (opt)
+airjump.num = 100       ;Number of air jumps allowed (opt)
 airjump.height = 35   ;Minimum distance from ground before you can air jump (opt)
 yaccel = .44          ;Vertical acceleration
 stand.friction = .85  ;Friction coefficient when standing

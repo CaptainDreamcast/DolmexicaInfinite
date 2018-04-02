@@ -3,6 +3,8 @@
 #include <assert.h>
 
 #include <prism/datastructures.h>
+#include <prism/log.h>
+#include <prism/system.h>
 
 #include "mugensound.h"
 
@@ -149,19 +151,67 @@ typedef struct {
 	DreamHitDefAttributeSlot mReversalDef;
 } PlayerHitData;
 
+typedef struct {
+	int mIsActive;
+
+	DreamMugenStateType mStateType;
+	MugenAttackClass mAttackClass;
+	MugenAttackType mAttackType;
+	int mStateNo;
+	int mSlot;
+
+	int mNow;
+	int mDuration;
+
+	int mDoesForceAir;
+} HitOverride;
+
+typedef struct {
+	HitOverride mHitOverrides[8];
+} PlayerHitOverrides;
+
+
 static struct {
-	IntMap mPassiveHitDataMap;
-	IntMap mActiveHitDataMap;
+	IntMap mPassiveHitDataMap; // contains PlayerHitData
+	IntMap mActiveHitDataMap; // contains PlayerHitData
+	IntMap mHitOverrideMap; // contains PlayerHitOverrides
 } gData;
 
 static void loadHitDataHandler(void* tData) {
 	(void)tData;
 	gData.mPassiveHitDataMap = new_int_map();
 	gData.mActiveHitDataMap = new_int_map();
+	gData.mHitOverrideMap = new_int_map();
+}
+
+static void updateSingleOverride(HitOverride* e) {
+	if (!e->mIsActive) return;
+	if (e->mDuration == -1) return;
+
+	e->mNow++;
+	if (e->mNow >= e->mDuration) {
+		e->mIsActive = 0;
+	}
+}
+
+static void updateSinglePlayerOverrides(void* tCaller, void* tData) {
+	(void)tCaller;
+	PlayerHitOverrides* data = tData;
+
+	int i;
+	for (i = 0; i < 8; i++) {
+		updateSingleOverride(&data->mHitOverrides[i]);
+	}
+}
+
+static void updateHitDataHandler(void* tData) {
+	(void)tData;
+	int_map_map(&gData.mHitOverrideMap, updateSinglePlayerOverrides, NULL);
 }
 
 ActorBlueprint HitDataHandler = {
 	.mLoad = loadHitDataHandler,
+	.mUpdate = updateHitDataHandler,
 };
 
 int initPlayerHitDataAndReturnID(DreamPlayer* tPlayer)
@@ -178,6 +228,12 @@ int initPlayerHitDataAndReturnID(DreamPlayer* tPlayer)
 
 	int_map_push_owned(&gData.mActiveHitDataMap, id, active);
 
+	PlayerHitOverrides* hitOverrides = allocMemory(sizeof(PlayerHitOverrides));
+	int i;
+	for (i = 0; i < 8; i++) hitOverrides->mHitOverrides[i].mIsActive = 0;
+
+	int_map_push_owned(&gData.mHitOverrideMap, id, hitOverrides);
+
 	return id;
 }
 
@@ -185,9 +241,11 @@ void removePlayerHitData(DreamPlayer* tPlayer)
 {
 	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
+	assert(int_map_contains(&gData.mHitOverrideMap, tPlayer->mHitDataID));
 
 	int_map_remove(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
 	int_map_remove(&gData.mPassiveHitDataMap, tPlayer->mHitDataID);
+	int_map_remove(&gData.mHitOverrideMap, tPlayer->mHitDataID);
 }
 
 void copyHitDataToActive(DreamPlayer* tPlayer, void * tHitData)
@@ -1027,6 +1085,13 @@ void setHitDataPlayer2ChangeFaceDirectionRelativeToPlayer1(DreamPlayer* tPlayer,
 	e->mPlayer2ChangeFaceDirectionRelativeToPlayer1 = tFaceDirection;
 }
 
+int getHitDataPlayer1StateNumber(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mPassiveHitDataMap, tPlayer->mHitDataID);
+	return e->mPlayer1StateNumber;
+}
+
 int getActiveHitDataPlayer1StateNumber(DreamPlayer * tPlayer)
 {
 	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
@@ -1053,6 +1118,13 @@ void setPlayer2StateNumber(DreamPlayer* tPlayer, int tStateNumber)
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = int_map_get(&gData.mPassiveHitDataMap, tPlayer->mHitDataID);
 	e->mPlayer2StateNumber = tStateNumber;
+}
+
+int getHitDataPlayer2CapableOfGettingPlayer1State(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mPassiveHitDataMap, tPlayer->mHitDataID);
+	return e->mCanPlayer2GetPlayer1State;
 }
 
 int getActiveHitDataPlayer2CapableOfGettingPlayer1State(DreamPlayer * tPlayer)
@@ -1207,6 +1279,13 @@ int getActiveHitDataAirFall(DreamPlayer * tPlayer)
 	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
 	return e->mAirFall;
+}
+
+void setActiveHitDataAirFall(DreamPlayer * tPlayer, int tIsCausingPlayer2ToFall)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	e->mAirFall = tIsCausingPlayer2ToFall;
 }
 
 void setHitDataAirFall(DreamPlayer* tPlayer, int tIsCausingPlayer2ToFall)
@@ -1581,6 +1660,81 @@ void addHitDataReversalDefFlag2(DreamPlayer * tPlayer, char * tFlag)
 
 	strcpy(e->mReversalDef.mFlag2[e->mReversalDef.mFlag2Amount], nFlag);
 	e->mReversalDef.mFlag2Amount++;
+}
+
+void setPlayerHitOverride(DreamPlayer * tPlayer, DreamMugenStateType tStateType, MugenAttackClass tAttackClass, MugenAttackType tAttackType, int tStateNo, int tSlot, int tDuration, int tDoesForceAir)
+{
+	assert(int_map_contains(&gData.mHitOverrideMap, tPlayer->mHitDataID));
+	PlayerHitOverrides* overrides = int_map_get(&gData.mHitOverrideMap, tPlayer->mHitDataID);
+
+	HitOverride* e = &overrides->mHitOverrides[tSlot];
+	e->mStateType = tStateType;
+	e->mAttackClass = tAttackClass;
+	e->mAttackType = tAttackType;
+	e->mStateNo = tStateNo;
+	e->mSlot = tSlot;
+	e->mDoesForceAir = tDoesForceAir;
+
+	e->mNow = 0;
+	e->mDuration = tDuration;
+
+	e->mIsActive = 1;
+}
+
+int overrideEqualsPlayerHitDef(HitOverride* e, DreamPlayer* tPlayer) {
+	if (!e->mIsActive) return 0;
+
+	DreamMugenStateType stateType = getHitDataType(tPlayer);
+	MugenAttackClass attackClass = getHitDataAttackClass(tPlayer);
+	MugenAttackType attackType = getHitDataAttackType(tPlayer);
+
+	if (e->mStateType != stateType) return 0;
+	if (e->mAttackClass != attackClass) return 0;
+	if (e->mAttackType != attackType) return 0;
+
+	return 1;
+}
+
+int hasMatchingHitOverride(DreamPlayer* tPlayer, DreamPlayer * tOtherPlayer) {
+	assert(int_map_contains(&gData.mHitOverrideMap, tPlayer->mHitDataID));
+	PlayerHitOverrides* overrides = int_map_get(&gData.mHitOverrideMap, tPlayer->mHitDataID);
+
+	int i;
+	for (i = 0; i < 8; i++) {
+		if (overrideEqualsPlayerHitDef(&overrides->mHitOverrides[i], tOtherPlayer)) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+int isIgnoredBecauseOfHitOverride(DreamPlayer* tPlayer, DreamPlayer * tOtherPlayer)
+{
+	if (getHitDataPlayer1StateNumber(tOtherPlayer) == -1) return 0;
+	if (getHitDataPlayer2CapableOfGettingPlayer1State(tOtherPlayer) != 1) return 0;
+
+	return hasMatchingHitOverride(tPlayer, tOtherPlayer);
+}
+
+void getMatchingHitOverrideStateNoAndForceAir(DreamPlayer * tPlayer, DreamPlayer * tOtherPlayer, int * oStateNo, int * oDoesForceAir)
+{
+	assert(int_map_contains(&gData.mHitOverrideMap, tPlayer->mHitDataID));
+	PlayerHitOverrides* overrides = int_map_get(&gData.mHitOverrideMap, tPlayer->mHitDataID);
+
+	int i;
+	for (i = 0; i < 8; i++) {
+		if (overrideEqualsPlayerHitDef(&overrides->mHitOverrides[i], tOtherPlayer)) {
+			*oStateNo = overrides->mHitOverrides[i].mStateNo;
+			*oDoesForceAir = overrides->mHitOverrides[i].mDoesForceAir;
+			return;
+		}
+	}
+
+	logError("Unable to find matching hit override.");
+	logErrorInteger(tPlayer->mRootID);
+	logErrorInteger(tOtherPlayer->mRootID);
+	abortSystem();
 }
 
 

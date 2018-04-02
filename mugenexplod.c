@@ -14,6 +14,7 @@
 #include "mugenstagehandler.h"
 
 typedef struct {
+	int mInternalID;
 	DreamPlayer* mPlayer;
 
 	int mIsInFightDefFile;
@@ -74,8 +75,8 @@ int addExplod(DreamPlayer* tPlayer)
 {
 	Explod* e = allocMemory(sizeof(Explod));
 	e->mPlayer = tPlayer;
-
-	return int_map_push_back_owned(&gData.mExplods, e);
+	e->mInternalID = int_map_push_back_owned(&gData.mExplods, e);
+	return e->mInternalID;
 }
 
 void setExplodAnimation(int tID, int tIsInFightDefFile, int tAnimationNumber)
@@ -250,9 +251,83 @@ void finalizeExplod(int tID)
 	e->mNow = 0;
 }
 
+
 static void unloadExplod(Explod* e) {
 	removeMugenAnimation(e->mAnimationID);
 	removeFromPhysicsHandler(e->mPhysicsID);
+}
+
+typedef struct {
+	DreamPlayer* mPlayer;
+	int mExplodID;
+
+} RemoveExplodsCaller;
+
+
+static int removeSingleExplodWithID(void* tCaller, void* tData) {
+	RemoveExplodsCaller* caller = tCaller;
+	Explod* e = tData;
+
+	if (e->mPlayer == caller->mPlayer && e->mExternalID == caller->mExplodID) {
+		unloadExplod(e);
+		return 1;
+	}
+
+	return 0;
+}
+
+void removeExplodsWithID(DreamPlayer * tPlayer, int tExplodID)
+{
+	RemoveExplodsCaller caller;
+	caller.mPlayer = tPlayer;
+	caller.mExplodID = tExplodID;
+	int_map_remove_predicate(&gData.mExplods, removeSingleExplodWithID, &caller);
+}
+
+static int removeSingleExplod(void* tCaller, void* tData) {
+	RemoveExplodsCaller* caller = tCaller;
+	Explod* e = tData;
+
+	if (e->mPlayer == caller->mPlayer) {
+		unloadExplod(e);
+		return 1;
+	}
+
+	return 0;
+}
+
+void removeAllExplods(DreamPlayer * tPlayer)
+{
+	RemoveExplodsCaller caller;
+	caller.mPlayer = tPlayer;
+	int_map_remove_predicate(&gData.mExplods, removeSingleExplod, &caller);
+}
+
+typedef struct {
+	DreamPlayer* mPlayer;
+	int mExplodID;
+	int mReturnID;
+} FindExplodCaller;
+
+void compareSingleExplodIDToSearchID(void* tCaller, void* tData) {
+	FindExplodCaller* caller = tCaller;
+	Explod* e = tData;
+
+	if (e->mPlayer == caller->mPlayer && e->mExternalID == caller->mExplodID) {
+		caller->mReturnID = e->mInternalID;
+	}
+}
+
+int getExplodIndexFromExplodID(DreamPlayer* tPlayer, int tExplodID)
+{
+	FindExplodCaller caller;
+	caller.mPlayer = tPlayer;
+	caller.mExplodID = tExplodID;
+	caller.mReturnID = -1;
+
+	int_map_map(&gData.mExplods, compareSingleExplodIDToSearchID, &caller);
+
+	return caller.mReturnID;
 }
 
 int getExplodAmount(DreamPlayer * tPlayer)

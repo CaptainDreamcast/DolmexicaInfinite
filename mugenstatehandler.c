@@ -307,6 +307,8 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 		addPlayerPower(e->mPlayer, power);
 	}
 
+	setPlayerPositionUnfrozen(e->mPlayer); // TODO: check if correct
+
 	resetStateControllers(newState);
 }
 

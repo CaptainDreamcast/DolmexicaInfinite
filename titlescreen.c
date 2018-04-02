@@ -262,14 +262,14 @@ static void updateItemSelection() {
 		setSelectedMenuElementInactive();
 		gData.mSelected = (gData.mSelected + 1) % vector_size(&gData.mMenus);
 		setSelectedMenuElementActive();
-		playMugenSound(&gData.mSounds, gData.mHeader.mCursorMoveSound.x, gData.mHeader.mCursorMoveSound.y);
+		tryPlayMugenSound(&gData.mSounds, gData.mHeader.mCursorMoveSound.x, gData.mHeader.mCursorMoveSound.y);
 	}
 	else if (hasPressedUpFlank()) {
 		setSelectedMenuElementInactive();
 		gData.mSelected--;
 		if (gData.mSelected < 0) gData.mSelected += vector_size(&gData.mMenus);
 		setSelectedMenuElementActive();
-		playMugenSound(&gData.mSounds, gData.mHeader.mCursorMoveSound.x, gData.mHeader.mCursorMoveSound.y);
+		tryPlayMugenSound(&gData.mSounds, gData.mHeader.mCursorMoveSound.x, gData.mHeader.mCursorMoveSound.y);
 	}
 
 }
@@ -290,7 +290,7 @@ static void updateMenuElementPositions() {
 static void updateItemSelectionConfirmation() {
 	if (hasPressedAFlank() || hasPressedStartFlank()) {
 		MenuText* e = vector_get(&gData.mMenus, gData.mSelected);
-		playMugenSound(&gData.mSounds, gData.mHeader.mCursorDoneSound.x, gData.mHeader.mCursorDoneSound.y);
+		tryPlayMugenSound(&gData.mSounds, gData.mHeader.mCursorDoneSound.x, gData.mHeader.mCursorDoneSound.y);
 		e->mCB();
 	}
 }

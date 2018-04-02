@@ -19,6 +19,7 @@
 #include "mugenstatehandler.h"
 #include "playerhitdata.h"
 #include "projectile.h"
+#include "mugenlog.h"
 
 #include "stage.h"
 #include "fightui.h"
@@ -52,12 +53,12 @@ static void loadOptionalStateFiles(MugenDefScript* tScript, char* tPath, DreamPl
 	char scriptPath[1024];
 	char name[100];
 
-	int i = 1;
-	while (i) {
+	int i;
+	for (i = 1; i < 100; i++) {
 		sprintf(name, "st%d", i);
 		getMugenDefStringOrDefault(file, tScript, "Files", name, "");
 		sprintf(scriptPath, "%s%s", tPath, file);
-		if (!isFile(scriptPath)) return;
+		if (!isFile(scriptPath)) continue;
 		
 		loadDreamMugenStateDefinitionsFromFile(&tPlayer->mConstants.mStates, scriptPath);
 	
@@ -85,6 +86,7 @@ static void setPlayerExternalDependencies(DreamPlayer* tPlayer) {
 	tPlayer->mStateMachineID = registerDreamMugenStateMachine(&tPlayer->mConstants.mStates, tPlayer);
 }
 
+
 static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* tScript) {
 	char file[200];
 	char path[1024];
@@ -101,6 +103,12 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	sprintf(scriptPath, "%s%s", path, file);
 	if (isFile(scriptPath)) {
 		loadDreamMugenStateDefinitionsFromFile(&tPlayer->mConstants.mStates, scriptPath);
+	}
+	else {
+		sprintf(scriptPath, "assets/data/%s", file);
+		if (isFile(scriptPath)) {
+			loadDreamMugenStateDefinitionsFromFile(&tPlayer->mConstants.mStates, scriptPath);
+		}
 	}
 
 	getMugenDefStringOrDefault(file, tScript, "Files", "st", "");
@@ -176,6 +184,10 @@ static void resetHelperState(DreamPlayer* p) {
 	p->mNoKOSoundFlag = 0;
 	p->mNoKOSlowdownFlag = 0;
 	p->mUnguardableFlag = 0;
+	p->mTransparencyFlag = 0;
+
+	p->mJumpFlank = 0;
+	p->mAirJumpCounter = 0;
 
 	p->mIsHitOver = 1;
 	p->mIsHitShakeOver = 1;
@@ -214,6 +226,7 @@ static void resetHelperState(DreamPlayer* p) {
 	int i;
 	for (i = 0; i < 2; i++) {
 		initHitDefAttributeSlot(&p->mNotHitBy[i]);
+		p->mDustClouds[i].mLastDustTime = 0;
 	}
 }
 
@@ -245,6 +258,36 @@ static void loadPlayerState(DreamPlayer* p) {
 
 static void loadPlayerStateWithConstantsLoaded(DreamPlayer* p) {
 	p->mLife = p->mConstants.mHeader.mLife; 
+	setPlayerDrawOffsetX(p, 0, getPlayerCoordinateP(p));
+	setPlayerDrawOffsetY(p, 0, getPlayerCoordinateP(p));
+}
+
+static void loadPlayerShadow(DreamPlayer* p) {
+	Position pos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
+	pos.z = PLAYER_Z - 2;
+	p->mShadow.mShadowPosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
+	p->mShadow.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), &p->mSprites, pos);
+	setMugenAnimationBasePosition(p->mShadow.mAnimationID, &p->mShadow.mShadowPosition);
+	setMugenAnimationCameraPositionReference(p->mShadow.mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
+	setMugenAnimationDrawScale(p->mShadow.mAnimationID, makePosition(1, -getDreamStageShadowScaleY(), 1));
+	Vector3D color = getDreamStageShadowColor();
+	setMugenAnimationColor(p->mShadow.mAnimationID, color.x, color.y, color.z);
+	setMugenAnimationTransparency(p->mShadow.mAnimationID, getDreamStageShadowTransparency());
+	setMugenAnimationFaceDirection(p->mShadow.mAnimationID, getMugenAnimationIsFacingRight(p->mAnimationID));
+}
+
+static void loadPlayerReflection(DreamPlayer* p) {
+	Position pos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
+	pos.z = PLAYER_Z - 1.9;
+	p->mReflection.mPosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
+	p->mReflection.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), &p->mSprites, pos);
+
+	setMugenAnimationBasePosition(p->mReflection.mAnimationID, &p->mReflection.mPosition);
+	setMugenAnimationCameraPositionReference(p->mReflection.mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
+	setMugenAnimationDrawScale(p->mReflection.mAnimationID, makePosition(1, -1, 1));
+	setMugenAnimationBlendType(p->mReflection.mAnimationID, BLEND_TYPE_ADDITION);
+	setMugenAnimationTransparency(p->mReflection.mAnimationID, getDreamStageReflectionTransparency());
+	setMugenAnimationFaceDirection(p->mReflection.mAnimationID, getMugenAnimationIsFacingRight(p->mAnimationID));
 }
 
 static void loadSinglePlayerFromMugenDefinition(DreamPlayer* p)
@@ -255,6 +298,8 @@ static void loadSinglePlayerFromMugenDefinition(DreamPlayer* p)
 	loadPlayerHeaderFromScript(&p->mHeader, &script);
 	loadPlayerFiles(p->mDefinitionPath, p, &script);
 	loadPlayerStateWithConstantsLoaded(p);
+	loadPlayerShadow(p);
+	loadPlayerReflection(p);
 	unloadMugenDefScript(script);
 	
 
@@ -331,6 +376,25 @@ static void updateWalking(DreamPlayer* p) {
 	}
 }
 
+static void updateAirJumping(DreamPlayer* p) {
+	if (!p->mIsInControl) return;
+	if (getPlayerStateType(p) != MUGEN_STATE_TYPE_AIR) return;
+
+	int hasJumpLeft = p->mAirJumpCounter < p->mConstants.mMovementData.mAllowedAirJumpAmount;
+	int hasMinimumHeight = -getPlayerPositionY(p, getPlayerCoordinateP(p)) >= p->mConstants.mMovementData.mAirJumpMinimumHeight;
+
+	if (isPlayerCommandActive(p, "holdup") && p->mJumpFlank && hasJumpLeft && hasMinimumHeight) { // TODO: find something better than flank
+		p->mJumpFlank = 0;
+		p->mAirJumpCounter++;
+		changePlayerState(p, 45);
+	}
+}
+
+static void updateJumpFlank(DreamPlayer* p) {
+	if (p->mJumpFlank) return;
+	p->mJumpFlank |= !isPlayerCommandActive(p, "holdup");
+}
+
 static void updateJumping(DreamPlayer* p) {
 	if (!p->mIsInControl) return;
 	if (getPlayerStateType(p) != MUGEN_STATE_TYPE_STANDING) return;
@@ -351,10 +415,11 @@ static void updateLanding(DreamPlayer* p) {
 	if (getPlayerPhysics(p) != MUGEN_STATE_PHYSICS_AIR) return;
 	if (isPlayerPaused(p)) return;
 
+
 	Velocity vel = *getHandledPhysicsVelocityReference(p->mPhysicsID);
 	if (pos.y >= 0 && vel.y >= 0) {
 		setPlayerControl(p, 1);
-		changePlayerState(p, 0);
+		changePlayerState(p, 52);
 	}
 }
 
@@ -458,7 +523,19 @@ static void updateBindingPosition(DreamPlayer* p) {
 		pos = vecAdd(pos, getPlayerMiddlePosition(bindRoot));
 	}
 
+	if (getPlayerIsFacingRight(bindRoot)) {
+		pos = vecAdd(pos, p->mBoundOffset);
+	}
+	else {
+		pos = vecAdd(pos, makePosition(-p->mBoundOffset.x, p->mBoundOffset.y, 0));
+	}
+
 	setPlayerPosition(p, pos, getPlayerCoordinateP(p));
+
+	if (p->mBoundFaceSet) {
+		if (p->mBoundFaceSet == 1) setPlayerIsFacingRight(p, getPlayerIsFacingRight(bindRoot));
+		else setPlayerIsFacingRight(p, !getPlayerIsFacingRight(bindRoot));
+	}
 }
 
 static void removePlayerBinding(DreamPlayer* tPlayer) {
@@ -472,18 +549,14 @@ static void updateBinding(DreamPlayer* p) {
 	if (!p->mIsBound) return;
 	if (isPlayerPaused(p)) return;
 
-	DreamPlayer* bindRoot = p->mBoundTarget;
-	updateBindingPosition(p);
-
-	if (p->mBoundFaceSet) {
-		if (p->mBoundFaceSet == 1) setPlayerIsFacingRight(p, getPlayerIsFacingRight(bindRoot));
-		else setPlayerIsFacingRight(p, !getPlayerIsFacingRight(bindRoot));
-	}
-
 	p->mBoundNow++;
 	if (p->mBoundNow >= p->mBoundDuration) {
 		removePlayerBinding(p);
+		return;
 	}
+
+	DreamPlayer* bindRoot = p->mBoundTarget;
+	updateBindingPosition(p);
 }
 
 static int isPlayerGuarding(DreamPlayer* p) {
@@ -640,8 +713,48 @@ static void updateKOFlags(DreamPlayer* p) {
 	p->mNoKOSlowdownFlag = 0;
 }
 
+static void updateTransparencyFlag(DreamPlayer* p) {
+	if (!p->mTransparencyFlag) return;
+
+	setMugenAnimationBlendType(p->mAnimationID, BLEND_TYPE_NORMAL);
+	setMugenAnimationTransparency(p->mAnimationID, 1);
+
+	p->mTransparencyFlag = 0;
+}
+
+static void updateShadow(DreamPlayer* p) {
+	setMugenAnimationFaceDirection(p->mShadow.mAnimationID, getMugenAnimationIsFacingRight(p->mAnimationID));
+
+	p->mShadow.mShadowPosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
+	p->mShadow.mShadowPosition.y *= -getDreamStageShadowScaleY();
+
+	Vector3D fadeRange = getDreamStageShadowFadeRange(getPlayerCoordinateP(p));
+	fadeRange = vecScale(fadeRange, 0.5); // TODO: fix
+	double posY = -(getDreamScreenHeight(getPlayerCoordinateP(p))-getPlayerScreenPositionY(p, getPlayerCoordinateP(p)));
+
+	if (posY <= fadeRange.x) {
+		setMugenAnimationTransparency(p->mShadow.mAnimationID, 0);
+	}
+	else if (posY <= fadeRange.y) {
+		double t = 1-(((-posY) - (-fadeRange.y)) / ((-fadeRange.x) - (-fadeRange.y)));
+		setMugenAnimationTransparency(p->mShadow.mAnimationID, t*getDreamStageShadowTransparency());
+	}
+	else {
+		setMugenAnimationTransparency(p->mShadow.mAnimationID, getDreamStageShadowTransparency());
+	}
+}
+
+static void updateReflection(DreamPlayer* p) {
+	setMugenAnimationFaceDirection(p->mReflection.mAnimationID, getMugenAnimationIsFacingRight(p->mAnimationID));
+
+	p->mReflection.mPosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
+	p->mReflection.mPosition.y *= -1;
+}
+
 static void updateSinglePlayer(DreamPlayer* p) {
 	updateWalking(p);
+	updateAirJumping(p);
+	updateJumpFlank(p);
 	updateJumping(p);
 	updateLanding(p);
 	updateCrouchingDown(p);
@@ -658,6 +771,9 @@ static void updateSinglePlayer(DreamPlayer* p) {
 	updatePush(p);
 	updateStageBorder(p);
 	updateKOFlags(p);
+	updateTransparencyFlag(p);
+	updateShadow(p);
+	updateReflection(p);
 
 	list_map(&p->mHelpers, updateSinglePlayerCB, NULL);
 }
@@ -684,7 +800,6 @@ static void setPlayerHitShakeOver(void* tCaller) {
 
 	p->mIsHitShakeOver = 1;
 
-
 	Duration hitDuration;
 	if (isPlayerGuarding(p)) {
 		hitDuration = getActiveHitDataGuardHitTime(p);
@@ -702,6 +817,17 @@ static void setPlayerHitShakeOver(void* tCaller) {
 	addTimerCB(hitDuration, setPlayerHitOver, p);
 }
 
+static void handlePlayerHitOverride(DreamPlayer* p, DreamPlayer* tOtherPlayer, int* tNextState) {
+	int doesForceAir;
+	getMatchingHitOverrideStateNoAndForceAir(p, tOtherPlayer, tNextState, &doesForceAir);
+	if (doesForceAir) {
+		setPlayerUnguarding(p);
+		setPlayerStateType(p, MUGEN_STATE_TYPE_AIR);
+		setActiveHitDataAirFall(p, 1);
+		p->mIsFalling = getActiveHitDataFall(p);
+	}
+}
+
 static void setPlayerHitStates(DreamPlayer* p, DreamPlayer* tOtherPlayer) {
 	if (getActiveHitDataPlayer1StateNumber(p) != -1) {
 		changePlayerState(tOtherPlayer, getActiveHitDataPlayer1StateNumber(p));
@@ -711,9 +837,15 @@ static void setPlayerHitStates(DreamPlayer* p, DreamPlayer* tOtherPlayer) {
 
 		int nextState;
 
-		if (getPlayerStateType(p) == MUGEN_STATE_TYPE_STANDING) {
+		if (hasMatchingHitOverride(p, tOtherPlayer)) {
+			handlePlayerHitOverride(p, tOtherPlayer, &nextState);
+		}
+		else if (getPlayerStateType(p) == MUGEN_STATE_TYPE_STANDING) {
 			if (isPlayerGuarding(p)) {
 				nextState = 150;
+			}
+			else if(getActiveHitDataGroundType(p) == MUGEN_ATTACK_HEIGHT_TRIP){
+				nextState = 5070;
 			}
 			else {
 				nextState = 5000;
@@ -722,6 +854,9 @@ static void setPlayerHitStates(DreamPlayer* p, DreamPlayer* tOtherPlayer) {
 		else if (getPlayerStateType(p) == MUGEN_STATE_TYPE_CROUCHING) {
 			if (isPlayerGuarding(p)) {
 				nextState = 152;
+			}
+			else if (getActiveHitDataGroundType(p) == MUGEN_ATTACK_HEIGHT_TRIP) {
+				nextState = 5070;
 			}
 			else {
 				nextState = 5010;
@@ -970,7 +1105,7 @@ static void playPlayerHitSound(DreamPlayer* p, void(*tFunc)(DreamPlayer*,int*,Ve
 		soundFile = getDreamCommonSounds();
 	}
 
-	playMugenSound(soundFile, sound.x, sound.y);
+	tryPlayMugenSound(soundFile, sound.x, sound.y);
 }
 
 void playerHitCB(void* tData, void* tHitData)
@@ -983,6 +1118,7 @@ void playerHitCB(void* tData, void* tHitData)
 	if (getPlayerStateType(p) == MUGEN_STATE_TYPE_LYING) return;
 	if (!isReceivedHitDataActive(tHitData)) return;
 	if (!checkActiveHitDefAttributeSlots(p, otherPlayer)) return;
+	if (isIgnoredBecauseOfHitOverride(p, otherPlayer)) return;
 
 	setPlayerHit(p, otherPlayer, tHitData);
 	setReceivedHitDataInactive(tHitData);
@@ -1090,6 +1226,7 @@ void setPlayerPhysics(DreamPlayer* p, DreamMugenStatePhysics tNewPhysics)
 		Position* pos = getHandledPhysicsPositionReference(p->mPhysicsID);
 		Velocity* vel = getHandledPhysicsVelocityReference(p->mPhysicsID);
 		Acceleration* acc = getHandledPhysicsAccelerationReference(p->mPhysicsID);
+
 		pos->y = 0;
 		vel->y = 0;
 		acc->y = 0;
@@ -1100,6 +1237,7 @@ void setPlayerPhysics(DreamPlayer* p, DreamMugenStatePhysics tNewPhysics)
 		Position* pos = getHandledPhysicsPositionReference(p->mPhysicsID);
 		Velocity* vel = getHandledPhysicsVelocityReference(p->mPhysicsID);
 		Acceleration* acc = getHandledPhysicsAccelerationReference(p->mPhysicsID);
+
 		pos->y = 0;
 		vel->y = 0;
 		acc->y = 0;
@@ -1113,8 +1251,7 @@ void setPlayerPhysics(DreamPlayer* p, DreamMugenStatePhysics tNewPhysics)
 			Position* pos = getHandledPhysicsPositionReference(p->mPhysicsID);
 			Velocity* vel = getHandledPhysicsVelocityReference(p->mPhysicsID);
 			Acceleration* acc = getHandledPhysicsAccelerationReference(p->mPhysicsID);
-			pos->y = 0;
-			vel->y = 0;
+
 			acc->y = 0;
 		}
 	}
@@ -1123,7 +1260,12 @@ void setPlayerPhysics(DreamPlayer* p, DreamMugenStatePhysics tNewPhysics)
 		setHandledPhysicsGravity(p->mPhysicsID, makePosition(0, p->mConstants.mMovementData.mVerticalAcceleration, 0));
 
 		if (tNewPhysics != p->mStatePhysics) {
-			setPlayerNoLandFlag(p);
+			setPlayerNoLandFlag(p);			
+		}
+
+		if (p->mStatePhysics == MUGEN_STATE_PHYSICS_STANDING || p->mStatePhysics == MUGEN_STATE_PHYSICS_CROUCHING) {
+			p->mAirJumpCounter = 0;
+			p->mJumpFlank = 0;
 		}
 	}
 	else {
@@ -1250,7 +1392,6 @@ int getPlayerAnimationNumber(DreamPlayer* p)
 
 int getRemainingPlayerAnimationTime(DreamPlayer* p)
 {
-	// printf("%d %d remaining time %d\n", p->mRootID, p->mID, getDreamRegisteredAnimationRemainingAnimationTime(p->mAnimationID));
 	return getMugenAnimationRemainingAnimationTime(p->mAnimationID);
 }
 
@@ -1525,12 +1666,12 @@ double getPlayerAirGetHitTripGroundLevelY(DreamPlayer* p)
 	return p->mConstants.mMovementData.mAirGetHitTripGroundLevelY;
 }
 
-double getPlayerDownBounceOffsetX(DreamPlayer* p)
+double getPlayerDownBounceOffsetX(DreamPlayer* p, int tCoordinateP)
 {
 	return p->mConstants.mMovementData.mBounceOffset.x;
 }
 
-double getPlayerDownBounceOffsetY(DreamPlayer* p)
+double getPlayerDownBounceOffsetY(DreamPlayer* p, int tCoordinateP)
 {
 	return p->mConstants.mMovementData.mBounceOffset.y;
 }
@@ -1540,7 +1681,7 @@ double getPlayerDownVerticalBounceAcceleration(DreamPlayer* p)
 	return p->mConstants.mMovementData.mVerticalBounceAcceleration;
 }
 
-double getPlayerDownBounceGroundLevel(DreamPlayer* p)
+double getPlayerDownBounceGroundLevel(DreamPlayer* p, int tCoordinateP)
 {
 	return p->mConstants.mMovementData.mBounceGroundLevel;
 }
@@ -1794,6 +1935,8 @@ void changePlayerAnimationWithStartStep(DreamPlayer* p, int tNewAnimation, int t
 {
 	MugenAnimation* newAnimation = getMugenAnimation(&p->mAnimations, tNewAnimation);
 	changeMugenAnimationWithStartStep(p->mAnimationID, newAnimation, tStartStep);
+	changeMugenAnimationWithStartStep(p->mShadow.mAnimationID, newAnimation, tStartStep);
+	changeMugenAnimationWithStartStep(p->mReflection.mAnimationID, newAnimation, tStartStep);
 }
 
 void changePlayerAnimationToPlayer2AnimationWithStartStep(DreamPlayer * p, int tNewAnimation, int tStartStep)
@@ -1801,6 +1944,8 @@ void changePlayerAnimationToPlayer2AnimationWithStartStep(DreamPlayer * p, int t
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p);
 	MugenAnimation* newAnimation = getMugenAnimation(&otherPlayer->mAnimations, tNewAnimation);
 	changeMugenAnimationWithStartStep(p->mAnimationID, newAnimation, tStartStep);
+	changeMugenAnimationWithStartStep(p->mShadow.mAnimationID, newAnimation, tStartStep);
+	changeMugenAnimationWithStartStep(p->mReflection.mAnimationID, newAnimation, tStartStep);
 }
 
 int isPlayerStartingAnimationElementWithID(DreamPlayer* p, int tStepID)
@@ -1820,7 +1965,7 @@ int getPlayerAnimationElementFromTimeOffset(DreamPlayer* p, int tTime)
 
 void setPlayerSpritePriority(DreamPlayer* p, int tPriority)
 {
-	Position pos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
+	Position pos = getMugenAnimationPosition(p->mAnimationID);
 	pos.z = PLAYER_Z + tPriority * 0.1 + p->mRootID * 0.01; // TODO: properly
 	setMugenAnimationPosition(p->mAnimationID, pos);
 }
@@ -1838,6 +1983,8 @@ void setPlayerNoAutoTurnFlag(DreamPlayer* p)
 void setPlayerInvisibleFlag(DreamPlayer * p)
 {
 	setMugenAnimationInvisible(p->mAnimationID); // TODO: one frame only
+	setMugenAnimationInvisible(p->mShadow.mAnimationID);
+	setMugenAnimationInvisible(p->mReflection.mAnimationID);
 }
 
 void setPlayerNoLandFlag(DreamPlayer* p)
@@ -1964,7 +2111,7 @@ int getPlayerSlideTime(DreamPlayer* p)
 {
 	return getActiveHitDataGroundSlideTime(p); // TODO: for guarding
 }
-
+ 
 void setPlayerDefenseMultiplier(DreamPlayer* p, double tValue)
 {
 	p->mDefenseMultiplier = tValue;
@@ -1974,6 +2121,11 @@ void setPlayerPositionFrozen(DreamPlayer* p)
 {
 	p->mIsFrozen = 1;
 	p->mFreezePosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
+}
+
+void setPlayerPositionUnfrozen(DreamPlayer* p)
+{
+	p->mIsFrozen = 0;
 }
 
 MugenSpriteFile * getPlayerSprites(DreamPlayer* p)
@@ -2026,6 +2178,8 @@ static void pausePlayer(DreamPlayer* p) {
 
 	pausePhysics(p->mPhysicsID);
 	pauseMugenAnimation(p->mAnimationID);
+	pauseMugenAnimation(p->mShadow.mAnimationID);
+	pauseMugenAnimation(p->mReflection.mAnimationID);
 	pauseDreamRegisteredStateMachine(p->mStateMachineID);
 }
 
@@ -2034,6 +2188,8 @@ static void unpausePlayer(DreamPlayer* p) {
 
 	resumePhysics(p->mPhysicsID);
 	unpauseMugenAnimation(p->mAnimationID);
+	unpauseMugenAnimation(p->mShadow.mAnimationID);
+	unpauseMugenAnimation(p->mReflection.mAnimationID);
 	unpauseDreamRegisteredStateMachine(p->mStateMachineID);
 }
 
@@ -2068,6 +2224,8 @@ void setPlayerUnSuperPaused(DreamPlayer* p)
 
 	if (!isPlayerPaused(p)) {
 		advanceMugenAnimationOneTick(p->mAnimationID); // TODO: fix somehow
+		advanceMugenAnimationOneTick(p->mShadow.mAnimationID); // TODO: fix somehow
+		advanceMugenAnimationOneTick(p->mReflection.mAnimationID); // TODO: fix somehow
 	}
 }
 
@@ -2075,7 +2233,7 @@ static void setPlayerDead(DreamPlayer* p) {
 	p->mIsAlive = 0;
 	
 	if (!p->mNoKOSoundFlag) {
-		playMugenSound(&p->mSounds, 11, 0);
+		tryPlayMugenSound(&p->mSounds, 11, 0);
 	}
 }
 
@@ -2555,6 +2713,11 @@ int getPlayerAILevel(DreamPlayer* p)
 	return p->mAILevel;
 }
 
+void setPlayerLife(DreamPlayer * p, int tLife)
+{
+	p->mLife = tLife;
+}
+
 int getPlayerLife(DreamPlayer* p)
 {
 	return p->mLife;
@@ -2575,15 +2738,17 @@ int getPlayerPowerMax(DreamPlayer* p)
 	return p->mConstants.mHeader.mPower;
 }
 
-void addPlayerPower(DreamPlayer* p, int tPower)
+void setPlayerPower(DreamPlayer * p, int tPower)
 {
-	p->mPower += tPower;
-
-	p->mPower = max(0, min(getPlayerPowerMax(p), p->mPower));
+	p->mPower = max(0, min(getPlayerPowerMax(p), tPower));
 
 	double perc = p->mPower / (double)p->mConstants.mHeader.mPower;
 	setDreamPowerBarPercentage(p, perc, p->mPower);
+}
 
+void addPlayerPower(DreamPlayer* p, int tPower)
+{
+	setPlayerPower(p, p->mPower + tPower);
 }
 
 int isPlayerBeingAttacked(DreamPlayer* p) {
@@ -2878,6 +3043,8 @@ static void bindHelperToPlayer(DreamPlayer* tHelper, DreamPlayer* tBind, int tTi
 	tHelper->mBoundPositionType = tType;
 	tHelper->mBoundTarget = tBind;
 
+	updateBindingPosition(tHelper);
+
 	tHelper->mBoundID = list_push_back(&tBind->mBoundHelpers, tHelper);
 }
 
@@ -2891,39 +3058,42 @@ void bindPlayerToParent(DreamPlayer * p, int tTime, int tFacing, Vector3D tOffse
 	bindHelperToPlayer(p, p->mParent, tTime, tFacing, tOffset, PLAYER_BIND_POSITION_TYPE_AXIS);
 }
 
+// TODO: correct target finding
 typedef struct {
 	DreamPlayer* mBindRoot;
 	int mID;
 	Position mOffset;
 	int mTime;
+	DreamPlayerBindPositionType mBindPositionType; 
 } BindPlayerTargetsCaller;
 
-static void bindSinglePlayerAsTarget(DreamPlayer* tBindRoot, DreamPlayer* tTarget, BindPlayerTargetsCaller* tCaller);
+static void bindSinglePlayerToTarget(DreamPlayer* tBindRoot, DreamPlayer* tTarget, BindPlayerTargetsCaller* tCaller);
 
 static void bindPlayerTargetCB(void* tCaller, void* tData) {
 	BindPlayerTargetsCaller* caller = tCaller;
 	DreamPlayer* helper = tData;
 
-	bindSinglePlayerAsTarget(caller->mBindRoot, helper, caller);
+	bindSinglePlayerToTarget(caller->mBindRoot, helper, caller);
 }
 
-static void bindSinglePlayerAsTarget(DreamPlayer* tBindRoot, DreamPlayer* tTarget, BindPlayerTargetsCaller* tCaller) {
+static void bindSinglePlayerToTarget(DreamPlayer* tBindRoot, DreamPlayer* tTarget, BindPlayerTargetsCaller* tCaller) {
 
 	if (tCaller->mID == -1 || tCaller->mID == getPlayerID(tTarget)) {
-		bindHelperToPlayer(tTarget, tBindRoot, tCaller->mTime, 0, tCaller->mOffset, PLAYER_BIND_POSITION_TYPE_AXIS);
+		bindHelperToPlayer(tBindRoot, tTarget, tCaller->mTime, 0, tCaller->mOffset, tCaller->mBindPositionType);
 	}
 
 	list_map(&tTarget->mHelpers, bindPlayerTargetCB, tCaller);
 }
 
-void bindPlayerTargets(DreamPlayer * p, int tTime, Vector3D tOffset, int tID)
+void bindPlayerToTarget(DreamPlayer * p, int tTime, Vector3D tOffset, DreamPlayerBindPositionType tBindPositionType, int tID)
 {
 	BindPlayerTargetsCaller caller;
 	caller.mBindRoot = p;
 	caller.mID = tID;
 	caller.mOffset = tOffset;
 	caller.mTime = tTime + 1; // TODO: fix
-	bindSinglePlayerAsTarget(p, getPlayerOtherPlayer(p)->mRoot, &caller);
+	caller.mBindPositionType = tBindPositionType;
+	bindSinglePlayerToTarget(p, getPlayerOtherPlayer(p)->mRoot, &caller);
 }
 
 int isPlayerBound(DreamPlayer * p)
@@ -2931,6 +3101,37 @@ int isPlayerBound(DreamPlayer * p)
 	return p->mIsBound;
 }
 
+
+static void bindSingleTargetToPlayer(DreamPlayer* tBindRoot, DreamPlayer* tTarget, BindPlayerTargetsCaller* tCaller);
+
+static void bindTargetToPlayerCB(void* tCaller, void* tData) {
+	BindPlayerTargetsCaller* caller = tCaller;
+	DreamPlayer* helper = tData;
+
+	bindSingleTargetToPlayer(caller->mBindRoot, helper, caller);
+}
+
+static void bindSingleTargetToPlayer(DreamPlayer* tBindRoot, DreamPlayer* tTarget, BindPlayerTargetsCaller* tCaller) {
+
+	if (tCaller->mID == -1 || tCaller->mID == getPlayerID(tTarget)) {
+		bindHelperToPlayer(tTarget, tBindRoot, tCaller->mTime, 0, tCaller->mOffset, tCaller->mBindPositionType);
+	}
+
+	list_map(&tTarget->mHelpers, bindTargetToPlayerCB, tCaller);
+}
+
+void bindPlayerTargetToPlayer(DreamPlayer * p, int tTime, Vector3D tOffset, int tID)
+{
+	BindPlayerTargetsCaller caller;
+	caller.mBindRoot = p;
+	caller.mID = tID;
+	caller.mOffset = tOffset;
+	caller.mTime = tTime + 1; // TODO: fix
+	caller.mBindPositionType = PLAYER_BIND_POSITION_TYPE_AXIS;
+	bindSingleTargetToPlayer(p, getPlayerOtherPlayer(p)->mRoot, &caller);
+}
+
+// TODO: proper targeting
 void addPlayerTargetLife(DreamPlayer * p, int tID, int tLife, int tCanKill, int tIsAbsolute)
 {
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
@@ -2946,6 +3147,51 @@ void addPlayerTargetLife(DreamPlayer * p, int tID, int tLife, int tCanKill, int 
 
 	addPlayerDamage(otherPlayer, -tLife);
 
+}
+
+// TODO: proper targeting
+void addPlayerTargetPower(DreamPlayer * p, int tID, int tPower)
+{
+	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
+	if (tID != -1 && getPlayerID(otherPlayer) != tID) return;
+
+	addPlayerPower(otherPlayer, tPower);
+}
+
+// TODO: proper targeting
+void addPlayerTargetVelocityX(DreamPlayer * p, int tID, double tValue, int tCoordinateP)
+{
+	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
+	if (tID != -1 && getPlayerID(otherPlayer) != tID) return;
+	
+	addPlayerVelocityX(otherPlayer, tValue, tCoordinateP);
+}
+
+// TODO: proper targeting
+void addPlayerTargetVelocityY(DreamPlayer * p, int tID, double tValue, int tCoordinateP)
+{
+	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
+	if (tID != -1 && getPlayerID(otherPlayer) != tID) return;
+
+	addPlayerVelocityY(otherPlayer, tValue, tCoordinateP);
+}
+
+// TODO: proper targeting
+void setPlayerTargetVelocityX(DreamPlayer * p, int tID, double tValue, int tCoordinateP)
+{
+	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
+	if (tID != -1 && getPlayerID(otherPlayer) != tID) return;
+
+	setPlayerVelocityX(otherPlayer, tValue, tCoordinateP);
+}
+
+// TODO: proper targeting
+void setPlayerTargetVelocityY(DreamPlayer * p, int tID, double tValue, int tCoordinateP)
+{
+	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
+	if (tID != -1 && getPlayerID(otherPlayer) != tID) return;
+
+	setPlayerVelocityY(otherPlayer, tValue, tCoordinateP);
 }
 
 void setPlayerTargetControl(DreamPlayer * p, int tID, int tControl)
@@ -3118,4 +3364,49 @@ int isPlayerProjectile(DreamPlayer * p)
 int isPlayerHomeTeam(DreamPlayer * p)
 {
 	return p->mRootID; // TODO: properly after teams are implemented
+}
+
+void setPlayerDrawOffsetX(DreamPlayer* p, double tValue, int tCoordinateP) {
+	tValue = transformDreamCoordinates(tValue, tCoordinateP, getPlayerCoordinateP(p));
+	Position pos = getMugenAnimationPosition(p->mAnimationID);
+	Position basePos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
+	Position newPos = vecAdd(basePos, makePosition(p->mConstants.mSizeData.mDrawOffset.x, p->mConstants.mSizeData.mDrawOffset.y, 0));
+	newPos.x += tValue;
+	newPos.y = pos.y;
+	newPos.z = pos.z;
+
+	setMugenAnimationPosition(p->mAnimationID, newPos);
+}
+
+void setPlayerDrawOffsetY(DreamPlayer* p, double tValue, int tCoordinateP) {
+	tValue = transformDreamCoordinates(tValue, tCoordinateP, getPlayerCoordinateP(p));
+	Position pos = getMugenAnimationPosition(p->mAnimationID);
+	Position basePos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
+	Position newPos = vecAdd(basePos, makePosition(p->mConstants.mSizeData.mDrawOffset.x, p->mConstants.mSizeData.mDrawOffset.y, 0));
+	newPos.x = pos.x;
+	newPos.y += tValue;
+	newPos.z = pos.z;
+
+	setMugenAnimationPosition(p->mAnimationID, newPos);
+}
+
+void setPlayerOneFrameTransparency(DreamPlayer * p, BlendType tType, int tAlphaSource, int tAlphaDest)
+{
+	setMugenAnimationBlendType(p->mAnimationID, tType);
+	setMugenAnimationTransparency(p->mAnimationID, tAlphaSource / 256.0);
+	(void)tAlphaDest; // TODO: use
+	p->mTransparencyFlag = 1;
+}
+
+void addPlayerDust(DreamPlayer * p, int tDustIndex, Position tPos, int tSpacing)
+{
+	int time = getDreamGameTime();
+	int since = time - p->mDustClouds[tDustIndex].mLastDustTime;
+	if (since < tSpacing) return;
+
+	p->mDustClouds[tDustIndex].mLastDustTime = time;
+	Position playerPosition = getPlayerPosition(p, getPlayerCoordinateP(p));
+	Position pos = vecAdd(tPos, playerPosition); 
+	pos.z = PLAYER_Z + 1; // TODO: fix z
+	addDreamDustCloud(pos, getPlayerIsFacingRight(p), getPlayerCoordinateP(p));
 }

@@ -51,3 +51,9 @@ int getDreamStageLeftEdgeMinimumPlayerDistance(int tCoordinateP);
 int getDreamStageRightEdgeMinimumPlayerDistance(int tCoordinateP);
 
 void setDreamStageCoordinates(Vector3DI tCoordinates);
+
+double getDreamStageShadowTransparency();
+Vector3D getDreamStageShadowColor();
+double getDreamStageShadowScaleY();
+Vector3D getDreamStageShadowFadeRange(int tCoordinateP);
+double getDreamStageReflectionTransparency();

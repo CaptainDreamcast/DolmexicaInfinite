@@ -18,8 +18,8 @@ typedef enum {
 } MugenAttackType;
 
 typedef enum {
-	MUGEN_ATTACK_HEIGHT_HIGH,
 	MUGEN_ATTACK_HEIGHT_LOW,
+	MUGEN_ATTACK_HEIGHT_HIGH,
 	MUGEN_ATTACK_HEIGHT_TRIP,
 	MUGEN_ATTACK_HEIGHT_HEAVY,
 	MUGEN_ATTACK_HEIGHT_NONE,
@@ -196,10 +196,12 @@ void setHitDataPlayer1FaceDirection(DreamPlayer* tPlayer, int tFaceDirection);
 void setHitDataPlayer1ChangeFaceDirectionRelativeToPlayer2(DreamPlayer* tPlayer, int tFaceDirection);
 void setHitDataPlayer2ChangeFaceDirectionRelativeToPlayer1(DreamPlayer* tPlayer, int tFaceDirection);
 
+int getHitDataPlayer1StateNumber(DreamPlayer* tPlayer);
 int getActiveHitDataPlayer1StateNumber(DreamPlayer* tPlayer);
 void setPlayer1StateNumber(DreamPlayer* tPlayer, int tStateNumber);
 int getActiveHitDataPlayer2StateNumber(DreamPlayer* tPlayer);
 void setPlayer2StateNumber(DreamPlayer* tPlayer, int tStateNumber);
+int getHitDataPlayer2CapableOfGettingPlayer1State(DreamPlayer* tPlayer);
 int getActiveHitDataPlayer2CapableOfGettingPlayer1State(DreamPlayer* tPlayer);
 void setHitDataPlayer2CapableOfGettingPlayer1State(DreamPlayer* tPlayer, int tVal);
 void setHitDataForceStanding(DreamPlayer* tPlayer, int tIsForcedToStand);
@@ -223,6 +225,7 @@ void setHitDataFallRecoveryTime(DreamPlayer* tPlayer, int tRecoverTime);
 int getActiveHitDataFallDamage(DreamPlayer* tPlayer);
 void setHitDataFallDamage(DreamPlayer* tPlayer, int tDamage);
 int getActiveHitDataAirFall(DreamPlayer* tPlayer);
+void setActiveHitDataAirFall(DreamPlayer* tPlayer, int tIsCausingPlayer2ToFall);
 void setHitDataAirFall(DreamPlayer* tPlayer, int tIsCausingPlayer2ToFall);
 void setHitDataForceNoFall(DreamPlayer* tPlayer, int tForcePlayer2NotToFall);
 
@@ -282,3 +285,9 @@ void setHitDataIsFacingRight(DreamPlayer* tPlayer, int tIsFacingRight);
 void resetHitDataReversalDef(DreamPlayer* tPlayer);
 void setHitDataReversalDefFlag1(DreamPlayer* tPlayer, char* tFlag);
 void addHitDataReversalDefFlag2(DreamPlayer* tPlayer, char* tFlag);
+
+void setPlayerHitOverride(DreamPlayer* tPlayer, DreamMugenStateType tStateType, MugenAttackClass tAttackClass, MugenAttackType tAttackType, int tStateNo, int tSlot, int tDuration, int tDoesForceAir);
+
+int hasMatchingHitOverride(DreamPlayer* tPlayer, DreamPlayer * tOtherPlayer);
+int isIgnoredBecauseOfHitOverride(DreamPlayer* tPlayer, DreamPlayer* tOtherPlayer);
+void getMatchingHitOverrideStateNoAndForceAir(DreamPlayer* tPlayer, DreamPlayer * tOtherPlayer, int* oStateNo, int* oDoesForceAir);
