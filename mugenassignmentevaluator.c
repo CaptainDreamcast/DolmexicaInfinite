@@ -1492,7 +1492,7 @@ static AssignmentReturnValue evaluateStageVarArrayAssignment(AssignmentReturnVal
 		logError("Unknown stage variable.");
 		logErrorString(var);
 		abortSystem();
-		makeStringAssignmentReturn("");
+		return makeStringAssignmentReturn("");
 	}
 }
 
@@ -1845,7 +1845,7 @@ static AssignmentReturnValue numProjIDFunction(DreamMugenDependOnTwoAssignment* 
 static AssignmentReturnValue projCancelTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateProjectileCancelTimeArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
 static AssignmentReturnValue projContactTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateProjectileContactTimeArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
 static AssignmentReturnValue projGuardedTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateProjectileGuardedTimeArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
-static AssignmentReturnValue projHitTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateProjectileGuardedTimeArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
+static AssignmentReturnValue projHitTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateProjectileHitTimeArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer), tPlayer); }
 
 
 static void setupArrayAssignments() {

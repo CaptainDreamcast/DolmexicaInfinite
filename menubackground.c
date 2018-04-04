@@ -56,13 +56,15 @@ static void loadNormalMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, Mu
 	Vector3D start = getMugenDefVectorOrDefaultAsGroup(tGroup, "start", makePosition(0, 0, 0));
 	start.z = i;
 	Vector3D delta = getMugenDefVectorOrDefaultAsGroup(tGroup, "delta", makePosition(1, 1, 0));
-	int mMask = getMugenDefIntegerOrDefaultAsGroup(tGroup, "mask", 0);
+	int mask = getMugenDefIntegerOrDefaultAsGroup(tGroup, "mask", 0);
 	Vector3DI tile = getMugenDefVectorIOrDefaultAsGroup(tGroup, "tile", makeVector3DI(0, 0, 0));
 	Vector3DI tileSpacing = getMugenDefVectorIOrDefaultAsGroup(tGroup, "tilespacing", makeVector3DI(0, 0, 0));
 	BlendType blendType = getBackgroundBlendType(tGroup);
 	GeoRectangle constraintRectangle = getMugenDefGeoRectangleOrDefaultAsGroup(tGroup, "window", makeGeoRectangle(-INF / 2, -INF / 2, INF, INF));
 	Vector3D velocity = getMugenDefVectorOrDefaultAsGroup(tGroup, "velocity", makePosition(0, 0, 0));
 
+	(void)mask; // TODO
+	(void)layerNo; // TODO
 	addDreamMugenStageHandlerAnimatedBackgroundElement(start, createOneFrameMugenAnimationForSprite(spriteNo.x, spriteNo.y), tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, 0, gData.mLocalCoordinates);
 }
 
@@ -72,13 +74,15 @@ static void loadAnimatedMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, 
 	Vector3D start = getMugenDefVectorOrDefaultAsGroup(tGroup, "start", makePosition(0, 0, 0));
 	start.z = i;
 	Vector3D delta = getMugenDefVectorOrDefaultAsGroup(tGroup, "delta", makePosition(1, 1, 0));
-	int mMask = getMugenDefIntegerOrDefaultAsGroup(tGroup, "mask", 0);
+	int mask = getMugenDefIntegerOrDefaultAsGroup(tGroup, "mask", 0);
 	Vector3DI tile = getMugenDefVectorIOrDefaultAsGroup(tGroup, "tile", makeVector3DI(0, 0, 0));
 	Vector3DI tileSpacing = getMugenDefVectorIOrDefaultAsGroup(tGroup, "tilespacing", makeVector3DI(0, 0, 0));
 	BlendType blendType = getBackgroundBlendType(tGroup);
 	GeoRectangle constraintRectangle = getMugenDefGeoRectangleOrDefaultAsGroup(tGroup, "window", makeGeoRectangle(-INF / 2, -INF / 2, INF, INF));
 	Vector3D velocity = getMugenDefVectorOrDefaultAsGroup(tGroup, "velocity", makePosition(0, 0, 0));
 
+	(void)mask; // TODO
+	(void)layerNo; // TODO
 	addDreamMugenStageHandlerAnimatedBackgroundElement(start, getMugenAnimation(tAnimations, animation), tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, 0, gData.mLocalCoordinates);
 }
 

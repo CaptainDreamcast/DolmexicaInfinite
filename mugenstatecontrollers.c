@@ -3936,6 +3936,8 @@ static BlendType handleTransparencyType(DreamMugenAssignment* tType, DreamPlayer
 		logErrorFormat("Unrecognized transparency format: %s", text);
 		abortSystem();
 		ret = BLEND_TYPE_NORMAL;
+		*tAlphaDefaultSrc = 256;
+		*tAlphaDefaultDst = 256;
 	}
 
 	freeMemory(text);

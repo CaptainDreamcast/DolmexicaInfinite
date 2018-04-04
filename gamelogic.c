@@ -253,6 +253,7 @@ static void updateGameLogic(void* tData) {
 	updateWinCondition();
 	updateNoControl();
 	updateWinPose();
+	updateTimeDilatation();
 }
 
 ActorBlueprint DreamGameLogic = {

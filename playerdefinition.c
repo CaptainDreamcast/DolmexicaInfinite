@@ -555,7 +555,6 @@ static void updateBinding(DreamPlayer* p) {
 		return;
 	}
 
-	DreamPlayer* bindRoot = p->mBoundTarget;
 	updateBindingPosition(p);
 }
 
@@ -1248,10 +1247,7 @@ void setPlayerPhysics(DreamPlayer* p, DreamMugenStatePhysics tNewPhysics)
 
 
 		if (getPlayerStateType(p) == MUGEN_STATE_TYPE_LYING) {
-			Position* pos = getHandledPhysicsPositionReference(p->mPhysicsID);
-			Velocity* vel = getHandledPhysicsVelocityReference(p->mPhysicsID);
 			Acceleration* acc = getHandledPhysicsAccelerationReference(p->mPhysicsID);
-
 			acc->y = 0;
 		}
 	}
