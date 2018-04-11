@@ -292,6 +292,11 @@ void setDreamRoundNotOverFlag()
 	gData.mRoundNotOverFlag = 1; // TODO: use
 }
 
+int isDreamGameModeTwoPlayer()
+{
+	return !gData.mIsInSinglePlayerMode;
+}
+
 void setDreamGameModeSinglePlayer()
 {
 	gData.mIsInSinglePlayerMode = 1;

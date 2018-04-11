@@ -879,7 +879,7 @@ int fetchDreamAssignmentFromGroupAndReturnWhetherItExists(char* tName, MugenDefS
 	if (!string_map_contains(&tGroup->mElements, tName)) return 0;
 
 	MugenDefScriptGroupElement* e = string_map_get(&tGroup->mElements, tName);
-	char* text = getAllocatedMugenDefStringVariableAsElement(e);
+	char* text = getAllocatedMugenDefStringVariableForAssignmentAsElement(e);
 	*tOutput = parseDreamMugenAssignmentFromString(text);
 	freeMemory(text);
 

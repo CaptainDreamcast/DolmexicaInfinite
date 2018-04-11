@@ -61,8 +61,6 @@ static void loadOptionalStateFiles(MugenDefScript* tScript, char* tPath, DreamPl
 		if (!isFile(scriptPath)) continue;
 		
 		loadDreamMugenStateDefinitionsFromFile(&tPlayer->mConstants.mStates, scriptPath);
-	
-		i++;
 	}
 
 	
@@ -271,7 +269,8 @@ static void loadPlayerShadow(DreamPlayer* p) {
 	setMugenAnimationCameraPositionReference(p->mShadow.mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationDrawScale(p->mShadow.mAnimationID, makePosition(1, -getDreamStageShadowScaleY(), 1));
 	Vector3D color = getDreamStageShadowColor();
-	setMugenAnimationColor(p->mShadow.mAnimationID, color.x, color.y, color.z);
+	(void)color; // TODO: proper shadow color
+	setMugenAnimationColor(p->mShadow.mAnimationID, 0, 0, 0); // TODO: proper shadow color
 	setMugenAnimationTransparency(p->mShadow.mAnimationID, getDreamStageShadowTransparency());
 	setMugenAnimationFaceDirection(p->mShadow.mAnimationID, getMugenAnimationIsFacingRight(p->mAnimationID));
 }
@@ -725,8 +724,9 @@ static void updateShadow(DreamPlayer* p) {
 	setMugenAnimationFaceDirection(p->mShadow.mAnimationID, getMugenAnimationIsFacingRight(p->mAnimationID));
 
 	p->mShadow.mShadowPosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
+	setMugenAnimationVisibility(p->mShadow.mAnimationID, p->mShadow.mShadowPosition.y <= 0);
 	p->mShadow.mShadowPosition.y *= -getDreamStageShadowScaleY();
-
+	
 	Vector3D fadeRange = getDreamStageShadowFadeRange(getPlayerCoordinateP(p));
 	fadeRange = vecScale(fadeRange, 0.5); // TODO: fix
 	double posY = -(getDreamScreenHeight(getPlayerCoordinateP(p))-getPlayerScreenPositionY(p, getPlayerCoordinateP(p)));
@@ -747,7 +747,19 @@ static void updateReflection(DreamPlayer* p) {
 	setMugenAnimationFaceDirection(p->mReflection.mAnimationID, getMugenAnimationIsFacingRight(p->mAnimationID));
 
 	p->mReflection.mPosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
+	setMugenAnimationVisibility(p->mReflection.mAnimationID, p->mReflection.mPosition.y <= 0);
 	p->mReflection.mPosition.y *= -1;
+
+}
+
+static void updateSingleProjectile(DreamPlayer* p) {
+	updateShadow(p);
+	updateReflection(p);
+}
+
+static void updateSingleProjectileCB(void* tCaller, void* tData) {
+	(void)tCaller;
+	updateSingleProjectile((DreamPlayer*)tData);
 }
 
 static void updateSinglePlayer(DreamPlayer* p) {
@@ -775,6 +787,7 @@ static void updateSinglePlayer(DreamPlayer* p) {
 	updateReflection(p);
 
 	list_map(&p->mHelpers, updateSinglePlayerCB, NULL);
+	int_map_map(&p->mProjectiles, updateSingleProjectileCB, NULL);
 }
 
 void updatePlayers()
@@ -2871,10 +2884,13 @@ DreamPlayer * clonePlayerAsHelper(DreamPlayer * p)
 
 	resetHelperState(helper);
 	setPlayerExternalDependencies(helper);
+	loadPlayerShadow(helper);
+	loadPlayerReflection(helper);
 	setDreamRegisteredStateToHelperMode(helper->mStateMachineID);
 
 	helper->mParent = p;
 	helper->mIsHelper = 1;
+	helper->mHelperIDInParent = list_push_back(&p->mHelpers, helper);
 
 	return helper;
 }
@@ -2890,12 +2906,13 @@ static int moveSinglePlayerHelper(void* tCaller, void* tData) {
 	DreamPlayer* parent = caller->mParent;
 	DreamPlayer* parentParent = parent->mParent;
 	
-	addHelperToPlayer(parentParent, helper);
+	helper->mParent = parentParent;
+	helper->mHelperIDInParent = list_push_back(&parentParent->mHelpers, helper);
 
 	return 1;
 }
 
-static void movePlayerHelpers(DreamPlayer* p) {
+static void movePlayerHelpersToParent(DreamPlayer* p) {
 	MovePlayerHelperCaller caller;
 	caller.mParent = p;
 	list_remove_predicate(&p->mHelpers, moveSinglePlayerHelper, &caller);
@@ -2920,6 +2937,8 @@ static void removePlayerBoundHelpers(DreamPlayer* p) {
 static void destroyGeneralPlayer(DreamPlayer* p) {
 	removeDreamRegisteredStateMachine(p->mStateMachineID);
 	removeMugenAnimation(p->mAnimationID);
+	removeMugenAnimation(p->mShadow.mAnimationID);
+	removeMugenAnimation(p->mReflection.mAnimationID);
 	removeFromPhysicsHandler(p->mPhysicsID);
 	removePlayerHitData(p);
 	freeMemory(p);
@@ -2932,16 +2951,9 @@ void destroyPlayer(DreamPlayer * p) // TODO: rename
 	assert(p->mHelperIDInParent != -1);
 
 	removePlayerBoundHelpers(p);
-	movePlayerHelpers(p);
+	movePlayerHelpersToParent(p);
 	removeHelperFromPlayer(p->mParent, p);
 	destroyGeneralPlayer(p);
-}
-
-void addHelperToPlayer(DreamPlayer * p, DreamPlayer * tHelper)
-{
-	
-	tHelper->mHelperIDInParent = list_push_back(&p->mHelpers, tHelper);
-	tHelper->mParent = p;
 }
 
 int getPlayerID(DreamPlayer * p)
@@ -2974,6 +2986,8 @@ DreamPlayer * createNewProjectileFromPlayer(DreamPlayer * p)
 
 	resetHelperState(helper);
 	setPlayerExternalDependencies(helper);
+	loadPlayerShadow(helper);
+	loadPlayerReflection(helper);
 	disableDreamRegisteredStateMachine(helper->mStateMachineID);
 	addProjectileToRoot(p, helper);
 	addAdditionalProjectileData(helper);
@@ -2984,10 +2998,16 @@ DreamPlayer * createNewProjectileFromPlayer(DreamPlayer * p)
 	return helper;
 }
 
+static void removeProjectileFromPlayer(DreamPlayer* p) {
+	DreamPlayer* root = getPlayerRoot(p);
+	int_map_remove(&root->mProjectiles, p->mProjectileID);
+}
+
 void removeProjectile(DreamPlayer* p) {
 	assert(p->mIsProjectile);
 	assert(p->mProjectileID != -1);
 	removeAdditionalProjectileData(p);
+	removeProjectileFromPlayer(p);
 	destroyGeneralPlayer(p);
 }
 

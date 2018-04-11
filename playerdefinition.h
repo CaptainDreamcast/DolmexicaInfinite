@@ -522,7 +522,6 @@ void setPlayerScaleY(DreamPlayer* p, double tScaleY);
 
 DreamPlayer* clonePlayerAsHelper(DreamPlayer* p);
 void destroyPlayer(DreamPlayer* tPlayer);
-void addHelperToPlayer(DreamPlayer* p, DreamPlayer* tHelper);
 int getPlayerID(DreamPlayer* p);
 void setPlayerID(DreamPlayer* p, int tID);
 void setPlayerHelperControl(DreamPlayer* p, int tCanControl);

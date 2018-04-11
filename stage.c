@@ -211,7 +211,7 @@ static void loadStageShadow(MugenDefScript* s) {
 	gData.mShadow.mIntensity = getMugenDefIntegerOrDefault(s, "Shadow", "intensity", 128);
 	gData.mShadow.mColor = getMugenDefVectorIOrDefault(s, "Shadow", "color", makeVector3DI(0, 0, 0));
 	gData.mShadow.mScaleY = getMugenDefFloatOrDefault(s, "Shadow", "yscale", 1);
-	gData.mShadow.mFadeRange = getMugenDefVectorOrDefault(s, "Shadow", "fade.range", makePosition(0, 0, 0));
+	gData.mShadow.mFadeRange = getMugenDefVectorOrDefault(s, "Shadow", "fade.range", makePosition(-1000, -1000, 0));
 	gData.mShadow.mXShear = getMugenDefFloatOrDefault(s, "Shadow", "xshear", 0);
 }
 
@@ -365,9 +365,9 @@ static void loadStageTextures(char* tPath) {
 		}
 	}
 
-	//setMugenSpriteFileReaderToUsePalette(2); // TODO: check
+	setMugenSpriteFileReaderToUsePalette(2); // TODO: check
 	gData.mSprites = loadMugenSpriteFileWithoutPalette(sffFile);
-	//setMugenSpriteFileReaderToNotUsePalette();
+	setMugenSpriteFileReaderToNotUsePalette();
 }
 
 static void loadStageBackgroundElements(char* tPath, MugenDefScript* s) {

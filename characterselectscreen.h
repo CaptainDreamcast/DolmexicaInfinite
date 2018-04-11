@@ -6,3 +6,8 @@ extern Screen CharacterSelectScreen;
 
 void setCharacterSelectScreenModeName(char* tModeName);
 void setCharacterSelectFinishedCB(void(*tCB)());
+void setCharacterSelectStageActive();
+void setCharacterSelectStageInactive();
+void setCharacterSelectOnePlayer();
+void setCharacterSelectOnePlayerSelectAll();
+void setCharacterSelectTwoPlayers();

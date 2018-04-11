@@ -14,7 +14,9 @@ int getDreamMatchNumber();
 int isDreamMatchOver();
 void setDreamRoundNotOverFlag();
 
+int isDreamGameModeTwoPlayer();
 void setDreamGameModeSinglePlayer();
 void setDreamGameModeTwoPlayer();
+
 
 int getDreamTicksPerSecond();

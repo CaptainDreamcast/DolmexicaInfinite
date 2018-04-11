@@ -20,6 +20,8 @@
 #include "menubackground.h"
 #include "characterselectscreen.h"
 #include "arcademode.h"
+#include "versusmode.h"
+#include "trainingmode.h"
 
 typedef struct {
 	void(*mCB)();
@@ -80,8 +82,25 @@ static void gotoArcadeMode(void* tCaller) {
 }
 
 static void arcadeCB() {
-	startArcadeMode();
 	addFadeOut(gData.mHeader.mFadeOutTime, gotoArcadeMode, NULL);
+}
+
+static void gotoVersusMode(void* tCaller) {
+	(void)tCaller;
+	startVersusMode();
+}
+
+static void versusCB() {
+	addFadeOut(gData.mHeader.mFadeOutTime, gotoVersusMode, NULL);
+}
+
+static void gotoTrainingMode(void* tCaller) {
+	(void)tCaller;
+	startTrainingMode();
+}
+
+static void trainingCB() {
+	addFadeOut(gData.mHeader.mFadeOutTime, gotoTrainingMode, NULL);
 }
 
 static void exitCB() {
@@ -219,13 +238,13 @@ static void loadTitleScreen() {
 
 	gData.mMenus = new_vector();
 	addMenuPoint("menu.itemname.arcade", arcadeCB);
-	addMenuPoint("menu.itemname.versus", arcadeCB);
+	addMenuPoint("menu.itemname.versus", versusCB);
 	addMenuPoint("menu.itemname.teamarcade", arcadeCB);
 	addMenuPoint("menu.itemname.teamversus", arcadeCB);
 	addMenuPoint("menu.itemname.teamcoop", arcadeCB);
 	addMenuPoint("menu.itemname.survival", arcadeCB);
 	addMenuPoint("menu.itemname.survivalcoop", arcadeCB);
-	addMenuPoint("menu.itemname.training", arcadeCB);
+	addMenuPoint("menu.itemname.training", trainingCB);
 	addMenuPoint("menu.itemname.watch", arcadeCB);
 	addMenuPoint("menu.itemname.options", arcadeCB);
 	addMenuPoint("menu.itemname.exit", exitCB);

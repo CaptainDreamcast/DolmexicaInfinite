@@ -12,6 +12,7 @@
 #include "versusscreen.h"
 #include "fightscreen.h"
 #include "gamelogic.h"
+#include "stage.h"
 
 typedef struct {
 	char mDefinitionPath[1024];
@@ -27,6 +28,7 @@ static void fightFinishedCB();
 
 static void versusScreenFinishedCB() {
 	setFightScreenFinishedCB(fightFinishedCB); 
+	setDreamStageMugenDefinition("assets/stages/kfm.def"); // TODO: remove
 	startFightScreen();
 }
 
@@ -159,7 +161,7 @@ static void startEnding() {
 static void fightFinishedCB() {
 	gData.mCurrentEnemy++;
 
-	if (gData.mCurrentEnemy == 1) { // TODO: proper value
+	if (gData.mCurrentEnemy == gData.mEnemyAmount) {
 		startEnding();
 		return;
 	}
@@ -204,8 +206,9 @@ static void characterSelectFinishedCB() {
 
 void startArcadeMode()
 {
-	setDreamGameModeSinglePlayer();
 	setCharacterSelectScreenModeName("Arcade");
+	setCharacterSelectOnePlayer();
+	setCharacterSelectStageInactive();
 	setCharacterSelectFinishedCB(characterSelectFinishedCB);
 	setNewScreen(&CharacterSelectScreen);
 }

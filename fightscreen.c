@@ -33,6 +33,7 @@
 #include "titlescreen.h"
 #include "mugenassignmentevaluator.h"
 #include "mugenstatecontrollers.h"
+#include "mugenanimationutilities.h"
 
 static struct {
 	void(*mFinishedCB)();
@@ -47,6 +48,7 @@ static void loadFightScreen() {
 	instantiateActor(MugenTextHandler);
 	instantiateActor(ClipboardHandler);
 
+	instantiateActor(MugenAnimationUtilityHandler);
 	instantiateActor(DreamAIHandler);
 	instantiateActor(DreamMugenConfig);
 	instantiateActor(HitDataHandler);
@@ -55,23 +57,7 @@ static void loadFightScreen() {
 	instantiateActor(DreamMugenStateHandler);
 	instantiateActor(DreamExplodHandler);
 
-	setDreamStageMugenDefinition("assets/stages/kfm.def");
 	instantiateActor(DreamStageBP);
-
-	
-	//setPlayerDefinitionPath(0, "assets/main/fight/Mima_RP/Mima_RP.def");
-	//setPlayerDefinitionPath(0, "assets/main/fight/Ryu/Ryu.def");
-	//setPlayerDefinitionPath(0, "assets/main/fight/Beat/Beat.def");
-	//setPlayerDefinitionPath(0, "assets/main/fight/kfm/kfm.def");
-	//setPlayerDefinitionPath(0, "assets/main/fight/SonicV2/SonicV2.def");
-	//setPlayerDefinitionPath(0, "assets/main/fight/Sonicth/Sonicth.def");
-
-	//setPlayerDefinitionPath(1, "assets/main/fight/Ryu/Ryu.def");
-	//setPlayerDefinitionPath(1, "assets/main/fight/liukang/liukang.def");
-	//setPlayerDefinitionPath(1, "assets/main/fight/Beat/Beat.def");
-	//setPlayerDefinitionPath(1, "assets/main/fight/kfm/kfm.def");
-	//setPlayerDefinitionPath(1, "assets/main/fight/SonicV2/SonicV2.def");
-
 
 	loadPlayers();
 

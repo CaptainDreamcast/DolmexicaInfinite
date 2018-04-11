@@ -14,6 +14,7 @@
 #include "stage.h"
 #include "playerdefinition.h"
 #include "mugenstagehandler.h"
+#include "mugenanimationutilities.h"
 
 #define COORD_P 240
 
@@ -942,12 +943,15 @@ void playDreamHitSpark(Position tPosition, DreamPlayer* tPlayer, int tIsInPlayer
 	MugenAnimation* anim;
 	MugenSpriteFile* spriteFile;
 
+	printf("%d %d plays %d %d\n", tPlayer->mRootID, tPlayer->mID, tIsInPlayerFile, tNumber);
 	if (tIsInPlayerFile) {
 		spriteFile = getPlayerSprites(tPlayer);
+		if(!hasMugenAnimation(getPlayerAnimations(tPlayer), tNumber)) return;
 		anim = getMugenAnimation(getPlayerAnimations(tPlayer), tNumber);
 	}
 	else {
 		spriteFile = &gData.mFightFXSprites;
+		if (!hasMugenAnimation(&gData.mFightFXAnimations, tNumber)) return;
 		anim = getMugenAnimation(&gData.mFightFXAnimations, tNumber);
 	}
 
@@ -1151,7 +1155,11 @@ void setDreamTimeDisplayFinishedCB(void(*tTimeDisplayFinishedFunc)())
 }
 
 static void setSingleUIComponentInvisibleForOneFrame(int tAnimationID) {
-	if(tAnimationID != -1) setMugenAnimationInvisible(tAnimationID); // TODO: one frame only
+	if(tAnimationID != -1) setMugenAnimationInvisibleForOneFrame(tAnimationID);
+}
+
+static void setSingleUITextInvisibleForOneFrame(int tTextID) {
+	if (tTextID != -1) setMugenTextInvisibleForOneFrame(tTextID);
 }
 
 void setDreamBarInvisibleForOneFrame()
@@ -1167,12 +1175,19 @@ void setDreamBarInvisibleForOneFrame()
 		setSingleUIComponentInvisibleForOneFrame(gData.mPowerBars[i].mBG1AnimationID);
 		setSingleUIComponentInvisibleForOneFrame(gData.mPowerBars[i].mMidAnimationID);
 		setSingleUIComponentInvisibleForOneFrame(gData.mPowerBars[i].mFrontAnimationID);
+		setSingleUITextInvisibleForOneFrame(gData.mPowerBars[i].mCounterTextID);
 
 		setSingleUIComponentInvisibleForOneFrame(gData.mFaces[i].mBGAnimationID);
 		setSingleUIComponentInvisibleForOneFrame(gData.mFaces[i].mBG0AnimationID);
 		setSingleUIComponentInvisibleForOneFrame(gData.mFaces[i].mBG1AnimationID);
 		setSingleUIComponentInvisibleForOneFrame(gData.mFaces[i].mFaceAnimationID);
+
+		setSingleUIComponentInvisibleForOneFrame(gData.mDisplayName[i].mBGAnimationID);
+		setSingleUITextInvisibleForOneFrame(gData.mDisplayName[i].mTextID);
 	}
+
+	setSingleUIComponentInvisibleForOneFrame(gData.mTime.mBGAnimationID);
+	setSingleUITextInvisibleForOneFrame(gData.mTime.mTextID);
 }
 
 void setDreamNoMusicFlag()

@@ -1,3 +1,6 @@
+assets/chars/*
+assets/stages/*
+
 *.o
 *.BIN
 *.elf

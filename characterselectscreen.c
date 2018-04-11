@@ -15,6 +15,8 @@
 #include "titlescreen.h"
 #include "storyscreen.h"
 #include "playerdefinition.h"
+#include "gamelogic.h"
+#include "stage.h"
 
 typedef struct {
 	Vector3DI mCursorStartCell;
@@ -33,6 +35,14 @@ typedef struct {
 	Vector3DI mCursorDoneSound;
 	Vector3DI mRandomMoveSound;
 } PlayerHeader;
+
+typedef struct {
+	Position mPosition;
+	Vector3DI mActiveFont1;
+	Vector3DI mActiveFont2;
+	Vector3DI mDoneFont;
+
+} StageSelectHeader;
 
 typedef struct {
 	int mFadeInTime;
@@ -62,6 +72,8 @@ typedef struct {
 	Position mTitleOffset;
 	Vector3DI mTitleFont;
 
+	StageSelectHeader mStageSelect;
+
 } SelectScreenHeader;
 
 typedef struct {
@@ -78,8 +90,14 @@ typedef struct {
 } SelectCharacter;
 
 typedef struct {
+	char mPath[1024];
+	char* mName;
+} SelectStage;
+
+typedef struct {
 	int mIsActive;
 	int mIsDone;
+	int mOwner;
 
 	int mSelectorAnimationID;
 	int mBigPortraitAnimationID;
@@ -92,6 +110,17 @@ typedef struct {
 	int mModeTextID;
 
 } ModeText;
+
+typedef struct {
+	int mIsUsing;
+	int mIsActive;
+	int mIsDone;
+
+
+	int mTextID;
+	int mActiveFontDisplayed;
+	int mSelectedStage;
+} StageSelectData;
 
 static struct {
 	MugenDefScript mScript;
@@ -110,7 +139,14 @@ static struct {
 
 	int mCharacterAmount;
 	Vector mSelectCharacters; // vector of vectors of SelectCharacter
+	Vector mSelectStages; // vector of SelectStage
+	int mSelectorAmount;
 	Selector mSelectors[2];
+
+	StageSelectData mStageSelect;
+
+	int mIsInTwoPlayerMode;
+	int mDoesPlayerOneSelectEverything;
 } gData;
 
 static MugenAnimation* getMugenDefMenuAnimationOrSprite(MugenDefScript* tScript, char* tGroupName, char* tVariableName) {
@@ -168,6 +204,55 @@ static void loadMenuPlayerHeader(char* tPlayerName, PlayerHeader* tHeader) {
 	tHeader->mRandomMoveSound = getMugenDefVectorIOrDefault(&gData.mScript, "Select Info", fullVariableName, makeVector3DI(0, 0, 0));
 }
 
+static void loadStageSelectHeader() {
+	gData.mHeader.mStageSelect.mPosition = getMugenDefVectorOrDefault(&gData.mScript, "Select Info", "stage.pos", makePosition(0, 0, 0));
+	gData.mHeader.mStageSelect.mActiveFont1 = getMugenDefVectorIOrDefault(&gData.mScript, "Select Info", "stage.active.font", makeVector3DI(1, 0, 0));
+	gData.mHeader.mStageSelect.mActiveFont2 = getMugenDefVectorIOrDefault(&gData.mScript, "Select Info", "stage.active2.font", gData.mHeader.mStageSelect.mActiveFont1);
+	gData.mHeader.mStageSelect.mDoneFont = getMugenDefVectorIOrDefault(&gData.mScript, "Select Info", "stage.done.font", makeVector3DI(1, 0, 0));
+}
+
+static void loadStageSelect() {
+	Position pos = gData.mHeader.mStageSelect.mPosition;
+	pos.z = 40;
+	gData.mStageSelect.mTextID = addMugenText(" ", pos, gData.mHeader.mStageSelect.mActiveFont1.x);
+
+	gData.mStageSelect.mIsActive = 0;
+}
+
+static void addSingleSelectStage(char* tPath) {
+	char path[1024];
+	sprintf(path, "assets/%s", tPath); // TODO: remove when assets are removed
+
+	SelectStage* e = allocMemory(sizeof(SelectStage));
+	strcpy(e->mPath, path);
+	
+	MugenDefScript script = loadMugenDefScript(path);
+	e->mName = getAllocatedMugenDefStringVariable(&script, "Info", "name");
+	unloadMugenDefScript(script);
+	
+	vector_push_back_owned(&gData.mSelectStages, e);
+}
+
+static void loadStageSelectStages() {
+	if (!gData.mStageSelect.mIsUsing) return;
+
+	gData.mSelectStages = new_vector();
+
+	MugenDefScriptGroup* group = string_map_get(&gData.mCharacterScript.mGroups, "ExtraStages");
+	ListIterator iterator = list_iterator_begin(&group->mOrderedElementList);
+	int hasElements = 1;
+	while (hasElements) {
+		MugenDefScriptGroupElement* element = list_iterator_get(iterator);
+		if (element->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
+			MugenDefScriptStringElement* stringElement = element->mData;
+			addSingleSelectStage(stringElement->mString);
+		}
+
+		if (!list_has_next(iterator)) break;
+		list_iterator_increase(&iterator);
+	}
+}
+
 static void loadMenuHeader() {
 	gData.mHeader.mFadeInTime = getMugenDefIntegerOrDefault(&gData.mScript, "Select Info", "fadein.time", 30);
 	gData.mHeader.mFadeOutTime = getMugenDefIntegerOrDefault(&gData.mScript, "Select Info", "fadeout.time", 30);
@@ -195,6 +280,8 @@ static void loadMenuHeader() {
 
 	gData.mHeader.mTitleOffset = getMugenDefVectorOrDefault(&gData.mScript, "Select Info", "title.offset", makePosition(0, 0, 0));
 	gData.mHeader.mTitleFont = getMugenDefVectorIOrDefault(&gData.mScript, "Select Info", "title.font", makeVector3DI(-1, 0, 0));
+
+	loadStageSelectHeader();
 
 	loadMenuPlayerHeader("p1", &gData.mHeader.mPlayers[0]);
 	loadMenuPlayerHeader("p2", &gData.mHeader.mPlayers[1]);
@@ -320,15 +407,18 @@ static SelectCharacter* getCellCharacter(Vector3DI tCellPosition) {
 	return ret;
 }
 
-static void loadSingleSelector(int i) {
+static void moveSelectionToTarget(int i, Vector3DI tTarget, int tDoesPlaySound);
+
+static void loadSingleSelector(int i, int tOwner) {
 	PlayerHeader* player = &gData.mHeader.mPlayers[i];
+	PlayerHeader* owner = &gData.mHeader.mPlayers[tOwner];
 
 	Position p = getCellScreenPosition(player->mCursorStartCell);
-	gData.mSelectors[i].mSelectedCharacter = player->mCursorStartCell;
+	gData.mSelectors[i].mSelectedCharacter = makeVector3DI(player->mCursorStartCell.y, player->mCursorStartCell.x, 0);
 	p.z = 60;
-	gData.mSelectors[i].mSelectorAnimationID = addMugenAnimation(player->mActiveCursorAnimation, &gData.mSprites, p);
+	gData.mSelectors[i].mSelectorAnimationID = addMugenAnimation(owner->mActiveCursorAnimation, &gData.mSprites, p);
 	
-	SelectCharacter* character = getCellCharacter(gData.mSelectors[i].mSelectedCharacter);
+	SelectCharacter* character = getCellCharacter(makeVector3DI(0, 0, 0));
 	player->mBigPortraitOffset.z = 30;
 	gData.mSelectors[i].mBigPortraitAnimationID = addMugenAnimation(player->mBigPortraitAnimation, &character->mSprites, player->mBigPortraitOffset);
 	setMugenAnimationFaceDirection(gData.mSelectors[i].mBigPortraitAnimationID, player->mBigPortraitIsFacingRight);
@@ -338,19 +428,27 @@ static void loadSingleSelector(int i) {
 	setMugenTextColor(gData.mSelectors[i].mNameTextID, getMugenTextColorFromMugenTextColorIndex(player->mNameFont.y));
 	setMugenTextAlignment(gData.mSelectors[i].mNameTextID, getMugenTextAlignmentFromMugenAlignmentIndex(player->mNameFont.z));
 
+	moveSelectionToTarget(i, gData.mSelectors[i].mSelectedCharacter, 0);
+
+	gData.mSelectors[i].mOwner = tOwner;
 	gData.mSelectors[i].mIsActive = 1;
 	gData.mSelectors[i].mIsDone = 0;
 }
 
 static void loadSelectors() {
+
 	int i;
-	for (i = 0; i < 1; i++) {
-		loadSingleSelector(i);
+	for (i = 0; i < 2; i++) {
+		gData.mSelectors[i].mIsActive = 0;
+	}
+
+	gData.mSelectorAmount = gData.mIsInTwoPlayerMode ? 2 : 1;
+	for (i = 0; i < gData.mSelectorAmount; i++) {
+		loadSingleSelector(i, i);
 	}
 }
 
 static void loadModeText() {
-	// TODO: read mode text
 	Position p = gData.mHeader.mTitleOffset;
 	p.z = 50;
 	gData.mModeText.mModeTextID = addMugenText(gData.mModeName, p, gData.mHeader.mTitleFont.x); 
@@ -386,9 +484,11 @@ static void loadCharacterSelectScreen() {
 
 	loadMenuCells();
 	loadMenuCharacters();
+	loadStageSelectStages();
 
 	loadSelectors();
 	loadModeText();
+	loadStageSelect();
 
 	gData.mWhiteTexture = createWhiteTexture();
 
@@ -428,15 +528,18 @@ static Vector3DI sanitizeCellPosition(int i, Vector3DI tCellPosition) {
 	return tCellPosition;	
 }
 
-static void moveSelectionToTarget(int i, Vector3DI tTarget) {
+static void moveSelectionToTarget(int i, Vector3DI tTarget, int tDoesPlaySound) {
 	PlayerHeader* player = &gData.mHeader.mPlayers[i];
+	PlayerHeader* owner = &gData.mHeader.mPlayers[gData.mSelectors[i].mOwner];
 
 	gData.mSelectors[i].mSelectedCharacter = tTarget;
 	Position p = getCellScreenPosition(tTarget);
 	p.z = 60;
 	setMugenAnimationPosition(gData.mSelectors[i].mSelectorAnimationID, p);
 
-	tryPlayMugenSound(&gData.mSounds, player->mCursorMoveSound.x, player->mCursorMoveSound.y);
+	if (tDoesPlaySound) {
+		tryPlayMugenSound(&gData.mSounds, owner->mCursorMoveSound.x, owner->mCursorMoveSound.y);
+	}
 
 	SelectCharacter* character = getCellCharacter(gData.mSelectors[i].mSelectedCharacter);
 	if (character->mIsCharacter) {
@@ -456,30 +559,55 @@ static void updateSingleSelection(int i) {
 	if (gData.mSelectors[i].mIsDone) return;
 
 	Vector3DI target = gData.mSelectors[i].mSelectedCharacter;
-	if (hasPressedRightFlankSingle(i)) {
+	if (hasPressedRightFlankSingle(gData.mSelectors[i].mOwner)) {
 		target = vecAddI(target, makeVector3DI(1, 0, 0));
 	}
-	else if (hasPressedLeftFlankSingle(i)) {
+	else if (hasPressedLeftFlankSingle(gData.mSelectors[i].mOwner)) {
 		target = vecAddI(target, makeVector3DI(-1, 0, 0));
 	}
 
-	if (hasPressedDownFlankSingle(i)) {
+	if (hasPressedDownFlankSingle(gData.mSelectors[i].mOwner)) {
 		target = vecAddI(target, makeVector3DI(0, 1, 0));
 	}
-	else if (hasPressedUpFlankSingle(i)) {
+	else if (hasPressedUpFlankSingle(gData.mSelectors[i].mOwner)) {
 		target = vecAddI(target, makeVector3DI(0, -1, 0));
 	}
 
 	target = sanitizeCellPosition(i, target);
 	if (vecEqualsI(gData.mSelectors[i].mSelectedCharacter, target)) return;
 
-	moveSelectionToTarget(i, target);
+	moveSelectionToTarget(i, target, 1);
+}
+
+static void updateStageSelection(int i, int tNewStage, int tDoesPlaySound);
+
+static void updateSingleStageSelection(int i) {
+	if (!gData.mSelectors[i].mIsActive) return;
+	if (!gData.mSelectors[i].mIsDone) return;
+	if (gData.mDoesPlayerOneSelectEverything && i == 1) return;
+	if (!gData.mStageSelect.mIsUsing) return;
+	if (!gData.mStageSelect.mIsActive) return;
+	if (gData.mStageSelect.mIsDone) return;
+
+	int stageAmount = vector_size(&gData.mSelectStages);
+	int target = gData.mStageSelect.mSelectedStage;
+	if (hasPressedRightFlankSingle(gData.mSelectors[i].mOwner)) {
+		target = (target + 1) % stageAmount;	
+	}
+	else if (hasPressedLeftFlankSingle(gData.mSelectors[i].mOwner)) {
+		target--;
+		if (target < 0) target += stageAmount;
+	}
+
+	if (target == gData.mStageSelect.mSelectedStage) return;
+	updateStageSelection(i, target, 1);
 }
 
 static void updateSelections() {
 	int i;
 	for (i = 0; i < 2; i++) {
 		updateSingleSelection(i);
+		updateSingleStageSelection(i);
 	}
 }
 
@@ -489,8 +617,18 @@ static void gotoNextScreen(void* tCaller) {
 	gData.mCB();
 }
 
-static void fadeToStory() {
+static void fadeToNextScreen() {
 	addFadeOut(gData.mHeader.mFadeOutTime, gotoNextScreen, NULL);
+}
+
+static void checkFadeToNextScreen() {
+	int hasPlayer1Selected = !gData.mSelectors[0].mIsActive || gData.mSelectors[0].mIsDone;
+	int hasPlayer2Selected = !gData.mSelectors[1].mIsActive || gData.mSelectors[1].mIsDone;
+	int hasStageSelected = !gData.mStageSelect.mIsUsing || gData.mStageSelect.mIsDone;
+
+	if (hasPlayer1Selected && hasPlayer2Selected && hasStageSelected) {
+		fadeToNextScreen();
+	}
 }
 
 static void flashSelection(int i) {
@@ -501,30 +639,98 @@ static void flashSelection(int i) {
 	setAnimationSize(id, makePosition(25, 25, 1), makePosition(0, 0, 0));
 }
 
-static void setSelectionFinished(int i) {
+static void updateMugenTextBasedOnVector3DI(int tID, Vector3DI tFontData) {
+	setMugenTextFont(tID, tFontData.x);
+	setMugenTextColor(tID, getMugenTextColorFromMugenTextColorIndex(tFontData.y));
+	setMugenTextAlignment(tID, getMugenTextAlignmentFromMugenAlignmentIndex(tFontData.z));
+}
+
+static void updateStageSelection(int i, int tNewStage, int tDoesPlaySound) {
+	SelectStage* stage = vector_get(&gData.mSelectStages, tNewStage);
+
+	char newText[200];
+	sprintf(newText, "Stage %d: %s", tNewStage + 1, stage->mName);
+	changeMugenText(gData.mStageSelect.mTextID, newText);
+
+	if (tDoesPlaySound) {
+		tryPlayMugenSound(&gData.mSounds, gData.mHeader.mPlayers[i].mCursorMoveSound.x, gData.mHeader.mPlayers[i].mCursorMoveSound.y);
+	}
+
+	gData.mStageSelect.mSelectedStage = tNewStage;
+}
+
+static void setStageSelectActive(int i) {
+	updateStageSelection(i, 0, 0);
+	updateMugenTextBasedOnVector3DI(gData.mStageSelect.mTextID, gData.mHeader.mStageSelect.mActiveFont1);
+	
+	gData.mStageSelect.mActiveFontDisplayed = 0;
+	gData.mStageSelect.mIsActive = 1;
+	gData.mStageSelect.mIsDone = 0;
+}
+
+static void checkSetStageSelectActive(int i) {
+	if (!gData.mStageSelect.mIsUsing) return;
+	if (gData.mStageSelect.mIsActive) return;
+	if (gData.mDoesPlayerOneSelectEverything && i == 0) return;
+
+	setStageSelectActive(i);
+}
+
+static void checkSetSecondPlayerActive(int i) {
+	if (i == 0 && gData.mDoesPlayerOneSelectEverything) {
+		loadSingleSelector(1, 0);
+	}
+}
+
+static void setCharacterSelectionFinished(int i) {
 	SelectCharacter* character = getCellCharacter(gData.mSelectors[i].mSelectedCharacter);
 	if (!character->mIsCharacter) return;
 
-	PlayerHeader* player = &gData.mHeader.mPlayers[i];
-	changeMugenAnimation(gData.mSelectors[i].mSelectorAnimationID, player->mDoneCursorAnimation);
-	tryPlayMugenSound(&gData.mSounds, player->mCursorDoneSound.x, player->mCursorDoneSound.y);
+	PlayerHeader* owner = &gData.mHeader.mPlayers[gData.mSelectors[i].mOwner];
+	changeMugenAnimation(gData.mSelectors[i].mSelectorAnimationID, owner->mDoneCursorAnimation);
+	tryPlayMugenSound(&gData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y);
 
 	char path[1024];
 	sprintf(path, "assets/chars/%s/%s.def", character->mCharacterName, character->mCharacterName);
 	setPlayerDefinitionPath(i, path);
 
+	flashSelection(i);
+
+	checkSetSecondPlayerActive(i);
+	checkSetStageSelectActive(i);
+
 	gData.mSelectors[i].mIsDone = 1;
 
-	flashSelection(i);
-	// TODO: wait for other selection
-	fadeToStory();
+	checkFadeToNextScreen();
+}
+
+static void setStageSelectionFinished(int i) {
+	if (!gData.mStageSelect.mIsUsing || !gData.mStageSelect.mIsActive || gData.mStageSelect.mIsDone) return;
+
+	tryPlayMugenSound(&gData.mSounds, gData.mHeader.mPlayers[i].mCursorDoneSound.x, gData.mHeader.mPlayers[i].mCursorDoneSound.y);
+
+	SelectStage* stage = vector_get(&gData.mSelectStages, gData.mStageSelect.mSelectedStage);
+	setDreamStageMugenDefinition(stage->mPath);
+
+	updateMugenTextBasedOnVector3DI(gData.mStageSelect.mTextID, gData.mHeader.mStageSelect.mDoneFont);
+	gData.mStageSelect.mIsDone = 1;
+	checkFadeToNextScreen();
+}
+
+static void setSelectionFinished(int i) {
+	if (gData.mSelectors[i].mIsDone) {
+		setStageSelectionFinished(i);
+	}
+	else {
+		setCharacterSelectionFinished(i);
+	}
 }
 
 static void updateSingleSelectionConfirmation(int i) {
 	if (!gData.mSelectors[i].mIsActive) return;
-	if (gData.mSelectors[i].mIsDone) return;
+	if (gData.mDoesPlayerOneSelectEverything && i == 0 && gData.mSelectors[1].mIsActive) return;
 
-	if (hasPressedAFlankSingle(i) || hasPressedStartFlankSingle(i)) {
+	if (hasPressedAFlankSingle(gData.mSelectors[i].mOwner) || hasPressedStartFlankSingle(gData.mSelectors[i].mOwner)) {
 		setSelectionFinished(i);
 	}
 }
@@ -536,9 +742,18 @@ static void updateSelectionConfirmations() {
 	}
 }
 
+static void updateStageSelect() {
+	if (!gData.mStageSelect.mIsUsing || !gData.mStageSelect.mIsActive || gData.mStageSelect.mIsDone) return;
+
+	gData.mStageSelect.mActiveFontDisplayed = (gData.mStageSelect.mActiveFontDisplayed + 1) % 4;
+	Vector3DI fontData = gData.mStageSelect.mActiveFontDisplayed < 2 ? gData.mHeader.mStageSelect.mActiveFont2 : gData.mHeader.mStageSelect.mActiveFont1;
+	updateMugenTextBasedOnVector3DI(gData.mStageSelect.mTextID, fontData);
+}
+
 static void updateCharacterSelectScreen() {
 	updateSelections();
 	updateSelectionConfirmations();
+	updateStageSelect();
 
 	if (hasPressedAbortFlank()) {
 		setNewScreen(&DreamTitleScreen);
@@ -558,4 +773,32 @@ void setCharacterSelectScreenModeName(char * tModeName)
 void setCharacterSelectFinishedCB(void(*tCB)())
 {
 	gData.mCB = tCB;
+}
+
+void setCharacterSelectStageActive()
+{
+	gData.mStageSelect.mIsUsing = 1;
+}
+
+void setCharacterSelectStageInactive()
+{
+	gData.mStageSelect.mIsUsing = 0;
+}
+
+void setCharacterSelectOnePlayer()
+{
+	gData.mIsInTwoPlayerMode = 0;
+	gData.mDoesPlayerOneSelectEverything = 0;
+}
+
+void setCharacterSelectOnePlayerSelectAll()
+{
+	gData.mIsInTwoPlayerMode = 0;
+	gData.mDoesPlayerOneSelectEverything = 1;
+}
+
+void setCharacterSelectTwoPlayers()
+{
+	gData.mIsInTwoPlayerMode = 1;
+	gData.mDoesPlayerOneSelectEverything = 0;
 }

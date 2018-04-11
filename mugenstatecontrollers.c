@@ -1840,8 +1840,12 @@ static void handleSoundEffectValue(DreamMugenAssignment* tAssignment, DreamPlaye
 	int items = sscanf(flag, "%s", firstW);
 	assert(items == 1);
 
-	if (!strcmp("isinotherfile", firstW)) {
+	if (!strcmp("isinotherfilef", firstW)) {
 		soundFile = getDreamCommonSounds();
+		int items = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
+		assert(items == 4);
+	} else if (!strcmp("isinotherfiles", firstW)) {
+		soundFile = getPlayerSounds(tPlayer);
 		int items = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
 		assert(items == 4);
 	}
@@ -1850,6 +1854,7 @@ static void handleSoundEffectValue(DreamMugenAssignment* tAssignment, DreamPlaye
 		int items = sscanf(flag, "%d %s %d", &group, comma, &item);
 		assert(items == 3);
 	}
+
 
 	tryPlayMugenSound(soundFile, group, item);
 
@@ -2046,7 +2051,7 @@ static void handleHitDefinitionSparkNumberSingle(DreamMugenAssignment* tAssignme
 		isInPlayerFile = tDefaultIsInFile;
 		number = tDefaultNumber;
 	}
-	else if (!strcmp("isinotherfile", firstW)) {
+	else if (!strcmp("isinotherfilef", firstW) || !strcmp("isinotherfiles", firstW)) {
 		assert(items == 2);
 		isInPlayerFile = 1;
 		number = which;
@@ -2084,7 +2089,16 @@ static void handleHitDefinitionSingleSound(DreamMugenAssignment* tAssignment, Dr
 		group = tDefaultGroup;
 		item = tDefaultItem;
 	}
-	else if (!strcmp("isinotherfile", firstW)) {
+	else if (!strcmp("isinotherfilef", firstW)) {
+		isInPlayerFile = 0;
+		int fullItems = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
+		assert(fullItems >= 2);
+
+		if (fullItems < 3) {
+			item = tDefaultItem;
+		}
+	}
+	else if (!strcmp("isinotherfiles", firstW)) {
 		isInPlayerFile = 1;
 		int fullItems = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
 		assert(fullItems >= 2);
@@ -3095,7 +3109,7 @@ static void handleSuperPauseAnimation(DreamMugenAssignment* tAssignment, DreamPl
 		isInPlayerFile = 0;
 		id = 30;
 	}
-	else if (!strcmp("isinotherfile", firstW)) {
+	else if (!strcmp("isinotherfilef", firstW) || !strcmp("isinotherfiles", firstW)) {
 		assert(items == 2);
 		isInPlayerFile = 1;
 		id = which;
@@ -3128,7 +3142,12 @@ static void handleSuperPauseSound(DreamMugenAssignment* tAssignment, DreamPlayer
 		int items = sscanf(flag, "%s", firstW);
 		assert(items == 1);
 
-		if (!strcmp("isinotherfile", firstW)) {
+		if (!strcmp("isinotherfilef", firstW)) {
+			isInPlayerFile = 0;
+			int items = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
+			assert(items == 4);
+		}
+		else if (!strcmp("isinotherfiles", firstW)) {
 			isInPlayerFile = 1;
 			int items = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
 			assert(items == 4);
@@ -3239,7 +3258,6 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 	handleHelperOneIntegerElement(e->mSizeShadowOffset, tPlayer, helper, setPlayerShadowOffset, getPlayerShadowOffset(tPlayer));
 
 	setPlayerPosition(helper, position, getPlayerCoordinateP(helper));
-	addHelperToPlayer(tPlayer, helper);
 
 	return 0;
 }

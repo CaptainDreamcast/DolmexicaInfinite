@@ -67,8 +67,10 @@
  ;Insert your characters below.
 
 kfm, stages/kfm.def
-kfm, stages/kfm.def
-kfm, stages/kfm.def
+kagerou, stages/kfm.def
+Mima_RP, stages/kfm.def
+BoxingChen, stages/kfm.def
+SOL, stages/kfm.def
 ;rockFIX, stages/kfm.def
 ;DongHwan, stages/kfm.def
 ;Beat, stages/kfm.def
@@ -84,6 +86,9 @@ kfm, stages/kfm.def
 
 stages/kfm.def
 stages/stage0.def
+stages/R_Chireiden.def
+stages/2hu/ToHo-Remilia.def
+stages/2hu/ToHo-Yukari.def
 
 ;---------------------------------------------------------------------
 [Options]

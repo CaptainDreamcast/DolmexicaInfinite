@@ -868,7 +868,7 @@ static int isSparkFileReturn(AssignmentReturnValue a) {
 	int items = sscanf(a.mValue, "%s", firstW);
 	if (!items) return 0;
 
-	return !strcmp("isinotherfile", firstW);
+	return !strcmp("isinotherfilef", firstW) || !strcmp("isinotherfiles", firstW);
 }
 
 static AssignmentReturnValue evaluateAdditionSparkFile(AssignmentReturnValue a, AssignmentReturnValue b) {
@@ -881,7 +881,7 @@ static AssignmentReturnValue evaluateAdditionSparkFile(AssignmentReturnValue a, 
 	int val2 = evaluateAssignmentReturnAsNumber(b);
 
 	AssignmentReturnValue ret;
-	sprintf(ret.mValue, "isinotherfile %d", val1+val2);
+	sprintf(ret.mValue, "%s %d", firstW, val1+val2);
 
 	return ret;
 }
@@ -1440,7 +1440,7 @@ static AssignmentReturnValue evaluateVariableAssignment(DreamMugenAssignment* tA
 	
 	if (isIsInOtherFileVariable(testString)) { // TODO: fix
 		AssignmentReturnValue ret;
-		sprintf(ret.mValue, "isinotherfile %s", testString + 1);
+		sprintf(ret.mValue, "isinotherfile%c %s", testString[0], testString + 1);
 		return ret;
 	}
 	
