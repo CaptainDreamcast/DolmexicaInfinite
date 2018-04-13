@@ -147,6 +147,7 @@ static struct {
 
 	int mIsInTwoPlayerMode;
 	int mDoesPlayerOneSelectEverything;
+	int mIsFadingOut;
 } gData;
 
 static MugenAnimation* getMugenDefMenuAnimationOrSprite(MugenDefScript* tScript, char* tGroupName, char* tVariableName) {
@@ -435,6 +436,14 @@ static void loadSingleSelector(int i, int tOwner) {
 	gData.mSelectors[i].mIsDone = 0;
 }
 
+static void unloadSingleSelector(int i) {
+	removeMugenAnimation(gData.mSelectors[i].mSelectorAnimationID);
+	removeMugenAnimation(gData.mSelectors[i].mBigPortraitAnimationID);
+	removeMugenText(gData.mSelectors[i].mNameTextID);
+
+	gData.mSelectors[i].mIsActive = 0;
+}
+
 static void loadSelectors() {
 
 	int i;
@@ -492,6 +501,7 @@ static void loadCharacterSelectScreen() {
 
 	gData.mWhiteTexture = createWhiteTexture();
 
+	gData.mIsFadingOut = 0;
 	addFadeIn(gData.mHeader.mFadeInTime, NULL, NULL);
 }
 
@@ -611,6 +621,16 @@ static void updateSelections() {
 	}
 }
 
+static void gotoTitleScreenCB(void* tCaller) {
+	(void)tCaller;
+	setNewScreen(&DreamTitleScreen);
+}
+
+static void fadeToTitleScreen() {
+	gData.mIsFadingOut = 1;
+	addFadeOut(gData.mHeader.mFadeOutTime, gotoTitleScreenCB, NULL);
+}
+
 static void gotoNextScreen(void* tCaller) {
 	(void)tCaller;
 
@@ -618,6 +638,7 @@ static void gotoNextScreen(void* tCaller) {
 }
 
 static void fadeToNextScreen() {
+	gData.mIsFadingOut = 1;
 	addFadeOut(gData.mHeader.mFadeOutTime, gotoNextScreen, NULL);
 }
 
@@ -660,7 +681,7 @@ static void updateStageSelection(int i, int tNewStage, int tDoesPlaySound) {
 }
 
 static void setStageSelectActive(int i) {
-	updateStageSelection(i, 0, 0);
+	updateStageSelection(i, gData.mStageSelect.mSelectedStage, 0);
 	updateMugenTextBasedOnVector3DI(gData.mStageSelect.mTextID, gData.mHeader.mStageSelect.mActiveFont1);
 	
 	gData.mStageSelect.mActiveFontDisplayed = 0;
@@ -676,9 +697,45 @@ static void checkSetStageSelectActive(int i) {
 	setStageSelectActive(i);
 }
 
+static void setStageSelectInactive(int i) {
+	changeMugenText(gData.mStageSelect.mTextID, " ");
+	gData.mStageSelect.mIsActive = 0;
+}
+
+static int checkSetStageSelectInactive(int i) {
+	if (!gData.mStageSelect.mIsUsing) return 0;
+	if (!gData.mStageSelect.mIsActive) return 0;
+	if (gData.mDoesPlayerOneSelectEverything && i == 0) return 0;
+
+	int otherPlayer = i ^ 1;
+	int isOtherPlayerFinished = !gData.mSelectors[otherPlayer].mIsActive || gData.mSelectors[otherPlayer].mIsDone;
+	if (!gData.mStageSelect.mIsDone) {
+		if (gData.mDoesPlayerOneSelectEverything || !isOtherPlayerFinished) {
+			setStageSelectInactive(i);
+		}
+		return 0;
+	}
+	else {
+		PlayerHeader* owner = &gData.mHeader.mPlayers[gData.mSelectors[i].mOwner];
+		tryPlayMugenSound(&gData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y);
+		setStageSelectActive(i);
+	}
+
+	return 1;
+}
+
 static void checkSetSecondPlayerActive(int i) {
 	if (i == 0 && gData.mDoesPlayerOneSelectEverything) {
 		loadSingleSelector(1, 0);
+	}
+}
+
+static void deselectSelection(int i, int tDoesPlaySound);
+
+static void checkSetSecondPlayerInactive(int i) {
+	if (i == 1 && gData.mDoesPlayerOneSelectEverything && !gData.mSelectors[i].mIsDone) {
+		unloadSingleSelector(1);
+		deselectSelection(0, 0);
 	}
 }
 
@@ -726,6 +783,18 @@ static void setSelectionFinished(int i) {
 	}
 }
 
+static void deselectSelection(int i, int tDoesPlaySound) {
+	if (checkSetStageSelectInactive(i)) return;
+
+	PlayerHeader* owner = &gData.mHeader.mPlayers[gData.mSelectors[i].mOwner];
+	changeMugenAnimation(gData.mSelectors[i].mSelectorAnimationID, owner->mActiveCursorAnimation);
+	if(tDoesPlaySound) tryPlayMugenSound(&gData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y);
+
+	checkSetSecondPlayerInactive(i);
+
+	gData.mSelectors[i].mIsDone = 0;
+}
+
 static void updateSingleSelectionConfirmation(int i) {
 	if (!gData.mSelectors[i].mIsActive) return;
 	if (gData.mDoesPlayerOneSelectEverything && i == 0 && gData.mSelectors[1].mIsActive) return;
@@ -735,10 +804,27 @@ static void updateSingleSelectionConfirmation(int i) {
 	}
 }
 
-static void updateSelectionConfirmations() {
+static void updateSingleSelectionDeselect(int i) {
+	if (gData.mIsFadingOut) return;
+	if (!gData.mSelectors[i].mIsActive) return;
+	if (gData.mDoesPlayerOneSelectEverything && i == 0 && gData.mSelectors[i].mIsDone) return;
+
+	if (hasPressedBFlankSingle(gData.mSelectors[i].mOwner)) {
+		int canGoBackToFirstPlayer = i == 1 && gData.mDoesPlayerOneSelectEverything && !gData.mSelectors[i].mIsDone;
+		if (gData.mSelectors[i].mIsDone || canGoBackToFirstPlayer) {
+			deselectSelection(i, 1);
+		}
+		else {
+			fadeToTitleScreen();
+		}
+	}
+}
+
+static void updateSelectionInputs() {
 	int i;
 	for (i = 0; i < 2; i++) {
 		updateSingleSelectionConfirmation(i);
+		updateSingleSelectionDeselect(i);
 	}
 }
 
@@ -752,7 +838,7 @@ static void updateStageSelect() {
 
 static void updateCharacterSelectScreen() {
 	updateSelections();
-	updateSelectionConfirmations();
+	updateSelectionInputs();
 	updateStageSelect();
 
 	if (hasPressedAbortFlank()) {

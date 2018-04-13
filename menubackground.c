@@ -72,7 +72,7 @@ static void loadAnimatedMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, 
 	int animation = getMugenDefIntegerOrDefaultAsGroup(tGroup, "actionno", -1);
 	int layerNo = getMugenDefIntegerOrDefaultAsGroup(tGroup, "layerno", 0);
 	Vector3D start = getMugenDefVectorOrDefaultAsGroup(tGroup, "start", makePosition(0, 0, 0));
-	start.z = i;
+	start.z = i+layerNo*60;
 	Vector3D delta = getMugenDefVectorOrDefaultAsGroup(tGroup, "delta", makePosition(1, 1, 0));
 	int mask = getMugenDefIntegerOrDefaultAsGroup(tGroup, "mask", 0);
 	Vector3DI tile = getMugenDefVectorIOrDefaultAsGroup(tGroup, "tile", makeVector3DI(0, 0, 0));
@@ -82,7 +82,6 @@ static void loadAnimatedMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, 
 	Vector3D velocity = getMugenDefVectorOrDefaultAsGroup(tGroup, "velocity", makePosition(0, 0, 0));
 
 	(void)mask; // TODO
-	(void)layerNo; // TODO
 	addDreamMugenStageHandlerAnimatedBackgroundElement(start, getMugenAnimation(tAnimations, animation), tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, 0, gData.mLocalCoordinates);
 }
 
