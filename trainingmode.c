@@ -7,10 +7,12 @@
 #include "versusscreen.h"
 #include "fightscreen.h"
 #include "playerdefinition.h"
+#include "fightui.h"
 
 static void fightFinishedCB();
 
 static void versusScreenFinishedCB() {
+	setTimerInfinite();
 	setPlayerHuman(0);
 	setPlayerHuman(1);
 	setFightScreenFinishedCB(fightFinishedCB);

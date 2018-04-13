@@ -92,6 +92,7 @@ typedef struct {
 
 typedef struct {
 	int mIsActive;
+	int mIsInfinite;
 
 	int mValue;
 	Position mPosition;
@@ -513,7 +514,10 @@ static void loadTimer(MugenDefScript* tScript) {
 
 	gData.mTime.mFont = getMugenDefVectorIOrDefault(tScript, "Time", "counter.font", makeVector3DI(1, 0, 0));
 
+
+
 	playDisplayText(&gData.mTime.mTextID, "99", gData.mTime.mPosition, gData.mTime.mFont);
+	
 
 	gData.mTime.mValue = 99;
 	gData.mTime.mNow = 0;
@@ -843,13 +847,20 @@ static void updateControlCountdown() {
 
 static void updateTimeDisplayText() {
 	char text[10];
-	if(gData.mTime.mValue < 10) sprintf(text, "0%d", gData.mTime.mValue);
-	else sprintf(text, "%d", gData.mTime.mValue);
+	if (gData.mTime.mIsInfinite) {
+		sprintf(text, "o");
+	}
+	else {
+		if (gData.mTime.mValue < 10) sprintf(text, "0%d", gData.mTime.mValue);
+		else sprintf(text, "%d", gData.mTime.mValue);
+	}
+
 	changeMugenText(gData.mTime.mTextID, text);
 }
 
 static void updateTimeDisplay() {
 	if (!gData.mTime.mIsActive) return;
+	if (gData.mTime.mIsInfinite) return;
 	if (gData.mTime.mTimerFreezeFlag) {
 		gData.mTime.mTimerFreezeFlag = 0;
 		return;
@@ -1198,6 +1209,16 @@ void setDreamNoMusicFlag()
 void setTimerFreezeFlag()
 {
 	gData.mTime.mTimerFreezeFlag = 1;
+}
+
+void setTimerInfinite()
+{
+	gData.mTime.mIsInfinite = 1;
+}
+
+void setTimerFinite()
+{
+	gData.mTime.mIsInfinite = 0;
 }
 
 void setEnvironmentColor(Vector3DI tColors, int tTime, int tIsUnderCharacters)

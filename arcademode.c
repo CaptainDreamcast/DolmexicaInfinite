@@ -13,6 +13,7 @@
 #include "fightscreen.h"
 #include "gamelogic.h"
 #include "stage.h"
+#include "fightui.h"
 
 typedef struct {
 	char mDefinitionPath[1024];
@@ -27,6 +28,7 @@ static struct {
 static void fightFinishedCB();
 
 static void versusScreenFinishedCB() {
+	setTimerFinite();
 	setFightScreenFinishedCB(fightFinishedCB); 
 	setDreamStageMugenDefinition("assets/stages/kfm.def"); // TODO: remove
 	startFightScreen();
