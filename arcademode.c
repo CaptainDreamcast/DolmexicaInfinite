@@ -29,6 +29,7 @@ static void fightFinishedCB();
 
 static void versusScreenFinishedCB() {
 	setTimerFinite();
+	setPlayersToRealFightMode();
 	setFightScreenFinishedCB(fightFinishedCB); 
 	setDreamStageMugenDefinition("assets/stages/kfm.def"); // TODO: remove
 	startFightScreen();

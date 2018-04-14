@@ -995,8 +995,12 @@ void setDreamLifeBarPercentage(DreamPlayer* tPlayer, double tPercentage)
 	HealthBar* bar = &gData.mHealthBars[tPlayer->mRootID];
 
 	bar->mPercentage = tPercentage;
-
 	setBarToPercentage(bar->mFrontAnimationID, bar->mHealthRangeX, bar->mPercentage);
+
+	if (bar->mPercentage > bar->mDisplayedPercentage) {
+		bar->mDisplayedPercentage = bar->mPercentage;
+		setBarToPercentage(bar->mMidAnimationID, bar->mHealthRangeX, bar->mDisplayedPercentage);
+	}
 	bar->mIsPaused = 1;
 	bar->mPauseNow = 0;
 }

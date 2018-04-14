@@ -35,6 +35,7 @@
 static struct {
 	DreamPlayer mPlayers[2];
 	int mUniqueIDCounter;
+	int mIsInTrainingMode;
 } gData;
 
 static void loadPlayerHeaderFromScript(DreamPlayerHeader* tHeader, MugenDefScript* tScript) {
@@ -761,6 +762,14 @@ static void updateSingleProjectileCB(void* tCaller, void* tData) {
 	updateSingleProjectile((DreamPlayer*)tData);
 }
 
+static void updatePlayerTrainingMode(DreamPlayer* p) {
+	if (!gData.mIsInTrainingMode) return;
+	if (!getPlayerControl(p)) return;
+
+	addPlayerLife(p, 3);
+	addPlayerPower(p, 50);
+}
+
 static void updateSinglePlayer(DreamPlayer* p) {
 	updateWalking(p);
 	updateAirJumping(p);
@@ -784,6 +793,7 @@ static void updateSinglePlayer(DreamPlayer* p) {
 	updateTransparencyFlag(p);
 	updateShadow(p);
 	updateReflection(p);
+	updatePlayerTrainingMode(p);
 
 	list_map(&p->mHelpers, updateSinglePlayerCB, NULL);
 	int_map_map(&p->mProjectiles, updateSingleProjectileCB, NULL);
@@ -2229,6 +2239,8 @@ void setPlayerUnSuperPaused(DreamPlayer* p)
 }
 
 static void setPlayerDead(DreamPlayer* p) {
+	if (gData.mIsInTrainingMode) return;
+
 	p->mIsAlive = 0;
 	
 	if (!p->mNoKOSoundFlag) {
@@ -2243,6 +2255,7 @@ void addPlayerDamage(DreamPlayer* p, int tDamage)
 		setPlayerDead(p);
 		p->mLife = 0;
 	}
+	p->mLife = min(p->mLife, getPlayerLifeMax(p));
 
 	double perc = p->mLife / (double)p->mConstants.mHeader.mLife;
 	setDreamLifeBarPercentage(p, perc);
@@ -2715,6 +2728,11 @@ int getPlayerAILevel(DreamPlayer* p)
 void setPlayerLife(DreamPlayer * p, int tLife)
 {
 	p->mLife = tLife;
+}
+
+void addPlayerLife(DreamPlayer * p, int tLife)
+{
+	addPlayerDamage(p, -tLife);
 }
 
 int getPlayerLife(DreamPlayer* p)
@@ -3415,4 +3433,14 @@ void addPlayerDust(DreamPlayer * p, int tDustIndex, Position tPos, int tSpacing)
 	Position pos = vecAdd(tPos, playerPosition); 
 	pos.z = PLAYER_Z + 1; // TODO: fix z
 	addDreamDustCloud(pos, getPlayerIsFacingRight(p), getPlayerCoordinateP(p));
+}
+
+void setPlayersToTrainingMode()
+{
+	gData.mIsInTrainingMode = 1;
+}
+
+void setPlayersToRealFightMode()
+{
+	gData.mIsInTrainingMode = 0;
 }

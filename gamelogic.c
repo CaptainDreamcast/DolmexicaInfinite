@@ -196,7 +196,7 @@ static void updateWinCondition() {
 	int i;
 	for (i = 0; i < 2; i++) {
 
-		if (!getPlayerLife(getRootPlayer(i))) {
+		if (!isPlayerAlive(getRootPlayer(i))) {
 			startKO();
 			break;
 		}

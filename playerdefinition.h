@@ -483,6 +483,7 @@ void setPlayerArtificial(int i);
 int getPlayerAILevel(DreamPlayer* p);
 
 void setPlayerLife(DreamPlayer* p, int tLife);
+void addPlayerLife(DreamPlayer* p, int tLife);
 int getPlayerLife(DreamPlayer* p);
 int getPlayerLifeMax(DreamPlayer* p);
 int getPlayerPower(DreamPlayer* p);
@@ -582,3 +583,6 @@ void setPlayerDrawOffsetY(DreamPlayer* p, double tValue, int tCoordinateP);
 void setPlayerOneFrameTransparency(DreamPlayer* p, BlendType tType, int tAlphaSource, int tAlphaDest);
 
 void addPlayerDust(DreamPlayer* p, int tDustIndex, Position tPos, int tSpacing);
+
+void setPlayersToTrainingMode();
+void setPlayersToRealFightMode();
