@@ -236,15 +236,6 @@ static void updateWinPose() {
 
 }
 
-static void updateTimeDilatation() {
-	if (gData.mRoundStateNumber != 3 || getPlayerNoKOSlowdownFlag(gData.mRoundWinner)) {
-		setWrapperTimeDilatation(1);
-	}
-	else {
-		setWrapperTimeDilatation(0.5);
-	}
-}
-
 static void updateGameLogic(void* tData) {
 	(void)tData;
 	gData.mGameTime++;
@@ -253,7 +244,6 @@ static void updateGameLogic(void* tData) {
 	updateWinCondition();
 	updateNoControl();
 	updateWinPose();
-	updateTimeDilatation();
 }
 
 ActorBlueprint DreamGameLogic = {
