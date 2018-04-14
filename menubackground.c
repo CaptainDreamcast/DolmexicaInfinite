@@ -40,9 +40,7 @@ static BlendType getBackgroundBlendType(MugenDefScriptGroup* tGroup) {
 	}
 	else {
 		ret = BLEND_TYPE_NORMAL;
-		logError("Unknown transparency type.");
-		logErrorString(text);
-		abortSystem();
+		logWarningFormat("Unknown transparency type %s. Default to normal.", text);
 	}
 
 	freeMemory(text);
@@ -94,9 +92,8 @@ static void loadMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, MugenSpr
 		loadAnimatedMenuBackgroundGroup(tGroup, i, tSprites, tAnimations);
 	}
 	else {
-		logError("Unimplemented menu background type.");
-		logErrorString(type);
-		abortSystem();
+		logWarningFormat("Unimplemented menu background type %s. Try to load normal.", type);
+		loadNormalMenuBackgroundGroup(tGroup, i, tSprites, tAnimations);
 	}
 
 	freeMemory(type);

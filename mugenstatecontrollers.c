@@ -583,10 +583,11 @@ typedef struct {
 static void parseSingleVarSetControllerEntry(void* tCaller, char* tName, void* tData) {
 	VarSetControllerCaller* caller = tCaller;
 	(void)tData;
-	VarSetControllerEntry* e = allocMemory(sizeof(VarSetControllerEntry));
 
 	int isEntry = strchr(tName, '(') != NULL;
 	if (!isEntry) return;
+
+	VarSetControllerEntry* e = allocMemory(sizeof(VarSetControllerEntry));
 
 	char name[100];
 	strcpy(name, tName);
@@ -614,9 +615,8 @@ static void parseSingleVarSetControllerEntry(void* tCaller, char* tName, void* t
 		e->mType = VAR_SET_TYPE_FLOAT;
 	}
 	else {
-		logError("Unrecognized variable setting name.");
-		logErrorString(name);
-		abortSystem();
+		logWarningFormat("Unrecognized variable setting name %s. Default to var.", name);
+		e->mType = VAR_SET_TYPE_INTEGER;
 	}
 
 	e->mID = atoi(value);
@@ -1657,9 +1657,10 @@ static void parseStateControllerType(DreamMugenStateController* tController, Mug
 	turnStringLowercase(type);
 
 	if(!string_map_contains(&gVariableHandler.mStateControllerParsers, type)) {
-		logError("Unable to determine state controller type.");
-		logErrorString(type);
-		abortSystem();
+		logWarningFormat("Unable to determine state controller type %s. Defaulting to null.", type);
+		freeMemory(type);
+		type = allocMemory(10);
+		strcpy(type, "null");
 	}
 
 	StateControllerParseFunction func = string_map_get(&gVariableHandler.mStateControllerParsers, type);
@@ -1932,14 +1933,14 @@ static void handleHitDefinitionSingleHitFlag(DreamMugenAssignment* tFlagAssignme
 static void handleHitDefinitionAffectTeam(DreamMugenAssignment* tAffectAssignment, DreamPlayer* tPlayer) {
 	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAffectAssignment, tPlayer);
 	assert(strlen(flag) == 1);
+	turnStringLowercase(flag);
 
-	if (*flag == 'B') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_BOTH);
-	else if (*flag == 'E') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_ENEMY);
-	else if (*flag == 'F') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_FRIENDLY);
+	if (*flag == 'b') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_BOTH);
+	else if (*flag == 'e') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_ENEMY);
+	else if (*flag == 'f') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_FRIENDLY);
 	else {
-		logError("Unable to parse hitdef affectteam.");
-		logErrorString(flag);
-		abortSystem();
+		logWarningFormat("Unable to parse hitdef affectteam %s. Set to enemy.");
+		setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_ENEMY);
 	}
 
 	freeMemory(flag);
@@ -1958,9 +1959,8 @@ static void handleHitDefinitionSingleAnimationType(DreamMugenAssignment* tAssign
 	else if (!strcmp("up", flag)) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_UP);
 	else if (!strcmp("diagup", flag)) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_DIAGONAL_UP);
 	else {
-		logError("Unable to parse hitdef animation type.");
-		logErrorString(flag);
-		abortSystem();
+		logWarningFormat("Unable to parse hitdef animation type %s. Setting to default", flag);
+		tFunc(tPlayer, tDefault);
 	}
 
 	freeMemory(flag);
@@ -1983,10 +1983,8 @@ static void handleHitDefinitionPriority(DreamMugenAssignment* tAssignment, Dream
 	else if (!strcmp("miss", typeString)) type = MUGEN_HIT_PRIORITY_MISS;
 	else if (!strcmp("dodge", typeString)) type = MUGEN_HIT_PRIORITY_DODGE;
 	else {
-		logError("Unable to parse hitdef priority type.");
-		logErrorString(flag);
-		logErrorString(typeString);
-		abortSystem();
+		logWarningFormat("Unable to parse hitdef priority type %s with string %s. Defaulting to hit.", flag, typeString);
+		type = MUGEN_HIT_PRIORITY_HIT;
 	}
 
 	setHitDataPriority(tPlayer, prio, type);
@@ -2133,9 +2131,8 @@ static void handleHitDefinitionSingleAttackHeight(DreamMugenAssignment* tAssignm
 	else if (!strcmp("heavy", flag)) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_HEAVY);
 	else if (!strcmp("none", flag)) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_NONE);
 	else {
-		logError("Unable to parse hitdef attack height type.");
-		logErrorString(flag);
-		abortSystem();
+		logWarningFormat("Unable to parse hitdef attack height type %s. Defaulting.", flag);
+		tFunc(tPlayer, tDefault);
 	}
 
 	freeMemory(flag);
@@ -2550,9 +2547,7 @@ static void handleSingleSpecialAssert(DreamMugenAssignment* tAssignment, DreamPl
 		setPlayerUnguardableFlag(tPlayer);
 	}
 	else {
-		logError("Unrecognized special assert flag.");
-		logErrorString(flag);
-		abortSystem();
+		logWarningFormat("Unrecognized special assert flag %s. Ignoring.", flag);
 	}
 	freeMemory(flag);
 }
@@ -2614,9 +2609,7 @@ static void handleSettingSingleVariable(void* tCaller, void* tData) {
 		setPlayerFloatVariable(caller->mPlayer, e->mID, val);
 	}
 	else {
-		logError("Unrecognized variable type.");
-		logErrorInteger(e->mType);
-		abortSystem();
+		logWarningFormat("Unrecognized variable type %d. Ignoring.", e->mType);
 	}
 }
 
@@ -2651,9 +2644,7 @@ static void handleAddingSingleVariable(void* tCaller, void* tData) {
 		addPlayerFloatVariable(caller->mPlayer, e->mID, val);
 	}
 	else {
-		logError("Unrecognized variable type.");
-		logErrorInteger(e->mType);
-		abortSystem();
+		logWarningFormat("Unrecognized variable type %d. Ignoring.", e->mType);
 	}
 }
 
@@ -2679,9 +2670,7 @@ static DreamMugenStateType handleStateTypeAssignment(DreamMugenAssignment* tAssi
 	else if (!strcmp("s", text)) ret = MUGEN_STATE_TYPE_STANDING;
 	else if (!strcmp("c", text)) ret = MUGEN_STATE_TYPE_CROUCHING;
 	else {
-		logError("Unrecognized state type");
-		logErrorString(text);
-		abortSystem();
+		logWarningFormat("Unrecognized state type %s. Defaulting to not changing state.", text);
 		ret = MUGEN_STATE_TYPE_UNCHANGED;
 	}
 	freeMemory(text);
@@ -2833,9 +2822,7 @@ DreamExplodPositionType getPositionTypeFromAssignment(DreamMugenAssignment* tAss
 		type = EXPLOD_POSITION_TYPE_NONE;
 	}
 	else {
-		logError("Unable to determine position type");
-		logErrorString(text);
-		abortSystem();
+		logWarningFormat("Unable to determine position type %s. Defaulting to EXPLOD_POSITION_TYPE_RELATIVE_TO_P1.", text);
 		type = EXPLOD_POSITION_TYPE_RELATIVE_TO_P1;
 	}
 
@@ -2866,9 +2853,7 @@ static void handleExplodTransparencyType(DreamMugenAssignment* tAssignment, int 
 		type = EXPLOD_TRANSPARENCY_TYPE_ADD_ALPHA;
 	}
 	else {
-		logError("Unable to determine explod transparency type");
-		logErrorString(text);
-		abortSystem();
+		logWarningFormat("Unable to determine explod transparency type %s. Default to alpha.", text);
 		type = EXPLOD_TRANSPARENCY_TYPE_ALPHA;
 	}
 
@@ -3461,8 +3446,7 @@ static DreamPlayerBindPositionType handleBindToTargetPositionType(DreamMugenAssi
 			return PLAYER_BIND_POSITION_TYPE_HEAD;
 		}
 		else {
-			logErrorFormat("Unrecognized postype: %s", postype);
-			abortSystem();
+			logWarningFormat("Unrecognized postype: %s. Defaulting to PLAYER_BIND_POSITION_TYPE_AXIS.", postype);
 			return PLAYER_BIND_POSITION_TYPE_AXIS;
 		}
 	}
@@ -3525,9 +3509,7 @@ static int handleSettingVariableRange(DreamMugenStateController* tController, Dr
 		}
 	}
 	else {
-		logError("Unrecognized var type.");
-		logErrorInteger(e->mType);
-		abortSystem();
+		logWarningFormat("Unrecognized var type %d. Ignoring.", e->mType);
 	}
 
 	return 0;
@@ -3658,9 +3640,8 @@ int handleDreamMugenStateControllerAndReturnWhetherStateChanged(DreamMugenStateC
 {
 
 	if (!int_map_contains(&gVariableHandler.mStateControllerHandlers, tController->mType)) {
-		logError("Unrecognized state controller.");
-		logErrorInteger(tController->mType);
-		abortSystem();
+		logWarningFormat("Unrecognized state controller %d. Ignoring.", tController->mType);
+		return 0;
 	}
 
 	StateControllerHandleFunction func = int_map_get(&gVariableHandler.mStateControllerHandlers, tController->mType);
@@ -3951,8 +3932,7 @@ static BlendType handleTransparencyType(DreamMugenAssignment* tType, DreamPlayer
 		*tAlphaDefaultDst = 256;
 	}
 	else {
-		logErrorFormat("Unrecognized transparency format: %s", text);
-		abortSystem();
+		logWarningFormat("Unrecognized transparency format: %s. Default to normal blending.", text);
 		ret = BLEND_TYPE_NORMAL;
 		*tAlphaDefaultSrc = 256;
 		*tAlphaDefaultDst = 256;

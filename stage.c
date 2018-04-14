@@ -235,8 +235,8 @@ static MugenDefScriptGroup* loadStageBackgroundDefinitionAndReturnGroup(MugenDef
 	}
 	else {
 		strcpy(name, "");
-		logError("No background definition found.");
-		abortSystem();
+		logWarning("No background definition found. Defaulting to 0.");
+		return NULL;
 	}
 
 	bgdef = string_map_get(&s->mGroups, name);
@@ -286,9 +286,7 @@ static BlendType getBackgroundBlendType(MugenDefScript* tScript, char* tGroupNam
 	}
 	else {
 		ret = BLEND_TYPE_NORMAL;
-		logError("Unknown transparency type.");
-		logErrorString(text);
-		abortSystem();
+		logWarningFormat("Unknown transparency type %s. Defaulting to normal blending.", text);
 	}
 
 	freeMemory(text);
@@ -329,9 +327,9 @@ static void loadBackgroundElement(MugenDefScript* s, char* tName, int i) {
 		addBackgroundElementToStageHandler(e, getMugenAnimation(&gData.mAnimations, e->mActionNumber));
 	}
 	else {
-		logError("Unknown type.");
-		logErrorString(type);
-		abortSystem();
+		logWarningFormat("Unknown type %s. Treat as normal type.", type);
+		e->mType = STAGE_BACKGROUND_STATIC;
+		addBackgroundElementToStageHandler(e, createOneFrameMugenAnimationForSprite(e->mSpriteNo.x, e->mSpriteNo.y));
 	}
 
 	list_push_back_owned(&gData.mBackgroundElements, e);
@@ -345,9 +343,7 @@ static void loadBackgroundDefinitionGroup(MugenDefScript* s, MugenDefScriptGroup
 		// TODO: ignore properly
 	}
 	else {
-		logError("Unknown background definition group.");
-		logErrorString(tGroup->mName);
-		abortSystem();
+		logWarningFormat("Unknown background definition group %s. Ignoring.", tGroup->mName);
 	}
 }
 
@@ -358,11 +354,6 @@ static void loadStageTextures(char* tPath) {
 	sprintf(sffFile, "%s%s", path, gData.mBackgroundDefinition.mSpritePath);
 	if (!isFile(sffFile)) {
 		sprintf(sffFile, "assets/%s", gData.mBackgroundDefinition.mSpritePath);
-		if (!isFile(sffFile)) {
-			logError("Unable to locate sff file.");
-			logErrorString(gData.mBackgroundDefinition.mSpritePath);
-			abortSystem();
-		}
 	}
 
 	setMugenSpriteFileReaderToUsePalette(2); // TODO: check
@@ -372,6 +363,7 @@ static void loadStageTextures(char* tPath) {
 
 static void loadStageBackgroundElements(char* tPath, MugenDefScript* s) {
 	MugenDefScriptGroup* bgdef = loadStageBackgroundDefinitionAndReturnGroup(s);
+	if (!bgdef) return;
 
 	loadStageTextures(tPath);
 

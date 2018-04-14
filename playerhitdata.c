@@ -1731,10 +1731,9 @@ void getMatchingHitOverrideStateNoAndForceAir(DreamPlayer * tPlayer, DreamPlayer
 		}
 	}
 
-	logError("Unable to find matching hit override.");
-	logErrorInteger(tPlayer->mRootID);
-	logErrorInteger(tOtherPlayer->mRootID);
-	abortSystem();
+	logWarningFormat("Unable to find matching hit override for player %d and otherPlayer %d. Defaulting to state 0 and no air forcing.", tPlayer->mRootID, tOtherPlayer->mRootID);
+	*oStateNo = 0;
+	*oDoesForceAir = 0;
 }
 
 

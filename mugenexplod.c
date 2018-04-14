@@ -427,10 +427,12 @@ Position getFinalPositionFromPositionType(DreamExplodPositionType tPositionType,
 		return vecAdd(p, mOffset);
 	}
 	else {
-		logError("Unrecognized position type.");
-		logErrorInteger(tPositionType);
-		abortSystem();
-		return makePosition(0, 0, 0);
+		logWarningFormat("Unrecognized position type %d. Defaulting to EXPLOD_POSITION_TYPE_RELATIVE_TO_P1.", tPositionType);
+		DreamPlayer* target = tPlayer;
+		Position p = getPlayerPosition(target, getPlayerCoordinateP(tPlayer));
+		int isReversed = !getPlayerIsFacingRight(target);
+		if (isReversed) mOffset.x *= -1;
+		return vecAdd(p, mOffset);
 	}
 
 }

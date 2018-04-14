@@ -25,8 +25,7 @@ static MugenDefScriptGroup* getFirstStateDefGroup(MugenDefScript* tScript) {
 		cur = cur->mNext;
 	}
 
-	logError("Unable to find state definition.");
-	abortSystem();
+	logWarningFormat("Unable to find first state definition. Returning NULL.");
 
 	return NULL;
 }
@@ -53,9 +52,8 @@ static void handleMugenStateDefType(DreamMugenState* tState, MugenDefScriptGroup
 		tState->mType = MUGEN_STATE_TYPE_UNCHANGED;
 	}
 	else {
-		logError("Unable to determine Mugen state type.");
-		logErrorString(type);
-		abortSystem();
+		logWarningFormat("Unable to determine Mugen state type %s. Defaulting to unchanged.", type);
+		tState->mType = MUGEN_STATE_TYPE_UNCHANGED;
 	}
 
 	freeMemory(type);
@@ -77,9 +75,8 @@ static void handleMugenStateDefMoveType(DreamMugenState* tState, MugenDefScriptG
 		tState->mMoveType = MUGEN_STATE_MOVE_TYPE_UNCHANGED;
 	}
 	else {
-		logError("Unable to determine Mugen state move type.");
-		logErrorString(moveType);
-		abortSystem();
+		logWarningFormat("Unable to determine Mugen state move type %s. Defaulting to unchanged.", moveType);
+		tState->mMoveType = MUGEN_STATE_MOVE_TYPE_UNCHANGED;
 	}
 
 	freeMemory(moveType);
@@ -104,9 +101,8 @@ static void handleMugenStateDefPhysics(DreamMugenState* tState, MugenDefScriptGr
 		tState->mPhysics = MUGEN_STATE_PHYSICS_NONE;
 	}
 	else {
-		logError("Unable to determine Mugen state physics.");
-		logErrorString(physics);
-		abortSystem();
+		logWarningFormat("Unable to determine Mugen state physics %s. Defaulting to unchanged.", physics);
+		tState->mPhysics = MUGEN_STATE_PHYSICS_UNCHANGED;
 	}
 
 	freeMemory(physics);
@@ -285,16 +281,13 @@ static void handleMugenStateControllerInDefGroup(DreamMugenStates* tStates, Muge
 
 static void handleSingleMugenStateDefGroup(DreamMugenStates* tStates, MugenDefScriptGroup* tGroup) {
 
-
 	if (isMugenStateDef(tGroup->mName)) {
 		handleMugenStateDef(tStates, tGroup);
 	} else if (isMugenStateController(tGroup->mName)) {
 		handleMugenStateControllerInDefGroup(tStates, tGroup);
 	}
 	else {
-		logError("Unable to determine state def group type.");
-		logErrorString(tGroup->mName);
-		abortSystem();
+		logWarningFormat("Unable to determine state def group type %s. Ignoring.", tGroup->mName);
 	}
 
 }

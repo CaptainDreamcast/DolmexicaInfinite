@@ -234,9 +234,7 @@ static int isButtonCommandActive(DreamMugenCommandInputStepTarget tTarget, uint3
 			|| isButtonCommandActive(MUGEN_COMMAND_INPUT_STEP_TARGET_DOWN_BACKWARD, tMask, isFacingRight);
 	}
 	else {
-		logError("Unrecognized input target");
-		logErrorInteger(tTarget);
-		abortSystem();
+		logWarningFormat("Unrecognized input target %d. Default to false.", tTarget);
 		return 0;
 	}
 }
@@ -291,9 +289,7 @@ static int handleSingleCommandInputStepAndReturnIfActive(DreamMugenCommandInputS
 		return handleReleasingCommandInputStep(tStep, oIsStepOver, tPlayer, tIsFacingRight);
 	}
 	else {
-		logError("Unrecognized input type.");
-		logErrorInteger(tStep->mType);
-		abortSystem();
+		logWarningFormat("Unrecognized input type %d. Default to inactive.", tStep->mType);
 		return 0;
 	}
 }

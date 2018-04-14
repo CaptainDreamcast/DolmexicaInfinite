@@ -137,15 +137,14 @@ static AssignmentReturnValue evaluateCommandAssignment(AssignmentReturnValue tCo
 static AssignmentReturnValue evaluateStateTypeAssignment(AssignmentReturnValue tCommand, DreamPlayer* tPlayer) {
 	DreamMugenStateType playerState = getPlayerStateType(tPlayer);
 
-	int ret = 0;
+	int ret;
 	if (playerState == MUGEN_STATE_TYPE_STANDING) ret = strchr(tCommand.mValue, 's') != NULL;
 	else if (playerState == MUGEN_STATE_TYPE_AIR) ret = strchr(tCommand.mValue, 'a') != NULL;
 	else if (playerState == MUGEN_STATE_TYPE_CROUCHING) ret = strchr(tCommand.mValue, 'c') != NULL;
 	else if (playerState == MUGEN_STATE_TYPE_LYING) ret = strchr(tCommand.mValue, 'l') != NULL;
 	else {
-		logError("Undefined player state.");
-		logErrorInteger(playerState);
-		abortSystem();
+		logWarningFormat("Undefined player state %d. Default to false.", playerState);
+		ret = 0;
 	}
 
 	return makeBooleanAssignmentReturn(ret);
@@ -158,14 +157,13 @@ static AssignmentReturnValue evaluateMoveTypeAssignment(AssignmentReturnValue tC
 	strcpy(test, tCommand.mValue);
 	turnStringLowercase(test);
 
-	int ret = 0;
+	int ret;
 	if (playerMoveType == MUGEN_STATE_MOVE_TYPE_ATTACK) ret = strchr(test, 'a') != NULL;
 	else if (playerMoveType == MUGEN_STATE_MOVE_TYPE_BEING_HIT) ret = strchr(test, 'h') != NULL;
 	else if (playerMoveType == MUGEN_STATE_MOVE_TYPE_IDLE) ret = strchr(test, 'i') != NULL;
 	else {
-		logError("Undefined player state.");
-		logErrorInteger(playerMoveType);
-		abortSystem();
+		logWarningFormat("Undefined player state %d. Default to false.", playerMoveType);
+		ret = 0;
 	}
 
 	return makeBooleanAssignmentReturn(ret);
@@ -209,16 +207,12 @@ static AssignmentReturnValue evaluateAnimElemVectorAssignment(AssignmentReturnVa
 			ret = timeTillAnimation >= time;
 		}
 		else {
-			logError("Unrecognized operator.");
-			logErrorString(oper);
-			abortSystem();
+			logWarningFormat("Unrecognized operator %s. Default to false.", oper);
 			ret = 0;
 		}
 	}
 	else {
-		logError("Invalid animelem format.");
-		logErrorString(tCommand.mValue);
-		abortSystem();
+		logWarningFormat("Invalid animelem format %s. Default to false.", tCommand.mValue);
 		ret = 0;
 	}
 
@@ -383,10 +377,8 @@ static AssignmentReturnValue evaluateSetVariableAssignment(DreamMugenAssignment*
 		return makeFloatAssignmentReturn(value);
 	}
 	else {
-		logError("Unrecognized varset name.");
-		logErrorString(a.mValue);
-		abortSystem();
-		return makeBooleanAssignmentReturn(0);
+		logWarningFormat("Unrecognized varset name %s. Returning bottom.", a.mValue);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}
 
 }
@@ -406,9 +398,7 @@ static int evaluateSingleHitDefAttributeFlag2(char* tFlag, MugenAttackClass tCla
 		isPart1OK = tFlag[0] == 'h';
 	}
 	else {
-		logError("Unrecognized attack class");
-		logErrorInteger(tClass);
-		abortSystem();
+		logWarningFormat("Unrecognized attack class %d. Default to false.", tClass);
 		isPart1OK = 0;
 	}
 
@@ -425,9 +415,7 @@ static int evaluateSingleHitDefAttributeFlag2(char* tFlag, MugenAttackClass tCla
 		isPart2OK = tFlag[1] == 't';
 	}
 	else {
-		logError("Unrecognized attack type");
-		logErrorInteger(tType);
-		abortSystem();
+		logWarningFormat("Unrecognized attack type %d. Default to false.", tType);
 		isPart2OK = 0;
 	}
 
@@ -460,9 +448,7 @@ static AssignmentReturnValue evaluateHitDefAttributeAssignment(AssignmentReturnV
 		isFlag1OK = strchr(flag, 'a') != NULL;
 	}
 	else {
-		logError("Invalid hitdef type");
-		logErrorInteger(type);
-		abortSystem();
+		logWarningFormat("Invalid hitdef type %d. Default to false.", type);
 		isFlag1OK = 0;
 	}
 
@@ -528,16 +514,12 @@ static AssignmentReturnValue evaluateProjVectorAssignment(AssignmentReturnValue 
 			ret = timeOffset >= time;
 		}
 		else {
-			logError("Unrecognized operator.");
-			logErrorString(oper);
-			abortSystem();
+			logWarningFormat("Unrecognized operator %s. Default to false.", oper);
 			ret = 0;
 		}
 	}
 	else {
-		logError("Invalid animelem format.");
-		logErrorString(tCommand.mValue);
-		abortSystem();
+		logWarningFormat("Invalid animelem format %s. Default to false.", tCommand.mValue);
 		ret = 0;
 	}
 
@@ -769,11 +751,8 @@ static AssignmentReturnValue evaluateModuloAssignment(DreamMugenAssignment* tAss
 	AssignmentReturnValue b = evaluateAssignmentInternal(moduloAssignment->b, tPlayer);
 
 	if (isFloatReturn(a) || isFloatReturn(b)) {
-		logError("Unable to parse modulo of floats.");
-		logErrorString(a.mValue);
-		logErrorString(b.mValue);
-		abortSystem();
-		return makeBooleanAssignmentReturn(0);
+		logWarningFormat("Unable to parse modulo of floats %s and %s. Returning bottom.", a.mValue, b.mValue);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}
 	else {
 		return evaluateModuloIntegers(a, b);
@@ -1489,10 +1468,8 @@ static AssignmentReturnValue evaluateStageVarArrayAssignment(AssignmentReturnVal
 		return makeStringAssignmentReturn(getDreamStageName());
 	}
 	else {
-		logError("Unknown stage variable.");
-		logErrorString(var);
-		abortSystem();
-		return makeStringAssignmentReturn("");
+		logWarningFormat("Unknown stage variable %s. Returning bottom.", var);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}
 }
 
@@ -1584,10 +1561,8 @@ static AssignmentReturnValue evaluateConstArrayAssignment(AssignmentReturnValue 
 	char* var = tIndex.mValue;
 
 	if(!string_map_contains(&gVariableHandler.mConstants, var)) {
-		logError("Unrecognized Constant");
-		logErrorString(var);
-		abortSystem();
-		return makeBooleanAssignmentReturn(0);
+		logWarningFormat("Unrecognized constant %s. Returning bottom.", var);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}
 
 	VariableFunction func = string_map_get(&gVariableHandler.mConstants, var);
@@ -1650,10 +1625,8 @@ static AssignmentReturnValue evaluateGetHitVarArrayAssignment(DreamMugenAssignme
 		return makeBooleanAssignmentReturn(isPlayerBound(tPlayer));
 	}
 	else {
-		logError("Unrecognized GetHitVar Constant");
-		logErrorString(var);
-		abortSystem();
-		return makeBooleanAssignmentReturn(0);
+		logWarningFormat("Unrecognized GetHitVar Constant %s. Returning bottom.", var);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}
 
 
@@ -1909,10 +1882,8 @@ static AssignmentReturnValue evaluateArrayAssignment(DreamMugenAssignment* tAssi
 
 	
 	if(!string_map_contains(&gVariableHandler.mArrays, test)) {
-		logError("Unknown array.");
-		logErrorString(test);
-		abortSystem();
-		return makeBooleanAssignmentReturn(0);
+		logWarningFormat("Unknown array %s. Returning bottom.", test); 
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}
 
 	ArrayFunction func = string_map_get(&gVariableHandler.mArrays, test);
@@ -1944,10 +1915,8 @@ static AssignmentReturnValue evaluateAssignmentInternal(DreamMugenAssignment* tA
 	assert(tAssignment != NULL);
 	assert(tAssignment->mData != NULL);
 
-
-	AssignmentReturnValue ret;
 	if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_OR) {
-		ret = evaluateOrAssignment(tAssignment, tPlayer);
+		return evaluateOrAssignment(tAssignment, tPlayer);
 	}
 	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_AND) {
 		return evaluateAndAssignment(tAssignment, tPlayer);
@@ -2034,13 +2003,9 @@ static AssignmentReturnValue evaluateAssignmentInternal(DreamMugenAssignment* tA
 		return evaluateStringAssignment(tAssignment);
 	}
 	else {
-		logError("Unidentified assignment type.");
-		logErrorInteger(tAssignment->mType);
-		abortSystem();
-		*ret.mValue = '\0';
+		logWarningFormat("Unidentified assignment type %d. Returning bottom.", tAssignment->mType);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}
-
-	return ret;
 }
 
 int evaluateDreamAssignment(DreamMugenAssignment * tAssignment, DreamPlayer* tPlayer)

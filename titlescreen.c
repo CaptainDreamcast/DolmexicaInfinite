@@ -254,7 +254,6 @@ static void loadTitleScreen() {
 	gData.mMenuBasePosition = gData.mHeader.mMenuPosition;
 	gData.mMenuTargetPosition = gData.mMenuBasePosition;
 	gData.mTopOption = 0;
-	gData.mSelected = 0,
 	setSelectedMenuElementActive();
 
 	loadCredits();

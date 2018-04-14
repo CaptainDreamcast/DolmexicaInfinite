@@ -595,9 +595,8 @@ static void setPlayerUnguarding(DreamPlayer* p) {
 		changePlayerState(p, 51);
 	}
 	else {
-		logError("Unknown player state.");
-		logErrorInteger(getPlayerStateType(p));
-		abortSystem();
+		logWarningFormat("Unknown player state %d. Defaulting to state 0.", getPlayerStateType(p));
+		changePlayerState(p, 0);
 	}
 }
 
@@ -883,9 +882,7 @@ static void setPlayerHitStates(DreamPlayer* p, DreamPlayer* tOtherPlayer) {
 			}
 		}
 		else {
-			logError("Unrecognized player state type.");
-			logErrorInteger(getPlayerStateType(p));
-			abortSystem();
+			logWarningFormat("Unrecognized player state type %d. Defaulting to state 5000.", getPlayerStateType(p));
 			nextState = 5000;
 		}
 
@@ -915,9 +912,7 @@ static int checkPlayerHitGuardFlagsAndReturnIfGuardable(DreamPlayer* tPlayer, ch
 		return strchr(test, 'a') != NULL;
 	}
 	else {
-		logError("Unrecognized player type.");
-		logErrorInteger(type);
-		abortSystem();
+		logWarningFormat("Unrecognized player type %d. Defaulting to unguardable.", type);
 		return 0;
 	}
 
@@ -1037,9 +1032,8 @@ static void checkSingleFlag2InHitDefAttributeSlot(HitDefAttributeFlag2Caller* tC
 		if (tFlag[0] != 'h') return;
 	}
 	else {
-		logError("Unrecognized attack type.");
-		logErrorInteger(tCaller->mType);
-		abortSystem();
+		logWarningFormat("Unrecognized attack class %d. Defaulting to not found.", tCaller->mClass);
+		return;
 	}
 
 	if (tCaller->mType == MUGEN_ATTACK_TYPE_ATTACK) {
@@ -1052,9 +1046,8 @@ static void checkSingleFlag2InHitDefAttributeSlot(HitDefAttributeFlag2Caller* tC
 		if (tFlag[1] != 't') return;
 	}
 	else {
-		logError("Unrecognized attack type.");
-		logErrorInteger(tCaller->mType);
-		abortSystem();
+		logWarningFormat("Unrecognized attack type %d. Defaulting to not found.", tCaller->mType);
+		return;
 	}
 
 	tCaller->mFound = 1;
@@ -1075,9 +1068,7 @@ static int checkSingleNoHitDefSlot(DreamHitDefAttributeSlot* tSlot, DreamPlayer*
 		if (strchr(tSlot->mFlag1, 'a') != NULL) return tSlot->mIsHitBy;
 	}
 	else {
-		logError("Invalid hitdef type.");
-		logErrorInteger(type);
-		abortSystem();
+		logWarningFormat("Invalid hitdef type %d. Defaulting to not not hit.", type);
 		return 0;
 	}
 
@@ -1278,9 +1269,8 @@ void setPlayerPhysics(DreamPlayer* p, DreamMugenStatePhysics tNewPhysics)
 		}
 	}
 	else {
-		logError("Unrecognized physics state.");
-		logErrorInteger(tNewPhysics);
-		abortSystem();
+		logWarningFormat("Unrecognized physics state %d. Defaulting to unchanged.", tNewPhysics);
+		return;
 	}
 
 	p->mStatePhysics = tNewPhysics;

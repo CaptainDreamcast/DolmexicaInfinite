@@ -56,11 +56,9 @@ static void handleSingleDefault(void* tCaller, void* tData) {
 		setDefaultInteger(&gCommandReader.mDefaultBufferTime, element);
 	}
 	else {
-		logError("Unable to parse default state.");
-		logErrorString(element->mName);
-		abortSystem();
+		logWarningFormat("Unable to parse default state %s.", element->mName);
 	}
-	
+
 }
 
 static void handleDefaults(MugenDefScriptGroup* tGroup) {
@@ -163,10 +161,8 @@ static DreamMugenCommandInputStepTarget extractTargetFromInputStep(char* tInputS
 	else if (mask == ((1 << 2) | (1 << 11))) ret = MUGEN_COMMAND_INPUT_STEP_TARGET_MULTI_FORWARD;
 	else if (mask == ((1 << 3) | (1 << 11))) ret = MUGEN_COMMAND_INPUT_STEP_TARGET_MULTI_BACKWARD;
 	else {
-		logError("Unable to determine target.");
+		logWarningFormat("Unable to determine target %s. Defaulting to invalid input.", tInputStep);
 		printf("%X\n", mask);
-		logErrorString(tInputStep);
-		abortSystem();
 		ret = -1;
 	}
 
@@ -279,9 +275,7 @@ static void handleCommandInputEntry(CommandCaller* tCaller, MugenDefScriptGroupE
 		handleCommandInputEntryAsString(tCaller, tElement);
 	}
 	else {
-		logError("Unable to parse input entry.");
-		logErrorString(tElement->mName);
-		abortSystem();
+		logWarningFormat("Unable to parse input entry %s.", tElement->mName);
 	}
 }
 
@@ -314,9 +308,7 @@ static void handleSingleCommandEntry(void* tCaller, void* tData) {
 		handleCommandTimeEntry(&command->mInput.mBufferTime, element);
 	}
 	else {
-		logError("Unable to determine type.");
-		logErrorString(element->mName);
-		abortSystem();
+		logWarningFormat("Unable to determine type %s.", element->mName);
 	}
 }
 
@@ -382,9 +374,7 @@ static void loadMugenCommandsFromDefScript(DreamMugenCommands* tCommands, MugenD
 			handleDefaults(current);
 		}
 		else {
-			logError("Unrecognized type.");
-			logErrorString(current->mName);
-			abortSystem();
+			logWarningFormat("Unrecognized type %s.", current->mName);
 		}
 
 		current = current->mNext;
