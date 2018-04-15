@@ -67,7 +67,7 @@
  ;Insert your characters below.
 
 kfm, stages/kfm.def
-kfm2, stages/kfm.def
+kfm2, stages/kfm.def ; OK
 ;kfm, stages/kfm.def
 ;kfm, stages/kfm.def
 ;kagerou, stages/kfm.def
@@ -78,12 +78,13 @@ kfm2, stages/kfm.def
 ;Beat, stages/kfm.def
 ;Sonicth, stages/kfm.def
 ;chipp, stages/kfm.def
-SOL, stages/kfm.def
+SOL, stages/kfm.def ; OK
 ;SOL2, stages/kfm.def
 ;ky, stages/kfm.def
 baldhead, stages/kfm.def
 MAY_X, stages/kfm.def
 may, stages/kfm.def
+Chipp, stages/kfm.def
 
 ;-----------------------
 [ExtraStages]
@@ -94,6 +95,12 @@ stages/kfm.def
 stages/stage0.def
 stages/2hu/ToHo-Remilia.def
 stages/2hu/ToHo-Yukari.def
+stages/2hu/ToHo-Reimu_Daytime.def
+stages/2hu/ToHo-Marisa_Daytime.def
+stages/2hu/ToHo-Sakuya_Daytime.def
+stages/2hu/ToHo-Alice_Daytime.def
+stages/2hu/ToHo-Youmu_Daytime.def
+stages/2hu/ToHo-Suika.def
 
 ;---------------------------------------------------------------------
 [Options]

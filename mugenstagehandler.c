@@ -240,14 +240,14 @@ void resetDreamMugenStageHandlerCameraPosition()
 	
 }
 
-static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, double tMinCam, double tMaxCam, int tScreenSize) {
+static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, double tMinCam, double tMaxCam, double tDeltaScale, int tScreenSize) {
 	if (!tTile) {
 		*tStart = 0;
 		*tAmount = 1;
 	}
 	else if (tTile == 1) {
 		*tStart = (int)tMinCam - (tScreenSize / 2);
-		int length = (int)(tMaxCam - tMinCam) + tScreenSize;
+		int length = (int)(((tMaxCam - tMinCam) + tScreenSize)*tDeltaScale);
 		*tAmount = length / tSize + 1;
 	}
 	else {
@@ -278,9 +278,11 @@ static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement
 	assert(!tTileSpacing.x); // TODO
 	assert(!tTileSpacing.y); // TODO
 
+	double deltaScaleX = e->mDelta.x ? (1 / e->mDelta.x) : 1;
+	double deltaScaleY = e->mDelta.y ? (1 / e->mDelta.y) : 1;
 	double cameraToElementScale = e->mCoordinates.y / getCameraCoordP();
-	handleSingleTile(tTile.x, &startX, &amountX, size.x, gData.mCameraRange.mTopLeft.x*cameraToElementScale, gData.mCameraRange.mBottomRight.x*cameraToElementScale, e->mCoordinates.x);
-	handleSingleTile(tTile.y, &startY, &amountY, size.y, gData.mCameraRange.mTopLeft.y*cameraToElementScale, gData.mCameraRange.mBottomRight.y*cameraToElementScale, e->mCoordinates.y);
+	handleSingleTile(tTile.x, &startX, &amountX, size.x, gData.mCameraRange.mTopLeft.x*cameraToElementScale, gData.mCameraRange.mBottomRight.x*cameraToElementScale, deltaScaleX, e->mCoordinates.x);
+	handleSingleTile(tTile.y, &startY, &amountY, size.y, gData.mCameraRange.mTopLeft.y*cameraToElementScale, gData.mCameraRange.mBottomRight.y*cameraToElementScale, deltaScaleY, e->mCoordinates.y);
 
 	Vector3D offset = makePosition(0, startY, 0);
 	int j;

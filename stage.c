@@ -302,7 +302,7 @@ static void loadBackgroundElement(MugenDefScript* s, char* tName, int i) {
 
 	char type[100];
 	getMugenDefStringOrDefault(type, s, tName, "type", "normal");
-
+	turnStringLowercase(type);
 
 	e->mSpriteNo = getMugenDefVectorIOrDefault(s, tName, "spriteno", makeVector3DI(0, 0, 0));
 	e->mLayerNo = getMugenDefIntegerOrDefault(s, tName, "layerno", 0);
