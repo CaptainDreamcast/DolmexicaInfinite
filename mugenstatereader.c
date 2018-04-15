@@ -25,7 +25,7 @@ static MugenDefScriptGroup* getFirstStateDefGroup(MugenDefScript* tScript) {
 		cur = cur->mNext;
 	}
 
-	logWarningFormat("Unable to find first state definition. Returning NULL.");
+	logWarning("Unable to find first state definition. Returning NULL.");
 
 	return NULL;
 }

@@ -670,7 +670,7 @@ static void parseVarSetController(DreamMugenStateController* tController, MugenD
 	}
 
 	if (vector_size(&e->mVarSets) != 1) {
-		logWarningFormat("Unable to parse VarSetController. Missing elements. Defaulting to Null controller.");
+		logWarning("Unable to parse VarSetController. Missing elements. Defaulting to Null controller.");
 		delete_vector(&e->mVarSets);
 		freeMemory(e);
 		parseNullController(tController, MUGEN_STATE_CONTROLLER_TYPE_NULL);
@@ -1944,7 +1944,7 @@ static void handleHitDefinitionAffectTeam(DreamMugenAssignment* tAffectAssignmen
 	else if (*flag == 'e') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_ENEMY);
 	else if (*flag == 'f') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_FRIENDLY);
 	else {
-		logWarningFormat("Unable to parse hitdef affectteam %s. Set to enemy.");
+		logWarningFormat("Unable to parse hitdef affectteam %s. Set to enemy.", flag);
 		setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_ENEMY);
 	}
 

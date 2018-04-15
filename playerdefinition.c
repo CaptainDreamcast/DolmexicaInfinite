@@ -2943,10 +2943,6 @@ static void movePlayerHelpersToParent(DreamPlayer* p) {
 	delete_list(&p->mHelpers);
 }
 
-static void removeHelperFromPlayer(DreamPlayer* p, DreamPlayer* tHelper) {
-	list_remove(&p->mHelpers, tHelper->mHelperIDInParent);
-}
-
 static void removePlayerBindingCB(void* tCaller, void* tData) {
 	(void)tCaller;
 	DreamPlayer* p = tData;
