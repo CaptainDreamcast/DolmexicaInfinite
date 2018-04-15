@@ -67,12 +67,12 @@
  ;Insert your characters below.
 
 kfm, stages/kfm.def
-kfm, stages/kfm.def
-kfm, stages/kfm.def
+kfm2, stages/kfm.def
+;kfm, stages/kfm.def
+;kfm, stages/kfm.def
 ;kagerou, stages/kfm.def
 ;Mima_RP, stages/kfm.def
 ;BoxingChen, stages/kfm.def
-;SOL, stages/kfm.def
 ;rockFIX, stages/kfm.def
 ;DongHwan, stages/kfm.def
 ;Beat, stages/kfm.def
@@ -80,6 +80,10 @@ kfm, stages/kfm.def
 ;chipp, stages/kfm.def
 SOL, stages/kfm.def
 ;SOL2, stages/kfm.def
+;ky, stages/kfm.def
+baldhead, stages/kfm.def
+MAY_X, stages/kfm.def
+may, stages/kfm.def
 
 ;-----------------------
 [ExtraStages]

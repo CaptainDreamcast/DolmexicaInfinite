@@ -28,6 +28,7 @@
 #include "ai.h"
 #include "collision.h"
 #include "mugensound.h"
+#include "mugenanimationutilities.h"
 
 // TODO: move to proper place
 #define PLAYER_Z 10
@@ -135,7 +136,6 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	getMugenDefStringOrDefault(file, tScript, "Files", name, "");
 	int hasPalettePath = strcmp("", file);
 	sprintf(palettePath, "%s%s", path, file);
-
 	getMugenDefStringOrDefault(file, tScript, "Files", "sprite", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
@@ -221,6 +221,7 @@ static void resetHelperState(DreamPlayer* p) {
 	p->mBoundHelpers = new_list();
 
 	p->mComboCounter = 0;
+	p->mIsDestroyed = 0;
 
 	int i;
 	for (i = 0; i < 2; i++) {
@@ -310,7 +311,7 @@ void loadPlayers() {
 	for (i = 0; i < 2; i++) {
 		gData.mPlayers[i].mRoot = &gData.mPlayers[i];
 		gData.mPlayers[i].mOtherPlayer = &gData.mPlayers[i ^ 1];
-		gData.mPlayers[i].mPreferredPalette = 0; // TODO
+		gData.mPlayers[i].mPreferredPalette = i; // TODO
 		gData.mPlayers[i].mRootID = i;
 		gData.mPlayers[i].mControllerID = i; // TODO: remove
 		loadSinglePlayerFromMugenDefinition(&gData.mPlayers[i]);
@@ -622,12 +623,12 @@ static void updateGuardingFlags(DreamPlayer* p) {
 	p->mUnguardableFlag = 0;
 }
 
-static void updateSinglePlayer(DreamPlayer* p);
+static int updateSinglePlayer(DreamPlayer* p);
 
-static void updateSinglePlayerCB(void* tCaller, void* tData) {
+static int updateSinglePlayerCB(void* tCaller, void* tData) {
 	(void)tCaller;
 	DreamPlayer* p = tData;
-	updateSinglePlayer(p);
+	return updateSinglePlayer(p);
 }
 
 static void updateSingleHitAttributeSlot(DreamHitDefAttributeSlot* tSlot) {
@@ -770,7 +771,16 @@ static void updatePlayerTrainingMode(DreamPlayer* p) {
 	addPlayerPower(p, 50);
 }
 
-static void updateSinglePlayer(DreamPlayer* p) {
+static void updatePlayerDestruction(DreamPlayer* p) {
+	freeMemory(p);
+}
+
+static int updateSinglePlayer(DreamPlayer* p) {
+	if (p->mIsDestroyed) {
+		updatePlayerDestruction(p);
+		return 1;
+	}
+
 	updateWalking(p);
 	updateAirJumping(p);
 	updateJumpFlank(p);
@@ -795,8 +805,9 @@ static void updateSinglePlayer(DreamPlayer* p) {
 	updateReflection(p);
 	updatePlayerTrainingMode(p);
 
-	list_map(&p->mHelpers, updateSinglePlayerCB, NULL);
+	list_remove_predicate(&p->mHelpers, updateSinglePlayerCB, NULL);
 	int_map_map(&p->mProjectiles, updateSingleProjectileCB, NULL);
+	return 0;
 }
 
 void updatePlayers()
@@ -1791,6 +1802,11 @@ int isPlayerAlive(DreamPlayer* p)
 	return p->mIsAlive;
 }
 
+int isPlayerDestroyed(DreamPlayer * p)
+{
+	return p->mIsDestroyed;
+}
+
 void setPlayerVelocityX(DreamPlayer* p, double x, int tCoordinateP)
 {
 	double scale = getPlayerCoordinateP(p) / tCoordinateP;
@@ -1991,9 +2007,9 @@ void setPlayerNoAutoTurnFlag(DreamPlayer* p)
 
 void setPlayerInvisibleFlag(DreamPlayer * p)
 {
-	setMugenAnimationInvisible(p->mAnimationID); // TODO: one frame only
-	setMugenAnimationInvisible(p->mShadow.mAnimationID);
-	setMugenAnimationInvisible(p->mReflection.mAnimationID);
+	setMugenAnimationInvisibleForOneFrame(p->mAnimationID); 
+	setMugenAnimationInvisibleForOneFrame(p->mShadow.mAnimationID);
+	setMugenAnimationInvisibleForOneFrame(p->mReflection.mAnimationID);
 }
 
 void setPlayerNoLandFlag(DreamPlayer* p)
@@ -2943,13 +2959,12 @@ static void removePlayerBoundHelpers(DreamPlayer* p) {
 }
 
 static void destroyGeneralPlayer(DreamPlayer* p) {
-	removeDreamRegisteredStateMachine(p->mStateMachineID);
 	removeMugenAnimation(p->mAnimationID);
 	removeMugenAnimation(p->mShadow.mAnimationID);
 	removeMugenAnimation(p->mReflection.mAnimationID);
 	removeFromPhysicsHandler(p->mPhysicsID);
 	removePlayerHitData(p);
-	freeMemory(p);
+	p->mIsDestroyed = 1;
 }
 
 void destroyPlayer(DreamPlayer * p) // TODO: rename
@@ -2960,7 +2975,6 @@ void destroyPlayer(DreamPlayer * p) // TODO: rename
 
 	removePlayerBoundHelpers(p);
 	movePlayerHelpersToParent(p);
-	removeHelperFromPlayer(p->mParent, p);
 	destroyGeneralPlayer(p);
 }
 
@@ -3016,7 +3030,9 @@ void removeProjectile(DreamPlayer* p) {
 	assert(p->mProjectileID != -1);
 	removeAdditionalProjectileData(p);
 	removeProjectileFromPlayer(p);
+	removeDreamRegisteredStateMachine(p->mStateMachineID);
 	destroyGeneralPlayer(p);
+	freeMemory(p);
 }
 
 int getPlayerControlTime(DreamPlayer * p)

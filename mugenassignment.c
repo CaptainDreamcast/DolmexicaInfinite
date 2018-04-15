@@ -399,7 +399,10 @@ static DreamMugenAssignment* parseMugenExponentiationFromString(char* tText) {
 }
 
 static int isAddition(char* tText) {
-	return isOnHighestLevel(tText, "+", NULL);
+	int plusPosition;
+	if(!isOnHighestLevel(tText, "+", &plusPosition)) return 0;
+	int len = strlen(tText);
+	return plusPosition < len -1;
 }
 
 static DreamMugenAssignment* parseMugenAdditionFromString(char* tText) {
@@ -607,15 +610,19 @@ static int isVectorAssignment(char* tText) {
 }
 
 static int isVectorTarget(char* tText) {
-	if (doDreamAssignmentStringsBeginsWithPattern("target", tText)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("p1", tText)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("p2", tText)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("helper", tText)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("enemy", tText)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("enemynear", tText)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("root", tText)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("playerid", tText)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("parent", tText)) return 1;
+	char text[200];
+	strcpy(text, tText);
+	turnStringLowercase(text);
+
+	if (doDreamAssignmentStringsBeginsWithPattern("target", text)) return 1;
+	if (doDreamAssignmentStringsBeginsWithPattern("p1", text)) return 1;
+	if (doDreamAssignmentStringsBeginsWithPattern("p2", text)) return 1;
+	if (doDreamAssignmentStringsBeginsWithPattern("helper", text)) return 1;
+	if (doDreamAssignmentStringsBeginsWithPattern("enemy", text)) return 1;
+	if (doDreamAssignmentStringsBeginsWithPattern("enemynear", text)) return 1;
+	if (doDreamAssignmentStringsBeginsWithPattern("root", text)) return 1;
+	if (doDreamAssignmentStringsBeginsWithPattern("playerid", text)) return 1;
+	if (doDreamAssignmentStringsBeginsWithPattern("parent", text)) return 1;
 
 	// TODO: properly
 	return 0;
@@ -769,6 +776,7 @@ static void sanitizeTextBack(char* tText) {
 	int i;
 	for (i = n - 1; i >= 0; i--) {
 		if (tText[i] == ' ') tText[i] = '\0';
+		else if (tText[i] == ',') tText[i] = '\0'; // TODO: think about trailing commas
 		else return;
 	}
 }

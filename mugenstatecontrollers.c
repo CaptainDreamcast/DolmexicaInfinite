@@ -557,6 +557,19 @@ static void parseMakeDustController(DreamMugenStateController* tController, Muge
 	tController->mData = e;
 }
 
+typedef struct {
+	int mDummy;
+} NullController;
+
+
+static void parseNullController(DreamMugenStateController* tController, DreamMugenStateControllerType tType) {
+	NullController* e = allocMemory(sizeof(NullController));
+	e->mDummy = 0;
+
+	tController->mType = tType;
+	tController->mData = e;
+}
+
 typedef enum {
 	VAR_SET_TYPE_SYSTEM,
 	VAR_SET_TYPE_SYSTEM_FLOAT,
@@ -636,12 +649,11 @@ static void loadSingleOriginalVarSetController(Vector* tDst, MugenDefScriptGroup
 }
 
 static void parseVarSetController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
-	VarSetController* e = allocMemory(sizeof(VarSetController));
-	e->mVarSets = new_vector();
-
-
 	int isIntegerVersion = string_map_contains(&tGroup->mElements, "v");
 	int isFloatVersion = string_map_contains(&tGroup->mElements, "fv");
+
+	VarSetController* e = allocMemory(sizeof(VarSetController));
+	e->mVarSets = new_vector();
 
 	if (isIntegerVersion) {
 		loadSingleOriginalVarSetController(&e->mVarSets, tGroup, string_map_get(&tGroup->mElements, "v"), VAR_SET_TYPE_INTEGER);
@@ -657,7 +669,13 @@ static void parseVarSetController(DreamMugenStateController* tController, MugenD
 		string_map_map(&tGroup->mElements, parseSingleVarSetControllerEntry, &caller);
 	}
 
-	assert(vector_size(&e->mVarSets) == 1);
+	if (vector_size(&e->mVarSets) != 1) {
+		logWarningFormat("Unable to parse VarSetController. Missing elements. Defaulting to Null controller.");
+		delete_vector(&e->mVarSets);
+		freeMemory(e);
+		parseNullController(tController, MUGEN_STATE_CONTROLLER_TYPE_NULL);
+		return;
+	}
 
 	tController->mType = tType;
 	tController->mData = e;
@@ -688,19 +706,6 @@ static void parseVarRangeSetController(DreamMugenStateController* tController, M
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("last", tGroup, &e->mLast, "");
  
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANGE;
-	tController->mData = e;
-}
-
-typedef struct {
-	int mDummy;
-} NullController;
-
-
-static void parseNullController(DreamMugenStateController* tController, DreamMugenStateControllerType tType) {
-	NullController* e = allocMemory(sizeof(NullController));
-	e->mDummy = 0;
-
-	tController->mType = tType;
 	tController->mData = e;
 }
 
@@ -3223,26 +3228,29 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 	
 	handleHelperFacing(e->mFacing, tPlayer, helper);
 	handleHelperOneIntegerElement(e->mStateNumber, tPlayer, helper, changePlayerState, 0);	
-	handleHelperOneIntegerElement(e->mCanControl, tPlayer, helper, setPlayerHelperControl, 0);
-	// TODO: own palette
-	// TODO: supermovetime
-	// TODO: pausemovetime
 
-	handleHelperOneFloatElement(e->mSizeScaleX, tPlayer, helper, setPlayerScaleX, getPlayerScaleX(tPlayer));
-	handleHelperOneFloatElement(e->mSizeScaleY, tPlayer, helper, setPlayerScaleY, getPlayerScaleY(tPlayer));
-	handleHelperOneIntegerElement(e->mSizeGroundBack, tPlayer, helper, setPlayerGroundSizeBack, getPlayerGroundSizeBack(tPlayer));
-	handleHelperOneIntegerElement(e->mSizeGroundFront, tPlayer, helper, setPlayerGroundSizeFront, getPlayerGroundSizeFront(tPlayer));
-	handleHelperOneIntegerElement(e->mSizeAirBack, tPlayer, helper, setPlayerAirSizeBack, getPlayerAirSizeBack(tPlayer));
-	handleHelperOneIntegerElement(e->mSizeAirFront, tPlayer, helper, setPlayerAirSizeFront, getPlayerAirSizeFront(tPlayer));
-	handleHelperOneIntegerElement(e->mSizeHeight, tPlayer, helper, setPlayerHeight, getPlayerHeight(tPlayer));
+	if (!isPlayerDestroyed(helper)) { // TODO: fix
+		handleHelperOneIntegerElement(e->mCanControl, tPlayer, helper, setPlayerHelperControl, 0);
+		// TODO: own palette
+		// TODO: supermovetime
+		// TODO: pausemovetime
 
-	// TODO: scale projectiles
+		handleHelperOneFloatElement(e->mSizeScaleX, tPlayer, helper, setPlayerScaleX, getPlayerScaleX(tPlayer));
+		handleHelperOneFloatElement(e->mSizeScaleY, tPlayer, helper, setPlayerScaleY, getPlayerScaleY(tPlayer));
+		handleHelperOneIntegerElement(e->mSizeGroundBack, tPlayer, helper, setPlayerGroundSizeBack, getPlayerGroundSizeBack(tPlayer));
+		handleHelperOneIntegerElement(e->mSizeGroundFront, tPlayer, helper, setPlayerGroundSizeFront, getPlayerGroundSizeFront(tPlayer));
+		handleHelperOneIntegerElement(e->mSizeAirBack, tPlayer, helper, setPlayerAirSizeBack, getPlayerAirSizeBack(tPlayer));
+		handleHelperOneIntegerElement(e->mSizeAirFront, tPlayer, helper, setPlayerAirSizeFront, getPlayerAirSizeFront(tPlayer));
+		handleHelperOneIntegerElement(e->mSizeHeight, tPlayer, helper, setPlayerHeight, getPlayerHeight(tPlayer));
 
-	handleHelperTwoFloatElements(e->mSizeHeadPosition, tPlayer, helper, setPlayerHeadPosition, getPlayerHeadPositionX(tPlayer), getPlayerHeadPositionY(tPlayer));
-	handleHelperTwoFloatElements(e->mSizeMiddlePosition, tPlayer, helper, setPlayerMiddlePosition, getPlayerMiddlePositionX(tPlayer), getPlayerMiddlePositionY(tPlayer));
-	handleHelperOneIntegerElement(e->mSizeShadowOffset, tPlayer, helper, setPlayerShadowOffset, getPlayerShadowOffset(tPlayer));
+		// TODO: scale projectiles
 
-	setPlayerPosition(helper, position, getPlayerCoordinateP(helper));
+		handleHelperTwoFloatElements(e->mSizeHeadPosition, tPlayer, helper, setPlayerHeadPosition, getPlayerHeadPositionX(tPlayer), getPlayerHeadPositionY(tPlayer));
+		handleHelperTwoFloatElements(e->mSizeMiddlePosition, tPlayer, helper, setPlayerMiddlePosition, getPlayerMiddlePositionX(tPlayer), getPlayerMiddlePositionY(tPlayer));
+		handleHelperOneIntegerElement(e->mSizeShadowOffset, tPlayer, helper, setPlayerShadowOffset, getPlayerShadowOffset(tPlayer));
+
+		setPlayerPosition(helper, position, getPlayerCoordinateP(helper));
+	} 
 
 	return 0;
 }
@@ -3250,7 +3258,7 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 static int handleDestroySelf(DreamPlayer* tPlayer) {
 	destroyPlayer(tPlayer);
 
-	return 0;
+	return 1;
 }
 
 static int handleAddingLife(DreamMugenStateController* tController, DreamPlayer* tPlayer) {

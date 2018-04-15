@@ -179,6 +179,7 @@ typedef struct Player_t{
 	DreamPlayerShadow mShadow;
 	DreamPlayerReflection mReflection;
 
+	int mIsDestroyed;
 } DreamPlayer;
 
 void loadPlayers();
@@ -311,6 +312,7 @@ double getPlayerAirJumpVelocityY(DreamPlayer* p);
 
 
 int isPlayerAlive(DreamPlayer* p);
+int isPlayerDestroyed(DreamPlayer* p);
 
 void setPlayerVelocityX(DreamPlayer* p, double x, int tCoordinateP);
 void setPlayerVelocityY(DreamPlayer* p, double y, int tCoordinateP);

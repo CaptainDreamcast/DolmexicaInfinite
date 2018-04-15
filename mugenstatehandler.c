@@ -3,6 +3,7 @@
 #include <assert.h>
 
 #include <prism/datastructures.h>
+#include <prism/system.h>
 
 #include "playerdefinition.h"
 #include "pausecontrollers.h"
@@ -80,6 +81,7 @@ static DreamMugenStates* getCurrentStateMachineStates(RegisteredState* tRegister
 }
 
 static void updateSingleState(RegisteredState* tRegisteredState, int tState, DreamMugenStates* tStates) {
+	if (isPlayerDestroyed(tRegisteredState->mPlayer)) return;
 
 	int isEvaluating = 1;
 	while (isEvaluating) {
@@ -100,8 +102,8 @@ static void updateSingleState(RegisteredState* tRegisteredState, int tState, Dre
 	}
 }
 
-static void updateSingleStateMachineByReference(RegisteredState* tRegisteredState) {
-	if (tRegisteredState->mIsPaused) return;
+static int updateSingleStateMachineByReference(RegisteredState* tRegisteredState) {
+	if (tRegisteredState->mIsPaused) return 0;
 
 	DreamMugenStates* ownStates = tRegisteredState->mStates;
 	DreamMugenStates* activeStates = getCurrentStateMachineStates(tRegisteredState);
@@ -117,17 +119,19 @@ static void updateSingleStateMachineByReference(RegisteredState* tRegisteredStat
 		updateSingleState(tRegisteredState, -1, ownStates);
 	}
 	updateSingleState(tRegisteredState, tRegisteredState->mState, activeStates);
+
+	return isPlayerDestroyed(tRegisteredState->mPlayer);
 }
 
-static void updateSingleStateMachine(void* tCaller, void* tData) {
+static int updateSingleStateMachine(void* tCaller, void* tData) {
 	(void)tCaller;
 	RegisteredState* registeredState = tData;
-	updateSingleStateMachineByReference(registeredState);
+	return updateSingleStateMachineByReference(registeredState);
 }
 
 static void updateStateHandler(void* tData) {
 	(void)tData;
-	int_map_map(&gData.mRegisteredStates, updateSingleStateMachine, NULL);
+	int_map_remove_predicate(&gData.mRegisteredStates, updateSingleStateMachine, NULL);
 }
 
 ActorBlueprint DreamMugenStateHandler = {
