@@ -251,7 +251,7 @@ static void loadPlayerState(DreamPlayer* p) {
 	p->mProjectileID = -1;
 	p->mProjectileDataID = -1;
 
-	p->mPower = 0; 
+	p->mPower = 3000; 
 	
 	p->mIsBoundToScreen = 1;
 }
@@ -699,11 +699,11 @@ static void updateStageBorder(DreamPlayer* p) {
 	int rx = getDreamStageRightEdgeMinimumPlayerDistance(getPlayerCoordinateP(p));
 	double x = getPlayerPositionX(p, getPlayerCoordinateP(p));
 
-	if (x < left + lx) {
-		setPlayerPositionX(p, left + lx, getPlayerCoordinateP(p));
+	if (x < left) {
+		setPlayerPositionX(p, left, getPlayerCoordinateP(p));
 	}
-	else if (x > right - rx) {
-		setPlayerPositionX(p, right-rx, getPlayerCoordinateP(p));
+	else if (x > right) {
+		setPlayerPositionX(p, right, getPlayerCoordinateP(p));
 	}
 }
 
@@ -1250,8 +1250,7 @@ void setPlayerPhysics(DreamPlayer* p, DreamMugenStatePhysics tNewPhysics)
 		Position* pos = getHandledPhysicsPositionReference(p->mPhysicsID);
 		Velocity* vel = getHandledPhysicsVelocityReference(p->mPhysicsID);
 		Acceleration* acc = getHandledPhysicsAccelerationReference(p->mPhysicsID);
-
-		pos->y = 0;
+		
 		vel->y = 0;
 		acc->y = 0;
 	}
@@ -2398,21 +2397,21 @@ double getPlayerFrontAxisDistanceToScreen(DreamPlayer* p)
 	double x = getPlayerPositionX(p, getPlayerCoordinateP(p));
 	double screenX = getPlayerScreenEdgeInFrontX(p);
 
-	return fabs(screenX - x);
+	return screenX - x;
 }
 
 double getPlayerBackAxisDistanceToScreen(DreamPlayer* p)
 {
 	double x = getPlayerPositionX(p, getPlayerCoordinateP(p));
-	double screenX = getPlayerScreenEdgeInBackX(p);
+	double screenX = getDreamCameraPositionX(getPlayerCoordinateP(p));
 
-	return fabs(screenX - x);
+	return x - screenX;
 }
 
 double getPlayerFrontBodyDistanceToScreen(DreamPlayer* p)
 {
 	double x = getPlayerFrontX(p);
-	double screenX = getPlayerScreenEdgeInFrontX(p);
+	double screenX = getPlayerScreenEdgeInBackX(p);
 
 	return fabs(screenX - x);
 }
@@ -2443,16 +2442,16 @@ double getPlayerScreenEdgeInFrontX(DreamPlayer* p)
 {
 	double x = getDreamCameraPositionX(getPlayerCoordinateP(p));
 
-	if (p->mFaceDirection == FACE_DIRECTION_RIGHT) return x + p->mHeader.mLocalCoordinates.x / 2;
-	else return  x - p->mHeader.mLocalCoordinates.x / 2;
+	if (p->mFaceDirection == FACE_DIRECTION_RIGHT) return x + p->mHeader.mLocalCoordinates.x;
+	else return  x;
 }
 
 double getPlayerScreenEdgeInBackX(DreamPlayer* p)
 {
 	double x = getDreamCameraPositionX(getPlayerCoordinateP(p));
 
-	if (p->mFaceDirection == FACE_DIRECTION_RIGHT) return x - p->mHeader.mLocalCoordinates.x / 2;
-	else return  x + p->mHeader.mLocalCoordinates.x / 2;
+	if (p->mFaceDirection == FACE_DIRECTION_RIGHT) return x;
+	else return  x + p->mHeader.mLocalCoordinates.x;
 }
 
 double getPlayerDistanceToFrontOfOtherPlayerX(DreamPlayer* p)
@@ -2733,7 +2732,7 @@ void setPlayerHuman(int i)
 void setPlayerArtificial(int i)
 {
 	DreamPlayer* p = getRootPlayer(i);
-	p->mAILevel = 0; // TODO: properly
+	p->mAILevel = 8; // TODO: properly
 }
 
 int getPlayerAILevel(DreamPlayer* p)

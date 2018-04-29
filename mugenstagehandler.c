@@ -292,7 +292,7 @@ static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement
 		for (i = 0; i < amountX; i++) {
 			addSingleMugenStageHandlerBackgroundElementTile(e, tSprites, tBlendType, tConstraintRectangle, offset);
 			offset.x += size.x;
-			offset.z += 0.01;
+			offset.z += 0.001;
 		}
 		offset.y += size.y;
 	}

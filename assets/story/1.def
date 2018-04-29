@@ -1,0 +1,96 @@
+[Info]
+version = "Dolmexica"
+name = "Scene 1"
+stage = stages/2hu/ToHo-Reimu_Daytime.def
+spr = "1.sff"
+anim = "1.air"
+
+[Statedef 0]
+
+[State 0, 1]
+type = CreateAnim
+trigger1 = time = 0
+id = 1
+anim = 100
+loop = 1
+pos = -80,208
+
+[State 0, 1]
+type = CreateAnim
+trigger1 = time = 0
+id = 2
+anim = 200
+loop = 1
+pos = 320+80,208
+
+[State 0, 1]
+type = AnimSetFacing
+trigger1 = time = 0
+id = 2
+facing = -1
+
+[State 0, 2]
+type = FadeIn
+trigger1 = time = 0
+duration = 20
+
+[State 0, 3]
+type = ChangeState
+trigger1 = time = 20
+value = 1
+
+[Statedef 1]
+
+[State 1, 2]
+type = ChangeAnim
+trigger1 = time =  0
+id = 1
+anim = 120
+
+[State 1, 2]
+type = animPosAdd
+trigger1 = time = [0,80]
+id = 1
+x = 2
+
+[State 1, 2]
+type = ChangeAnim
+trigger1 = time =  80
+id = 1
+anim = 100
+
+[State 1, 23]
+type = ChangeState
+trigger1 = time = 100
+value = 2
+
+
+[Statedef 2]
+
+[State 1, 1]
+type = ChangeAnim
+trigger1 = time = 0
+id = 1
+anim = 100
+
+[State 1, 2]
+type = CreateText
+trigger1 = time = 0
+pos = 20+46,20+8
+bg.spr = 3, 0
+bg.offset = -46,-8
+face.spr = 4,0
+face.offset = 9-46,8-8
+text = "REIMU: I LOVE BEING A LITTLE GIRL."
+font = 1,0,1
+width = 220
+nextstate = 3
+
+[Statedef 3]
+
+[State 2, 2]
+type = ChangeText
+trigger1 = time = 0
+text = "No, my name is Marisa, daze."
+face.spr = 4,1
+

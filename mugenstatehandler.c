@@ -81,7 +81,7 @@ static DreamMugenStates* getCurrentStateMachineStates(RegisteredState* tRegister
 }
 
 static void updateSingleState(RegisteredState* tRegisteredState, int tState, DreamMugenStates* tStates) {
-	if (isPlayerDestroyed(tRegisteredState->mPlayer)) return;
+	if (tRegisteredState->mPlayer && isPlayerDestroyed(tRegisteredState->mPlayer)) return;
 
 	int isEvaluating = 1;
 	while (isEvaluating) {
@@ -120,7 +120,7 @@ static int updateSingleStateMachineByReference(RegisteredState* tRegisteredState
 	}
 	updateSingleState(tRegisteredState, tRegisteredState->mState, activeStates);
 
-	return isPlayerDestroyed(tRegisteredState->mPlayer);
+	return tRegisteredState->mPlayer && isPlayerDestroyed(tRegisteredState->mPlayer);
 }
 
 static int updateSingleStateMachine(void* tCaller, void* tData) {
@@ -146,7 +146,7 @@ int registerDreamMugenStateMachine(DreamMugenStates * tStates, DreamPlayer* tPla
 	e->mIsUsingTemporaryOtherStateMachine = 0;
 	e->mPreviousState = 0;
 	e->mState = 0;
-	e->mTimeInState = 0;
+	e->mTimeInState = -1;
 	e->mPlayer = tPlayer;
 	e->mIsPaused = 0;
 	e->mIsInHelperMode = 0;
@@ -154,6 +154,15 @@ int registerDreamMugenStateMachine(DreamMugenStates * tStates, DreamPlayer* tPla
 	e->mIsDisabled = 0;
 
 	return int_map_push_back_owned(&gData.mRegisteredStates, e);
+}
+
+int registerDreamMugenStoryStateMachine(DreamMugenStates * tStates)
+{
+	int id = registerDreamMugenStateMachine(tStates, NULL);
+	setDreamRegisteredStateToHelperMode(id);
+	setDreamRegisteredStateDisableCommandState(id);
+
+	return id;
 }
 
 void removeDreamRegisteredStateMachine(int tID)
@@ -262,18 +271,21 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
 	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
-	resetPlayerMoveContactCounter(e->mPlayer);
 	e->mTimeInState = 0;
 
 	e->mPreviousState = e->mState;
 	e->mState = tNewState;
 
-	printf("Changing %d %d from state %d to %d\n", e->mPlayer->mRootID, e->mPlayer->mID, e->mPreviousState, e->mState);
-
 	DreamMugenStates* states = getCurrentStateMachineStates(e);
 	assert(int_map_contains(&states->mStates, e->mState));
+	
 	DreamMugenState* newState = int_map_get(&states->mStates, e->mState);
+	resetStateControllers(newState);
 
+	if (!e->mPlayer) return;
+	printf("Changing %d %d from state %d to %d\n", e->mPlayer->mRootID, e->mPlayer->mID, e->mPreviousState, e->mState);
+
+	resetPlayerMoveContactCounter(e->mPlayer);
 	setPlayerStateType(e->mPlayer, newState->mType);
 	setPlayerStateMoveType(e->mPlayer, newState->mMoveType);
 	setPlayerPhysics(e->mPlayer, newState->mPhysics);
@@ -313,7 +325,6 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 
 	setPlayerPositionUnfrozen(e->mPlayer); // TODO: check if correct
 
-	resetStateControllers(newState);
 }
 
 void changeDreamHandledStateMachineStateToOtherPlayerStateMachine(int tID, int tTemporaryID, int tNewState)

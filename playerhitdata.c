@@ -7,7 +7,7 @@
 #include <prism/system.h>
 
 #include "mugensound.h"
-
+#include "stage.h"
 
 typedef struct {
 	int mIsActive;
@@ -818,9 +818,14 @@ void setHitDataGuardDistance(DreamPlayer* tPlayer, int tDistance)
 
 double getActiveHitDataYAccel(DreamPlayer * tPlayer)
 {
-	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
-	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
-	return e->mVerticalAcceleration;
+	if (isActiveHitDataActive(tPlayer)) { // TODO: properly
+		assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+		PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+		return e->mVerticalAcceleration;
+	}
+	else {
+		return transformDreamCoordinates(0.7, 480, getPlayerCoordinateP(tPlayer));
+	}
 }
 
 double getHitDataYAccel(DreamPlayer* tPlayer)

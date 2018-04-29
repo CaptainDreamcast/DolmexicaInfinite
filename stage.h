@@ -57,3 +57,6 @@ Vector3D getDreamStageShadowColor();
 double getDreamStageShadowScaleY();
 Vector3D getDreamStageShadowFadeRange(int tCoordinateP);
 double getDreamStageReflectionTransparency();
+
+void setDreamStageNoAutomaticCameraMovement();
+void setDreamStageAutomaticCameraMovement();

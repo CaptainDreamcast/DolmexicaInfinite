@@ -234,10 +234,11 @@ void finalizeExplod(int tID)
 
 	e->mIsFacingRight = getPlayerIsFacingRight(e->mPlayer);
 	e->mPhysicsID = addToPhysicsHandler(getFinalPositionFromPositionType(e->mPositionType, e->mPosition, e->mPlayer));
-	
+
 	if (!e->mIsFacingRight) {
 		e->mVelocity.x = -e->mVelocity.x;
 		e->mAcceleration.x = -e->mAcceleration.x;
+		e->mIsFlippedHorizontally = !e->mIsFlippedHorizontally;
 	}
 	addAccelerationToHandledPhysics(e->mPhysicsID, e->mVelocity);
 
@@ -247,6 +248,8 @@ void finalizeExplod(int tID)
 	setMugenAnimationBasePosition(e->mAnimationID, getHandledPhysicsPositionReference(e->mPhysicsID));
 	setMugenAnimationCameraPositionReference(e->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationCallback(e->mAnimationID, explodAnimationFinishedCB, e);
+	setMugenAnimationFaceDirection(e->mAnimationID, !e->mIsFlippedHorizontally);
+	setMugenAnimationVerticalFaceDirection(e->mAnimationID, !e->mIsFlippedVertically);
 
 	e->mNow = 0;
 }

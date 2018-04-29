@@ -39,7 +39,7 @@ static void loadUtilityHandler(void* tData) {
 }
 
 static void updateSingleActiveAnimation(ActiveAnimation* e) {
-	if (e->mIsInvisible) {
+	if (e->mIsInvisible && isRegisteredMugenAnimation(e->mID)) {
 		setMugenAnimationVisibility(e->mID, 1);
 	}
 }
@@ -111,5 +111,4 @@ void setMugenTextInvisibleForOneFrame(int tID)
 {
 	setMugenTextVisibility(tID, 0);
 	addActiveText(tID, 1);
-
 }

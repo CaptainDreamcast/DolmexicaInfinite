@@ -10,3 +10,4 @@ DreamMugenStateController* parseDreamMugenStateControllerFromGroup(MugenDefScrip
 int handleDreamMugenStateControllerAndReturnWhetherStateChanged(DreamMugenStateController* tController, DreamPlayer* tPlayer);
 
 void setupDreamMugenStateControllerHandler();
+void setupDreamMugenStoryStateControllerHandler();

@@ -15,6 +15,8 @@
 #include "fightscreen.h"
 #include "playerdefinition.h"
 #include "warningscreen.h"
+#include "dolmexicastoryscreen.h"
+#include "stage.h"
 
 char romdisk_buffer[1];
 int romdisk_buffer_length;
@@ -66,13 +68,15 @@ int main(int argc, char** argv) {
 	if (framerateReturnType == FRAMERATE_SCREEN_RETURN_ABORT) {
 		exitGame();
 	}
-
+	
 	setMemoryHandlerCompressionActive();
 	initClipboardForGame();
-	setPlayerDefinitionPath(0, "assets/chars/kfm/kfm.def");
-	setPlayerDefinitionPath(1, "assets/chars/kfm/kfm.def");
+	setDreamStageMugenDefinition("assets/stages/kfm.def");
+	setPlayerDefinitionPath(0, "assets/chars/chipp/chipp.def");
+	setPlayerDefinitionPath(1, "assets/chars/chipp/chipp.def");
 	setPlayerHuman(0);
 	setPlayerArtificial(1);
+	setDolmexicaStoryScreenFile("assets/story/1.def");
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
 	startScreenHandling(&DreamTitleScreen);
 

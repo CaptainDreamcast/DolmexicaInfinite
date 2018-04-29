@@ -8,6 +8,7 @@
 extern ActorBlueprint DreamMugenStateHandler;
 
 int registerDreamMugenStateMachine(DreamMugenStates* tStates, DreamPlayer* tPlayer);
+int registerDreamMugenStoryStateMachine(DreamMugenStates* tStates);
 void removeDreamRegisteredStateMachine(int tID);
 int getDreamRegisteredStateState(int tID);
 int getDreamRegisteredStatePreviousState(int tID);

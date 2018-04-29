@@ -93,6 +93,10 @@ int registerDreamMugenCommands(DreamPlayer* tPlayer, DreamMugenCommands * tComma
 int isDreamCommandActive(int tID, char * tCommandName)
 {
 	RegisteredMugenCommand* e = vector_get(&gData.mRegisteredCommands, tID);
+	if (!string_map_contains(&e->tStates->mStates, tCommandName)) {
+		logWarningFormat("Querying nonexistant command name %s.", tCommandName);
+		return 0;
+	}
 	MugenCommandState* state = string_map_get(&e->tStates->mStates, tCommandName);
 	
 	return state->mIsActive;
@@ -389,7 +393,7 @@ static void addNewActiveMugenCommand(DreamMugenCommandInput* tInput, RegisteredM
 	if (!strcmp("FF", tName)) return;
 	if (!strcmp("BB", tName)) return;
 	if (strcmp("QCF_x", tName)) return;
-	printf("%d check %s\n", tRegisteredCommand->i, tName);
+	printf("%d check %s\n", tRegisteredCommand->mPlayer->mRootID, tName);
 	*/
 
 	ActiveMugenCommand* e = allocMemory(sizeof(ActiveMugenCommand));

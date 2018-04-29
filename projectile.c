@@ -93,10 +93,17 @@ static int updateProjectileScreenBoundAndReturnIfOver(Projectile* e) {
 	return 0;
 }
 
+static void updateProjectilePhysics(Projectile* e) {
+	addPlayerVelocityX(e->mPlayer, e->mAcceleration.x, getPlayerCoordinateP(e->mPlayer));
+	addPlayerVelocityY(e->mPlayer, e->mAcceleration.y, getPlayerCoordinateP(e->mPlayer));
+}
+
+
 static void updateSingleProjectile(void* tCaller, void* tData) {
 	(void)tCaller;
 	Projectile* e = tData;
-	
+
+	updateProjectilePhysics(e);
 	if (updateProjectileDurationAndReturnIfOver(e)) return;
 	if (updateProjectileScreenBoundAndReturnIfOver(e)) return;
 }

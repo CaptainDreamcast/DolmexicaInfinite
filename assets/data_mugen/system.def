@@ -66,14 +66,13 @@ vs.bgm.loop = 1
 [Title Info]
 fadein.time = 10
 fadeout.time = 10
-menu.pos = 80,138
+menu.pos = 159,158
 menu.item.font = 3,0,0
 menu.item.active.font = 3,5,0
 menu.item.spacing = 0, 13
 ; Names for each of the items in the menu. Names must be in quotes.
 ; Use "" to disable an item. If all are disabled, goes straight to demo mode
 ; (hold Esc to quit demos). *2001.11.14 NEW*
-menu.itemname.story = "STORY"
 menu.itemname.arcade = "ARCADE"
 menu.itemname.versus = "VS MODE"
 menu.itemname.teamarcade = ""
@@ -111,18 +110,26 @@ yscaledelta = 1
 tile  = 1,1
 velocity = -1
 
-[TitleBG 1] ;Scrolling background
-type  = anim
-actionno = 3
-layerno = 0
-start = 0,0
-tile  = 1,1
-velocity = -0.5, -0.5
+[TitleBG 1]
+type  = normal
+spriteno = 5, 2
+start = -160, 145
+trans = sub
 
 [TitleBG 2]
 type  = normal
-spriteno = 3, 0
-start = -160, 0
+spriteno = 5,0
+start = 0, 10
+tile = 1,2
+velocity = -1
+mask = 0
+
+[TitleBG 3]
+type  = normal
+spriteno = 0,0
+start = 0, 40
+mask = 1
+trans = add
 
 ;-------------------------------------------------------------------
 ;Character select definition
@@ -433,9 +440,3 @@ start = 0,0
 tile  = 1,1
 velocity = -1, -1
 
-
-[Begin Action 3]
-3,1, 0,0, 15
-3,4, 0,0, 15
-3,2, 0,0, 15
-3,3, 0,0, 15

@@ -4,6 +4,7 @@
 #include "playerdefinition.h"
 
 void setupDreamAssignmentEvaluator();
+void setupDreamStoryAssignmentEvaluator();
 
 int evaluateDreamAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer);
 double evaluateDreamAssignmentAndReturnAsFloat(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer);

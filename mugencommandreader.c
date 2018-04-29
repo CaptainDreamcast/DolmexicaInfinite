@@ -324,7 +324,6 @@ static void addEmptyCommandToCommands(DreamMugenCommands* tCommands, char* tName
 	e->mInputs = new_vector();
 
 	assert(!string_map_contains(&tCommands->mCommands, tName));
-
 	string_map_push_owned(&tCommands->mCommands, tName, e);
 }
 
@@ -359,6 +358,10 @@ static void handleStateDef(MugenDefScriptGroup** tCurrentGroup) {
 
 
 static void loadMugenCommandsFromDefScript(DreamMugenCommands* tCommands, MugenDefScript* tScript) {
+
+	gCommandReader.mDefaultTime = 15;
+	gCommandReader.mDefaultBufferTime = 1;
+
 	MugenDefScriptGroup* current = tScript->mFirstGroup;
 
 	while (current != NULL) {

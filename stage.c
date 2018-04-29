@@ -140,6 +140,7 @@ static struct {
 	MugenSpriteFile mSprites;
 	MugenAnimations mAnimations;
 
+	int mIsCameraManual;
 	char mDefinitionPath[1024];
 } gData;
 
@@ -405,6 +406,7 @@ static void loadStage(void* tData)
 
 	setStageCamera();
 	loadStageBackgroundElements(gData.mDefinitionPath, &s);
+	gData.mIsCameraManual = 0;
 
 	unloadMugenDefScript(s);
 }
@@ -446,6 +448,8 @@ static void updateCameraMovementY() {
 }
 
 static void updateCameraMovement() {
+	if (gData.mIsCameraManual) return;
+
 	updateCameraMovementX();
 	updateCameraMovementY();
 }
@@ -673,4 +677,14 @@ Vector3D getDreamStageShadowFadeRange(int tCoordinateP)
 double getDreamStageReflectionTransparency()
 {
 	return gData.mReflection.mIntensity / 256.0;
+}
+
+void setDreamStageNoAutomaticCameraMovement()
+{
+	gData.mIsCameraManual = 1;
+}
+
+void setDreamStageAutomaticCameraMovement()
+{
+	gData.mIsCameraManual = 0;
 }

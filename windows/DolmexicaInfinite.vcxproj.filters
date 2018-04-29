@@ -126,6 +126,9 @@
     <ClCompile Include="..\mugenanimationutilities.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\dolmexicastoryscreen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ai.h">
@@ -237,6 +240,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\mugenanimationutilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dolmexicastoryscreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

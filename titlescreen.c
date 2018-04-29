@@ -22,6 +22,7 @@
 #include "arcademode.h"
 #include "versusmode.h"
 #include "trainingmode.h"
+#include "fightscreen.h"
 
 typedef struct {
 	void(*mCB)();
@@ -56,6 +57,7 @@ typedef struct {
 static struct {
 	MugenDefScript mScript;
 	MugenSpriteFile mSprites;
+	MugenAnimations mAnimations;
 	MugenSounds mSounds;
 
 	MenuHeader mHeader;
@@ -136,6 +138,7 @@ static void loadMenuHeader() {
 }
 
 static void addMenuPoint(char* tVariableName, void(*tCB)()) {
+	if (!isMugenDefStringVariable(&gData.mScript, "Title Info", tVariableName)) return;
 	char* text = getAllocatedMugenDefStringVariable(&gData.mScript, "Title Info", tVariableName);
 	
 	if (!strcmp("", text)) {
@@ -227,6 +230,7 @@ static void loadTitleScreen() {
 
 	char* text = getAllocatedMugenDefStringVariable(&gData.mScript, "Files", "spr");
 	gData.mSprites = loadMugenSpriteFileWithoutPalette(text);
+	gData.mAnimations = loadMugenAnimationFile("system.def");
 	freeMemory(text);
 
 	text = getAllocatedMugenDefStringVariable(&gData.mScript, "Files", "snd");
@@ -234,9 +238,10 @@ static void loadTitleScreen() {
 	freeMemory(text);
 
 	loadMenuHeader();
-	loadMenuBackground(&gData.mScript, &gData.mSprites, NULL, "TitleBGdef", "TitleBG");
+	loadMenuBackground(&gData.mScript, &gData.mSprites, &gData.mAnimations, "TitleBGdef", "TitleBG");
 
 	gData.mMenus = new_vector();
+	addMenuPoint("menu.itemname.story", arcadeCB);
 	addMenuPoint("menu.itemname.arcade", arcadeCB);
 	addMenuPoint("menu.itemname.versus", versusCB);
 	addMenuPoint("menu.itemname.teamarcade", arcadeCB);
@@ -327,7 +332,8 @@ static void updateSelectionBox() {
 }
 
 static void updateTitleScreen() {
-
+	//startFightScreen(); // TODO
+	
 	updateItemSelection();
 	updateMenuBasePosition();
 	updateMenuElementPositions();

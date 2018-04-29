@@ -15,6 +15,7 @@
 #include "stage.h"
 #include "playerhitdata.h"
 #include "mugenexplod.h"
+#include "dolmexicastoryscreen.h"
 
 typedef struct {
 	char mValue[100];
@@ -173,8 +174,10 @@ static AssignmentReturnValue evaluateAnimElemVectorAssignment(AssignmentReturnVa
 
 	char number1[100], comma[10], oper[100], number2[100];
 	int items = sscanf(tCommand.mValue, "%s %s %s %s", number1, comma, oper, number2);
-	assert(strcmp("", number1));
-	assert(!strcmp(",", comma));
+	if(!strcmp("", number1) || strcmp(",", comma)) { 
+		logWarningFormat("Unable to parse animelem vector assignment %s. Defaulting to bottom.", tCommand.mValue);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 
 	int ret;
 	int animationStep = atoi(number1);
@@ -241,10 +244,10 @@ static AssignmentReturnValue evaluateTimeModAssignment(AssignmentReturnValue tCo
 
 	char divisor[100], comma[10], compareNumber[100];
 	int items = sscanf(tCommand.mValue, "%s %s %s", divisor, comma, compareNumber);
-	assert(strcmp("", divisor));
-	assert(!strcmp(",", comma));
-	assert(items == 3);
-
+	if (!strcmp("", divisor) || strcmp(",", comma) || items != 3) {
+		logWarningFormat("Unable to parse timemod assignment %s. Defaulting to bottom.", tCommand.mValue);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 
 	int divisorValue = atoi(divisor);
 	int compareValue = atoi(compareNumber);
@@ -288,12 +291,16 @@ static DreamPlayer* getPlayerFromFirstVectorPartOrNullIfNonexistant(AssignmentRe
 	}
 	else if (items == 2 && !strcmp("helper", firstWord)) {
 		DreamPlayer* ret = getPlayerHelperOrNullIfNonexistant(tPlayer, id);
-		assert(ret);
+		if (!ret) {
+			logWarningFormat("Unable to find helper with id %d. Returning NULL.", id);
+		}
 		return ret;
 	}
 	else if (items == 2 && !strcmp("playerid", firstWord)) {
 		DreamPlayer* ret = getPlayerByIDOrNullIfNonexistant(tPlayer, id);
-		assert(ret);
+		if (!ret) {
+			logWarningFormat("Unable to find helper with id %d. Returning NULL.", id);
+		}
 		return ret;
 	}
 	else {
@@ -321,11 +328,10 @@ static AssignmentReturnValue evaluateRangeComparisonAssignment(AssignmentReturnV
 
 	char openBrace[10], valString1[20], comma[10], valString2[20], closeBrace[10];
 	sscanf(tRange.mValue, "%s %s %s %s %s", openBrace, valString1, comma, valString2, closeBrace);
-	assert(!strcmp("[", openBrace));
-	assert(strcmp("", valString1));
-	assert(!strcmp(",", comma));
-	assert(strcmp("", valString1));
-	assert(!strcmp("]", closeBrace));
+	if (strcmp("[", openBrace) || !strcmp("", valString1) || strcmp(",", comma) || !strcmp("", valString2) || strcmp("]", closeBrace)) {
+		logWarningFormat("Unable to parse range comparison assignment %s. Defaulting to bottom.", tRange.mValue);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 
 	int val1 = atoi(valString1);
 	int val2 = atoi(valString2);
@@ -350,8 +356,11 @@ static int isFloatReturn(AssignmentReturnValue tReturn) {
 
 static AssignmentReturnValue evaluateSetVariableAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
 	DreamMugenDependOnTwoAssignment* varSetAssignment = tAssignment->mData;
-
-	assert(varSetAssignment->a->mType == MUGEN_ASSIGNMENT_TYPE_ARRAY);
+	
+	if (varSetAssignment->a->mType != MUGEN_ASSIGNMENT_TYPE_ARRAY){
+		logWarningFormat("Incorrect varset type %d. Defaulting to bottom.", varSetAssignment->a->mType);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 	DreamMugenDependOnTwoAssignment* varArrayAccess = varSetAssignment->a->mData;
 	AssignmentReturnValue a = evaluateAssignmentInternal(varArrayAccess->a, tPlayer);
 	int index = evaluateDreamAssignmentAndReturnAsInteger(varArrayAccess->b, tPlayer);
@@ -386,7 +395,10 @@ static AssignmentReturnValue evaluateSetVariableAssignment(DreamMugenAssignment*
 static int evaluateSingleHitDefAttributeFlag2(char* tFlag, MugenAttackClass tClass, MugenAttackType tType) {
 	turnStringLowercase(tFlag);
 
-	assert(strlen(tFlag) == 2);
+	if (strlen(tFlag) != 2) {
+		logWarningFormat("Invalid hitdef attribute flag %s. Default to false.", tFlag);
+		return 0;
+	}
 
 	int isPart1OK;
 	if (tClass == MUGEN_ATTACK_CLASS_NORMAL) {
@@ -452,17 +464,23 @@ static AssignmentReturnValue evaluateHitDefAttributeAssignment(AssignmentReturnV
 		isFlag1OK = 0;
 	}
 
-	if(!isFlag1OK) return makeBooleanAssignmentReturn(0);
+	if (!isFlag1OK) return makeBooleanAssignmentReturn(0);
 
-	if(items == 1) return makeBooleanAssignmentReturn(isFlag1OK);
-	assert(items == 2);
-	assert(!strcmp(",", comma));
+	if (items == 1) return makeBooleanAssignmentReturn(isFlag1OK);
+	if (strcmp(",", comma)) {
+		logWarningFormat("Invalid hitdef attribute string %s. Defaulting to bottom.", tValue.mValue);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 
 	int hasNext = 1;
 	while (hasNext) {
 		items = sscanf(pos, "%s %s%n", flag, comma, &positionsRead);
+		if (items < 1) {
+			logWarningFormat("Error reading next flag %s. Defaulting to bottom.", pos);
+			return makeBooleanAssignmentReturn(0); // TODO: use bottom
+		}
 		pos += positionsRead;
-		assert(items >= 1);
+
 
 		int isFlag2OK = evaluateSingleHitDefAttributeFlag2(flag, getHitDataAttackClass(tPlayer), getHitDataAttackType(tPlayer));
 		if (isFlag2OK) {
@@ -470,7 +488,10 @@ static AssignmentReturnValue evaluateHitDefAttributeAssignment(AssignmentReturnV
 		}
 
 		if (items == 1) hasNext = 0;
-		else assert(!strcmp(",", comma));
+		else if (strcmp(",", comma)) {
+			logWarningFormat("Invalid hitdef attribute string %s. Defaulting to bottom.", tValue.mValue);
+			return makeBooleanAssignmentReturn(0); // TODO: use bottom
+		}
 	}
 
 	return makeBooleanAssignmentReturn(0);
@@ -480,8 +501,10 @@ static AssignmentReturnValue evaluateHitDefAttributeAssignment(AssignmentReturnV
 static AssignmentReturnValue evaluateProjVectorAssignment(AssignmentReturnValue tCommand, DreamPlayer* tPlayer, int tProjectileID, int(*tTimeFunc)(DreamPlayer*, int)) {
 	char number1[100], comma[10], oper[100], number2[100];
 	int items = sscanf(tCommand.mValue, "%s %s %s %s", number1, comma, oper, number2);
-	assert(strcmp("", number1));
-	assert(!strcmp(",", comma));
+	if (!strcmp("", number1) || strcmp(",", comma)) {
+		logWarningFormat("Unable to parse proj vector assignment %s. Defaulting to bottom.", tCommand.mValue);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 
 	int ret;
 	int compareValue = atoi(number1);
@@ -633,7 +656,10 @@ static AssignmentReturnValue evaluateComparisonAssignment(DreamMugenAssignment* 
 
 		if (isPlayerAccessVectorAssignment(vecA, tPlayer)) {
 			DreamPlayer* target = getPlayerFromFirstVectorPartOrNullIfNonexistant(vecA, tPlayer);
-			assert(target);
+			if (!target) {
+				logWarningFormat("Accessed player was NULL. Defaulting to bottom.");
+				return makeBooleanAssignmentReturn(0); // TODO: use bottom
+			}
 			return evaluateComparisonAssignmentInternal(vectorAssignment->b, b, target);
 		}
 	}
@@ -760,7 +786,10 @@ static AssignmentReturnValue evaluateModuloAssignment(DreamMugenAssignment* tAss
 }
 
 static int powI(int a, int b) {
-	assert(b >= 0);
+	if (b < 0) {
+			logWarningFormat("Invalid power function %d^%d. Returning 1.", a, b);
+			return 1;
+	}
 
 	if (a == 0 && b == 0) return 1;
 
@@ -855,7 +884,10 @@ static AssignmentReturnValue evaluateAdditionSparkFile(AssignmentReturnValue a, 
 	int val1;
 
 	int items = sscanf(a.mValue, "%s %d", firstW, &val1);
-	assert(items == 2);
+	if (items != 2) {
+		logWarningFormat("Unable to parse sparkfile addition %s. Defaulting to bottom.", a.mValue);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 
 	int val2 = evaluateAssignmentReturnAsNumber(b);
 
@@ -953,8 +985,14 @@ static AssignmentReturnValue evaluateStringAssignment(DreamMugenAssignment* tAss
 
 static AssignmentReturnValue evaluatePlayerVectorAssignment(AssignmentReturnValue tFirstValue, DreamMugenDependOnTwoAssignment* tVectorAssignment, DreamPlayer* tPlayer) {
 	DreamPlayer* target = getPlayerFromFirstVectorPartOrNullIfNonexistant(tFirstValue, tPlayer);
-	assert(target != NULL);
-	assert(tVectorAssignment->b->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE || tVectorAssignment->b->mType == MUGEN_ASSIGNMENT_TYPE_ARRAY);
+	if (!target) {
+		logWarningFormat("Unable to evaluate player vector assignment with NULL (%s). Defaulting to bottom.", tFirstValue.mValue);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
+	if (tVectorAssignment->b->mType != MUGEN_ASSIGNMENT_TYPE_VARIABLE && tVectorAssignment->b->mType != MUGEN_ASSIGNMENT_TYPE_ARRAY) {
+		logWarningFormat("Invalid player vector assignment type %d. Defaulting to bottom.", tVectorAssignment->b->mType);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 
 	return evaluateAssignmentInternal(tVectorAssignment->b, target);
 }
@@ -981,9 +1019,10 @@ static AssignmentReturnValue evaluateRangeAssignment(DreamMugenAssignment* tAssi
 
 	char valString1[100], comma[10], valString2[100];
 	sscanf(a.mValue, "%s %s %s", valString1, comma, valString2);
-	assert(strcmp("", valString1));
-	assert(!strcmp(",", comma));
-	assert(strcmp("", valString2));
+	if (!strcmp("", valString1) || strcmp(",", comma) || !strcmp("", valString2)) {
+		logWarningFormat("Unable to parse range assignment %s. Defaulting to bottom.", a.mValue);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 
 	int val1 = atoi(valString1);
 	int val2 = atoi(valString2);
@@ -1499,8 +1538,10 @@ static AssignmentReturnValue evaluateLogArrayAssignment(AssignmentReturnValue tI
 	double base, value;
 	char comma[10];
 	int items = sscanf(text, "%lf %s %lf", &base, comma, &value);
-	assert(items == 3);
-	assert(!strcmp(",", comma));
+	if (items != 3 || strcmp(",", comma)) {
+		logWarningFormat("Unable to parse log array assignment %s. Defaulting to bottom.", text);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 
 	return makeFloatAssignmentReturn(log(value) / log(base));
 }
@@ -1570,7 +1611,11 @@ static AssignmentReturnValue evaluateConstArrayAssignment(AssignmentReturnValue 
 }
 
 static AssignmentReturnValue evaluateGetHitVarArrayAssignment(DreamMugenAssignment* tIndexAssignment, DreamPlayer* tPlayer) {
-	assert(tIndexAssignment->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE);
+	if (tIndexAssignment->mType != MUGEN_ASSIGNMENT_TYPE_VARIABLE) {
+		logWarningFormat("Unable to parse get hit var array assignment of type %d. Defaulting to bottom.", tIndexAssignment->mType);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
+
 	DreamMugenVariableAssignment* variableAssignment = tIndexAssignment->mData;
 	char var[100];
 	strcpy(var, variableAssignment->mName);
@@ -1649,12 +1694,10 @@ static AssignmentReturnValue evaluateIfElseArrayAssignment(AssignmentReturnValue
 	char comma1[20], comma2[20];
 
 	sscanf(tIndex.mValue, "%s %s %s %s %s", condText, comma1, yesText, comma2, noText);
-	assert(!strcmp(",", comma1));
-	assert(!strcmp(",", comma2));
-	assert(strcmp("", condText));
-	assert(strcmp("", yesText));
-	assert(strcmp("", noText));
-
+	if (strcmp(",", comma1) || strcmp(",", comma2) || !strcmp("", condText) || !strcmp("", yesText) || !strcmp("", noText)) {
+		logWarningFormat("Unable to parse if else array assignment %s. Defaulting to bottom.", tIndex.mValue);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 
 
 	AssignmentReturnValue condRet = makeStringAssignmentReturn(condText);
@@ -1668,9 +1711,15 @@ static AssignmentReturnValue evaluateIfElseArrayAssignment(AssignmentReturnValue
 }
 
 static AssignmentReturnValue evaluateCondArrayAssignment(DreamMugenAssignment* tCondVector, DreamPlayer* tPlayer) {
-	assert(tCondVector->mType == MUGEN_ASSIGNMENT_TYPE_VECTOR);
+	if (tCondVector->mType != MUGEN_ASSIGNMENT_TYPE_VECTOR) {
+		logWarningFormat("Invalid cond array cond vector type %d. Defaulting to bottom.", tCondVector->mType);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 	DreamMugenDependOnTwoAssignment* firstV = tCondVector->mData;
-	assert(firstV->b->mType == MUGEN_ASSIGNMENT_TYPE_VECTOR);
+	if(firstV->b->mType != MUGEN_ASSIGNMENT_TYPE_VECTOR) {
+		logWarningFormat("Invalid cond array second vector type %d. Defaulting to bottom.", firstV->b->mType);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 	DreamMugenDependOnTwoAssignment* secondV = firstV->b->mData;
 
 	AssignmentReturnValue ret;
@@ -1875,7 +1924,10 @@ static AssignmentReturnValue evaluateArrayAssignment(DreamMugenAssignment* tAssi
 	DreamMugenDependOnTwoAssignment* arrays = tAssignment->mData;
 
 	char test[100];
-	assert(arrays->a->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE);
+	if (arrays->a->mType != MUGEN_ASSIGNMENT_TYPE_VARIABLE) {
+		logWarningFormat("Invalid array type %d. Defaulting to bottom.", arrays->a->mType);
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 	DreamMugenVariableAssignment* arrayName = arrays->a->mData;
 	strcpy(test, arrayName->mName);
 	turnStringLowercase(test);
@@ -1912,8 +1964,10 @@ static AssignmentReturnValue evaluateNegationAssignment(DreamMugenAssignment* tA
 }
 
 static AssignmentReturnValue evaluateAssignmentInternal(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	assert(tAssignment != NULL);
-	assert(tAssignment->mData != NULL);
+	if (!tAssignment || !tAssignment->mData) {
+		logWarningFormat("Invalid assignment. Defaulting to bottom.");
+		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+	}
 
 	if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_OR) {
 		return evaluateOrAssignment(tAssignment, tPlayer);
@@ -2007,6 +2061,49 @@ static AssignmentReturnValue evaluateAssignmentInternal(DreamMugenAssignment* tA
 		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}
 }
+
+
+
+
+
+
+
+static AssignmentReturnValue timeStoryFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getDolmexicaStoryTimeInState()); }
+
+static void setupStoryVariableAssignments() {
+	gVariableHandler.mVariables = new_string_map();
+	string_map_push(&gVariableHandler.mVariables, "time", timeStoryFunction);
+}
+
+//static AssignmentReturnValue movementDownFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerLyingDownFrictionThreshold(tPlayer)); }
+
+static void setupStoryConstantAssignments() {
+	gVariableHandler.mConstants = new_string_map();
+}
+
+static AssignmentReturnValue evaluateAnimTimeStoryArrayAssignment(AssignmentReturnValue tIndex) {
+	int id = evaluateAssignmentReturnAsNumber(tIndex);
+	return makeNumberAssignmentReturn(getDolmexicaStoryAnimationTimeLeft(id));
+}
+
+static AssignmentReturnValue animTimeStoryFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer) { return evaluateAnimTimeStoryArrayAssignment(evaluateAssignmentInternal(tArrays->b, tPlayer)); }
+
+static void setupStoryArrayAssignments() {
+	gVariableHandler.mArrays = new_string_map();
+
+	string_map_push(&gVariableHandler.mArrays, "animtime", animTimeStoryFunction);
+}
+
+void setupDreamStoryAssignmentEvaluator()
+{
+	setupStoryVariableAssignments();
+	setupStoryConstantAssignments();
+	setupStoryArrayAssignments();
+}
+
+
+
+
 
 int evaluateDreamAssignment(DreamMugenAssignment * tAssignment, DreamPlayer* tPlayer)
 {

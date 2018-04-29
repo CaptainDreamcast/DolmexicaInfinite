@@ -153,6 +153,7 @@
     <ClCompile Include="..\characterselectscreen.c" />
     <ClCompile Include="..\collision.c" />
     <ClCompile Include="..\config.c" />
+    <ClCompile Include="..\dolmexicastoryscreen.c" />
     <ClCompile Include="..\fightscreen.c" />
     <ClCompile Include="..\fightui.c" />
     <ClCompile Include="..\gamelogic.c" />
@@ -192,6 +193,7 @@
     <ClInclude Include="..\characterselectscreen.h" />
     <ClInclude Include="..\collision.h" />
     <ClInclude Include="..\config.h" />
+    <ClInclude Include="..\dolmexicastoryscreen.h" />
     <ClInclude Include="..\fightscreen.h" />
     <ClInclude Include="..\fightui.h" />
     <ClInclude Include="..\gamelogic.h" />

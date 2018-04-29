@@ -308,9 +308,15 @@ void loadDreamMugenStateDefinitionsFromFile(DreamMugenStates* tStates, char* tPa
 	unloadMugenDefScript(script);
 }
 
+DreamMugenStates createEmptyMugenStates() {
+	DreamMugenStates ret;
+	ret.mStates = new_int_map();
+	return ret;
+}
+
 static DreamMugenConstants makeEmptyMugenConstants() {
 	DreamMugenConstants ret;
-	ret.mStates.mStates = new_int_map();
+	ret.mStates = createEmptyMugenStates();
 	return ret;
 }
 
