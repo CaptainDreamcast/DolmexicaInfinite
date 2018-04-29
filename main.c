@@ -72,8 +72,8 @@ int main(int argc, char** argv) {
 	setMemoryHandlerCompressionActive();
 	initClipboardForGame();
 	setDreamStageMugenDefinition("assets/stages/kfm.def");
-	setPlayerDefinitionPath(0, "assets/chars/chipp/chipp.def");
-	setPlayerDefinitionPath(1, "assets/chars/chipp/chipp.def");
+	setPlayerDefinitionPath(0, "assets/chars/reimu/reimu.def");
+	setPlayerDefinitionPath(1, "assets/chars/reimu/reimu.def");
 	setPlayerHuman(0);
 	setPlayerArtificial(1);
 	setDolmexicaStoryScreenFile("assets/story/1.def");

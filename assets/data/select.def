@@ -87,6 +87,7 @@ kfm, stages/kfm.def
 Chipp, stages/kfm.def
 ;MK1_SUB-ZERO, stages/kfm.def
 ;SubZeroMO, stages/kfm.def
+reimu, stages/kfm.def
 
 ;-----------------------
 [ExtraStages]
