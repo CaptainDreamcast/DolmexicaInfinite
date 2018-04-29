@@ -4,5 +4,5 @@ gamelogic.o gameoverscreen.o menubackground.o menuscreen.o mugenanimationutiliti
 mugenassignmentevaluator.o mugencommandhandler.o mugencommandreader.o mugenexplod.o \
 mugensound.o mugenstagehandler.o mugenstatecontrollers.o mugenstatehandler.o mugenstatereader.o \
 pausecontrollers.o playerdefinition.o playerhitdata.o projectile.o stage.o story.o storyscreen.o \
-titlescreen.o trainingmode.o twoplayerselectscreen.o versusmode.o versusscreen.o warningscreen.o
-
+titlescreen.o trainingmode.o twoplayerselectscreen.o versusmode.o versusscreen.o warningscreen.o \
+dolmexicastoryscreen.o

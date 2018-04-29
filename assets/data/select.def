@@ -67,7 +67,7 @@
  ;Insert your characters below.
 
 kfm, stages/kfm.def
-kfm2, stages/kfm.def ; OK
+;kfm2, stages/kfm.def ; OK
 ;kfm, stages/kfm.def
 ;kfm, stages/kfm.def
 ;kagerou, stages/kfm.def
@@ -78,15 +78,15 @@ kfm2, stages/kfm.def ; OK
 ;Beat, stages/kfm.def
 ;Sonicth, stages/kfm.def
 ;chipp, stages/kfm.def
-SOL, stages/kfm.def ; OK
+;SOL, stages/kfm.def ; OK
 ;SOL2, stages/kfm.def
-;ky, stages/kfm.def
-baldhead, stages/kfm.def
-MAY_X, stages/kfm.def
-may, stages/kfm.def
+ky, stages/kfm.def
+;baldhead, stages/kfm.def
+;MAY_X, stages/kfm.def
+;may, stages/kfm.def
 Chipp, stages/kfm.def
-MK1_SUB-ZERO, stages/kfm.def
-SubZeroMO, stages/kfm.def
+;MK1_SUB-ZERO, stages/kfm.def
+;SubZeroMO, stages/kfm.def
 
 ;-----------------------
 [ExtraStages]

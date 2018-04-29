@@ -55,7 +55,7 @@ typedef struct {
 } DreamMugenStringAssignment;
 
 typedef struct {
-	char mName[100];
+	char* mName;
 } DreamMugenVariableAssignment;
 
 typedef struct {
