@@ -84,10 +84,12 @@ kfm, stages/kfm.def
 ;baldhead, stages/kfm.def
 ;MAY_X, stages/kfm.def
 ;may, stages/kfm.def
-Chipp, stages/kfm.def
-;MK1_SUB-ZERO, stages/kfm.def
+;Chipp, stages/kfm.def
+MK1_SUB-ZERO, stages/kfm.def
 ;SubZeroMO, stages/kfm.def
-reimu, stages/kfm.def
+;reimu, stages/kfm.def
+;baiken, stages/kfm.def
+;HChipp, stages/kfm.def
 
 ;-----------------------
 [ExtraStages]

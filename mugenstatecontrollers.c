@@ -76,8 +76,6 @@ int parseNumberedTriggerAndReturnIfFound(int i, DreamMugenAssignment** tRoot, Mu
 }
 
 void parseStateControllerTriggers(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-
-
 	DreamMugenAssignment* allRoot = makeDreamFalseMugenAssignment();
 	int hasAllTrigger = parseTriggerAndReturnIfFound("triggerall", &allRoot, tGroup);
 	if (!hasAllTrigger) {
@@ -258,7 +256,7 @@ typedef struct {
 } HitDefinitionController;
 
 static void readHitDefinitionFromGroup(HitDefinitionController* e, MugenDefScriptGroup* tGroup) {
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("attr", tGroup, &e->mAttribute));
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("attr", tGroup, &e->mAttribute, "S , NA");
 
 	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("hitflag", tGroup, &e->mHitFlag)) {
 		e->mHitFlag = makeDreamStringMugenAssignment("MAF");

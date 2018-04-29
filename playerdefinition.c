@@ -63,7 +63,7 @@ static void loadOptionalStateFiles(MugenDefScript* tScript, char* tPath, DreamPl
 		if (!isFile(scriptPath)) continue;
 		
 		loadDreamMugenStateDefinitionsFromFile(&tPlayer->mConstants.mStates, scriptPath);
-		// malloc_stats();
+		malloc_stats();
 	}
 
 	
@@ -99,7 +99,7 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
 	tPlayer->mConstants = loadDreamMugenConstantsFile(scriptPath);
-	// malloc_stats();
+	malloc_stats();
 
 	getMugenDefStringOrDefault(file, tScript, "Files", "stcommon", "");
 	sprintf(scriptPath, "%s%s", path, file);
@@ -112,14 +112,15 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 			loadDreamMugenStateDefinitionsFromFile(&tPlayer->mConstants.mStates, scriptPath);
 		}
 	}
-	// malloc_stats();
+	malloc_stats();
+
 
 	getMugenDefStringOrDefault(file, tScript, "Files", "st", "");
 	sprintf(scriptPath, "%s%s", path, file);
 	if (isFile(scriptPath)) {
 		loadDreamMugenStateDefinitionsFromFile(&tPlayer->mConstants.mStates, scriptPath);
 	}
-	// malloc_stats();	
+	malloc_stats();	
 
 	loadOptionalStateFiles(tScript, path, tPlayer);
 
@@ -128,13 +129,13 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	sprintf(scriptPath, "%s%s", path, file);
 	tPlayer->mCommands = loadDreamMugenCommandFile(scriptPath);
 	loadDreamMugenStateDefinitionsFromFile(&tPlayer->mConstants.mStates, scriptPath);
-	// malloc_stats();
+	malloc_stats();
 
 	getMugenDefStringOrDefault(file, tScript, "Files", "anim", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
 	tPlayer->mAnimations = loadMugenAnimationFile(scriptPath);
-	// malloc_stats();
+	malloc_stats();
 
 	char palettePath[1024];
 	int preferredPalette = tPlayer->mPreferredPalette;
@@ -149,7 +150,7 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	setMugenSpriteFileReaderToUsePalette(tPlayer->mRootID);
 	tPlayer->mSprites = loadMugenSpriteFile(scriptPath, preferredPalette, hasPalettePath, palettePath);
 	setMugenSpriteFileReaderToNotUsePalette();
-	// malloc_stats();
+	malloc_stats();
 
 	getMugenDefStringOrDefault(file, tScript, "Files", "sound", "");
 	if (strcmp("", file)) {
@@ -160,11 +161,11 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 		tPlayer->mSounds = createEmptyMugenSoundFile();
 	}
 
-	// malloc_stats();
+	malloc_stats();
 
 	setPlayerExternalDependencies(tPlayer);
 	tPlayer->mCommandID = registerDreamMugenCommands(tPlayer, &tPlayer->mCommands);
-	// malloc_stats();
+	malloc_stats();
 
 	if (getPlayerAILevel(tPlayer)) {
 		setDreamAIActive(tPlayer);

@@ -332,7 +332,7 @@ static void updateSelectionBox() {
 }
 
 static void updateTitleScreen() {
-	startFightScreen(); // TODO
+	// startFightScreen(); // TODO
 	
 	updateItemSelection();
 	updateMenuBasePosition();
