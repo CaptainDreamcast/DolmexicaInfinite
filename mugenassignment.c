@@ -559,12 +559,9 @@ int doDreamAssignmentStringsBeginsWithPattern(char* tPattern, char* tText) {
 }
 
 static DreamMugenAssignment* parseMugenVariableFromString(char* tText) {
-	printf("strar\n");	
 	DreamMugenVariableAssignment* data = allocMemory(sizeof(DreamMugenVariableAssignment));
-	data->mName = allocMemory(sizeof(tText)+2);
+	data->mName = allocMemory(strlen(tText)+2);
 	strcpy(data->mName, tText);
-
-	printf("end\n");	
 
 	return makeMugenAssignment(MUGEN_ASSIGNMENT_TYPE_VARIABLE, data);
 }
