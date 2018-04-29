@@ -87,7 +87,7 @@ DreamMugenAssignment * makeDreamFloatMugenAssignment(double tVal)
 DreamMugenAssignment * makeDreamStringMugenAssignment(char * tVal)
 {
 	DreamMugenStringAssignment* s = allocMemory(sizeof(DreamMugenStringAssignment));
-	s->mValue = allocMemory(strlen(tVal) + 10);
+	s->mValue = allocMemory(strlen(tVal) + 2);
 	strcpy(s->mValue, tVal);
 
 	return makeMugenAssignment(MUGEN_ASSIGNMENT_TYPE_STRING, s);

@@ -1010,7 +1010,7 @@ static void parseSuperPauseController(DreamMugenStateController* tController, Mu
 
 typedef struct {
 	DreamMugenAssignment* mType;
-	char mName[200];
+	char* mName;
 	DreamMugenAssignment* mID;
 	DreamMugenAssignment* mPosition;
 	DreamMugenAssignment* mPositionType;
@@ -1039,12 +1039,20 @@ typedef struct {
 } HelperController;
 
 static void parseHelpeControllerName(HelperController* e, MugenDefScriptGroup* tGroup) {
-	strcpy(e->mName, "");
-	if (!string_map_contains(&tGroup->mElements, "name")) return;
+	if (!string_map_contains(&tGroup->mElements, "name")) {
+		e->mName = allocMemory(2);
+		e->mName[0] = '\0';
+		return;
+	}
 	MugenDefScriptGroupElement* elem = string_map_get(&tGroup->mElements, "name");
-	if (!isMugenDefStringVariableAsElement(elem)) return;
+	if (!isMugenDefStringVariableAsElement(elem)) {
+		e->mName = allocMemory(2);
+		e->mName[0] = '\0';
+		return;
+	}
 
 	char* text = getAllocatedMugenDefStringVariableAsElement(elem);
+	e->mName = allocMemory(strlen(text)+2);
 	strcpy(e->mName, text);
 	freeMemory(text);
 }

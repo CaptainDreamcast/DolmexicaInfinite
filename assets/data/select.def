@@ -80,7 +80,7 @@ kfm, stages/kfm.def
 ;chipp, stages/kfm.def
 ;SOL, stages/kfm.def ; OK
 ;SOL2, stages/kfm.def
-ky, stages/kfm.def
+;ky, stages/kfm.def
 ;baldhead, stages/kfm.def
 ;MAY_X, stages/kfm.def
 ;may, stages/kfm.def
