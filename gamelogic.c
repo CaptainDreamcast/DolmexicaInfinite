@@ -162,7 +162,7 @@ static void startContinue() {
 }
 
 static void winAnimationFinishedCB() {
-	if (gData.mIsInSinglePlayerMode && getPlayerAILevel(gData.mRoundWinner)) {
+	if (getPlayerAILevel(gData.mRoundWinner)) {
 		startContinue();
 	}
 	else {

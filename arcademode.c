@@ -31,6 +31,8 @@ static void versusScreenFinishedCB() {
 	setTimerFinite();
 	setPlayersToRealFightMode();
 	setFightScreenFinishedCB(fightFinishedCB); 
+	setPlayerHuman(0);
+	setPlayerArtificial(1);
 	setPlayerPreferredPalette(0, 1);
 	setPlayerPreferredPalette(1, 2);
 	setDreamStageMugenDefinition("assets/stages/kfm.def"); // TODO: remove
