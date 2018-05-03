@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
 	setPlayerArtificial(1);
 	setDolmexicaStoryScreenFile("assets/story/9.def");
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
-	startScreenHandling(&DreamTitleScreen);
+	startScreenHandling(&DreamWarningScreen);
 	
 	exitGame();
 	
