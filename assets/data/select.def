@@ -78,7 +78,7 @@ HChipp2, stages/kfm.def
  ;For example, you can insert "stages/mybg.def".
 
 stages/stage0.def
-stages/2hu/ToHo-Yukari.def
+stages/kfm.def
 stages/2hu/ToHo-Reimu_Daytime.def
 stages/2hu/ToHo-Youmu_Daytime.def
 stages/2hu/ToHo-Sakuya_Daytime.def
