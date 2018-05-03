@@ -36,10 +36,75 @@ duration = 20
 
 [State 0, 3]
 type = ChangeState
-trigger1 = time = 20
+trigger1 = time = 180
 value = 1
 
+
 [Statedef 1]
+
+[State 1, 2]
+type = CreateText
+trigger1 = time = 0
+id = 1
+pos = 160,60
+text = "HAKUREI SHRINE"
+font = 3,0,0
+
+[State 0, 3]
+type = ChangeState
+trigger1 = time = 240
+value = 2
+
+[Statedef 2]
+
+[State 1, 2]
+type = RemoveText
+trigger1 = time = 0
+id = 1
+
+[State 0, 3]
+type = ChangeState
+trigger1 = time = 60
+value = 3
+
+[Statedef 3]
+[State 1, 2]
+type = CreateText
+trigger1 = time = 0
+pos = 20,20
+text.offset = 46, 15
+bg.spr = 3, 0
+bg.offset = 0,0
+face.spr = 4,0
+face.offset = 9,8
+text = "The weather is great, I can't wait to spend the day doing nothing."
+font = 2,0,1
+width = 220
+nextstate = 4
+
+
+[Statedef 4]
+[State 2, 2]
+type = ChangeText
+trigger1 = time = 0
+text = "Just lazing around, eating dango all day. It's like a dream."
+face.spr = 4,0
+nextstate = 5
+
+[Statedef 5]
+[State 2, 2]
+type = ChangeText
+trigger1 = time = 0
+text = "Being a shrine maiden can be pretty tough, but days like these make it worth it."
+face.spr = 4,0
+nextstate = 6
+
+[Statedef 6]
+[State 2, 2]
+type = ChangeText
+trigger1 = time = 0
+text = "Nothing like a good sna-"
+face.spr = 4,0
 
 [State 1, 2]
 type = ChangeAnim
@@ -48,7 +113,7 @@ id = 1
 anim = 120
 
 [State 1, 2]
-type = animPosAdd
+type = AnimPosAdd
 trigger1 = time = [0,80]
 id = 1
 x = 2
@@ -62,35 +127,246 @@ anim = 100
 [State 1, 23]
 type = ChangeState
 trigger1 = time = 100
-value = 2
+value = 7
 
-
-[Statedef 2]
-
-[State 1, 1]
-type = ChangeAnim
-trigger1 = time = 0
-id = 1
-anim = 100
-
-[State 1, 2]
-type = CreateText
-trigger1 = time = 0
-pos = 20+46,20+8
-bg.spr = 3, 0
-bg.offset = -46,-8
-face.spr = 4,0
-face.offset = 9-46,8-8
-text = "REIMU: I LOVE BEING A LITTLE GIRL."
-font = 1,0,1
-width = 220
-nextstate = 3
-
-[Statedef 3]
-
+[Statedef 7]
 [State 2, 2]
 type = ChangeText
 trigger1 = time = 0
-text = "No, my name is Marisa, daze."
-face.spr = 4,1
+text = "WHAT?!"
+face.spr = 4,2
 
+[State 7, 1]
+type = AnimSetFacing
+trigger1 = time%40 = 0
+facing = 1
+
+[State 7, 1]
+type = AnimSetFacing
+trigger1 = time%40 = 20
+trigger2 = time = 0
+facing = -1
+
+[State 1, 23]
+type = ChangeState
+trigger1 = time = 100
+value = 8
+
+[Statedef 8]
+[State 2, 2]
+type = ChangeText
+trigger1 = time = 0
+text = "WHERE ARE MY DANGO?!"
+face.spr = 4,2
+nextstate = 9
+
+[State 7, 1]
+type = AnimSetFacing
+trigger1 = time = 0
+facing = 1
+
+[Statedef 9]
+[State 2, 2]
+type = ChangeText
+trigger1 = time = 0
+text = "Reeeeimu, I've come to play, daze."
+face.spr = 4,3
+
+[State 1, 2]
+type = ChangeAnim
+trigger1 = time =  0
+id = 2
+anim = 220
+
+[State 1, 2]
+type = AnimPosAdd
+trigger1 = time = [0,80]
+id = 2
+x = -2
+
+[State 1, 2]
+type = ChangeAnim
+trigger1 = time =  80
+id = 2
+anim = 200
+
+[State 1, 23]
+type = ChangeState
+trigger1 = time = 100
+value = 10
+
+[Statedef 10]
+[State 2, 2]
+type = ChangeText
+trigger1 = time = 0
+text = "Marisa! You took them, didn't you?"
+face.spr = 4,2
+nextstate = 11
+
+[Statedef 11]
+[State 2, 2]
+type = ChangeText
+trigger1 = time = 0
+text = "What did I take, daze? Was I supposed to take something, daze?"
+face.spr = 4,3
+nextstate = 12
+
+[Statedef 12]
+[State 2, 2]
+type = ChangeText
+trigger1 = time = 0
+text = "I'll make you confess!"
+face.spr = 4,2
+nextstate = 13
+
+
+[Statedef 13]
+[State 0, 2]
+type = FadeOut
+trigger1 = time = 0
+duration = 20
+
+[State 0, 3]
+type = ChangeState
+trigger1 = time = 21
+value = 14
+
+[Statedef 14]
+[State 2, 2]
+type = EndStoryboard
+trigger1 = time = 0
+value = 1
+
+;Reimu: WHAT?!
+; *Reimu looks around*
+;Reimu: WHERE ARE MY DANGO?!
+
+;Marisa comes in
+;Marisa: Reeeeimu, I've come to play, daze.
+;Reimu: You! You took them, didn't you?
+;Marisa: What did I take, daze? Was I supposed to take something, daze?
+;Reimu: I'll make you confess!
+
+
+; Marisa lying on the floor
+; Marisa: Ouch ouch ouch, what was that for, daze?
+; Marisa: I didn't take anything, daze.
+; Reimu: I see. Then this can only mean one thing.
+; Reimu goes back a few steps and turns around dramatically
+; Reimu: THIS IS AN INCIDENT!
+; Marisa: Daze?
+; Reimu: LET'S INVESTIGATE!
+; Reimu runs off to the right Marisa looks after her
+; Marisa looking around confused
+; Marisa runs off to the right
+
+; Forest of Magic, Alice's house or Graveyard
+; Reimu: Look Marisa, it's our friend! Youmu Konpaku! Look, she even has her sword and everything.
+; Reimu: Maybe she, Youmu Konpaku, our valued friend, has seen my dango!
+; Marisa: Daze.
+; Reimu: Youmu Konpaku 
+; Youmu: You guys...
+; Youmu: What the hell are you idiots doing?
+; Marisa: Daze?
+; Youmu: I know you're sad Guilty Gear 2 flopped. I know you're sad we were forgotten and ended up in Gensokyo.
+; Reimu: My dango...
+; Youmu: But running around, clinging to the past like that. Can't you see how damaging this is? You need to let go and accept.
+; Reimu: So you haven't seen my dango?
+; Youmu: SOL! GET A GRIP!
+; Reimu: I get it.
+; Reimi: You were the one who took them!
+; Marisa: DAZE!
+; Runs in front
+; Reimu: Marisa? You want to fight for my sake?
+; Youmu: YOU'RE BOTH MORONS!
+
+
+; Youmu: Can't believe I lost to an idiot roleplaying as a little girl.
+; Marisa: Daze.
+; Reimu starts walking right
+; Youmu: And stop saying Daze all the darn time!
+; Marisa: Dattebayo
+; Youmu: Now you want to be Naruto?!
+; Marisa: Yes, dattebayo.
+
+; Clock tower, daytime
+; Youmu: - understand, it would be faster to just get new dango!
+; Sol: This is an incident and solving incidents is the shrine maiden's job.
+; Youmu: YOU'RE NOT A SHRINE MAIDEN! HECK YOU'RE NOT EVEN A MAIDEN!
+; Youmu: Where is the real o-
+; Reimu: THIS SMELL!
+; Reimu: It smells of Dango!
+; Marisa: Reimu is poor, so her sense of smell is really advanced, dattebayo. I read that in a doujin, dattebayo.
+; Shinmyoumaru: If you're looking for dango, I might be able to help you, Reiku!
+; Shinmyoumaru: Then again, Gensukyu won't be around for much longer anyway.
+; Reimu: Hey, it's Shinmyoumi- Shimyouma- Shimmi- Hey, it's the inchling!
+; Youmu: CHIPP, WHAT THE HELL?! YOU'RE TINY!
+; Shinmyoumaru: I'm an unchling.
+; Marisa: Shin like the knee part. Myou like Myon, Youmu's ghost half. Maru like Shinmyoumaru.
+; Marisa: Easy to remember, dattebayo.
+; Youmu: No, you're not an inchling, you're an ex-drug-addict ninja!
+; Shinmyoumaru: Don't take drugs, kids. They'll mess with your body, years after you're clean.
+; Youmu: I've had it with your nonsense!
+
+; Shinmyoumaru: Save me, Seydscha!
+; Reimu: Dying aside, why are you smelling like dango, Kneemyonmaru?
+; Shinmyoumaru: At the shri-
+; Reimu zooms past her
+; Youmu: What did you mean by "Gensokyo won't be around for much longer"?
+; Shinmyoumaru: Someone is trying to usurp a Gensukyu and destroy a barrier.
+; Shinmyoumaru: "Restore the forgotten to the real world!"
+; Shinmyoumaru: Sorry. I don't know that much about Touhou, I only listen to the music.
+; Marisa: I have a bad feeling about this, dattebayo.
+
+; Hakurei shrine - night
+; Reimu: Where's the big bad? Who took my dango?
+; Youmu: And why do they want to destroy the barrier between Gensokyo and the real world?
+; Reimu: Dango...
+; Marisa: Destroying the barrier means all the things forgotten by history will return to the real world, rightze?
+; Reimu: ...
+; Youmu: Sol? 
+; Reimu: ... It's garbage.
+; Reimu: Street Fighter this, Mortal Kombat that, while we're wasting away in this place.
+; Shinmyoumaru: Sol? I thought that was Reiku?
+; Reimu: All we ever get are XX remakes. Give me an X3, dammit!
+; Shinmyoumaru: Then who am I? I want to be Ibuki from Street Fighter.
+; Marisa: Sol...
+; Marisa: Now that we are done pretending to be little girls, where is my son?
+; Sol: Let's destroy the barrier and bring the fight to the real world!
+; Reimu starts walking behind Sol
+; Sol: We can be more than cult classics! I want to break free!
+; Everyone starts shaking
+; Marisa: S- Sol.
+; Reimu: So you're the one running around causing trouble.
+; Sol jumps away
+; Shinmyoumaru: IT'S THE CRIMSON SLASHER!
+; Reimu: Found you! Prepare to be exterminated!
+; Sol: I'll break the barrier and nobody will stop me!
+; Reimu: I'll stop you and eat those dango I found!
+; Sol: WHAT?!
+
+; Reimu lying on the floor
+; Sol: Hell yeah, I won!
+; Reimu getting up
+; Reimu: Okay, I want a rematch.
+; Sol: No, I won, it's over.
+; Reimu: You don't know how this works, do you? We fight until I win.
+; Sol: This is dumb! I'm going to destroy the barrier now!
+; Everyone except Benkei starts glowing, Chipp is regular Chipp again
+; Marisa: What's going on?!
+; Chipp: We're being sucked out of Gensukyu!
+; Chipp: Apparently a new Guilty Gear got released and its amazing!
+; Chipp: We're back baby! People remember us!
+; Youmu: I don't think that's how this Gensokyo thing works. You don't just glow and get whisked away.
+; Sol: Xrd, here we come. Let's rock!
+; Screen fades to black as their xscale turns to 0
+
+
+; Guilty Gear Xrd - Sign went on to (almost) become the most successful Guilty Gear game in the franchise.
+; Guilty Gear X for the Dreamcast is still number 1 baby.
+; Cut back to Baiken
+; Youmu: HOW MUCH LONGER WILL I BE STUCK HERE?! 
+; Reimu comes in from the left
+; Reimu: Until Rev2.
+; Reimu: Now get back to sweeping.
+; THE END

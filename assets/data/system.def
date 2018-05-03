@@ -231,12 +231,12 @@ p2.teammenu.value.spacing = -6,0
 ;spr = graphics/selectbg.sff  ;Filename of sprite data
 
 [SelectBG 0] ;Scrolling background
-type  = normal
-spriteno = 100,0
+type  = anim
+actionno = 3
 layerno = 0
 start = 0,0
 tile  = 1,1
-velocity = -1, -1
+velocity = -0.5, -0.5
 
 [SelectBG 1] ;Dark box
 type  = normal
@@ -301,12 +301,13 @@ p2.name.font =   3,0,0
 ;VS Match up screen background
 [VersusBGdef] 
 
-[VersusBG 1] 
-type  = normal
-spriteno = 100,0
+[VersusBG 1] ;Scrolling background
+type  = anim
+actionno = 3
+layerno = 0
 start = 0,0
 tile  = 1,1
-velocity = 0,1.5
+velocity = 0, 1.5
 
 [VersusBG 2] ;VS Screen
 type  = normal

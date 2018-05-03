@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
 	loadMugenTextHandler();
 	loadMugenSystemFonts();
-
+	
 	logg("Check framerate");
 	FramerateSelectReturnType framerateReturnType = selectFramerate();
 	if (framerateReturnType == FRAMERATE_SCREEN_RETURN_ABORT) {
@@ -76,10 +76,10 @@ int main(int argc, char** argv) {
 	setPlayerDefinitionPath(1, "assets/chars/Chipp/Chipp.def");
 	setPlayerHuman(0);
 	setPlayerArtificial(1);
-	setDolmexicaStoryScreenFile("assets/story/1.def");
+	setDolmexicaStoryScreenFile("assets/story/9.def");
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
 	startScreenHandling(&DreamTitleScreen);
-
+	
 	exitGame();
 	
 	return 0;

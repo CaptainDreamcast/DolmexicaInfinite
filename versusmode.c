@@ -16,6 +16,8 @@ static void versusScreenFinishedCB() {
 	setPlayersToRealFightMode();
 	setPlayerHuman(0);
 	setPlayerHuman(1);
+	setPlayerPreferredPalette(0, 1);
+	setPlayerPreferredPalette(1, 2);
 	setFightScreenFinishedCB(fightFinishedCB);
 	startFightScreen();
 }

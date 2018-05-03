@@ -344,9 +344,13 @@ static int isFloatReturn(AssignmentReturnValue tReturn) {
 
 	char* text = tReturn.mValue;
 	int n = strlen(text);
+	if (!n) return 1;
 
 	int i;
-	for (i = 0; i < n; i++) {
+	if (text[0] == '-') i = 1;
+	else i = 0;
+
+	for (; i < n; i++) {
 		if (text[i] != '.' && (text[i] < '0' || text[i] > '9')) return 0;
 	}
 
@@ -2092,6 +2096,7 @@ static void setupStoryArrayAssignments() {
 	gVariableHandler.mArrays = new_string_map();
 
 	string_map_push(&gVariableHandler.mArrays, "animtime", animTimeStoryFunction);
+	string_map_push(&gVariableHandler.mArrays, "ifelse", ifElseFunction);
 }
 
 void setupDreamStoryAssignmentEvaluator()

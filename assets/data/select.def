@@ -66,46 +66,28 @@
  ;
  ;Insert your characters below.
 
-kfm, stages/kfm.def
-;kfm2, stages/kfm.def ; OK
-;kfm, stages/kfm.def
-;kfm, stages/kfm.def
-;kagerou, stages/kfm.def
-;Mima_RP, stages/kfm.def
-;BoxingChen, stages/kfm.def
-;rockFIX, stages/kfm.def
-;DongHwan, stages/kfm.def
-;Beat, stages/kfm.def
-;Sonicth, stages/kfm.def
-;chipp, stages/kfm.def
-;SOL, stages/kfm.def ; OK
-;SOL2, stages/kfm.def
-;ky, stages/kfm.def
-;baldhead, stages/kfm.def
-;MAY_X, stages/kfm.def
-;may, stages/kfm.def
-;Chipp, stages/kfm.def
-MK1_SUB-ZERO, stages/kfm.def
-;SubZeroMO, stages/kfm.def
+SOL2, stages/kfm.def
+ky2, stages/kfm.def
+baiken2, stages/kfm.def
+HChipp2, stages/kfm.def
 ;reimu, stages/kfm.def
-;baiken, stages/kfm.def
-;HChipp, stages/kfm.def
 
 ;-----------------------
 [ExtraStages]
  ;Put extra stages here. They will be available in VS and Watch modes.
  ;For example, you can insert "stages/mybg.def".
 
-stages/kfm.def
 stages/stage0.def
-stages/2hu/ToHo-Remilia.def
 stages/2hu/ToHo-Yukari.def
 stages/2hu/ToHo-Reimu_Daytime.def
-stages/2hu/ToHo-Marisa_Daytime.def
-stages/2hu/ToHo-Sakuya_Daytime.def
-stages/2hu/ToHo-Alice_Daytime.def
 stages/2hu/ToHo-Youmu_Daytime.def
-stages/2hu/ToHo-Suika.def
+stages/2hu/ToHo-Sakuya_Daytime.def
+stages/2hu/ToHo-Reimu_Night.def
+
+[Stories]
+ ;Put estories here. They will be available in Story mode.
+ ;For example, you can insert "story/mystory.def".
+story/connection.def
 
 ;---------------------------------------------------------------------
 [Options]

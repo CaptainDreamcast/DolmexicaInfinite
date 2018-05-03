@@ -191,6 +191,8 @@ void playerHitCB(void* tData, void* tHitData);
 
 void setPlayerDefinitionPath(int i, char* tDefinitionPath);
 void getPlayerDefinitionPath(char* tDst, int i);
+void setPlayerPreferredPalette(int i, int tPalette);
+
 DreamPlayer* getRootPlayer(int i);
 DreamPlayer* getPlayerRoot(DreamPlayer* p);
 DreamPlayer* getPlayerParent(DreamPlayer* p);

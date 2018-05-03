@@ -1,5 +1,6 @@
 assets/chars/*
 assets/stages/*
+assets/story/*
 
 *.o
 *.BIN

@@ -139,7 +139,7 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 
 	char palettePath[1024];
 	int preferredPalette = tPlayer->mPreferredPalette;
-	sprintf(name, "pal%d", preferredPalette + 1);
+	sprintf(name, "pal%d", preferredPalette);
 	getMugenDefStringOrDefault(file, tScript, "Files", name, "");
 	int hasPalettePath = strcmp("", file);
 	sprintf(palettePath, "%s%s", path, file);
@@ -266,7 +266,7 @@ static void loadPlayerState(DreamPlayer* p) {
 	p->mProjectileID = -1;
 	p->mProjectileDataID = -1;
 
-	p->mPower = 3000; 
+	p->mPower = 0; 
 	
 	p->mIsBoundToScreen = 1;
 }
@@ -326,7 +326,6 @@ void loadPlayers() {
 	for (i = 0; i < 2; i++) {
 		gData.mPlayers[i].mRoot = &gData.mPlayers[i];
 		gData.mPlayers[i].mOtherPlayer = &gData.mPlayers[i ^ 1];
-		gData.mPlayers[i].mPreferredPalette = i; // TODO
 		gData.mPlayers[i].mRootID = i;
 		gData.mPlayers[i].mControllerID = i; // TODO: remove
 		loadSinglePlayerFromMugenDefinition(&gData.mPlayers[i]);
@@ -1187,6 +1186,11 @@ void setPlayerDefinitionPath(int i, char * tDefinitionPath)
 void getPlayerDefinitionPath(char* tDst, int i)
 {
 	strcpy(tDst, gData.mPlayers[i].mDefinitionPath);
+}
+
+void setPlayerPreferredPalette(int i, int tPalette)
+{
+	gData.mPlayers[i].mPreferredPalette = tPalette;
 }
 
 DreamPlayer * getRootPlayer(int i)

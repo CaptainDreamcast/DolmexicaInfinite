@@ -178,6 +178,7 @@
     <ClCompile Include="..\projectile.c" />
     <ClCompile Include="..\stage.c" />
     <ClCompile Include="..\story.c" />
+    <ClCompile Include="..\storymode.c" />
     <ClCompile Include="..\storyscreen.c" />
     <ClCompile Include="..\titlescreen.c" />
     <ClCompile Include="..\trainingmode.c" />
@@ -218,6 +219,7 @@
     <ClInclude Include="..\projectile.h" />
     <ClInclude Include="..\stage.h" />
     <ClInclude Include="..\story.h" />
+    <ClInclude Include="..\storymode.h" />
     <ClInclude Include="..\storyscreen.h" />
     <ClInclude Include="..\titlescreen.h" />
     <ClInclude Include="..\trainingmode.h" />

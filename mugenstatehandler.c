@@ -281,7 +281,7 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 	
 	DreamMugenState* newState = int_map_get(&states->mStates, e->mState);
 	resetStateControllers(newState);
-
+	
 	if (!e->mPlayer) return;
 	printf("Changing %d %d from state %d to %d\n", e->mPlayer->mRootID, e->mPlayer->mID, e->mPreviousState, e->mState);
 

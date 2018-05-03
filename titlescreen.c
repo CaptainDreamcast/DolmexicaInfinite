@@ -23,6 +23,7 @@
 #include "versusmode.h"
 #include "trainingmode.h"
 #include "fightscreen.h"
+#include "storymode.h"
 
 typedef struct {
 	void(*mCB)();
@@ -103,6 +104,15 @@ static void gotoTrainingMode(void* tCaller) {
 
 static void trainingCB() {
 	addFadeOut(gData.mHeader.mFadeOutTime, gotoTrainingMode, NULL);
+}
+
+static void gotoStoryMode(void* tCaller) {
+	(void)tCaller;
+	startStoryMode();
+}
+
+static void storyCB() {
+	addFadeOut(gData.mHeader.mFadeOutTime, gotoStoryMode, NULL);
 }
 
 static void exitCB() {
@@ -241,7 +251,7 @@ static void loadTitleScreen() {
 	loadMenuBackground(&gData.mScript, &gData.mSprites, &gData.mAnimations, "TitleBGdef", "TitleBG");
 
 	gData.mMenus = new_vector();
-	addMenuPoint("menu.itemname.story", arcadeCB);
+	addMenuPoint("menu.itemname.story", storyCB);
 	addMenuPoint("menu.itemname.arcade", arcadeCB);
 	addMenuPoint("menu.itemname.versus", versusCB);
 	addMenuPoint("menu.itemname.teamarcade", arcadeCB);

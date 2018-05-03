@@ -487,7 +487,7 @@ static void loadCharacterSelectScreen() {
 	freeMemory(text);
 
 	loadMenuHeader();
-	loadMenuBackground(&gData.mScript, &gData.mSprites, NULL, "SelectBGdef", "SelectBG");
+	loadMenuBackground(&gData.mScript, &gData.mSprites, &gData.mAnimations, "SelectBGdef", "SelectBG");
 
 	setWorkingDirectory("/");
 
