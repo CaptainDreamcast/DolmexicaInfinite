@@ -35,8 +35,8 @@ logo.storyboard =         ;Logo storyboard definition (optional)
 intro.storyboard =        ;Intro storyboard definition (optional)
 select = select.def       ;Character and stage selection list
 fight = fight.def         ;Fight definition filename
-font1 = font/f-4x6.fnt    ;System fonts
-font2 = font/f-6x9.fnt    ;System fonts
+font1 = font/f4x6.fnt    ;System fonts
+font2 = font/f6x9.fnt    ;System fonts
 font3 = font/jg.fnt       ;System fonts
 
 ;----------------------------
