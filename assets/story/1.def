@@ -1,7 +1,7 @@
 [Info]
 version = "Dolmexica"
 name = "Scene 1"
-stage = stages/2hu/ToHo-Reimu_Daytime.def
+stage = stages/2hu/ToHo_Reimu_Daytime.def
 spr = "1.sff"
 anim = "1.air"
 
