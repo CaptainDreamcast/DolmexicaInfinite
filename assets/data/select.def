@@ -66,28 +66,18 @@
  ;
  ;Insert your characters below.
 
-SOL2, stages/kfm.def
-ky2, stages/kfm.def
-baiken2, stages/kfm.def
-HChipp2, stages/kfm.def
-;reimu, stages/kfm.def
+kfm, stages/kfm.def
+kfm, stages/kfm.def
+kfm, stages/kfm.def
+
 
 ;-----------------------
 [ExtraStages]
  ;Put extra stages here. They will be available in VS and Watch modes.
  ;For example, you can insert "stages/mybg.def".
 
-stages/stage0.def
 stages/kfm.def
-stages/2hu/ToHo_Reimu_Daytime.def
-stages/2hu/ToHo_Youmu_Daytime.def
-stages/2hu/ToHo_Sakuya_Daytime.def
-stages/2hu/ToHo_Reimu_Night.def
-
-[Stories]
- ;Put estories here. They will be available in Story mode.
- ;For example, you can insert "story/mystory.def".
-story/connection.def
+stages/stage0.def
 
 ;---------------------------------------------------------------------
 [Options]
