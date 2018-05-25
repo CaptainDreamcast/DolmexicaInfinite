@@ -71,6 +71,7 @@ static void loadFightScreen() {
 		instantiateActor(FightDebug);
 	}
 
+	malloc_stats();
 	// activateCollisionHandlerDebugMode();
 }
 

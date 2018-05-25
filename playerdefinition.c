@@ -768,8 +768,8 @@ static void updateStageBorder(DreamPlayer* p) {
 
 	double left = getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(p));
 	double right = getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(p));
-	int lx = getDreamStageLeftEdgeMinimumPlayerDistance(getPlayerCoordinateP(p));
-	int rx = getDreamStageRightEdgeMinimumPlayerDistance(getPlayerCoordinateP(p));
+	// int lx = getDreamStageLeftEdgeMinimumPlayerDistance(getPlayerCoordinateP(p));
+	// int rx = getDreamStageRightEdgeMinimumPlayerDistance(getPlayerCoordinateP(p));
 	double x = getPlayerPositionX(p, getPlayerCoordinateP(p));
 
 	if (x < left) {

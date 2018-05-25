@@ -107,7 +107,7 @@ static void setWinIcon() {
 		addTeammateWinIcon(gData.mRoundWinner->mRootID, isPerfect);
 	}
 	else {
-		logWarningFormat("Unrecognized win icon type %d. Defaulting to normal.");
+		logWarningFormat("Unrecognized win icon type %d. Defaulting to normal.", type);
 		addNormalWinIcon(gData.mRoundWinner->mRootID, isPerfect);
 	}
 }

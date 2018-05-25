@@ -56,7 +56,7 @@ static void loadMugenCommandHandler(void* tData) {
 
 
 
-static int unloadSingleRegisteredCommand(void* tCaller, void* tData) {
+static void unloadSingleRegisteredCommand(void* tCaller, void* tData) {
 	(void)tCaller;
 	RegisteredMugenCommand* e = tData;
 	delete_list(&e->mActiveCommands);
