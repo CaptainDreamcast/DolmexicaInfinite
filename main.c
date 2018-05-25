@@ -58,6 +58,11 @@ int main(int argc, char** argv) {
 	setScreenSize(320, 240);
 	
 	initPrismWrapperWithDefaultFlags();
+	
+	if (isOnDreamcast()) {
+		setMemoryHandlingInactive();
+	}
+
 	setMainFileSystem();	
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
 	loadMugenTextHandler();
@@ -69,6 +74,7 @@ int main(int argc, char** argv) {
 		exitGame();
 	}
 	
+
 	setMemoryHandlerCompressionActive();
 	initClipboardForGame();
 	setDreamStageMugenDefinition("assets/stages/kfm.def");

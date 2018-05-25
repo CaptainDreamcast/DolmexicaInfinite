@@ -2424,8 +2424,7 @@ DreamPlayer * getPlayerHelperOrNullIfNonexistant(DreamPlayer * p, int tID)
 
 int getPlayerProjectileAmount(DreamPlayer* p)
 {
-	(void)p;
-	return 0; // TODO
+	return int_map_size(&p->mProjectiles);
 }
 
 int getPlayerProjectileAmountWithID(DreamPlayer * p, int tID)

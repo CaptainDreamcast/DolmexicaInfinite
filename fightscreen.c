@@ -34,6 +34,7 @@
 #include "mugenassignmentevaluator.h"
 #include "mugenstatecontrollers.h"
 #include "mugenanimationutilities.h"
+#include "fightdebug.h"
 
 static struct {
 	void(*mFinishedCB)();
@@ -65,7 +66,11 @@ static void loadFightScreen() {
 
 	instantiateActor(DreamFightUIBP);
 	instantiateActor(DreamGameLogic);
-	
+
+	if (isOnWindows()) {
+		instantiateActor(FightDebug);
+	}
+
 	// activateCollisionHandlerDebugMode();
 }
 
