@@ -166,6 +166,8 @@ static void addMenuPoint(char* tVariableName, void(*tCB)()) {
 	setMugenTextAlignment(e->mTextID, getMugenTextAlignmentFromMugenAlignmentIndex(gData.mHeader.mItemFont.z));
 	setMugenTextRectangle(e->mTextID, gData.mHeader.mMenuRectangle);
 	vector_push_back_owned(&gData.mMenus, e);
+
+	freeMemory(text);
 }
 
 static void setLowerOptionAsBase() {
@@ -281,6 +283,17 @@ static void loadTitleScreen() {
 	logMemoryState();
 }
 
+static void unloadTitleScreen() {
+	unloadMugenDefScript(gData.mScript);
+	unloadMugenSpriteFile(&gData.mSprites);
+	unloadMugenAnimationFile(&gData.mAnimations);
+	unloadMugenSoundFile(&gData.mSounds);
+
+	delete_vector(&gData.mMenus);
+
+	unloadTexture(gData.mWhiteTexture);
+}
+
 static void boxCursorCB2(void* tCaller) {
 	tweenDouble(getAnimationTransparencyReference(gData.mBoxCursorAnimationID), 0.2, 0.1, linearTweeningFunction, 20, boxCursorCB1, NULL);
 }
@@ -361,5 +374,6 @@ static void updateTitleScreen() {
 
 Screen DreamTitleScreen = {
 	.mLoad = loadTitleScreen,
+	.mUnload = unloadTitleScreen,
 	.mUpdate = updateTitleScreen,
 };

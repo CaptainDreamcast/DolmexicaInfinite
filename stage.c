@@ -262,9 +262,9 @@ static int isActionGroup(MugenDefScriptGroup* tGroup) {
 	return !strcmp("begin", firstW) && !strcmp("action", secondW);
 }
 
-static void addBackgroundElementToStageHandler(StageBackgroundElement* e, MugenAnimation* tAnimation) {
+static void addBackgroundElementToStageHandler(StageBackgroundElement* e, MugenAnimation* tAnimation, int tOwnsAnimation) {
 	e->mStart.z = e->mListPosition + e->mLayerNo * 30; // TODO
-	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), makePosition(0, 0, 0), e->mStartScaleY, e->mScaleDeltaY, e->mLayerNo, gData.mStageInfo.mLocalCoordinates);
+	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, tOwnsAnimation, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), makePosition(0, 0, 0), e->mStartScaleY, e->mScaleDeltaY, e->mLayerNo, gData.mStageInfo.mLocalCoordinates);
 }
 
 static BlendType getBackgroundBlendType(MugenDefScript* tScript, char* tGroupName) {
@@ -320,17 +320,17 @@ static void loadBackgroundElement(MugenDefScript* s, char* tName, int i) {
 
 	if (!strcmp("normal", type) || !strcmp("parallax", type)) { // TODO: parallax
 		e->mType = STAGE_BACKGROUND_STATIC;
-		addBackgroundElementToStageHandler(e, createOneFrameMugenAnimationForSprite(e->mSpriteNo.x, e->mSpriteNo.y));
+		addBackgroundElementToStageHandler(e, createOneFrameMugenAnimationForSprite(e->mSpriteNo.x, e->mSpriteNo.y), 1);
 	}
 	else if (!strcmp("anim", type)) {
 		e->mType = STAGE_BACKGROUND_ANIMATED;
 		e->mActionNumber = getMugenDefIntegerOrDefault(s, tName, "actionno", -1);
-		addBackgroundElementToStageHandler(e, getMugenAnimation(&gData.mAnimations, e->mActionNumber));
+		addBackgroundElementToStageHandler(e, getMugenAnimation(&gData.mAnimations, e->mActionNumber), 0);
 	}
 	else {
 		logWarningFormat("Unknown type %s. Treat as normal type.", type);
 		e->mType = STAGE_BACKGROUND_STATIC;
-		addBackgroundElementToStageHandler(e, createOneFrameMugenAnimationForSprite(e->mSpriteNo.x, e->mSpriteNo.y));
+		addBackgroundElementToStageHandler(e, createOneFrameMugenAnimationForSprite(e->mSpriteNo.x, e->mSpriteNo.y), 1);
 	}
 
 	list_push_back_owned(&gData.mBackgroundElements, e);
@@ -411,6 +411,15 @@ static void loadStage(void* tData)
 	unloadMugenDefScript(s);
 }
 
+static void unloadStage(void* tData)
+{
+	(void)tData;
+
+	unloadMugenSpriteFile(&gData.mSprites);
+	unloadMugenAnimationFile(&gData.mAnimations);
+	delete_list(&gData.mBackgroundElements);
+}
+
 static void updateCameraMovementX() {
 	double x1 = getPlayerPositionX(getRootPlayer(0), gData.mStageInfo.mLocalCoordinates.y);
 	double x2 = getPlayerPositionX(getRootPlayer(1), gData.mStageInfo.mLocalCoordinates.y);
@@ -456,12 +465,13 @@ static void updateCameraMovement() {
 
 static void updateStage(void* tData) {
 	(void)tData;
-
+	return; // TODO
 	updateCameraMovement();
 }
 
 ActorBlueprint DreamStageBP = {
 	.mLoad = loadStage,
+	.mUnload = unloadStage,
 	.mUpdate = updateStage,
 };
 

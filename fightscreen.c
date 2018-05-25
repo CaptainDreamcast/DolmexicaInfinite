@@ -44,6 +44,7 @@ static void loadFightScreen() {
 	setupDreamGameCollisions();
 	setupDreamAssignmentEvaluator();
 	setupDreamMugenStateControllerHandler();
+
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
 	instantiateActor(MugenTextHandler);
 	instantiateActor(ClipboardHandler);
@@ -53,6 +54,7 @@ static void loadFightScreen() {
 	instantiateActor(DreamMugenConfig);
 	instantiateActor(HitDataHandler);
 	instantiateActor(ProjectileHandler);
+
 	instantiateActor(DreamMugenCommandHandler);
 	instantiateActor(DreamMugenStateHandler);
 	instantiateActor(DreamExplodHandler);
@@ -67,6 +69,12 @@ static void loadFightScreen() {
 	// activateCollisionHandlerDebugMode();
 }
 
+static void unloadFightScreen() {
+	unloadPlayers();
+
+	shutdownDreamMugenStoryStateControllerHandler();
+	shutdownDreamAssignmentEvaluator();
+}
 
 static void updateFightScreen() {
 	updatePlayers();
@@ -78,6 +86,7 @@ static void updateFightScreen() {
 
 static Screen DreamFightScreen = {
 	.mLoad = loadFightScreen,
+	.mUnload = unloadFightScreen,
 	.mUpdate = updateFightScreen,
 };
 

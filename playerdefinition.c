@@ -84,7 +84,7 @@ static void setPlayerExternalDependencies(DreamPlayer* tPlayer) {
 	setMugenAnimationCameraPositionReference(tPlayer->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationAttackCollisionActive(tPlayer->mAnimationID, getDreamPlayerAttackCollisionList(tPlayer), NULL, NULL, getPlayerHitDataReference(tPlayer));
 	setMugenAnimationPassiveCollisionActive(tPlayer->mAnimationID, getDreamPlayerPassiveCollisionList(tPlayer), playerHitCB, tPlayer, getPlayerHitDataReference(tPlayer));
-	tPlayer->mStateMachineID = registerDreamMugenStateMachine(&tPlayer->mConstants.mStates, tPlayer);
+	tPlayer->mStateMachineID = registerDreamMugenStateMachine(&tPlayer->mConstants.mStates, tPlayer); 
 }
 
 
@@ -95,12 +95,14 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	char name[100];
 	getPathToFile(path, tPath);
 
+
 	getMugenDefStringOrDefault(file, tScript, "Files", "cns", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
 	tPlayer->mConstants = loadDreamMugenConstantsFile(scriptPath);
 	malloc_stats();
 
+	
 	getMugenDefStringOrDefault(file, tScript, "Files", "stcommon", "");
 	sprintf(scriptPath, "%s%s", path, file);
 	if (isFile(scriptPath)) {
@@ -113,7 +115,6 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 		}
 	}
 	malloc_stats();
-
 
 	getMugenDefStringOrDefault(file, tScript, "Files", "st", "");
 	sprintf(scriptPath, "%s%s", path, file);
@@ -131,11 +132,13 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	loadDreamMugenStateDefinitionsFromFile(&tPlayer->mConstants.mStates, scriptPath);
 	malloc_stats();
 
+
 	getMugenDefStringOrDefault(file, tScript, "Files", "anim", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
 	tPlayer->mAnimations = loadMugenAnimationFile(scriptPath);
 	malloc_stats();
+
 
 	char palettePath[1024];
 	int preferredPalette = tPlayer->mPreferredPalette;
@@ -160,7 +163,6 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	else {
 		tPlayer->mSounds = createEmptyMugenSoundFile();
 	}
-
 	malloc_stats();
 
 	setPlayerExternalDependencies(tPlayer);
@@ -272,7 +274,7 @@ static void loadPlayerState(DreamPlayer* p) {
 }
 
 static void loadPlayerStateWithConstantsLoaded(DreamPlayer* p) {
-	p->mLife = p->mConstants.mHeader.mLife; 
+	p->mLife = p->mConstants.mHeader.mLife;
 	setPlayerDrawOffsetX(p, 0, getPlayerCoordinateP(p));
 	setPlayerDrawOffsetY(p, 0, getPlayerCoordinateP(p));
 }
@@ -331,6 +333,63 @@ void loadPlayers() {
 		loadSinglePlayerFromMugenDefinition(&gData.mPlayers[i]);
 	}
 }
+
+static int unloadSingleHelper(void* tCaller, void* tData) {
+	(void)tCaller;
+	DreamPlayer* p = tData;
+	// TODO
+	return 1;
+}
+
+static int unloadSingleProjectile(void* tCaller, void* tData) {
+	(void)tCaller;
+	DreamPlayer* p = tData;
+	// TODO
+	return 1;
+}
+
+// TODO: make sure child players are moved
+static void unloadHelperStateWithoutFreeingOwnedHelpersAndProjectile(DreamPlayer* p) {
+	delete_list(&p->mHelpers);
+	delete_int_map(&p->mProjectiles);
+
+	delete_list(&p->mBoundHelpers);
+}
+
+static void unloadHelperState(DreamPlayer* p) {
+	list_remove_predicate(&p->mHelpers, unloadSingleHelper, NULL);
+	delete_list(&p->mHelpers);
+	int_map_remove_predicate(&p->mProjectiles, unloadSingleProjectile, NULL);
+	delete_int_map(&p->mProjectiles);
+
+	delete_list(&p->mBoundHelpers);
+}
+
+static void unloadPlayerState(DreamPlayer* p) {
+	unloadHelperState(p);
+}
+
+static void unloadPlayerFiles(DreamPlayer* tPlayer) {
+	unloadDreamMugenConstantsFile(&tPlayer->mConstants);
+	unloadDreamMugenCommandFile(&tPlayer->mCommands);
+	unloadMugenAnimationFile(&tPlayer->mAnimations);
+	unloadMugenSpriteFile(&tPlayer->mSprites);
+	unloadMugenSoundFile(&tPlayer->mSounds);
+
+}
+
+static void unloadSinglePlayer(DreamPlayer* p) {
+	unloadPlayerState(p);
+	unloadPlayerFiles(p);
+}
+
+void unloadPlayers() {
+	int i;
+	for (i = 0; i < 2; i++) {
+		unloadSinglePlayer(&gData.mPlayers[i]);
+	}
+}
+
 
 static void resetSinglePlayer(DreamPlayer* p) {
 	p->mIsAlive = 1;
@@ -1980,8 +2039,6 @@ void changePlayerAnimationWithStartStep(DreamPlayer* p, int tNewAnimation, int t
 	changeMugenAnimationWithStartStep(p->mAnimationID, newAnimation, tStartStep);
 	changeMugenAnimationWithStartStep(p->mShadow.mAnimationID, newAnimation, tStartStep);
 	changeMugenAnimationWithStartStep(p->mReflection.mAnimationID, newAnimation, tStartStep);
-
-	printf("%d %d change to %d\n", p->mRootID, p->mID, tStartStep);
 }
 
 void changePlayerAnimationToPlayer2AnimationWithStartStep(DreamPlayer * p, int tNewAnimation, int tStartStep)
@@ -3047,6 +3104,7 @@ void removeProjectile(DreamPlayer* p) {
 	removeAdditionalProjectileData(p);
 	removeProjectileFromPlayer(p);
 	removeDreamRegisteredStateMachine(p->mStateMachineID);
+	unloadHelperStateWithoutFreeingOwnedHelpersAndProjectile(p);
 	destroyGeneralPlayer(p);
 	freeMemory(p);
 }
@@ -3385,6 +3443,8 @@ void addPlayerNotHitByFlag2(DreamPlayer * p, int tSlot, char * tFlag)
 
 	strcpy(p->mNotHitBy[tSlot].mFlag2[p->mNotHitBy[tSlot].mFlag2Amount], nFlag);
 	p->mNotHitBy[tSlot].mFlag2Amount++;
+
+	freeMemory(nFlag);
 }
 
 void setPlayerNotHitByTime(DreamPlayer * p, int tSlot, int tTime)
@@ -3465,6 +3525,36 @@ void addPlayerDust(DreamPlayer * p, int tDustIndex, Position tPos, int tSpacing)
 	Position pos = vecAdd(tPos, playerPosition); 
 	pos.z = PLAYER_Z + 1; // TODO: fix z
 	addDreamDustCloud(pos, getPlayerIsFacingRight(p), getPlayerCoordinateP(p));
+}
+
+VictoryType getPlayerVictoryType(DreamPlayer * p)
+{
+	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p);
+
+	// TODO: suicide, teammate
+	if (isTimerFinished()) {
+		return VICTORY_TYPE_TIMEOVER;
+	}
+	else if (isPlayerGuarding(otherPlayer)) {
+		return VICTORY_TYPE_CHEESE;
+	}
+	else if (getActiveHitDataAttackType(otherPlayer) == MUGEN_ATTACK_TYPE_THROW) {
+		return VICTORY_TYPE_THROW;
+	}
+	else if (getActiveHitDataAttackClass(otherPlayer) == MUGEN_ATTACK_CLASS_HYPER) {
+		return VICTORY_TYPE_HYPER;
+	}
+	else if (getActiveHitDataAttackClass(otherPlayer) == MUGEN_ATTACK_CLASS_SPECIAL) {
+		return VICTORY_TYPE_SPECIAL;
+	}
+	else {
+		return VICTORY_TYPE_NORMAL;
+	}
+}
+
+int isPlayerAtFullLife(DreamPlayer * p)
+{
+	return getPlayerLife(p) == getPlayerLifeMax(p);
 }
 
 void setPlayersToTrainingMode()

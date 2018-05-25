@@ -15,6 +15,17 @@ typedef enum {
 	PLAYER_BIND_POSITION_TYPE_MID,
 } DreamPlayerBindPositionType;
 
+typedef enum {
+	VICTORY_TYPE_NORMAL,
+	VICTORY_TYPE_SPECIAL,
+	VICTORY_TYPE_HYPER,
+	VICTORY_TYPE_THROW,
+	VICTORY_TYPE_CHEESE,
+	VICTORY_TYPE_TIMEOVER,
+	VICTORY_TYPE_SUICIDE,
+	VICTORY_TYPE_TEAMMATE,
+} VictoryType;
+
 #define MAXIMUM_HITSLOT_FLAG_2_AMOUNT 10
 
 typedef struct {
@@ -183,6 +194,7 @@ typedef struct Player_t{
 } DreamPlayer;
 
 void loadPlayers();
+void unloadPlayers();
 void resetPlayers();
 void resetPlayersEntirely();
 void updatePlayers();
@@ -587,6 +599,8 @@ void setPlayerDrawOffsetY(DreamPlayer* p, double tValue, int tCoordinateP);
 void setPlayerOneFrameTransparency(DreamPlayer* p, BlendType tType, int tAlphaSource, int tAlphaDest);
 
 void addPlayerDust(DreamPlayer* p, int tDustIndex, Position tPos, int tSpacing);
+VictoryType getPlayerVictoryType(DreamPlayer* p);
+int isPlayerAtFullLife(DreamPlayer* p);
 
 void setPlayersToTrainingMode();
 void setPlayersToRealFightMode();

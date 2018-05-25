@@ -303,5 +303,6 @@ typedef struct {
 } DreamMugenConstants;
 
 DreamMugenConstants loadDreamMugenConstantsFile(char* tPath);
+void unloadDreamMugenConstantsFile(DreamMugenConstants* tConstants);
 void loadDreamMugenStateDefinitionsFromFile(DreamMugenStates* tStates, char* tPath);
 DreamMugenStates createEmptyMugenStates();

@@ -71,9 +71,11 @@ DreamPlayer* getReceivedHitDataPlayer(void* tHitData);
 DreamMugenStateType getHitDataType(DreamPlayer* tPlayer);
 void setHitDataType(DreamPlayer* tPlayer, DreamMugenStateType tType);
 MugenAttackClass getHitDataAttackClass(DreamPlayer* tPlayer);
+MugenAttackClass getActiveHitDataAttackClass(DreamPlayer* tPlayer);
 void setHitDataAttackClass(DreamPlayer* tPlayer, MugenAttackClass tClass);
 
 MugenAttackType getHitDataAttackType(DreamPlayer* tPlayer);
+MugenAttackType getActiveHitDataAttackType(DreamPlayer* tPlayer);
 void setHitDataAttackType(DreamPlayer* tPlayer, MugenAttackType tType);
 
 void setHitDataHitFlag(DreamPlayer* tPlayer, char* tFlag);

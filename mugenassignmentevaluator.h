@@ -5,6 +5,7 @@
 
 void setupDreamAssignmentEvaluator();
 void setupDreamStoryAssignmentEvaluator();
+void shutdownDreamAssignmentEvaluator();
 
 int evaluateDreamAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer);
 double evaluateDreamAssignmentAndReturnAsFloat(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer);

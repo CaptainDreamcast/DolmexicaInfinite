@@ -7,6 +7,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#define LOGGER_WARNINGS_DISABLED
+
 #include <prism/log.h>
 #include <prism/system.h>
 #include <prism/math.h>
@@ -2104,6 +2106,13 @@ void setupDreamStoryAssignmentEvaluator()
 	setupStoryVariableAssignments();
 	setupStoryConstantAssignments();
 	setupStoryArrayAssignments();
+}
+
+void shutdownDreamAssignmentEvaluator()
+{
+	delete_string_map(&gVariableHandler.mArrays);
+	delete_string_map(&gVariableHandler.mConstants);
+	delete_string_map(&gVariableHandler.mVariables);
 }
 
 

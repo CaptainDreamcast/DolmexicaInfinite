@@ -184,6 +184,13 @@ static void loadHitDataHandler(void* tData) {
 	gData.mHitOverrideMap = new_int_map();
 }
 
+static void unloadHitDataHandler(void* tData) {
+	(void)tData;
+	delete_int_map(&gData.mPassiveHitDataMap);
+	delete_int_map(&gData.mActiveHitDataMap);
+	delete_int_map(&gData.mHitOverrideMap);
+}
+
 static void updateSingleOverride(HitOverride* e) {
 	if (!e->mIsActive) return;
 	if (e->mDuration == -1) return;
@@ -211,6 +218,7 @@ static void updateHitDataHandler(void* tData) {
 
 ActorBlueprint HitDataHandler = {
 	.mLoad = loadHitDataHandler,
+	.mUnload = unloadHitDataHandler,
 	.mUpdate = updateHitDataHandler,
 };
 
@@ -342,6 +350,13 @@ MugenAttackClass getHitDataAttackClass(DreamPlayer * tPlayer)
 	return e->mAttackClass;
 }
 
+MugenAttackClass getActiveHitDataAttackClass(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	return e->mAttackClass;
+}
+
 void setHitDataAttackClass(DreamPlayer* tPlayer, MugenAttackClass tClass)
 {
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
@@ -353,6 +368,13 @@ MugenAttackType getHitDataAttackType(DreamPlayer* tPlayer)
 {
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = int_map_get(&gData.mPassiveHitDataMap, tPlayer->mHitDataID);
+	return e->mAttackType;
+}
+
+MugenAttackType getActiveHitDataAttackType(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
 	return e->mAttackType;
 }
 
@@ -1658,13 +1680,23 @@ void addHitDataReversalDefFlag2(DreamPlayer * tPlayer, char * tFlag)
 
 	char* nFlag = allocMemory(strlen(tFlag) + 5);
 	copyOverCleanFlag2(nFlag, tFlag);
-	assert(strlen(nFlag) == 2);
+	if (strlen(nFlag) != 2) {
+		logWarningFormat("Unparseable reversal definition flag: %s. Ignore.", nFlag);
+		freeMemory(nFlag);
+		return;
+	}
 	turnStringLowercase(nFlag);
 
-	assert(e->mReversalDef.mFlag2Amount < MAXIMUM_HITSLOT_FLAG_2_AMOUNT);
+	if (e->mReversalDef.mFlag2Amount >= MAXIMUM_HITSLOT_FLAG_2_AMOUNT) {
+		logWarningFormat("Too many reversal definition flags. Ignoring current flag %s.", nFlag);
+		freeMemory(nFlag);
+		return;
+	}
 
 	strcpy(e->mReversalDef.mFlag2[e->mReversalDef.mFlag2Amount], nFlag);
 	e->mReversalDef.mFlag2Amount++;
+
+	freeMemory(nFlag);
 }
 
 void setPlayerHitOverride(DreamPlayer * tPlayer, DreamMugenStateType tStateType, MugenAttackClass tAttackClass, MugenAttackType tAttackType, int tStateNo, int tSlot, int tDuration, int tDoesForceAir)

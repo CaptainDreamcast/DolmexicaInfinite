@@ -24,6 +24,7 @@ typedef struct {
 
 	MugenSpriteFile mSprites;
 	char* mDisplayCharacterName;
+	MugenAnimation* mAnimation;
 	int mAnimationID;
 	int mTextID;
 } VersusPlayer;
@@ -78,7 +79,8 @@ static void loadPlayerAnimationsAndName(int i) {
 
 	Position pos = player->mPosition;
 	pos.z = 50;
-	player->mAnimationID = addMugenAnimation(createOneFrameMugenAnimationForSprite(9000, 1), &player->mSprites, pos);
+	player->mAnimation = createOneFrameMugenAnimationForSprite(9000, 1);
+	player->mAnimationID = addMugenAnimation(player->mAnimation, &player->mSprites, pos);
 	setMugenAnimationFaceDirection(player->mAnimationID, player->mIsFacingRight);
 
 	pos = player->mNamePosition;
@@ -155,6 +157,19 @@ static void loadVersusScreen() {
 	addTimerCB(gData.mHeader.mTime, screenTimeFinishedCB, NULL);
 }
 
+static void unloadVersusScreen() {
+	unloadMugenDefScript(gData.mScript);
+	unloadMugenSpriteFile(&gData.mSprites);
+	unloadMugenAnimationFile(&gData.mAnimations);
+
+	int i;
+	for (i = 0; i < 2; i++) {
+		destroyMugenAnimation(gData.mHeader.mPlayers[i].mAnimation);
+		unloadMugenSpriteFile(&gData.mHeader.mPlayers[i].mSprites);
+		freeMemory(gData.mHeader.mPlayers[i].mDisplayCharacterName);
+	}
+}
+
 static void gotoNextScreenCB(void* tCaller) {
 	gData.mCB();
 }
@@ -175,6 +190,7 @@ static void updateVersusScreen() {
 
 Screen VersusScreen = {
 	.mLoad = loadVersusScreen,
+	.mUnload = unloadVersusScreen,
 	.mUpdate = updateVersusScreen,
 };
 

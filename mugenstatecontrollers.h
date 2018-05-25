@@ -7,7 +7,9 @@
 
 
 DreamMugenStateController* parseDreamMugenStateControllerFromGroup(MugenDefScriptGroup* tGroup);
+void unloadDreamMugenStateController(DreamMugenStateController* tController);
 int handleDreamMugenStateControllerAndReturnWhetherStateChanged(DreamMugenStateController* tController, DreamPlayer* tPlayer);
 
 void setupDreamMugenStateControllerHandler();
 void setupDreamMugenStoryStateControllerHandler();
+void shutdownDreamMugenStoryStateControllerHandler();

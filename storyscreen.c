@@ -153,6 +153,21 @@ static void loadStoryScreen() {
 	startScene();
 }
 
+
+
+
+static void unloadScenes() {
+	delete_vector(&gData.mScenes);
+}
+
+static void unloadStoryScreen() {
+	unloadMugenDefScript(gData.mScript);
+	unloadMugenAnimationFile(&gData.mAnimations);
+	unloadMugenSpriteFile(&gData.mSprites);
+
+	unloadScenes();
+}
+
 static void startScene() {
 	assert(gData.mCurrentScene < vector_size(&gData.mScenes));
 	Scene* scene = vector_get(&gData.mScenes, gData.mCurrentScene);
@@ -270,6 +285,7 @@ static void updateStoryScreen() {
 
 Screen StoryScreen = {
 	.mLoad = loadStoryScreen,
+	.mUnload = unloadStoryScreen,
 	.mUpdate = updateStoryScreen,
 };
 

@@ -33,8 +33,20 @@ void setDreamNoMusicFlag();
 void setTimerFreezeFlag();
 void setTimerInfinite();
 void setTimerFinite();
+int isTimerFinished();
 
 void setEnvironmentColor(Vector3DI tColors, int tTime, int tIsUnderCharacters);
 void setEnvironmentShake(int tDuration, double tFrequency, int tAmplitude, double tPhaseOffset);
+
+void addNormalWinIcon(int tPlayer, int tIsPerfect);
+void addSpecialWinIcon(int tPlayer, int tIsPerfect);
+void addHyperWinIcon(int tPlayer, int tIsPerfect);
+void addThrowWinIcon(int tPlayer, int tIsPerfect);
+void addCheeseWinIcon(int tPlayer, int tIsPerfect);
+void addTimeoverWinIcon(int tPlayer, int tIsPerfect);
+void addSuicideWinIcon(int tPlayer, int tIsPerfect);
+void addTeammateWinIcon(int tPlayer, int tIsPerfect);
+
+void removeAllWinIcons();
 
 extern ActorBlueprint DreamFightUIBP;

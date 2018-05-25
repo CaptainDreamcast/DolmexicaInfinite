@@ -38,6 +38,18 @@ static void loadUtilityHandler(void* tData) {
 	gData.mActiveElements = new_int_map();
 }
 
+static int unloadSingleActiveElement(void* tCaller, void* tData) {
+	(void)tCaller;
+	ActiveElement* e = tData;
+	freeMemory(e->mData);
+	return 1;
+}
+
+static void unloadUtilityHandler(void* tData) {
+	int_map_remove_predicate(&gData.mActiveElements, unloadSingleActiveElement, NULL);
+	delete_int_map(&gData.mActiveElements);
+}
+
 static void updateSingleActiveAnimation(ActiveAnimation* e) {
 	if (e->mIsInvisible && isRegisteredMugenAnimation(e->mID)) {
 		setMugenAnimationVisibility(e->mID, 1);
@@ -75,6 +87,7 @@ static void updateUtilityHandler(void* tData) {
 
 ActorBlueprint MugenAnimationUtilityHandler = {
 	.mLoad = loadUtilityHandler,
+	.mUnload = unloadUtilityHandler,
 	.mUpdate = updateUtilityHandler,
 };
 

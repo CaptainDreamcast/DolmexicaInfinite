@@ -26,6 +26,19 @@ static void loadAIHandler(void* tData) {
 	gData.mHandledPlayers = new_list();
 }
 
+static int unloadSingleHandledPlayer(void* tCaller, void* tData) {
+	(void)tCaller;
+	PlayerAI* e = tData;
+	delete_vector(&e->mCommandNames);
+	return 1;
+}
+
+static void unloadAIHandler(void* tData) {
+	(void)tData;
+	list_remove_predicate(&gData.mHandledPlayers, unloadSingleHandledPlayer, NULL);
+	delete_list(&gData.mHandledPlayers);
+}
+
 static void setRandomPlayerCommandActive(PlayerAI* e) {
 	int i = randfromInteger(0, vector_size(&e->mCommandNames) - 1);
 
@@ -79,5 +92,6 @@ void setDreamAIActive(DreamPlayer * p)
 
 ActorBlueprint DreamAIHandler = {
 	.mLoad = loadAIHandler,
+	.mUnload = unloadAIHandler,
 	.mUpdate = updateAIHandler,
 };

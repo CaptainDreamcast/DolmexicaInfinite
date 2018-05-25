@@ -71,6 +71,11 @@ static void loadExplods(void* tData) {
 	gData.mExplods = new_int_map();
 }
 
+static void unloadExplods(void* tData) {
+	(void)tData;
+	delete_int_map(&gData.mExplods);
+}
+
 int addExplod(DreamPlayer* tPlayer)
 {
 	Explod* e = allocMemory(sizeof(Explod));
@@ -384,6 +389,7 @@ static void updateExplods(void* tData) {
 
 ActorBlueprint DreamExplodHandler = {
 	.mLoad = loadExplods,
+	.mUnload = unloadExplods,
 	.mUpdate = updateExplods,
 };
 
@@ -421,7 +427,7 @@ Position getFinalPositionFromPositionType(DreamExplodPositionType tPositionType,
 		Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), 0);
 		return vecAdd(p, mOffset);
 	}
-	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT) {
+	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT) {
 		Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), 0);
 		return vecAdd(p, mOffset);
 	}

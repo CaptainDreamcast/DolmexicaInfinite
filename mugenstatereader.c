@@ -222,8 +222,11 @@ static void handleSingleMugenStateDefElement(void* tCaller, char* tKey, void* tD
 	}
 }
 
+static void unloadSingleState(DreamMugenState* e);
+
 static void removeState(DreamMugenStates* tStates, int tState) {
-	// TODO: free rest
+	DreamMugenState* e = int_map_get(&tStates->mStates, tState);
+	unloadSingleState(e);
 	int_map_remove(&tStates->mStates, tState);
 }
 
@@ -339,6 +342,8 @@ static void loadSingleSparkNumber(int* oIsSparkInPlayerFile, int* oSparkNumber, 
 		*oIsSparkInPlayerFile = 0;
 		*oSparkNumber = atoi(item);
 	}
+
+	freeMemory(item);
 }
 
 static void loadMugenConstantsHeader(DreamMugenConstantsHeader* tHeader, MugenDefScript* tScript) {
@@ -444,4 +449,59 @@ DreamMugenConstants loadDreamMugenConstantsFile(char * tPath)
 	loadMugenConstantsFromScript(&ret, &script);
 	unloadMugenDefScript(script);
 	return ret;
+}
+
+static void unloadSingleController(void* tCaller, void* tData) {
+	(void)tCaller;
+	DreamMugenStateController* e = tData;
+	unloadDreamMugenStateController(e);
+}
+
+static void unloadSingleState(DreamMugenState* e) {
+	if (e->mIsChangingAnimation) {
+		destroyDreamMugenAssignment(e->mAnimation);
+	}
+	if (e->mIsSettingVelocity) {
+		destroyDreamMugenAssignment(e->mVelocity);
+	}
+	if (e->mIsChangingControl) {
+		destroyDreamMugenAssignment(e->mControl);
+	}
+	if (e->mIsChangingSpritePriority) {
+		destroyDreamMugenAssignment(e->mSpritePriority);
+	}
+	if (e->mIsAddingPower) {
+		destroyDreamMugenAssignment(e->mPowerAdd);
+	}
+	if (e->mDoesRequireJuggle) {
+		destroyDreamMugenAssignment(e->mJuggleRequired);
+	}
+	if (e->mHasFacePlayer2Info) {
+		destroyDreamMugenAssignment(e->mDoesFacePlayer2);
+	}
+	if (e->mHasPriority) {
+		destroyDreamMugenAssignment(e->mPriority);
+	}
+
+	vector_map(&e->mControllers, unloadSingleController, NULL);
+	delete_vector(&e->mControllers);
+}
+
+static int unloadSingleStateCB(void* tCaller, void* tData) {
+	(void)tCaller;
+	DreamMugenState* e = tData;
+
+	unloadSingleState(e);
+
+	return 1;
+}
+
+static void unloadMugenStates(DreamMugenStates* tStates) {
+	int_map_remove_predicate(&tStates->mStates, unloadSingleStateCB, NULL);
+	delete_int_map(&tStates->mStates);
+}
+
+void unloadDreamMugenConstantsFile(DreamMugenConstants * tConstants)
+{
+	unloadMugenStates(&tConstants->mStates);
 }

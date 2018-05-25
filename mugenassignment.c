@@ -34,10 +34,104 @@ void destroyDreamFalseMugenAssignment(DreamMugenAssignment* tAssignment) {
 	freeMemory(tAssignment);
 }
 
+static void unloadDreamMugenAssignmentFixedBoolean(DreamMugenAssignment * tAssignment) {
+	freeMemory(tAssignment->mData);
+}
+
+static void unloadDreamMugenAssignmentDependOnOne(DreamMugenAssignment * tAssignment) {
+	DreamMugenDependOnOneAssignment* e = tAssignment->mData;
+	destroyDreamMugenAssignment(e->a);
+	freeMemory(tAssignment->mData);
+}
+
+static void unloadDreamMugenAssignmentDependOnTwo(DreamMugenAssignment * tAssignment) {
+	DreamMugenDependOnTwoAssignment* e = tAssignment->mData;
+	destroyDreamMugenAssignment(e->a);
+	destroyDreamMugenAssignment(e->b);
+
+	freeMemory(tAssignment->mData);
+}
+
+static void unloadDreamMugenAssignmentRange(DreamMugenAssignment * tAssignment) {
+	DreamMugenRangeAssignment* e = tAssignment->mData;
+	destroyDreamMugenAssignment(e->a);
+
+	freeMemory(tAssignment->mData);
+}
+
+static void unloadDreamMugenAssignmentNumber(DreamMugenAssignment * tAssignment) {
+	freeMemory(tAssignment->mData);
+}
+
+static void unloadDreamMugenAssignmentFloat(DreamMugenAssignment * tAssignment) {
+	freeMemory(tAssignment->mData);
+}
+static void unloadDreamMugenAssignmentString(DreamMugenAssignment * tAssignment) {
+	DreamMugenStringAssignment* e = tAssignment->mData;
+	freeMemory(e->mValue);
+	freeMemory(tAssignment->mData);
+}
+
+static void unloadDreamMugenAssignmentVariable(DreamMugenAssignment * tAssignment) {
+	DreamMugenVariableAssignment* e = tAssignment->mData;
+	freeMemory(e->mName);
+	freeMemory(tAssignment->mData);
+}
+
 void destroyDreamMugenAssignment(DreamMugenAssignment * tAssignment)
 {
-	// TODO
-	freeMemory(tAssignment->mData);
+	switch (tAssignment->mType) {
+	case MUGEN_ASSIGNMENT_TYPE_FIXED_BOOLEAN:
+	case MUGEN_ASSIGNMENT_TYPE_NULL:
+		unloadDreamMugenAssignmentFixedBoolean(tAssignment);
+		break;
+	case MUGEN_ASSIGNMENT_TYPE_UNARY_MINUS:
+	case MUGEN_ASSIGNMENT_TYPE_NEGATION:
+		unloadDreamMugenAssignmentDependOnOne(tAssignment);
+		break;
+	case MUGEN_ASSIGNMENT_TYPE_AND:
+	case MUGEN_ASSIGNMENT_TYPE_OR:
+	case MUGEN_ASSIGNMENT_TYPE_COMPARISON:
+	case MUGEN_ASSIGNMENT_TYPE_INEQUALITY:
+	case MUGEN_ASSIGNMENT_TYPE_LESS_OR_EQUAL:
+	case MUGEN_ASSIGNMENT_TYPE_GREATER_OR_EQUAL:
+	case MUGEN_ASSIGNMENT_TYPE_SET_VARIABLE:
+	case MUGEN_ASSIGNMENT_TYPE_EXPONENTIATION:
+	case MUGEN_ASSIGNMENT_TYPE_BITWISE_AND:
+	case MUGEN_ASSIGNMENT_TYPE_BITWISE_OR:
+	case MUGEN_ASSIGNMENT_TYPE_LESS:
+	case MUGEN_ASSIGNMENT_TYPE_GREATER:
+	case MUGEN_ASSIGNMENT_TYPE_ADDITION:
+	case MUGEN_ASSIGNMENT_TYPE_MULTIPLICATION:
+	case MUGEN_ASSIGNMENT_TYPE_MODULO:
+	case MUGEN_ASSIGNMENT_TYPE_SUBTRACTION:
+	case MUGEN_ASSIGNMENT_TYPE_DIVISION:
+	case MUGEN_ASSIGNMENT_TYPE_VECTOR:
+	case MUGEN_ASSIGNMENT_TYPE_OPERATOR_ARGUMENT:
+	case MUGEN_ASSIGNMENT_TYPE_ARRAY:
+		unloadDreamMugenAssignmentDependOnTwo(tAssignment);
+		break;
+	case MUGEN_ASSIGNMENT_TYPE_RANGE:
+		unloadDreamMugenAssignmentRange(tAssignment);
+		break;
+	case MUGEN_ASSIGNMENT_TYPE_VARIABLE:
+		unloadDreamMugenAssignmentVariable(tAssignment);
+		break;
+	case MUGEN_ASSIGNMENT_TYPE_NUMBER:
+		unloadDreamMugenAssignmentNumber(tAssignment);
+		break;
+	case MUGEN_ASSIGNMENT_TYPE_FLOAT:
+		unloadDreamMugenAssignmentFloat(tAssignment);
+		break;
+	case MUGEN_ASSIGNMENT_TYPE_STRING:
+		unloadDreamMugenAssignmentString(tAssignment);
+		break;	
+	default:
+		logWarningFormat("Unrecognized assignment format %d. Treating as NULL.\n", tAssignment->mType);
+		unloadDreamMugenAssignmentFixedBoolean(tAssignment);
+		break;
+	}
+	
 	freeMemory(tAssignment);
 }
 

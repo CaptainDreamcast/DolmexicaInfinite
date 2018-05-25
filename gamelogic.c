@@ -6,6 +6,7 @@
 #include <prism/wrapper.h>
 #include <prism/framerate.h>
 #include <prism/wrapper.h>
+#include <prism/log.h>
 
 #include "playerdefinition.h"
 #include "fightui.h"
@@ -77,6 +78,40 @@ static void startRound() {
 
 static void resetRound(void*);
 
+static void setWinIcon() {
+	VictoryType type = getPlayerVictoryType(gData.mRoundWinner);
+	int isPerfect = isPlayerAtFullLife(gData.mRoundWinner);
+
+	if (type == VICTORY_TYPE_NORMAL) {
+		addNormalWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+	}
+	else if (type == VICTORY_TYPE_SPECIAL) {
+		addSpecialWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+	}
+	else if (type == VICTORY_TYPE_HYPER) {
+		addHyperWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+	}
+	else if (type == VICTORY_TYPE_THROW) {
+		addThrowWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+	}
+	else if (type == VICTORY_TYPE_CHEESE) {
+		addCheeseWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+	}
+	else if (type == VICTORY_TYPE_TIMEOVER) {
+		addTimeoverWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+	}
+	else if (type == VICTORY_TYPE_SUICIDE) {
+		addSuicideWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+	}
+	else if (type == VICTORY_TYPE_TEAMMATE) {
+		addTeammateWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+	}
+	else {
+		logWarningFormat("Unrecognized win icon type %d. Defaulting to normal.");
+		addNormalWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+	}
+}
+
 static void setWinner() {
 	if (getPlayerLife(getRootPlayer(0)) >= getPlayerLife(getRootPlayer(1))) {
 		gData.mRoundWinner = getRootPlayer(0);
@@ -85,6 +120,7 @@ static void setWinner() {
 		gData.mRoundWinner = getRootPlayer(1);
 	}
 
+	setWinIcon();
 	gData.mRoundStateNumber = 3;
 	setPlayerControl(getRootPlayer(0), 0);
 	setPlayerControl(getRootPlayer(1), 0);
@@ -143,6 +179,7 @@ static void resetGameLogic(void* tCaller) {
 	(void)tCaller;
 
 	resetRound(NULL);
+	removeAllWinIcons();
 	resetPlayersEntirely();
 
 	gData.mGameTime = 0;

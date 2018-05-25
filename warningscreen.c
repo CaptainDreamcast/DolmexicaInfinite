@@ -61,6 +61,13 @@ static void loadWarningScreen() {
 
 }
 
+static void unloadWarningScreen() {
+	unloadTexture(gData.mWarningTexture);
+	unloadTexture(gData.mThisIsTexture);
+	unloadTexture(gData.mExplanationTexture);
+
+}
+
 
 static void updateWarningScreen() {
 	setAnimationTransparency(gData.mWarningID, gData.mWarningTrans);
@@ -78,5 +85,6 @@ static void updateWarningScreen() {
 
 Screen DreamWarningScreen = {
 	.mLoad = loadWarningScreen,
+	.mUnload = unloadWarningScreen,
 	.mUpdate = updateWarningScreen,
 };

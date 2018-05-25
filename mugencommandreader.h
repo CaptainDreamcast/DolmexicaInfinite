@@ -69,3 +69,4 @@ typedef struct {
 } DreamMugenCommands;
 
 DreamMugenCommands loadDreamMugenCommandFile(char* tPath);
+void unloadDreamMugenCommandFile(DreamMugenCommands* tCommands);

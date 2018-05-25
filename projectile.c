@@ -62,6 +62,11 @@ static void loadProjectileHandler(void* tData) {
 	gData.mProjectileList = new_int_map();
 }
 
+static void unloadProjectileHandler(void* tData) {
+	(void)tData;
+	delete_int_map(&gData.mProjectileList);
+}
+
 static int updateProjectileDurationAndReturnIfOver(Projectile* e) {
 	if (e->mRemoveTime == -1) return 0;
 
@@ -85,7 +90,6 @@ static int updateProjectileScreenBoundAndReturnIfOver(Projectile* e) {
 	double maxi = max(overShootLeft, overShootRight);
 	
 	if (maxi > e->mEdgeBound) {
-		printf("ded\n");	
 		removeProjectile(e->mPlayer);
 		return 1;
 	}
@@ -115,6 +119,7 @@ static void updateProjectileHandler(void* tData) {
 
 ActorBlueprint ProjectileHandler = {
 	.mLoad = loadProjectileHandler,
+	.mUnload = unloadProjectileHandler,
 	.mUpdate = updateProjectileHandler,
 };
 

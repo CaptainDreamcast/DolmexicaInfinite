@@ -54,6 +54,23 @@ static void loadMugenCommandHandler(void* tData) {
 	gData.mRegisteredCommands = new_vector();
 }
 
+
+
+static int unloadSingleRegisteredCommand(void* tCaller, void* tData) {
+	(void)tCaller;
+	RegisteredMugenCommand* e = tData;
+	delete_list(&e->mActiveCommands);
+	delete_string_map(&e->tStates->mStates);
+	delete_string_map(&e->mInternalStates);
+	freeMemory(e->tStates);
+}
+
+static void unloadMugenCommandHandler(void* tData) {
+	(void)tData;
+	vector_map(&gData.mRegisteredCommands, unloadSingleRegisteredCommand, NULL);
+	delete_vector(&gData.mRegisteredCommands);
+}
+
 static void addSingleMugenCommandState(void* tCaller, char* tKey, void* tData) {
 	(void)tData;
 	RegisteredMugenCommand* s = tCaller;
@@ -377,23 +394,6 @@ static void addNewActiveMugenCommand(DreamMugenCommandInput* tInput, RegisteredM
 		return;
 	}
 
-	/*
-	if (!strcmp("holdfwd", tName)) return;
-	if (!strcmp("holdback", tName)) return;
-	if (!strcmp("holdup", tName)) return;
-	if (!strcmp("holddown", tName)) return;
-	if (!strcmp("a", tName)) return;
-	if (!strcmp("b", tName)) return;
-	if (!strcmp("c", tName)) return;
-	if (!strcmp("x", tName)) return;
-	if (!strcmp("y", tName)) return;
-	if (!strcmp("z", tName)) return;
-	if (!strcmp("FF", tName)) return;
-	if (!strcmp("BB", tName)) return;
-	if (strcmp("QCF_x", tName)) return;
-	printf("%d check %s\n", tRegisteredCommand->mPlayer->mRootID, tName);
-	*/
-
 	ActiveMugenCommand* e = allocMemory(sizeof(ActiveMugenCommand));
 	e->mInput = tInput;
 	strcpy(e->mName, tName);
@@ -405,6 +405,7 @@ static void addNewActiveMugenCommand(DreamMugenCommandInput* tInput, RegisteredM
 		isAlreadyOver = updateSingleActiveMugenCommand(tRegisteredCommand, e);
 	}
 	if(!isAlreadyOver) list_push_back_owned(&tRegisteredCommand->mActiveCommands, e);
+	else freeMemory(e);
 }
 
 static void updateSingleStaticMugenCommandInput(void* tCaller, void* tData) {
@@ -503,5 +504,6 @@ static void updateMugenCommandHandler(void* tData) {
 
 ActorBlueprint DreamMugenCommandHandler = {
 	.mLoad = loadMugenCommandHandler,
+	.mUnload = unloadMugenCommandHandler,
 	.mUpdate = updateMugenCommandHandler,
 };

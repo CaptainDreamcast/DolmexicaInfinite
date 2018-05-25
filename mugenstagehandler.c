@@ -25,6 +25,7 @@ typedef struct {
 
 	MugenSpriteFile* mSprites;
 	MugenAnimation* mAnimation;
+	int mOwnsAnimation;
 	List mAnimationReferences;
 
 	double mStartScaleY;
@@ -59,6 +60,24 @@ static void loadMugenStageHandler(void* tData) {
 
 	gData.mStaticElements = new_vector();
 
+}
+
+static void unloadSingleStaticElement(void* tCaller, void* tData) {
+	(void)tCaller;
+	StaticStageHandlerElement* e = tData;
+
+	if (e->mOwnsAnimation) {
+		destroyMugenAnimation(e->mAnimation);
+	}
+
+	delete_list(&e->mAnimationReferences);
+}
+
+static void unloadMugenStageHandler(void* tData) {
+	(void)tData;
+
+	vector_map(&gData.mStaticElements, unloadSingleStaticElement, NULL);
+	delete_vector(&gData.mStaticElements);
 }
 
 static int getCameraCoordP() {
@@ -192,6 +211,7 @@ static void updateMugenStageHandler(void* tData) {
 
 ActorBlueprint DreamMugenStageHandler = {
 	.mLoad = loadMugenStageHandler,
+	.mUnload = unloadMugenStageHandler,
 	.mUpdate = updateMugenStageHandler,
 };
 
@@ -300,7 +320,7 @@ static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement
 }
 
 
-void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAnimation* tAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, double tStartScaleY, double tScaleDeltaY, int tLayerNo, Vector3DI tCoordinates)
+void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, double tStartScaleY, double tScaleDeltaY, int tLayerNo, Vector3DI tCoordinates)
 {
 	StaticStageHandlerElement* e = allocMemory(sizeof(StaticStageHandlerElement));
 	e->mStart = tStart;
@@ -311,6 +331,7 @@ void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAn
 
 	e->mSprites = tSprites;
 	e->mAnimation = tAnimation;
+	e->mOwnsAnimation = tOwnsAnimation;
 	e->mAnimationReferences = new_list();
 	e->mTileSize = getAnimationFirstElementSpriteSize(e->mAnimation, tSprites);
 

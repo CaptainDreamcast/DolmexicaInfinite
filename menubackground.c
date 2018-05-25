@@ -63,7 +63,7 @@ static void loadNormalMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, Mu
 
 	(void)mask; // TODO
 	(void)layerNo; // TODO
-	addDreamMugenStageHandlerAnimatedBackgroundElement(start, createOneFrameMugenAnimationForSprite(spriteNo.x, spriteNo.y), tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, 0, gData.mLocalCoordinates);
+	addDreamMugenStageHandlerAnimatedBackgroundElement(start, createOneFrameMugenAnimationForSprite(spriteNo.x, spriteNo.y), 1, tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, 0, gData.mLocalCoordinates);
 }
 
 static void loadAnimatedMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, MugenSpriteFile* tSprites, MugenAnimations* tAnimations) {
@@ -80,11 +80,10 @@ static void loadAnimatedMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, 
 	Vector3D velocity = getMugenDefVectorOrDefaultAsGroup(tGroup, "velocity", makePosition(0, 0, 0));
 
 	(void)mask; // TODO
-	addDreamMugenStageHandlerAnimatedBackgroundElement(start, getMugenAnimation(tAnimations, animation), tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, 0, gData.mLocalCoordinates);
+	addDreamMugenStageHandlerAnimatedBackgroundElement(start, getMugenAnimation(tAnimations, animation), 0, tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, 0, gData.mLocalCoordinates);
 }
 
 static void loadMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, MugenSpriteFile* tSprites, MugenAnimations* tAnimations) {
-
 	char* type = getAllocatedMugenDefStringVariableAsGroup(tGroup, "type");
 	if (!strcmp("normal", type) || !strcmp("parallax", type)) {
 		loadNormalMenuBackgroundGroup(tGroup, i, tSprites, tAnimations);

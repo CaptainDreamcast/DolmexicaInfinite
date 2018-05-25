@@ -1,6 +1,7 @@
 assets/chars/*
 assets/stages/*
 assets/story/*
+assets/data/select.def
 
 *.o
 *.BIN

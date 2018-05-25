@@ -115,6 +115,13 @@ static void addOrderEnemies(int tOrder, int tAmount, AddEnemyCaller* tCaller) {
 	}
 }
 
+static int unloadSingleOrder(void* tCaller, void* tData) {
+	(void)tCaller;
+	Order* e = tData;
+	delete_vector(&e->mEnemies);
+	return 1;
+}
+
 static void generateEnemies() {
 	MugenDefScript script = loadMugenDefScript("assets/data/select.def");
 
@@ -131,6 +138,9 @@ static void generateEnemies() {
 	for (i = 0; i < enemyTypeAmountVector.mSize; i++) {
 		addOrderEnemies(i+1, atoi(enemyTypeAmountVector.mElement[i]), &caller);
 	}
+
+	int_map_remove_predicate(&caller.mOrders, unloadSingleOrder, NULL);
+	delete_int_map(&caller.mOrders);
 
 	unloadMugenDefScript(script);
 }
@@ -188,14 +198,15 @@ static void characterSelectFinishedCB() {
 	generateEnemies();
 
 	char folder[1024];
-	char path[1024]; 
+	char path[1024];
 	getPlayerDefinitionPath(path, 0);
 	getPathToFile(folder, path);
 	MugenDefScript script = loadMugenDefScript(path);
 	int hasIntro;
 	char* introDefinitionFile;
 	hasIntro = isMugenDefStringVariable(&script, "Arcade", "intro.storyboard");
-	
+
+	int isGoingToStory;
 
 	if (hasIntro) {
 		introDefinitionFile = getAllocatedMugenDefStringVariable(&script, "Arcade", "intro.storyboard");
@@ -203,12 +214,20 @@ static void characterSelectFinishedCB() {
 		if (isFile(path)) {
 			setStoryDefinitionFile(path);
 			setStoryScreenFinishedCB(introScreenFinishedCB);
-			setNewScreen(&StoryScreen);
-			return;
+			isGoingToStory = 1;
 		}
+		freeMemory(introDefinitionFile);
 	}
-	
-	introScreenFinishedCB();
+
+
+	unloadMugenDefScript(script);
+
+	if (isGoingToStory) {
+		setNewScreen(&StoryScreen);
+	}
+	else {
+		introScreenFinishedCB();
+	}
 }
 
 void startArcadeMode()

@@ -162,7 +162,6 @@ static DreamMugenCommandInputStepTarget extractTargetFromInputStep(char* tInputS
 	else if (mask == ((1 << 3) | (1 << 11))) ret = MUGEN_COMMAND_INPUT_STEP_TARGET_MULTI_BACKWARD;
 	else {
 		logWarningFormat("Unable to determine target %s. Defaulting to invalid input.", tInputStep);
-		printf("%X\n", mask);
 		ret = -1;
 	}
 
@@ -401,4 +400,53 @@ DreamMugenCommands loadDreamMugenCommandFile(char * tPath)
 	unloadMugenDefScript(script);
 
 	return ret;
+}
+
+static void unloadSingleInputStep(void* tCaller, void* tData);
+
+static void unloadInputStepMultiple(DreamMugenCommandInputStep* e) {
+	DreamMugenCommandInputStepMultipleTargetData* data = e->mData;
+
+	vector_map(&data->mSubSteps, unloadSingleInputStep, NULL);
+	delete_vector(&data->mSubSteps);
+
+	freeMemory(data);
+}
+
+static void unloadInputStepRelease(DreamMugenCommandInputStep* e) {
+	DreamMugenCommandInputStepReleaseData* data = e->mData;
+	freeMemory(data);
+}
+
+static void unloadSingleInputStep(void* tCaller, void* tData) {
+	(void)tCaller;
+	DreamMugenCommandInputStep* e = tData;
+	
+	if (e->mType == MUGEN_COMMAND_INPUT_STEP_TYPE_MULTIPLE) {
+		unloadInputStepMultiple(e);
+	}
+	else if (e->mType == MUGEN_COMMAND_INPUT_STEP_TYPE_RELEASE) {
+		unloadInputStepRelease(e);
+	}
+}
+
+static void unloadSingleInput(void* tCaller, void* tData) {
+	(void)tCaller;
+	DreamMugenCommandInput* e = tData;
+	vector_map(&e->mInputSteps, unloadSingleInputStep, NULL);
+	delete_vector(&e->mInputSteps);
+}
+
+static void unloadSingleCommand(void* tCaller, char* tKey, void* tData) {
+	(void)tCaller;
+	(void)tKey;
+	DreamMugenCommand* e = tData;
+	vector_map(&e->mInputs, unloadSingleInput, NULL);
+	delete_vector(&e->mInputs);
+}
+
+void unloadDreamMugenCommandFile(DreamMugenCommands * tCommands)
+{
+	string_map_map(&tCommands->mCommands, unloadSingleCommand, NULL);
+	delete_string_map(&tCommands->mCommands);
 }

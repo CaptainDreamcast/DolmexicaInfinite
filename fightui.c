@@ -20,15 +20,23 @@
 
 typedef struct {
 	Position mBG0Position;
+	int mOwnsBG0Animation;
+	MugenAnimation* mBG0Animation;
 	int mBG0AnimationID;
 
 	Position mBG1Position;
+	int mOwnsBG1Animation;
+	MugenAnimation* mBG1Animation;
 	int mBG1AnimationID;
 
 	Position mMidPosition;
+	int mOwnsMidAnimation;
+	MugenAnimation* mMidAnimation;
 	int mMidAnimationID;
 
 	Position mFrontPosition;
+	int mOwnsFrontAnimation;
+	MugenAnimation* mFrontAnimation;
 	int mFrontAnimationID;
 
 	Vector3D mHealthRangeX;
@@ -43,15 +51,23 @@ typedef struct {
 
 typedef struct {
 	Position mBG0Position;
+	int mOwnsBG0Animation;
+	MugenAnimation* mBG0Animation;
 	int mBG0AnimationID;
 
 	Position mBG1Position;
+	int mOwnsBG1Animation;
+	MugenAnimation* mBG1Animation;
 	int mBG1AnimationID;
 
 	Position mMidPosition;
+	int mOwnsMidAnimation;
+	MugenAnimation* mMidAnimation;
 	int mMidAnimationID;
 
 	Position mFrontPosition;
+	int mOwnsFrontAnimation;
+	MugenAnimation* mFrontAnimation;
 	int mFrontAnimationID;
 
 	Vector3D mPowerRangeX;
@@ -68,20 +84,30 @@ typedef struct {
 
 typedef struct {
 	Position mBGPosition;
+	int mOwnsBGAnimation;
+	MugenAnimation* mBGAnimation;
 	int mBGAnimationID;
 
 	Position mBG0Position;
+	int mOwnsBG0Animation;
+	MugenAnimation* mBG0Animation;
 	int mBG0AnimationID;
 
 	Position mBG1Position;
+	int mOwnsBG1Animation;
+	MugenAnimation* mBG1Animation;
 	int mBG1AnimationID;
 
 	Position mFacePosition;
+	int mOwnsFaceAnimation;
+	MugenAnimation* mFaceAnimation;
 	int mFaceAnimationID;
 } Face;
 
 typedef struct {
 	Position mBGPosition;
+	int mOwnsBGAnimation;
+	MugenAnimation* mBGAnimation;
 	int mBGAnimationID;
 
 	Position mTextPosition;
@@ -93,11 +119,14 @@ typedef struct {
 typedef struct {
 	int mIsActive;
 	int mIsInfinite;
+	int mIsFinished;
 
 	int mValue;
 	Position mPosition;
 
 	Position mBGPosition;
+	int mOwnsBGAnimation;
+	MugenAnimation* mBGAnimation;
 	int mBGAnimationID;
 
 	Vector3DI mFont;
@@ -113,12 +142,14 @@ typedef struct {
 typedef struct {
 	int mRoundTime;
 	Position mPosition;
+	int mOwnsDefaultAnimation;
 	MugenAnimation* mDefaultAnimation;
 	int mDefaultFaceDirection;
 	int mHasDefaultAnimation;
 	Vector3DI mFont;
 
 	int mHasCustomRoundAnimation[10];
+	int mOwnsCustomRoundAnimations[10];
 	MugenAnimation* mCustomRoundAnimations[10];
 	Position mCustomRoundPositions[10];
 	int mCustomRoundFaceDirection[10];
@@ -147,6 +178,7 @@ typedef struct {
 // TODO: Double KO, etc.
 typedef struct {
 	Position mPosition;
+	int mOwnsAnimation;
 	MugenAnimation* mAnimation;
 	int mFaceDirection;
 
@@ -165,6 +197,7 @@ typedef struct {
 
 typedef struct {
 	Position mPosition;
+	int mOwnsAnimation;
 	MugenAnimation* mAnimation;
 	int mFaceDirection;
 
@@ -219,6 +252,33 @@ typedef struct {
 } Continue;
 
 typedef struct {
+	Position mPosition;
+	Position mOffset;
+
+	Position mCounterOffset;
+	Vector3DI mCounterFont;
+
+	Vector3DI mNormalWin;
+	Vector3DI mSpecialWin;
+	Vector3DI mHyperWin;
+	Vector3DI mThrowWin;
+	Vector3DI mCheeseWin;
+	Vector3DI mTimeOverWin;
+	Vector3DI mSuicideWin;
+	Vector3DI mTeammateWin;
+	Vector3DI mPerfectWin;
+
+	int mIconUpToAmount;
+
+	int mIconAmount;
+	MugenAnimation** mIconAnimations;
+	int* mIconAnimationIDs;
+	int* mHasIsPerfectIcon;
+	MugenAnimation** mPerfectIconAnimations;
+	int* mPerfectIconAnimationIDs;
+} WinIcon;
+
+typedef struct {
 	TextureData mWhiteTexture;
 	int mAnimationID;
 
@@ -258,6 +318,7 @@ static struct {
 	KO mKO;
 	WinDisplay mWin;
 	Continue mContinue;
+	WinIcon mWinIcons[2];
 
 	ControlCountdown mControl;
 
@@ -298,7 +359,7 @@ static void loadFightDefFilesFromScript(MugenDefScript* tScript, char* tDefPath)
 
 }
 
-static int loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(MugenDefScript* tScript, MugenAnimations* tAnimations, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, MugenAnimation** oAnimation, Position* oPosition, int* oFaceDirection) {
+static int loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(MugenDefScript* tScript, MugenAnimations* tAnimations, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, MugenAnimation** oAnimation, int* oOwnsAnimation, Position* oPosition, int* oFaceDirection) {
 	char name[1024];
 
 	int animation;
@@ -312,9 +373,11 @@ static int loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(
 		if (sprite.x == -1 && sprite.y == -1) return 0;
 
 		*oAnimation = createOneFrameMugenAnimationForSprite(sprite.x, sprite.y);
+		*oOwnsAnimation = 1;
 	}
 	else {
 		*oAnimation = getMugenAnimation(tAnimations, animation);
+		*oOwnsAnimation = 0;
 	}
 
 	sprintf(name, "%s.offset", tComponentName);
@@ -328,16 +391,15 @@ static int loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(
 	return 1;
 }
 
-static void loadSingleUIComponentWithFullComponentName(MugenDefScript* tScript, MugenSpriteFile* tSprites, MugenAnimations* tAnimations, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, int* oAnimationID, Position* oPosition, int tScaleCoordinateP) {
-	MugenAnimation* anim;
+static void loadSingleUIComponentWithFullComponentName(MugenDefScript* tScript, MugenSpriteFile* tSprites, MugenAnimations* tAnimations, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, MugenAnimation** oAnimation, int* oOwnsAnimation, int* oAnimationID, Position* oPosition, int tScaleCoordinateP) {
 	int faceDirection;
 
-	if (!loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, tAnimations, tBasePosition, tGroupName, tComponentName, tZ, &anim, oPosition, &faceDirection)) {
+	if (!loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, tAnimations, tBasePosition, tGroupName, tComponentName, tZ, oAnimation, oOwnsAnimation, oPosition, &faceDirection)) {
 		*oAnimationID = -1;
 		return;
 	}
 
-	*oAnimationID = addMugenAnimation(anim, tSprites, makePosition(0,0,0)); // TODO: fix
+	*oAnimationID = addMugenAnimation(*oAnimation, tSprites, makePosition(0,0,0)); // TODO: fix
 	setMugenAnimationBasePosition(*oAnimationID, oPosition);
 
 	if (faceDirection == -1) {
@@ -346,11 +408,11 @@ static void loadSingleUIComponentWithFullComponentName(MugenDefScript* tScript, 
 
 }
 
-static void loadSingleUIComponent(int i, MugenDefScript* tScript, MugenSpriteFile* tSprites, MugenAnimations* tAnimations, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, int* oAnimationID, Position* oPosition, int tScaleCoordinateP) {
+static void loadSingleUIComponent(int i, MugenDefScript* tScript, MugenSpriteFile* tSprites, MugenAnimations* tAnimations, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, MugenAnimation** oAnimation, int* oOwnsAnimation, int* oAnimationID, Position* oPosition, int tScaleCoordinateP) {
 	char name[1024];
 
 	sprintf(name, "p%d.%s", i + 1, tComponentName);
-	loadSingleUIComponentWithFullComponentName(tScript, tSprites, tAnimations, tBasePosition, tGroupName, name, tZ, oAnimationID, oPosition, tScaleCoordinateP);
+	loadSingleUIComponentWithFullComponentName(tScript, tSprites, tAnimations, tBasePosition, tGroupName, name, tZ, oAnimation, oOwnsAnimation, oAnimationID, oPosition, tScaleCoordinateP);
 }
 
 static void loadSingleUITextWithFullComponentNameForStorage(MugenDefScript* tScript, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, Position* oPosition, int tIsReadingText, char* tText, Vector3DI* oFontData) {
@@ -401,10 +463,10 @@ static void loadSingleHealthBar(int i, MugenDefScript* tScript) {
 	basePosition.z = 20;
 
 	int coordP = COORD_P; // TODO
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Lifebar", "bg0", 1, &bar->mBG0AnimationID, &bar->mBG0Position, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Lifebar", "bg1", 2, &bar->mBG1AnimationID, &bar->mBG1Position, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Lifebar", "mid", 3,  &bar->mMidAnimationID, &bar->mMidPosition, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Lifebar", "front", 4, &bar->mFrontAnimationID, &bar->mFrontPosition, coordP);
+	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Lifebar", "bg0", 1, &bar->mBG0Animation, &bar->mOwnsBG0Animation, &bar->mBG0AnimationID, &bar->mBG0Position, coordP);
+	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Lifebar", "bg1", 2, &bar->mBG1Animation, &bar->mOwnsBG1Animation, &bar->mBG1AnimationID, &bar->mBG1Position, coordP);
+	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Lifebar", "mid", 3, &bar->mMidAnimation, &bar->mOwnsMidAnimation,  &bar->mMidAnimationID, &bar->mMidPosition, coordP);
+	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Lifebar", "front", 4, &bar->mFrontAnimation, &bar->mOwnsFrontAnimation, &bar->mFrontAnimationID, &bar->mFrontPosition, coordP);
 
 	sprintf(name, "p%d.range.x", i + 1);
 	bar->mHealthRangeX = getMugenDefVectorOrDefault(tScript, "Lifebar", name, makePosition(0, 0, 0));
@@ -425,10 +487,10 @@ static void loadSinglePowerBar(int i, MugenDefScript* tScript) {
 	basePosition.z = 20;
 
 	int coordP = COORD_P; // TODO
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "bg0", 1, &bar->mBG0AnimationID, &bar->mBG0Position, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "bg1", 2, &bar->mBG1AnimationID, &bar->mBG1Position, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "mid", 3, &bar->mMidAnimationID, &bar->mMidPosition, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "front", 4, &bar->mFrontAnimationID, &bar->mFrontPosition, coordP);
+	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "bg0", 1, &bar->mBG0Animation, &bar->mOwnsBG0Animation, &bar->mBG0AnimationID, &bar->mBG0Position, coordP);
+	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "bg1", 2, &bar->mBG1Animation, &bar->mOwnsBG1Animation, &bar->mBG1AnimationID, &bar->mBG1Position, coordP);
+	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "mid", 3, &bar->mMidAnimation, &bar->mOwnsMidAnimation, &bar->mMidAnimationID, &bar->mMidPosition, coordP);
+	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "front", 4, &bar->mFrontAnimation, &bar->mOwnsFrontAnimation, &bar->mFrontAnimationID, &bar->mFrontPosition, coordP);
 	
 	strcpy(bar->mCounterText, "0");
 	loadSingleUIText(i, tScript, basePosition, "Powerbar", "counter", 5, &bar->mCounterTextID, &bar->mCounterPosition, 0, bar->mCounterText, &bar->mCounterFont);
@@ -457,10 +519,10 @@ static void loadSingleFace(int i, MugenDefScript* tScript) {
 
 	DreamPlayer* p = getRootPlayer(i);
 	int coordP = COORD_P; // TODO
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Face", "bg", 1, &face->mBGAnimationID, &face->mBGPosition, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Face", "bg0", 1, &face->mBG0AnimationID, &face->mBG0Position, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Face", "bg1", 2, &face->mBG1AnimationID, &face->mBG1Position, coordP);
-	loadSingleUIComponent(i, tScript, getPlayerSprites(p), getPlayerAnimations(p), basePosition, "Face", "face", 3, &face->mFaceAnimationID, &face->mFacePosition, getPlayerCoordinateP(p));
+	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Face", "bg", 1, &face->mBGAnimation, &face->mOwnsBGAnimation, &face->mBGAnimationID, &face->mBGPosition, coordP);
+	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Face", "bg0", 1, &face->mBG0Animation, &face->mOwnsBG0Animation, &face->mBG0AnimationID, &face->mBG0Position, coordP);
+	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Face", "bg1", 2, &face->mBG1Animation, &face->mOwnsBG1Animation, &face->mBG1AnimationID, &face->mBG1Position, coordP);
+	loadSingleUIComponent(i, tScript, getPlayerSprites(p), getPlayerAnimations(p), basePosition, "Face", "face", 3, &face->mFaceAnimation, &face->mOwnsFaceAnimation, &face->mFaceAnimationID, &face->mFacePosition, getPlayerCoordinateP(p));
 
 }
 
@@ -475,11 +537,58 @@ static void loadSingleName(int i, MugenDefScript* tScript) {
 	basePosition.z = 20;
 
 	int coordP = COORD_P; // TODO
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Name", "bg", 0, &displayName->mBGAnimationID, &displayName->mBGPosition, coordP);
+	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Name", "bg", 0, &displayName->mBGAnimation, &displayName->mOwnsBGAnimation, &displayName->mBGAnimationID, &displayName->mBGPosition, coordP);
 
 	char displayNameText[1024];
 	sprintf(displayNameText, "%s", getPlayerDisplayName(getRootPlayer(i)));
 	loadSingleUIText(i, tScript, basePosition, "Name", "name", 10, &displayName->mTextID, &displayName->mTextPosition, 0, displayNameText, &displayName->mFont);
+}
+
+static void loadSingleWinIcon(int i, MugenDefScript* tScript) {
+	char name[1024];
+
+	WinIcon* winIcon = &gData.mWinIcons[i];
+
+	sprintf(name, "p%d.pos", i + 1);
+	winIcon->mPosition = getMugenDefVectorOrDefault(tScript, "WinIcon", name, makePosition(0, 0, 0));
+	winIcon->mPosition.z = 20;
+
+	sprintf(name, "p%d.iconoffset", i + 1);
+	winIcon->mOffset = getMugenDefVectorOrDefault(tScript, "WinIcon", name, makePosition(0, 0, 0));
+
+	sprintf(name, "p%d.counter.offset", i + 1);
+	winIcon->mCounterOffset = getMugenDefVectorOrDefault(tScript, "WinIcon", name, makePosition(0, 0, 0));
+
+	sprintf(name, "p%d.counter.font", i + 1);
+	winIcon->mCounterFont = getMugenDefVectorIOrDefault(tScript, "WinIcon", name, makeVector3DI(1, 0, 0));
+
+	sprintf(name, "p%d.n.spr", i + 1);
+	winIcon->mNormalWin = getMugenDefVectorIOrDefault(tScript, "WinIcon", name, makeVector3DI(0, 0, 0));
+	sprintf(name, "p%d.s.spr", i + 1);
+	winIcon->mSpecialWin = getMugenDefVectorIOrDefault(tScript, "WinIcon", name, makeVector3DI(0, 0, 0));
+	sprintf(name, "p%d.h.spr", i + 1);
+	winIcon->mHyperWin = getMugenDefVectorIOrDefault(tScript, "WinIcon", name, makeVector3DI(0, 0, 0));
+	sprintf(name, "p%d.throw.spr", i + 1);
+	winIcon->mThrowWin = getMugenDefVectorIOrDefault(tScript, "WinIcon", name, makeVector3DI(0, 0, 0));
+	sprintf(name, "p%d.c.spr", i + 1);
+	winIcon->mCheeseWin = getMugenDefVectorIOrDefault(tScript, "WinIcon", name, makeVector3DI(0, 0, 0));
+	sprintf(name, "p%d.t.spr", i + 1);
+	winIcon->mTimeOverWin = getMugenDefVectorIOrDefault(tScript, "WinIcon", name, makeVector3DI(0, 0, 0));
+	sprintf(name, "p%d.suicide.spr", i + 1);
+	winIcon->mSuicideWin = getMugenDefVectorIOrDefault(tScript, "WinIcon", name, makeVector3DI(0, 0, 0));
+	sprintf(name, "p%d.teammate.spr", i + 1);
+	winIcon->mTeammateWin = getMugenDefVectorIOrDefault(tScript, "WinIcon", name, makeVector3DI(0, 0, 0));
+	sprintf(name, "p%d.perfect.spr", i + 1);
+	winIcon->mPerfectWin = getMugenDefVectorIOrDefault(tScript, "WinIcon", name, makeVector3DI(0, 0, 0));
+	
+	winIcon->mIconUpToAmount = getMugenDefIntegerOrDefault(tScript, "WinIcon", "useiconupto", 4);
+
+	winIcon->mIconAnimationIDs = allocMemory(sizeof(int) * winIcon->mIconUpToAmount);
+	winIcon->mIconAnimations = allocMemory(sizeof(MugenAnimation*) * winIcon->mIconUpToAmount);
+	winIcon->mHasIsPerfectIcon = allocMemory(sizeof(int*) * winIcon->mIconUpToAmount);
+	winIcon->mPerfectIconAnimations = allocMemory(sizeof(MugenAnimation*) * winIcon->mIconUpToAmount);
+	winIcon->mPerfectIconAnimationIDs = allocMemory(sizeof(int*) * winIcon->mIconUpToAmount);
+	winIcon->mIconAmount = 0;
 }
 
 static void loadPlayerUIs(MugenDefScript* tScript) {
@@ -489,6 +598,7 @@ static void loadPlayerUIs(MugenDefScript* tScript) {
 		loadSinglePowerBar(i, tScript);
 		loadSingleFace(i, tScript);
 		loadSingleName(i, tScript);
+		loadSingleWinIcon(i, tScript);
 		setDreamLifeBarPercentage(getRootPlayer(i), 1);
 		setDreamPowerBarPercentage(getRootPlayer(i), 0, 0);
 	}
@@ -502,7 +612,7 @@ static void loadTimer(MugenDefScript* tScript) {
 	basePosition.z = 20;
 
 	int coordP = COORD_P; // TODO
-	loadSingleUIComponentWithFullComponentName(tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Time", "bg", 0, &gData.mTime.mBGAnimationID, &gData.mTime.mBGPosition, coordP);
+	loadSingleUIComponentWithFullComponentName(tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Time", "bg", 0, &gData.mTime.mBGAnimation, &gData.mTime.mOwnsBGAnimation, &gData.mTime.mBGAnimationID, &gData.mTime.mBGPosition, coordP);
 
 	gData.mTime.mPosition = getMugenDefVectorOrDefault(tScript, "Time", "counter.offset", makePosition(0, 0, 0));
 	gData.mTime.mPosition = vecAdd(gData.mTime.mPosition, basePosition);
@@ -518,7 +628,7 @@ static void loadTimer(MugenDefScript* tScript) {
 
 	playDisplayText(&gData.mTime.mTextID, "99", gData.mTime.mPosition, gData.mTime.mFont);
 	
-
+	gData.mTime.mIsFinished = 0;
 	gData.mTime.mValue = 99;
 	gData.mTime.mNow = 0;
 	gData.mTime.mTimerFreezeFlag = 0;
@@ -536,7 +646,7 @@ static void loadRound(MugenDefScript* tScript) {
 
 	if (isMugenDefVariable(tScript, "Round", "round.default.anim")) {
 		gData.mRound.mHasDefaultAnimation = 1;
-		assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "round.default", 1, &gData.mRound.mDefaultAnimation, &gData.mRound.mPosition, &gData.mRound.mDefaultFaceDirection));
+		assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "round.default", 1, &gData.mRound.mDefaultAnimation, &gData.mRound.mOwnsDefaultAnimation, &gData.mRound.mPosition, &gData.mRound.mDefaultFaceDirection));
 	}
 	else {
 		gData.mRound.mHasDefaultAnimation = 0;
@@ -554,7 +664,7 @@ static void loadRound(MugenDefScript* tScript) {
 		else {
 			gData.mRound.mHasCustomRoundAnimation[i] = 1;
 			sprintf(name, "round%d", i + 1);
-			assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", name, 1, &gData.mRound.mCustomRoundAnimations[i], &gData.mRound.mCustomRoundPositions[i], &gData.mRound.mCustomRoundFaceDirection[i]));
+			assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", name, 1, &gData.mRound.mCustomRoundAnimations[i], &gData.mRound.mOwnsCustomRoundAnimations[i], &gData.mRound.mCustomRoundPositions[i], &gData.mRound.mCustomRoundFaceDirection[i]));
 		}
 
 		sprintf(name, "round%d.snd", i + 1);
@@ -575,7 +685,7 @@ static void loadFight(MugenDefScript* tScript) {
 	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
 	basePosition.z = 20;
 
-	assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "fight", 1, &gData.mFight.mAnimation, &gData.mFight.mPosition, &gData.mFight.mFaceDirection));
+	assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "fight", 1, &gData.mFight.mAnimation, &gData.mFight.mOwnsAnimation, &gData.mFight.mPosition, &gData.mFight.mFaceDirection));
 	gData.mFight.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "fight.sndtime", 0);
 	gData.mFight.mSound = getMugenDefVectorIOrDefault(tScript, "Round", "fight.snd", makeVector3DI(1, 0, 0));
 
@@ -587,7 +697,7 @@ static void loadKO(MugenDefScript* tScript) {
 	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
 	basePosition.z = 20;
 
-	assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "ko", 1, &gData.mKO.mAnimation, &gData.mKO.mPosition, &gData.mKO.mFaceDirection));
+	assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "ko", 1, &gData.mKO.mAnimation, &gData.mKO.mOwnsAnimation, &gData.mKO.mPosition, &gData.mKO.mFaceDirection));
 	gData.mKO.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "ko.sndtime", 0);
 	gData.mKO.mSound = getMugenDefVectorIOrDefault(tScript, "Round", "ko.snd", makeVector3DI(1, 0, 0));
 
@@ -655,6 +765,140 @@ static void loadFightUI(void* tData) {
 	loadEnvironmentShakeEffects();
 }
 
+static void unloadSingleUIComponent(MugenAnimation* tAnimation, int tOwnsAnimation) {
+	if (!tOwnsAnimation) return;
+	destroyMugenAnimation(tAnimation);
+}
+
+static void unloadSingleOptionalUIComponent(MugenAnimation* tAnimation, int tOwnsAnimation, int tAnimationID) {
+	if (tAnimationID == -1) return;
+	unloadSingleUIComponent(tAnimation, tOwnsAnimation);
+}
+
+static void unloadFightDefFiles() {
+	unloadMugenSpriteFile(&gData.mFightSprites);
+	unloadMugenAnimationFile(&gData.mFightAnimations);
+	unloadMugenSpriteFile(&gData.mFightFXSprites);
+	unloadMugenAnimationFile(&gData.mFightFXAnimations);
+
+	unloadMugenSoundFile(&gData.mFightSounds);
+	unloadMugenSoundFile(&gData.mCommonSounds);
+}
+
+
+
+static void unloadSingleHealthBar(int i) {
+	HealthBar* bar = &gData.mHealthBars[i];
+
+	unloadSingleOptionalUIComponent(bar->mBG0Animation, bar->mOwnsBG0Animation, bar->mBG0AnimationID);
+	unloadSingleOptionalUIComponent(bar->mBG1Animation, bar->mOwnsBG1Animation, bar->mBG1AnimationID);
+	unloadSingleOptionalUIComponent(bar->mMidAnimation, bar->mOwnsMidAnimation, bar->mMidAnimationID);
+	unloadSingleOptionalUIComponent(bar->mFrontAnimation, bar->mOwnsFrontAnimation, bar->mFrontAnimationID);
+}
+
+static void unloadSinglePowerBar(int i) {
+	PowerBar* bar = &gData.mPowerBars[i];
+
+	unloadSingleOptionalUIComponent(bar->mBG0Animation, bar->mOwnsBG0Animation, bar->mBG0AnimationID);
+	unloadSingleOptionalUIComponent(bar->mBG1Animation, bar->mOwnsBG1Animation, bar->mBG1AnimationID);
+	unloadSingleOptionalUIComponent(bar->mMidAnimation, bar->mOwnsMidAnimation, bar->mMidAnimationID);
+	unloadSingleOptionalUIComponent(bar->mFrontAnimation, bar->mOwnsFrontAnimation, bar->mFrontAnimationID);
+}
+
+static void unloadSingleFace(int i) {
+	Face* face = &gData.mFaces[i];
+
+	unloadSingleOptionalUIComponent(face->mBGAnimation, face->mOwnsBGAnimation, face->mBGAnimationID);
+	unloadSingleOptionalUIComponent(face->mBG0Animation, face->mOwnsBG0Animation, face->mBG0AnimationID);
+	unloadSingleOptionalUIComponent(face->mBG1Animation, face->mOwnsBG1Animation, face->mBG1AnimationID);
+	unloadSingleOptionalUIComponent(face->mFaceAnimation, face->mOwnsFaceAnimation, face->mFaceAnimationID);
+}
+
+static void unloadSingleName(int i) {
+	DisplayName* displayName = &gData.mDisplayName[i];
+
+	unloadSingleOptionalUIComponent(displayName->mBGAnimation, displayName->mOwnsBGAnimation, displayName->mBGAnimationID);
+}
+
+
+static void unloadSingleWinIcon(int i) {
+	WinIcon* winIcon = &gData.mWinIcons[i];
+
+	int j;
+	for (j = 0; j < winIcon->mIconAmount; j++) {
+		destroyMugenAnimation(winIcon->mIconAnimations[j]);
+
+		if (winIcon->mHasIsPerfectIcon[j]) {
+			destroyMugenAnimation(winIcon->mPerfectIconAnimations[j]);
+		}
+	}
+
+	freeMemory(winIcon->mIconAnimationIDs);
+	freeMemory(winIcon->mIconAnimations);
+	freeMemory(winIcon->mHasIsPerfectIcon);
+	freeMemory(winIcon->mPerfectIconAnimations);
+	freeMemory(winIcon->mPerfectIconAnimationIDs);
+}
+
+static void unloadPlayerUIs() {
+	int i;
+	for (i = 0; i < 2; i++) {
+		unloadSingleHealthBar(i);
+		unloadSinglePowerBar(i);
+		unloadSingleFace(i);
+		unloadSingleName(i);
+		unloadSingleWinIcon(i);
+	}
+}
+
+static void unloadTimer() {
+	unloadSingleOptionalUIComponent(gData.mTime.mBGAnimation, gData.mTime.mOwnsBGAnimation, gData.mTime.mBGAnimationID);
+}
+
+static void unloadRound() {
+	if (gData.mRound.mHasDefaultAnimation) {
+		gData.mRound.mHasDefaultAnimation = 1;
+		unloadSingleUIComponent(gData.mRound.mDefaultAnimation, gData.mRound.mOwnsDefaultAnimation);
+	}
+
+	int i;
+	for (i = 0; i < 9; i++) {
+		if (gData.mRound.mHasCustomRoundAnimation[i]) {
+			unloadSingleUIComponent(gData.mRound.mCustomRoundAnimations[i], gData.mRound.mOwnsCustomRoundAnimations[i]);
+		}
+	}
+}
+
+static void unloadFight() {
+	unloadSingleUIComponent(gData.mFight.mAnimation, gData.mFight.mOwnsAnimation);
+}
+
+static void unloadKO() {	
+	unloadSingleUIComponent(gData.mKO.mAnimation, gData.mKO.mOwnsAnimation);
+}
+
+static void unloadHitSparks() {
+	delete_list(&gData.mHitSparks);
+}
+
+static void unloadEnvironmentColorEffects() {
+	unloadTexture(gData.mEnvironmentEffects.mWhiteTexture);
+}
+
+
+static void unloadFightUI(void* tData) {
+	(void)tData;
+
+	unloadFightDefFiles();
+	unloadPlayerUIs();
+	unloadTimer();
+	unloadRound();
+	unloadFight();
+	unloadKO();
+
+	unloadHitSparks();
+	unloadEnvironmentColorEffects();
+}
 
 typedef struct {
 	Position mPosition;
@@ -861,6 +1105,7 @@ static void updateTimeDisplayText() {
 static void updateTimeDisplay() {
 	if (!gData.mTime.mIsActive) return;
 	if (gData.mTime.mIsInfinite) return;
+	if (gData.mTime.mIsFinished) return;
 	if (gData.mTime.mTimerFreezeFlag) {
 		gData.mTime.mTimerFreezeFlag = 0;
 		return;
@@ -872,6 +1117,7 @@ static void updateTimeDisplay() {
 		gData.mTime.mValue--;
 		if (gData.mTime.mValue < 0) {
 			gData.mTime.mValue = 0;
+			gData.mTime.mIsFinished = 1;
 			gData.mTime.mFinishedCB();
 		}
 
@@ -946,6 +1192,7 @@ static void updateFightUI(void* tData) {
 
 ActorBlueprint DreamFightUIBP = {
 	.mLoad = loadFightUI,
+	.mUnload = unloadFightUI,
 	.mUpdate = updateFightUI,
 };
 
@@ -954,7 +1201,6 @@ void playDreamHitSpark(Position tPosition, DreamPlayer* tPlayer, int tIsInPlayer
 	MugenAnimation* anim;
 	MugenSpriteFile* spriteFile;
 
-	printf("%d %d plays %d %d\n", tPlayer->mRootID, tPlayer->mID, tIsInPlayerFile, tNumber);
 	if (tIsInPlayerFile) {
 		spriteFile = getPlayerSprites(tPlayer);
 		if(!hasMugenAnimation(getPlayerAnimations(tPlayer), tNumber)) return;
@@ -1035,6 +1281,7 @@ void resetDreamTimer()
 {
 	gData.mTime.mNow = 0;
 	gData.mTime.mValue = 99;
+	gData.mTime.mIsFinished = 0;
 	updateTimeDisplayText();
 }
 
@@ -1225,6 +1472,11 @@ void setTimerFinite()
 	gData.mTime.mIsInfinite = 0;
 }
 
+int isTimerFinished()
+{
+	return gData.mTime.mIsActive && !gData.mTime.mIsInfinite && gData.mTime.mIsFinished;
+}
+
 void setEnvironmentColor(Vector3DI tColors, int tTime, int tIsUnderCharacters)
 {
 	setAnimationPosition(gData.mEnvironmentEffects.mAnimationID, makePosition(0, 0, tIsUnderCharacters ? 20 : 80));
@@ -1247,4 +1499,90 @@ void setEnvironmentShake(int tDuration, double tFrequency, int tAmplitude, doubl
 	gData.mEnvironmentShake.mNow = 0;
 	gData.mEnvironmentShake.mDuration = tDuration;
 	gData.mEnvironmentShake.mIsActive = 1;
+}
+
+static void addGeneralWinIcon(int tPlayer, Vector3DI tSprite, int tIsPerfect) {
+	WinIcon* icon = &gData.mWinIcons[tPlayer];
+
+	if (icon->mIconAmount >= icon->mIconUpToAmount) return;
+
+	int id = icon->mIconAmount;
+	Position pos = vecAdd2D(icon->mPosition, vecScale(icon->mOffset, id));	
+	icon->mIconAnimations[id] = createOneFrameMugenAnimationForSprite(tSprite.x, tSprite.y);
+	icon->mIconAnimationIDs[id] = addMugenAnimation(icon->mIconAnimations[id], &gData.mFightSprites, pos);
+
+	icon->mHasIsPerfectIcon[id] = tIsPerfect;
+	if (icon->mHasIsPerfectIcon[id]) {
+		pos.z++;
+		icon->mPerfectIconAnimations[id] = createOneFrameMugenAnimationForSprite(icon->mPerfectWin.x, icon->mPerfectWin.y);
+		icon->mPerfectIconAnimationIDs[id] = addMugenAnimation(icon->mPerfectIconAnimations[id], &gData.mFightSprites, pos);
+	}
+
+	icon->mIconAmount++;
+}
+
+void addNormalWinIcon(int tPlayer, int tIsPerfect)
+{
+	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	addGeneralWinIcon(tPlayer, icon->mNormalWin, tIsPerfect);
+}
+
+void addSpecialWinIcon(int tPlayer, int tIsPerfect) {
+	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	addGeneralWinIcon(tPlayer, icon->mSpecialWin, tIsPerfect);
+}
+
+void addHyperWinIcon(int tPlayer, int tIsPerfect) {
+	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	addGeneralWinIcon(tPlayer, icon->mHyperWin, tIsPerfect);
+}
+
+void addThrowWinIcon(int tPlayer, int tIsPerfect) {
+	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	addGeneralWinIcon(tPlayer, icon->mThrowWin, tIsPerfect);
+}
+
+void addCheeseWinIcon(int tPlayer, int tIsPerfect) {
+	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	addGeneralWinIcon(tPlayer, icon->mCheeseWin, tIsPerfect);
+}
+
+void addTimeoverWinIcon(int tPlayer, int tIsPerfect) {
+	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	addGeneralWinIcon(tPlayer, icon->mTimeOverWin, tIsPerfect);
+}
+
+void addSuicideWinIcon(int tPlayer, int tIsPerfect) {
+	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	addGeneralWinIcon(tPlayer, icon->mSuicideWin, tIsPerfect);
+}
+
+void addTeammateWinIcon(int tPlayer, int tIsPerfect) {
+	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	addGeneralWinIcon(tPlayer, icon->mTeammateWin, tIsPerfect);
+}
+
+static void removeSinglePlayerWinIcons(int tPlayer) {
+	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	int i;
+	for (i = 0; i < icon->mIconAmount; i++) {
+		removeMugenAnimation(icon->mIconAnimationIDs[i]);
+		destroyMugenAnimation(icon->mIconAnimations[i]);
+
+		if (icon->mHasIsPerfectIcon[i]) {
+			removeMugenAnimation(icon->mPerfectIconAnimationIDs[i]);
+			destroyMugenAnimation(icon->mPerfectIconAnimations[i]);
+		}
+	}
+
+	icon->mIconAmount = 0;
+}
+
+void removeAllWinIcons()
+{
+	int i;
+	for (i = 0; i < 2; i++) {
+		removeSinglePlayerWinIcons(i);
+	}
+
 }

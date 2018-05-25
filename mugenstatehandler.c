@@ -41,6 +41,11 @@ static void loadStateHandler(void* tData) {
 	gData.mRegisteredStates = new_int_map();
 }
 
+static void unloadStateHandler(void* tData) {
+	(void)tData;
+	delete_int_map(&gData.mRegisteredStates);
+}
+
 typedef struct {
 	RegisteredState* mRegisteredState;
 	DreamMugenState* mState;
@@ -85,7 +90,6 @@ static void updateSingleState(RegisteredState* tRegisteredState, int tState, Dre
 
 	int isEvaluating = 1;
 	while (isEvaluating) {
-		// printf("%d %d eval: %d\n", tRegisteredState->mPlayer->mRootID, tRegisteredState->mPlayer->mID, tState);
 		if (!int_map_contains(&tStates->mStates, tState)) return;
 		DreamMugenState* state = int_map_get(&tStates->mStates, tState);
 		MugenStateControllerCaller caller;
@@ -136,6 +140,7 @@ static void updateStateHandler(void* tData) {
 
 ActorBlueprint DreamMugenStateHandler = {
 	.mLoad = loadStateHandler,
+	.mUnload = unloadStateHandler,
 	.mUpdate = updateStateHandler,
 };
 
@@ -215,7 +220,6 @@ int getDreamRegisteredStateTimeInState(int tID)
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
 	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
 
-	// printf("%d %d time in state %d\n", e->mPlayer->mRootID, e->mPlayer->mID, e->mTimeInState);
 	return e->mTimeInState;
 }
 
@@ -283,7 +287,6 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 	resetStateControllers(newState);
 	
 	if (!e->mPlayer) return;
-	printf("Changing %d %d from state %d to %d\n", e->mPlayer->mRootID, e->mPlayer->mID, e->mPreviousState, e->mState);
 
 	resetPlayerMoveContactCounter(e->mPlayer);
 	setPlayerStateType(e->mPlayer, newState->mType);

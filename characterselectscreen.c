@@ -318,7 +318,7 @@ static void loadMenuCharacterSpritesAndName(SelectCharacter* e, char* tCharacter
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
 	e->mSprites = loadMugenSpriteFilePortraits(scriptPath, preferredPalette, hasPalettePath, palettePath);
-	
+
 	strcpy(e->mCharacterName, tCharacterName);
 	e->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "Info", "displayname");
 
@@ -503,6 +503,69 @@ static void loadCharacterSelectScreen() {
 
 	gData.mIsFadingOut = 0;
 	addFadeIn(gData.mHeader.mFadeInTime, NULL, NULL);
+}
+
+static void unloadSingleSelectStage(void* tCaller, void* tData) {
+	(void)tCaller;
+	SelectStage* e = tData;
+	freeMemory(e->mName);
+}
+
+static void unloadSelectStages() {
+	if (!gData.mStageSelect.mIsUsing) return;
+
+	vector_map(&gData.mSelectStages, unloadSingleSelectStage, NULL);
+	delete_vector(&gData.mSelectStages);
+}
+
+static void unloadSingleSelectCharacter(void* tCaller, void* tData) {
+	(void)tCaller;
+	SelectCharacter* e = tData;
+	if (e->mIsCharacter) {
+		unloadMugenSpriteFile(&e->mSprites);
+		freeMemory(e->mDisplayCharacterName);
+	}
+}
+
+static void unloadSingleSelectCharacterRow(void* tCaller, void* tData) {
+	(void)tCaller;
+	Vector* e = tData;
+	vector_map(e, unloadSingleSelectCharacter, NULL);
+	delete_vector(e);
+}
+
+
+static void unloadSelectCharacters() {
+	vector_map(&gData.mSelectCharacters, unloadSingleSelectCharacterRow, NULL);
+	delete_vector(&gData.mSelectCharacters);
+}
+
+
+static void unloadCharacterSelectScreen() {
+	unloadMugenDefScript(gData.mScript);
+	unloadMugenDefScript(gData.mCharacterScript);
+
+	unloadMugenSpriteFile(&gData.mSprites);
+	unloadMugenAnimationFile(&gData.mAnimations);
+	unloadMugenSoundFile(&gData.mSounds);
+
+	destroyMugenAnimation(gData.mHeader.mCellBackgroundAnimation);
+	destroyMugenAnimation(gData.mHeader.mRandomSelectionAnimation);
+
+	int i;
+	for (i = 0; i < 2; i++) {
+		destroyMugenAnimation(gData.mHeader.mPlayers[i].mActiveCursorAnimation);
+		destroyMugenAnimation(gData.mHeader.mPlayers[i].mDoneCursorAnimation);
+		destroyMugenAnimation(gData.mHeader.mPlayers[i].mBigPortraitAnimation);
+	}
+
+	destroyMugenAnimation(gData.mHeader.mSmallPortraitAnimation);
+
+	unloadTexture(gData.mWhiteTexture);
+
+	unloadSelectCharacters();
+	unloadSelectStages();
+
 }
 
 static void handleSingleWrapping(int* tPosition, int tSize) {
@@ -848,6 +911,7 @@ static void updateCharacterSelectScreen() {
 
 Screen CharacterSelectScreen = {
 	.mLoad = loadCharacterSelectScreen,
+	.mUnload = unloadCharacterSelectScreen,
 	.mUpdate = updateCharacterSelectScreen,
 };
 
