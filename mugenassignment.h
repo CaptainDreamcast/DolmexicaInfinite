@@ -37,43 +37,49 @@ typedef enum {
 } DreamMugenAssignmentType;
 
 typedef struct {
-	DreamMugenAssignmentType mType;
-	void* mData;
-
+	uint8_t mType;
 } DreamMugenAssignment;
 
 typedef struct {
+	uint8_t mType;
 	int mValue;
 } DreamMugenNumberAssignment;
 
 typedef struct {
+	uint8_t mType;
 	double mValue;
 } DreamMugenFloatAssignment;
 
 typedef struct {
+	uint8_t mType;
 	char* mValue;
 } DreamMugenStringAssignment;
 
 typedef struct {
+	uint8_t mType;
 	char* mName;
 } DreamMugenVariableAssignment;
 
 typedef struct {
-	int mValue;
+	uint8_t mType;
+	uint8_t mValue;
 } DreamMugenFixedBooleanAssignment;
 
 typedef struct {
+	uint8_t mType;
 	int mExcludeLeft;
 	int mExcludeRight;
 	DreamMugenAssignment* a;
 } DreamMugenRangeAssignment;
 
 typedef struct {
+	uint8_t mType;
 	DreamMugenAssignment* a;
 	DreamMugenAssignment* b;
 } DreamMugenDependOnTwoAssignment;
 
 typedef struct {
+	uint8_t mType;
 	DreamMugenAssignment* a;
 } DreamMugenDependOnOneAssignment;
 

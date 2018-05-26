@@ -83,7 +83,7 @@ static AssignmentReturnValue makeStringAssignmentReturn(char* tValue) {
 }
 
 static AssignmentReturnValue evaluateOrAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* orAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* orAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 
 	AssignmentReturnValue a = evaluateAssignmentInternal(orAssignment->a, tPlayer);
 	int valA = evaluateAssignmentReturnAsBool(a);
@@ -96,7 +96,7 @@ static AssignmentReturnValue evaluateOrAssignment(DreamMugenAssignment* tAssignm
 }
 
 static AssignmentReturnValue evaluateAndAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* andAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* andAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 
 	AssignmentReturnValue a = evaluateAssignmentInternal(andAssignment->a, tPlayer);
 	int valA = evaluateAssignmentReturnAsBool(a);
@@ -109,7 +109,7 @@ static AssignmentReturnValue evaluateAndAssignment(DreamMugenAssignment* tAssign
 }
 
 static AssignmentReturnValue evaluateBitwiseOrAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* bitwiseOrAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* bitwiseOrAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 
 	AssignmentReturnValue a = evaluateAssignmentInternal(bitwiseOrAssignment->a, tPlayer);
 	int valA = evaluateAssignmentReturnAsNumber(a);
@@ -121,7 +121,7 @@ static AssignmentReturnValue evaluateBitwiseOrAssignment(DreamMugenAssignment* t
 }
 
 static AssignmentReturnValue evaluateBitwiseAndAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* bitwiseAndAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* bitwiseAndAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 
 	AssignmentReturnValue a = evaluateAssignmentInternal(bitwiseAndAssignment->a, tPlayer);
 	int valA = evaluateAssignmentReturnAsNumber(a);
@@ -361,13 +361,13 @@ static int isFloatReturn(AssignmentReturnValue tReturn) {
 
 
 static AssignmentReturnValue evaluateSetVariableAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* varSetAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* varSetAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	
 	if (varSetAssignment->a->mType != MUGEN_ASSIGNMENT_TYPE_ARRAY){
 		logWarningFormat("Incorrect varset type %d. Defaulting to bottom.", varSetAssignment->a->mType);
 		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}
-	DreamMugenDependOnTwoAssignment* varArrayAccess = varSetAssignment->a->mData;
+	DreamMugenDependOnTwoAssignment* varArrayAccess = (DreamMugenDependOnTwoAssignment*)varSetAssignment->a;
 	AssignmentReturnValue a = evaluateAssignmentInternal(varArrayAccess->a, tPlayer);
 	int index = evaluateDreamAssignmentAndReturnAsInteger(varArrayAccess->b, tPlayer);
 
@@ -591,7 +591,7 @@ static AssignmentReturnValue evaluateComparisonAssignmentInternal(DreamMugenAssi
 	char name[MUGEN_DEF_STRING_LENGTH];
 	
 	if (mAssignment->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE) {
-		DreamMugenVariableAssignment* var = mAssignment->mData;
+		DreamMugenVariableAssignment* var = (DreamMugenVariableAssignment*)mAssignment;
 		strcpy(name, var->mName);
 		turnStringLowercase(name);
 	}
@@ -652,12 +652,12 @@ static AssignmentReturnValue evaluateComparisonAssignmentInternal(DreamMugenAssi
 }
 
 static AssignmentReturnValue evaluateComparisonAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* comparisonAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* comparisonAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 
 	AssignmentReturnValue b = evaluateAssignmentInternal(comparisonAssignment->b, tPlayer);
 
 	if (comparisonAssignment->a->mType == MUGEN_ASSIGNMENT_TYPE_VECTOR) {
-		DreamMugenDependOnTwoAssignment* vectorAssignment = comparisonAssignment->a->mData;
+		DreamMugenDependOnTwoAssignment* vectorAssignment = (DreamMugenDependOnTwoAssignment*)comparisonAssignment->a;
 		AssignmentReturnValue vecA = evaluateAssignmentInternal(vectorAssignment->a, tPlayer);
 
 		if (isPlayerAccessVectorAssignment(vecA, tPlayer)) {
@@ -691,7 +691,7 @@ static AssignmentReturnValue evaluateGreaterFloats(AssignmentReturnValue a, Assi
 }
 
 static AssignmentReturnValue evaluateGreaterAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* greaterAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* greaterAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	AssignmentReturnValue a = evaluateAssignmentInternal(greaterAssignment->a, tPlayer);
 	AssignmentReturnValue b = evaluateAssignmentInternal(greaterAssignment->b, tPlayer);
 
@@ -714,7 +714,7 @@ static AssignmentReturnValue evaluateGreaterOrEqualFloats(AssignmentReturnValue 
 }
 
 static AssignmentReturnValue evaluateGreaterOrEqualAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* greaterOrEqualAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* greaterOrEqualAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	AssignmentReturnValue a = evaluateAssignmentInternal(greaterOrEqualAssignment->a, tPlayer);
 	AssignmentReturnValue b = evaluateAssignmentInternal(greaterOrEqualAssignment->b, tPlayer);
 
@@ -737,7 +737,7 @@ static AssignmentReturnValue evaluateLessFloats(AssignmentReturnValue a, Assignm
 }
 
 static AssignmentReturnValue evaluateLessAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* lessAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* lessAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	AssignmentReturnValue a = evaluateAssignmentInternal(lessAssignment->a, tPlayer);
 	AssignmentReturnValue b = evaluateAssignmentInternal(lessAssignment->b, tPlayer);
 
@@ -760,7 +760,7 @@ static AssignmentReturnValue evaluateLessOrEqualFloats(AssignmentReturnValue a, 
 }
 
 static AssignmentReturnValue evaluateLessOrEqualAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* lessOrEqualAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* lessOrEqualAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	AssignmentReturnValue a = evaluateAssignmentInternal(lessOrEqualAssignment->a, tPlayer);
 	AssignmentReturnValue b = evaluateAssignmentInternal(lessOrEqualAssignment->b, tPlayer);
 
@@ -778,7 +778,7 @@ static AssignmentReturnValue evaluateModuloIntegers(AssignmentReturnValue a, Ass
 }
 
 static AssignmentReturnValue evaluateModuloAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* moduloAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* moduloAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	AssignmentReturnValue a = evaluateAssignmentInternal(moduloAssignment->a, tPlayer);
 	AssignmentReturnValue b = evaluateAssignmentInternal(moduloAssignment->b, tPlayer);
 
@@ -818,7 +818,7 @@ static AssignmentReturnValue evaluateExponentiationFloats(AssignmentReturnValue 
 }
 
 static AssignmentReturnValue evaluateExponentiationAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* exponentiationAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* exponentiationAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	AssignmentReturnValue a = evaluateAssignmentInternal(exponentiationAssignment->a, tPlayer);
 	AssignmentReturnValue b = evaluateAssignmentInternal(exponentiationAssignment->b, tPlayer);
 
@@ -842,7 +842,7 @@ static AssignmentReturnValue evaluateMultiplicationFloats(AssignmentReturnValue 
 }
 
 static AssignmentReturnValue evaluateMultiplicationAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* multiplicationAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* multiplicationAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	AssignmentReturnValue a = evaluateAssignmentInternal(multiplicationAssignment->a, tPlayer);
 	AssignmentReturnValue b = evaluateAssignmentInternal(multiplicationAssignment->b, tPlayer);
 
@@ -865,7 +865,7 @@ static AssignmentReturnValue evaluateDivisionFloats(AssignmentReturnValue a, Ass
 }
 
 static AssignmentReturnValue evaluateDivisionAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* divisionAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* divisionAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	AssignmentReturnValue a = evaluateAssignmentInternal(divisionAssignment->a, tPlayer);
 	AssignmentReturnValue b = evaluateAssignmentInternal(divisionAssignment->b, tPlayer);
 
@@ -915,7 +915,7 @@ static AssignmentReturnValue evaluateAdditionFloats(AssignmentReturnValue a, Ass
 }
 
 static AssignmentReturnValue evaluateAdditionAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* additionAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* additionAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	AssignmentReturnValue a = evaluateAssignmentInternal(additionAssignment->a, tPlayer);
 	AssignmentReturnValue b = evaluateAssignmentInternal(additionAssignment->b, tPlayer);
 
@@ -942,7 +942,7 @@ static AssignmentReturnValue evaluateSubtractionFloats(AssignmentReturnValue a, 
 }
 
 static AssignmentReturnValue evaluateSubtractionAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* subtractionAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* subtractionAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	AssignmentReturnValue a = evaluateAssignmentInternal(subtractionAssignment->a, tPlayer);
 	AssignmentReturnValue b = evaluateAssignmentInternal(subtractionAssignment->b, tPlayer);
 
@@ -956,7 +956,7 @@ static AssignmentReturnValue evaluateSubtractionAssignment(DreamMugenAssignment*
 
 
 static AssignmentReturnValue evaluateOperatorArgumentAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* operatorAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* operatorAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	AssignmentReturnValue a = evaluateAssignmentInternal(operatorAssignment->a, tPlayer);
 	AssignmentReturnValue b = evaluateAssignmentInternal(operatorAssignment->b, tPlayer);
 
@@ -966,25 +966,25 @@ static AssignmentReturnValue evaluateOperatorArgumentAssignment(DreamMugenAssign
 }
 
 static AssignmentReturnValue evaluateBooleanAssignment(DreamMugenAssignment* tAssignment) {
-	DreamMugenFixedBooleanAssignment* fixedAssignment = tAssignment->mData;
+	DreamMugenFixedBooleanAssignment* fixedAssignment = (DreamMugenFixedBooleanAssignment*)tAssignment;
 
 	return makeBooleanAssignmentReturn(fixedAssignment->mValue);
 }
 
 static AssignmentReturnValue evaluateNumberAssignment(DreamMugenAssignment* tAssignment) {
-	DreamMugenNumberAssignment* number = tAssignment->mData;
+	DreamMugenNumberAssignment* number = (DreamMugenNumberAssignment*)tAssignment;
 
 	return makeNumberAssignmentReturn(number->mValue);
 }
 
 static AssignmentReturnValue evaluateFloatAssignment(DreamMugenAssignment* tAssignment) {
-	DreamMugenFloatAssignment* f = tAssignment->mData;
+	DreamMugenFloatAssignment* f = (DreamMugenFloatAssignment*)tAssignment;
 
 	return makeFloatAssignmentReturn(f->mValue);
 }
 
 static AssignmentReturnValue evaluateStringAssignment(DreamMugenAssignment* tAssignment) {
-	DreamMugenStringAssignment* s = tAssignment->mData;
+	DreamMugenStringAssignment* s = (DreamMugenStringAssignment*)tAssignment;
 
 	return makeStringAssignmentReturn(s->mValue);
 }
@@ -1004,7 +1004,7 @@ static AssignmentReturnValue evaluatePlayerVectorAssignment(AssignmentReturnValu
 }
 
 static AssignmentReturnValue evaluateVectorAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* vectorAssignment = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* vectorAssignment = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	AssignmentReturnValue a = evaluateAssignmentInternal(vectorAssignment->a, tPlayer);
 
 	if (isPlayerAccessVectorAssignment(a, tPlayer)) {
@@ -1020,7 +1020,7 @@ static AssignmentReturnValue evaluateVectorAssignment(DreamMugenAssignment* tAss
 }
 
 static AssignmentReturnValue evaluateRangeAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenRangeAssignment* rangeAssignment = tAssignment->mData;
+	DreamMugenRangeAssignment* rangeAssignment = (DreamMugenRangeAssignment*)tAssignment;
 	AssignmentReturnValue a = evaluateAssignmentInternal(rangeAssignment->a, tPlayer);
 
 	char valString1[100], comma[10], valString2[100];
@@ -1452,7 +1452,7 @@ static int isIsInOtherFileVariable(char* tName) {
 }
 
 static AssignmentReturnValue evaluateVariableAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenVariableAssignment* variable = tAssignment->mData;
+	DreamMugenVariableAssignment* variable = (DreamMugenVariableAssignment*)tAssignment;
 	char testString[100];
 	strcpy(testString, variable->mName);
 	turnStringLowercase(testString);
@@ -1622,7 +1622,7 @@ static AssignmentReturnValue evaluateGetHitVarArrayAssignment(DreamMugenAssignme
 		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}
 
-	DreamMugenVariableAssignment* variableAssignment = tIndexAssignment->mData;
+	DreamMugenVariableAssignment* variableAssignment = (DreamMugenVariableAssignment*)tIndexAssignment;
 	char var[100];
 	strcpy(var, variableAssignment->mName);
 	turnStringLowercase(var);
@@ -1721,12 +1721,12 @@ static AssignmentReturnValue evaluateCondArrayAssignment(DreamMugenAssignment* t
 		logWarningFormat("Invalid cond array cond vector type %d. Defaulting to bottom.", tCondVector->mType);
 		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}
-	DreamMugenDependOnTwoAssignment* firstV = tCondVector->mData;
+	DreamMugenDependOnTwoAssignment* firstV = (DreamMugenDependOnTwoAssignment*)tCondVector;
 	if(firstV->b->mType != MUGEN_ASSIGNMENT_TYPE_VECTOR) {
 		logWarningFormat("Invalid cond array second vector type %d. Defaulting to bottom.", firstV->b->mType);
 		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}
-	DreamMugenDependOnTwoAssignment* secondV = firstV->b->mData;
+	DreamMugenDependOnTwoAssignment* secondV = (DreamMugenDependOnTwoAssignment*)firstV->b;
 
 	AssignmentReturnValue ret;
 	int isTrue = evaluateDreamAssignment(firstV->a, tPlayer);
@@ -1927,14 +1927,14 @@ static void setupArrayAssignments() {
 
 
 static AssignmentReturnValue evaluateArrayAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnTwoAssignment* arrays = tAssignment->mData;
+	DreamMugenDependOnTwoAssignment* arrays = (DreamMugenDependOnTwoAssignment*)tAssignment;
 
 	char test[100];
 	if (arrays->a->mType != MUGEN_ASSIGNMENT_TYPE_VARIABLE) {
 		logWarningFormat("Invalid array type %d. Defaulting to bottom.", arrays->a->mType);
 		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}
-	DreamMugenVariableAssignment* arrayName = arrays->a->mData;
+	DreamMugenVariableAssignment* arrayName = (DreamMugenVariableAssignment*)arrays->a;
 	strcpy(test, arrayName->mName);
 	turnStringLowercase(test);
 
@@ -1949,7 +1949,7 @@ static AssignmentReturnValue evaluateArrayAssignment(DreamMugenAssignment* tAssi
 }
 
 static AssignmentReturnValue evaluateUnaryMinusAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnOneAssignment* min = tAssignment->mData;
+	DreamMugenDependOnOneAssignment* min = (DreamMugenDependOnOneAssignment*)tAssignment;
 
 	AssignmentReturnValue a = evaluateAssignmentInternal(min->a, tPlayer);
 	if (isFloatReturn(a)) {
@@ -1961,7 +1961,7 @@ static AssignmentReturnValue evaluateUnaryMinusAssignment(DreamMugenAssignment* 
 }
 
 static AssignmentReturnValue evaluateNegationAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	DreamMugenDependOnOneAssignment* neg = tAssignment->mData;
+	DreamMugenDependOnOneAssignment* neg = (DreamMugenDependOnOneAssignment*)tAssignment;
 
 	AssignmentReturnValue a = evaluateAssignmentInternal(neg->a, tPlayer);
 	int val = evaluateAssignmentReturnAsBool(a);
@@ -1970,7 +1970,7 @@ static AssignmentReturnValue evaluateNegationAssignment(DreamMugenAssignment* tA
 }
 
 static AssignmentReturnValue evaluateAssignmentInternal(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
-	if (!tAssignment || !tAssignment->mData) {
+	if (!tAssignment) {
 		logWarning("Invalid assignment. Defaulting to bottom.");
 		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}

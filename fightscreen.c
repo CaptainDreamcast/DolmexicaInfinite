@@ -41,7 +41,11 @@ static struct {
 
 } gData;
 
+extern int gDebugAssignmentAmount;
+
 static void loadFightScreen() {
+	gDebugAssignmentAmount = 0;
+
 	setupDreamGameCollisions();
 	setupDreamAssignmentEvaluator();
 	setupDreamMugenStateControllerHandler();
@@ -73,6 +77,7 @@ static void loadFightScreen() {
 
 	malloc_stats();
 	// activateCollisionHandlerDebugMode();
+	printf("assignments: %d\n", gDebugAssignmentAmount);
 }
 
 static void unloadFightScreen() {
