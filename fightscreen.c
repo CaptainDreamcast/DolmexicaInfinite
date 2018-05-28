@@ -42,9 +42,11 @@ static struct {
 } gData;
 
 extern int gDebugAssignmentAmount;
+extern int gDebugStateControllerAmount;
 
 static void loadFightScreen() {
 	gDebugAssignmentAmount = 0;
+	gDebugStateControllerAmount = 0;
 
 	setupDreamGameCollisions();
 	setupDreamAssignmentEvaluator();
@@ -78,6 +80,8 @@ static void loadFightScreen() {
 	malloc_stats();
 	// activateCollisionHandlerDebugMode();
 	printf("assignments: %d\n", gDebugAssignmentAmount);
+	printf("controllers: %d\n", gDebugStateControllerAmount);
+	printf("memory blocks: %d\n", getAllocatedMemoryBlockAmount());
 }
 
 static void unloadFightScreen() {

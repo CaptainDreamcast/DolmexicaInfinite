@@ -2443,9 +2443,12 @@ static void parseStateControllerPersistence(DreamMugenStateController* tControll
 	tController->mAccessAmount = 0;
 }
 
+int gDebugStateControllerAmount;
+
 DreamMugenStateController * parseDreamMugenStateControllerFromGroup(MugenDefScriptGroup* tGroup)
 {
 	DreamMugenStateController* ret = allocMemory(sizeof(DreamMugenStateController));
+	gDebugStateControllerAmount++;
 	parseStateControllerType(ret, tGroup);
 	parseStateControllerTriggers(ret, tGroup);
 	parseStateControllerPersistence(ret, tGroup);
