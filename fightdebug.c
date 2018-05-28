@@ -7,16 +7,12 @@
 #include "playerdefinition.h"
 #include "stage.h"
 
+#define PLAYER_TEXT_AMOUNT 10
+
 typedef struct {
 	Position mBasePosition;
 
-	int mControlTextID;
-	int mPositionTextID;
-	int mStateTextID;
-	int mAnimationTextID;
-	int mAnimationTimeLeftTextID;
-	int mHelperAmountTextID;
-	int mProjectileAmountTextID;
+	int mTextIDs[PLAYER_TEXT_AMOUNT];
 
 } PlayerDebugData;
 
@@ -39,33 +35,12 @@ static void loadPlayerDebugData(int i, Position tBasePosition, MugenTextAlignmen
 	char text[3];
 	text[0] = '\0';
 
-	e->mProjectileAmountTextID = addMugenText(text, pos, -1);
-	setMugenTextAlignment(e->mProjectileAmountTextID, tAlignment);
-	pos.y -= dy;
-
-	e->mHelperAmountTextID = addMugenText(text, pos, -1);
-	setMugenTextAlignment(e->mHelperAmountTextID, tAlignment);
-	pos.y -= dy;
-
-	e->mAnimationTimeLeftTextID = addMugenText(text, pos, -1);
-	setMugenTextAlignment(e->mAnimationTimeLeftTextID, tAlignment);
-	pos.y -= dy;
-
-	e->mAnimationTextID = addMugenText(text, pos, -1);
-	setMugenTextAlignment(e->mAnimationTextID, tAlignment);
-	pos.y -= dy;
-
-	e->mStateTextID = addMugenText(text, pos, -1);
-	setMugenTextAlignment(e->mStateTextID, tAlignment);
-	pos.y -= dy;
-
-	e->mPositionTextID = addMugenText(text, pos, -1);
-	setMugenTextAlignment(e->mPositionTextID, tAlignment);
-	pos.y -= dy;
-
-	e->mControlTextID = addMugenText(text, pos, -1);
-	setMugenTextAlignment(e->mControlTextID, tAlignment);
-	pos.y -= dy;
+	int j;
+	for (j = PLAYER_TEXT_AMOUNT - 1; j >= 0; j--) {
+		e->mTextIDs[j] = addMugenText(text, pos, -1);
+		setMugenTextAlignment(e->mTextIDs[j], tAlignment);
+		pos.y -= dy;
+	}
 }
 
 
@@ -96,14 +71,10 @@ static void setPlayerTextInactive(int i) {
 	
 	char text[3];
 	text[0] = '\0';
-	changeMugenText(e->mControlTextID, text);
-	changeMugenText(e->mPositionTextID, text);
-	changeMugenText(e->mStateTextID, text);
-	changeMugenText(e->mAnimationTextID, text);
-	changeMugenText(e->mAnimationTimeLeftTextID, text);
-	changeMugenText(e->mHelperAmountTextID, text);
-	changeMugenText(e->mProjectileAmountTextID, text);
-
+	int j;
+	for (j = 0; j < PLAYER_TEXT_AMOUNT; j++) {
+		changeMugenText(e->mTextIDs[j], text);
+	}
 }
 
 static void setDebugTextInactive() {
@@ -155,13 +126,10 @@ static void switchDebugTimeOff() {
 static void setPlayerTextColor(int i, double tR, double tG, double tB) {
 	PlayerDebugData* e = &gData.mPlayer[i];
 
-	setMugenTextColorRGB(e->mControlTextID, tR, tG, tB);
-	setMugenTextColorRGB(e->mPositionTextID, tR, tG, tB);
-	setMugenTextColorRGB(e->mStateTextID, tR, tG, tB);
-	setMugenTextColorRGB(e->mAnimationTextID, tR, tG, tB);
-	setMugenTextColorRGB(e->mAnimationTimeLeftTextID, tR, tG, tB);
-	setMugenTextColorRGB(e->mHelperAmountTextID, tR, tG, tB);
-	setMugenTextColorRGB(e->mProjectileAmountTextID, tR, tG, tB);
+	int j;
+	for (j = 0; j < PLAYER_TEXT_AMOUNT; j++) {
+		setMugenTextColorRGB(e->mTextIDs[j], tR, tG, tB);
+	}
 }
 
 static void setDebugTextColor() {
@@ -208,21 +176,29 @@ static void updateSingleDebugText(int i) {
 	PlayerDebugData* e = &gData.mPlayer[i];
 	DreamPlayer* player = getRootPlayer(i);
 
+	int j = 0;
+
 	char text[1000];
+	strcpy(text, "Type: Player");
+	changeMugenText(e->mTextIDs[j++], text);
+	sprintf(text, "ID: %d", getPlayerID(player));
+	changeMugenText(e->mTextIDs[j++], text);
 	sprintf(text, "Control: %d", getPlayerControl(player));
-	changeMugenText(e->mControlTextID, text);
+	changeMugenText(e->mTextIDs[j++], text);
 	sprintf(text, "Position: %.2f %.2f", getPlayerPositionX(player, getDreamStageCoordinateP()), getPlayerPositionY(player, getDreamStageCoordinateP()));
-	changeMugenText(e->mPositionTextID, text);
+	changeMugenText(e->mTextIDs[j++], text);
 	sprintf(text, "State: %d; Time in state: %d", getPlayerState(player), getPlayerTimeInState(player));
-	changeMugenText(e->mStateTextID, text);
+	changeMugenText(e->mTextIDs[j++], text);
 	sprintf(text, "Animation: %d", getPlayerAnimationNumber(player));
-	changeMugenText(e->mAnimationTextID, text);
+	changeMugenText(e->mTextIDs[j++], text);
 	sprintf(text, "Time left in animation: %d", getRemainingPlayerAnimationTime(player));
-	changeMugenText(e->mAnimationTimeLeftTextID, text);
+	changeMugenText(e->mTextIDs[j++], text);
+	sprintf(text, "Total helper amount: %d", getPlayerTotalHelperAmount(player));
+	changeMugenText(e->mTextIDs[j++], text);
 	sprintf(text, "Helper amount: %d", getPlayerHelperAmount(player));
-	changeMugenText(e->mHelperAmountTextID, text);
+	changeMugenText(e->mTextIDs[j++], text);
 	sprintf(text, "Projectile amount: %d", getPlayerProjectileAmount(player));
-	changeMugenText(e->mProjectileAmountTextID, text);
+	changeMugenText(e->mTextIDs[j++], text);
 }
 
 static void updateDebugText() {

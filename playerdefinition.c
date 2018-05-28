@@ -56,7 +56,7 @@ static void loadOptionalStateFiles(MugenDefScript* tScript, char* tPath, DreamPl
 	char name[100];
 
 	int i;
-	for (i = 1; i < 100; i++) {
+	for (i = 0; i < 100; i++) {
 		sprintf(name, "st%d", i);
 		getMugenDefStringOrDefault(file, tScript, "Files", name, "");
 		sprintf(scriptPath, "%s%s", tPath, file);
@@ -263,6 +263,8 @@ static void loadPlayerState(DreamPlayer* p) {
 	p->mIsHelper = 0;
 	p->mParent = NULL;
 	p->mHelperIDInParent = -1;
+	p->mHelperIDInRoot = -1;
+	p->mAllChildHelpers = new_list();
 
 	p->mIsProjectile = 0;
 	p->mProjectileID = -1;
@@ -367,6 +369,7 @@ static void unloadHelperState(DreamPlayer* p) {
 
 static void unloadPlayerState(DreamPlayer* p) {
 	unloadHelperState(p);
+	delete_list(&p->mAllChildHelpers);
 }
 
 static void unloadPlayerFiles(DreamPlayer* tPlayer) {
@@ -851,6 +854,7 @@ static void updatePlayerDestruction(DreamPlayer* p) {
 static int updateSinglePlayer(DreamPlayer* p) {
 	if (p->mIsDestroyed) {
 		updatePlayerDestruction(p);
+
 		return 1;
 	}
 
@@ -2368,6 +2372,11 @@ int getPlayerTargetAmountWithID(DreamPlayer* p, int tID)
 	return 0; // TODO
 }
 
+int getPlayerTotalHelperAmount(DreamPlayer * p)
+{
+	return list_size(&getPlayerRoot(p)->mAllChildHelpers);
+}
+
 int getPlayerHelperAmount(DreamPlayer* p)
 {
 	return list_size(&p->mHelpers);
@@ -2991,6 +3000,7 @@ DreamPlayer * clonePlayerAsHelper(DreamPlayer * p)
 	helper->mParent = p;
 	helper->mIsHelper = 1;
 	helper->mHelperIDInParent = list_push_back(&p->mHelpers, helper);
+	helper->mHelperIDInRoot = list_push_back(&getPlayerRoot(p)->mAllChildHelpers, helper);
 
 	return helper;
 }
@@ -3045,6 +3055,7 @@ void destroyPlayer(DreamPlayer * p) // TODO: rename
 	assert(p->mParent);
 	assert(p->mHelperIDInParent != -1);
 
+	list_remove(&getPlayerRoot(p)->mAllChildHelpers, p->mHelperIDInRoot);
 	removePlayerBoundHelpers(p);
 	movePlayerHelpersToParent(p);
 	destroyGeneralPlayer(p);

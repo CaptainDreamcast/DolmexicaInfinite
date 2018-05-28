@@ -81,9 +81,11 @@ typedef struct Player_t{
 	int mProjectileID;
 	int mProjectileDataID;
 
+	List mAllChildHelpers; // contains DreamPlayer
 	List mHelpers; // contains DreamPlayer
 	struct Player_t* mParent;
 	int mHelperIDInParent;
+	int mHelperIDInRoot;
 
 	IntMap mProjectiles; // contains DreamPlayer
 
@@ -418,6 +420,7 @@ void addPlayerDamage(DreamPlayer* p, int tDamage);
 int getPlayerTargetAmount(DreamPlayer* p);
 int getPlayerTargetAmountWithID(DreamPlayer* p, int tID);
 
+int getPlayerTotalHelperAmount(DreamPlayer* p);
 int getPlayerHelperAmount(DreamPlayer* p);
 int getPlayerHelperAmountWithID(DreamPlayer* p, int tID);
 DreamPlayer* getPlayerHelperOrNullIfNonexistant(DreamPlayer* p, int tID);

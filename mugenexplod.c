@@ -314,7 +314,7 @@ void removeAllExplods(DreamPlayer * tPlayer)
 typedef struct {
 	DreamPlayer* mPlayer;
 	int mExplodID;
-	int mReturnID;
+	int mReturnValue;
 } FindExplodCaller;
 
 void compareSingleExplodIDToSearchID(void* tCaller, void* tData) {
@@ -322,7 +322,7 @@ void compareSingleExplodIDToSearchID(void* tCaller, void* tData) {
 	Explod* e = tData;
 
 	if (e->mPlayer == caller->mPlayer && e->mExternalID == caller->mExplodID) {
-		caller->mReturnID = e->mInternalID;
+		caller->mReturnValue = e->mInternalID;
 	}
 }
 
@@ -331,24 +331,53 @@ int getExplodIndexFromExplodID(DreamPlayer* tPlayer, int tExplodID)
 	FindExplodCaller caller;
 	caller.mPlayer = tPlayer;
 	caller.mExplodID = tExplodID;
-	caller.mReturnID = -1;
+	caller.mReturnValue = -1;
 
 	int_map_map(&gData.mExplods, compareSingleExplodIDToSearchID, &caller);
 
-	return caller.mReturnID;
+	return caller.mReturnValue;
+}
+
+
+void compareSingleAmountSearchPlayer(void* tCaller, void* tData) {
+	FindExplodCaller* caller = tCaller;
+	Explod* e = tData;
+
+	if (e->mPlayer == caller->mPlayer) {
+		caller->mReturnValue++;
+	}
 }
 
 int getExplodAmount(DreamPlayer * tPlayer)
 {
-	(void)tPlayer;
-	return 0; // TODO
+	FindExplodCaller caller;
+	caller.mPlayer = tPlayer;
+	caller.mReturnValue = 0;
+
+	int_map_map(&gData.mExplods, compareSingleAmountSearchPlayer, &caller);
+
+	return caller.mReturnValue;
+}
+
+void compareSingleAmountSearchExplodIDToSearchID(void* tCaller, void* tData) {
+	FindExplodCaller* caller = tCaller;
+	Explod* e = tData;
+
+	if (e->mPlayer == caller->mPlayer && e->mExternalID == caller->mExplodID) {
+		caller->mReturnValue++;
+	}
 }
 
 int getExplodAmountWithID(DreamPlayer * tPlayer, int tID)
 {
-	(void)tPlayer;
-	(void)tID;
-	return 0; // TODO
+	FindExplodCaller caller;
+	caller.mPlayer = tPlayer;
+	caller.mExplodID = tID;
+	caller.mReturnValue = 0;
+
+	int_map_map(&gData.mExplods, compareSingleAmountSearchExplodIDToSearchID, &caller);
+
+	return caller.mReturnValue;
 }
 
 static void explodAnimationFinishedCB(void* tCaller) {
