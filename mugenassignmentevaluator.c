@@ -25,9 +25,17 @@ typedef struct {
 
 static AssignmentReturnValue evaluateAssignmentInternal(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer);
 
+static int isFloatReturn(AssignmentReturnValue tReturn);
+static double evaluateAssignmentReturnAsFloat(AssignmentReturnValue tAssignmentReturn);
+
 static AssignmentReturnValue getAssignmentReturnValueToBool(AssignmentReturnValue tAssignmentReturn) {
 	AssignmentReturnValue ret;
-	if (!strcmp("", tAssignmentReturn.mValue) || !strcmp("0", tAssignmentReturn.mValue)) {
+
+	if (isFloatReturn(tAssignmentReturn)) {
+		double value = evaluateAssignmentReturnAsFloat(tAssignmentReturn);
+		sprintf(ret.mValue, "%d", value != 0);
+	}
+	else if (!strcmp("", tAssignmentReturn.mValue) || !strcmp("0", tAssignmentReturn.mValue)) {
 		strcpy(ret.mValue, "0");
 	}
 	else {

@@ -433,7 +433,7 @@ void resetPlayersEntirely()
 
 
 static void updateWalking(DreamPlayer* p) {
-
+	if (p->mIsHelper) return;
 	if (p->mNoWalkFlag) {
 		p->mNoWalkFlag = 0;
 		return;
@@ -454,6 +454,7 @@ static void updateWalking(DreamPlayer* p) {
 }
 
 static void updateAirJumping(DreamPlayer* p) {
+	if (p->mIsHelper) return;
 	if (!p->mIsInControl) return;
 	if (getPlayerStateType(p) != MUGEN_STATE_TYPE_AIR) return;
 
@@ -473,6 +474,7 @@ static void updateJumpFlank(DreamPlayer* p) {
 }
 
 static void updateJumping(DreamPlayer* p) {
+	if (p->mIsHelper) return;
 	if (!p->mIsInControl) return;
 	if (getPlayerStateType(p) != MUGEN_STATE_TYPE_STANDING) return;
 
@@ -483,6 +485,7 @@ static void updateJumping(DreamPlayer* p) {
 }
 
 static void updateLanding(DreamPlayer* p) {
+	if (p->mIsHelper) return;
 	if (p->mNoLandFlag) {
 		p->mNoLandFlag = 0;
 		return;
@@ -501,6 +504,7 @@ static void updateLanding(DreamPlayer* p) {
 }
 
 static void updateCrouchingDown(DreamPlayer* p) {
+	if (p->mIsHelper) return;
 	if (!p->mIsInControl) return;
 	if (getPlayerStateType(p) != MUGEN_STATE_TYPE_STANDING) return;
 
@@ -511,6 +515,7 @@ static void updateCrouchingDown(DreamPlayer* p) {
 }
 
 static void updateStandingUp(DreamPlayer* p) {
+	if (p->mIsHelper) return;
 	if (!p->mIsInControl) return;
 	if (getPlayerStateType(p) != MUGEN_STATE_TYPE_CROUCHING) return;
 
@@ -560,6 +565,7 @@ static void updatePositionFreeze(DreamPlayer* p) {
 }
 
 static void updateGettingUp(DreamPlayer* p) {
+	if (p->mIsHelper) return;
 	if (getPlayerState(p) != 5110 && !p->mIsLyingDown) return;
 
 	if (!p->mIsLyingDown) {
@@ -650,6 +656,7 @@ static int doesFlagPreventGuarding(DreamPlayer* p) {
 }
 
 static void updateGuarding(DreamPlayer* p) {
+	if (p->mIsHelper) return;
 	if (isPlayerPaused(p)) return;
 	if (!p->mIsInControl) return;
 	if (isPlayerGuarding(p)) {
@@ -679,11 +686,11 @@ static void setPlayerUnguarding(DreamPlayer* p) {
 }
 
 static void updateGuardingOver(DreamPlayer* p) {
+	if (p->mIsHelper) return;
 	if (isPlayerPaused(p)) return;
 	if (!p->mIsInControl) return;
 	if (getPlayerState(p) != 140) return;
 	if (getRemainingPlayerAnimationTime(p)) return;
-
 
 	setPlayerUnguarding(p);
 }

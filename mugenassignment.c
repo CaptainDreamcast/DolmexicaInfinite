@@ -701,34 +701,40 @@ static DreamMugenAssignment* parseArrayFromString(char* tText) {
 }
 
 static int isVectorAssignment(char* tText) {
-	char text[200];
+	char* text = allocMemory(strlen(tText) + 2);
 	strcpy(text, tText);
 	turnStringLowercase(text);
 
-	if (doDreamAssignmentStringsBeginsWithPattern("animelem", text)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("timemod", text)) return 1;
-
+	int ret;
+	if (doDreamAssignmentStringsBeginsWithPattern("animelem", text)) ret = 1;
+	else if (doDreamAssignmentStringsBeginsWithPattern("timemod", text)) ret = 1;
+	else ret = 0;
 	// TODO: properly
-	return 0;
+
+	freeMemory(text);
+	return ret;
 }
 
 static int isVectorTarget(char* tText) {
-	char text[200];
+	char* text = allocMemory(strlen(tText) + 2);
 	strcpy(text, tText);
 	turnStringLowercase(text);
 
-	if (doDreamAssignmentStringsBeginsWithPattern("target", text)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("p1", text)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("p2", text)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("helper", text)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("enemy", text)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("enemynear", text)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("root", text)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("playerid", text)) return 1;
-	if (doDreamAssignmentStringsBeginsWithPattern("parent", text)) return 1;
-
+	int ret;
+	if (doDreamAssignmentStringsBeginsWithPattern("target", text)) ret = 1;
+	else if (doDreamAssignmentStringsBeginsWithPattern("p1", text)) ret = 1;
+	else if (doDreamAssignmentStringsBeginsWithPattern("p2", text)) ret = 1;
+	else if (doDreamAssignmentStringsBeginsWithPattern("helper", text)) ret = 1;
+	else if (doDreamAssignmentStringsBeginsWithPattern("enemy", text)) ret = 1;
+	else if (doDreamAssignmentStringsBeginsWithPattern("enemynear", text)) ret = 1;
+	else if (doDreamAssignmentStringsBeginsWithPattern("root", text)) ret = 1;
+	else if (doDreamAssignmentStringsBeginsWithPattern("playerid", text)) ret = 1;
+	else if (doDreamAssignmentStringsBeginsWithPattern("parent", text)) ret = 1;
+	else ret = 0;
 	// TODO: properly
-	return 0;
+
+	freeMemory(text);
+	return ret;
 }
 
 static int isCommaContextFree(char* tText, int tPosition) {
@@ -758,12 +764,14 @@ static int isCommaContextFree(char* tText, int tPosition) {
 	assert(tPosition >= -1);
 	int start = tPosition + 1;
 
-	char prevWord[200];
+	char* prevWord = allocMemory(strlen(&tText[start]) + 2);
 	strcpy(prevWord, &tText[start]);
 	int length = end - start;
 	prevWord[length] = '\0';
 
-	return !isVectorTarget(prevWord);
+	int ret = !isVectorTarget(prevWord);
+	freeMemory(prevWord);
+	return ret;
 }
 
 static int hasContextFreeComma(char* tText, int* tPosition) {
