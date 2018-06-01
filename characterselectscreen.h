@@ -11,3 +11,4 @@ void setCharacterSelectStageInactive();
 void setCharacterSelectOnePlayer();
 void setCharacterSelectOnePlayerSelectAll();
 void setCharacterSelectTwoPlayers();
+void setCharacterSelectCredits();

@@ -135,6 +135,9 @@
     <ClCompile Include="..\fightdebug.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\creditsmode.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ai.h">
@@ -255,6 +258,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\fightdebug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\creditsmode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

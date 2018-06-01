@@ -77,6 +77,12 @@ typedef struct {
 } SelectScreenHeader;
 
 typedef struct {
+	char* mAuthorName;
+	char* mName;
+	char* mVersionDate;
+} SelectCharacterCredits;
+
+typedef struct {
 	int mIsCharacter;
 	
 	Vector3DI mCellPosition;
@@ -87,11 +93,21 @@ typedef struct {
 	char mStageName[1024];
 	char* mDisplayCharacterName;
 	char mCharacterName[200];
+
+	SelectCharacterCredits mCredits;
 } SelectCharacter;
+
+typedef struct {
+	char* mAuthorName;
+	char* mName;
+	char* mVersionDate;
+} SelectStageCredits;
 
 typedef struct {
 	char mPath[1024];
 	char* mName;
+
+	SelectStageCredits mCredits;
 } SelectStage;
 
 typedef struct {
@@ -122,6 +138,30 @@ typedef struct {
 	int mSelectedStage;
 } StageSelectData;
 
+typedef enum {
+	CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_MODE,
+	CHARACTER_SELECT_SCREEN_TYPE_TWO_PLAYER_MODE,
+	CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING,
+	CHARACTER_SELECT_SCREEN_TYPE_CREDITS,
+
+} CharacterSelectScreenType;
+
+typedef struct {
+
+	Position mNamePosition;
+	Vector3DI mNameFont;
+	int mNameID;
+
+	Position mAuthorNamePosition;
+	Vector3DI mAuthorNameFont;
+	int mAuthorNameID;
+
+	Position mVersionDatePosition;
+	Vector3DI mVersionDateFont;
+	int mVersionDateID;
+
+} SelectCredits;
+
 static struct {
 	MugenDefScript mScript;
 	MugenDefScript mCharacterScript;
@@ -144,9 +184,10 @@ static struct {
 	Selector mSelectors[2];
 
 	StageSelectData mStageSelect;
+	SelectCredits mCredits;
 
-	int mIsInTwoPlayerMode;
-	int mDoesPlayerOneSelectEverything;
+	CharacterSelectScreenType mSelectScreenType;
+
 	int mIsFadingOut;
 } gData;
 
@@ -220,6 +261,14 @@ static void loadStageSelect() {
 	gData.mStageSelect.mIsActive = 0;
 }
 
+static void loadSelectStageCredits(SelectStage* e, MugenDefScript* tScript) {
+	if (gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
+
+	e->mCredits.mName = getAllocatedMugenDefStringOrDefault(tScript, "Info", "name", e->mName);
+	e->mCredits.mAuthorName = getAllocatedMugenDefStringOrDefault(tScript, "Info", "author", "N/A");
+	e->mCredits.mVersionDate = getAllocatedMugenDefStringOrDefault(tScript, "Info", "versiondate", "N/A");
+}
+
 static void addSingleSelectStage(char* tPath) {
 	char path[1024];
 	sprintf(path, "assets/%s", tPath); // TODO: remove when assets are removed
@@ -229,6 +278,7 @@ static void addSingleSelectStage(char* tPath) {
 	
 	MugenDefScript script = loadMugenDefScript(path);
 	e->mName = getAllocatedMugenDefStringVariable(&script, "Info", "name");
+	loadSelectStageCredits(e, &script);
 	unloadMugenDefScript(script);
 	
 	vector_push_back_owned(&gData.mSelectStages, e);
@@ -252,6 +302,27 @@ static void loadStageSelectStages() {
 		if (!list_has_next(iterator)) break;
 		list_iterator_increase(&iterator);
 	}
+}
+
+static void loadCreditsHeader() {
+	if (gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
+
+	Position basePosition = getMugenDefVectorOrDefault(&gData.mScript, "Select Info", "credits.position", makePosition(0, 0, 0));
+	basePosition.z = 40;
+
+	Position offset = makePosition(0, 0, 0);
+	offset = getMugenDefVectorOrDefault(&gData.mScript, "Select Info", "credits.name.offset", makePosition(0, 0, 0));
+	gData.mCredits.mNamePosition = vecAdd2D(basePosition, offset);
+	gData.mCredits.mNameFont = getMugenDefVectorIOrDefault(&gData.mScript, "Select Info", "credits.name.font", makeVector3DI(1, 0, 0));
+
+	offset = getMugenDefVectorOrDefault(&gData.mScript, "Select Info", "credits.author.offset", makePosition(0, 0, 0));
+	gData.mCredits.mAuthorNamePosition = vecAdd2D(basePosition, offset);
+	gData.mCredits.mAuthorNameFont = getMugenDefVectorIOrDefault(&gData.mScript, "Select Info", "credits.author.font", makeVector3DI(1, 0, 0));
+
+	offset = getMugenDefVectorOrDefault(&gData.mScript, "Select Info", "credits.versiondate.offset", makePosition(0, 0, 0));
+	gData.mCredits.mVersionDatePosition = vecAdd2D(basePosition, offset);
+	gData.mCredits.mVersionDateFont = getMugenDefVectorIOrDefault(&gData.mScript, "Select Info", "credits.versiondate.font", makeVector3DI(1, 0, 0));
+
 }
 
 static void loadMenuHeader() {
@@ -282,6 +353,7 @@ static void loadMenuHeader() {
 	gData.mHeader.mTitleOffset = getMugenDefVectorOrDefault(&gData.mScript, "Select Info", "title.offset", makePosition(0, 0, 0));
 	gData.mHeader.mTitleFont = getMugenDefVectorIOrDefault(&gData.mScript, "Select Info", "title.font", makeVector3DI(-1, 0, 0));
 
+	loadCreditsHeader();
 	loadStageSelectHeader();
 
 	loadMenuPlayerHeader("p1", &gData.mHeader.mPlayers[0]);
@@ -293,6 +365,13 @@ typedef struct {
 
 } MenuCharacterLoadCaller;
 
+static void loadMenuCharacterCredits(SelectCharacter* e, MugenDefScript* tScript) {
+	if (gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
+
+	e->mCredits.mName = getAllocatedMugenDefStringOrDefault(tScript, "Info", "name", e->mDisplayCharacterName);
+	e->mCredits.mAuthorName = getAllocatedMugenDefStringOrDefault(tScript, "Info", "author", "N/A");
+	e->mCredits.mVersionDate = getAllocatedMugenDefStringOrDefault(tScript, "Info", "versiondate", "N/A");
+}
 
 static void loadMenuCharacterSpritesAndName(SelectCharacter* e, char* tCharacterName) {
 	
@@ -324,6 +403,9 @@ static void loadMenuCharacterSpritesAndName(SelectCharacter* e, char* tCharacter
 
 	e->mIsCharacter = 1;
 	
+	loadMenuCharacterCredits(e, &script);
+	
+
 	unloadMugenDefScript(script);
 }
 
@@ -451,7 +533,7 @@ static void loadSelectors() {
 		gData.mSelectors[i].mIsActive = 0;
 	}
 
-	gData.mSelectorAmount = gData.mIsInTwoPlayerMode ? 2 : 1;
+	gData.mSelectorAmount = gData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_TWO_PLAYER_MODE ? 2 : 1;
 	for (i = 0; i < gData.mSelectorAmount; i++) {
 		loadSingleSelector(i, i);
 	}
@@ -463,6 +545,22 @@ static void loadModeText() {
 	gData.mModeText.mModeTextID = addMugenText(gData.mModeName, p, gData.mHeader.mTitleFont.x); 
 	setMugenTextColor(gData.mModeText.mModeTextID, getMugenTextColorFromMugenTextColorIndex(gData.mHeader.mTitleFont.y));
 	setMugenTextAlignment(gData.mModeText.mModeTextID, getMugenTextAlignmentFromMugenAlignmentIndex(gData.mHeader.mTitleFont.z));
+}
+
+static void loadCredits() {
+	if (gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
+
+	gData.mCredits.mNameID = addMugenText("", gData.mCredits.mNamePosition, gData.mCredits.mNameFont.x);
+	setMugenTextColor(gData.mCredits.mNameID, getMugenTextColorFromMugenTextColorIndex(gData.mCredits.mNameFont.y));
+	setMugenTextAlignment(gData.mCredits.mNameID, getMugenTextAlignmentFromMugenAlignmentIndex(gData.mCredits.mNameFont.z));
+
+	gData.mCredits.mAuthorNameID = addMugenText("", gData.mCredits.mAuthorNamePosition, gData.mCredits.mAuthorNameFont.x);
+	setMugenTextColor(gData.mCredits.mAuthorNameID, getMugenTextColorFromMugenTextColorIndex(gData.mCredits.mAuthorNameFont.y));
+	setMugenTextAlignment(gData.mCredits.mAuthorNameID, getMugenTextAlignmentFromMugenAlignmentIndex(gData.mCredits.mAuthorNameFont.z));
+
+	gData.mCredits.mVersionDateID = addMugenText("", gData.mCredits.mVersionDatePosition, gData.mCredits.mVersionDateFont.x);
+	setMugenTextColor(gData.mCredits.mVersionDateID, getMugenTextColorFromMugenTextColorIndex(gData.mCredits.mVersionDateFont.y));
+	setMugenTextAlignment(gData.mCredits.mVersionDateID, getMugenTextAlignmentFromMugenAlignmentIndex(gData.mCredits.mVersionDateFont.z));
 }
 
 static void loadCharacterSelectScreen() {
@@ -495,6 +593,7 @@ static void loadCharacterSelectScreen() {
 	loadMenuCharacters();
 	loadStageSelectStages();
 
+	loadCredits();
 	loadSelectors();
 	loadModeText();
 	loadStageSelect();
@@ -505,10 +604,19 @@ static void loadCharacterSelectScreen() {
 	addFadeIn(gData.mHeader.mFadeInTime, NULL, NULL);
 }
 
+static void unloadSelectStageCredits(SelectStage* e) {
+	if (gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
+
+	freeMemory(e->mCredits.mName);
+	freeMemory(e->mCredits.mAuthorName);
+	freeMemory(e->mCredits.mVersionDate);
+}
+
 static void unloadSingleSelectStage(void* tCaller, void* tData) {
 	(void)tCaller;
 	SelectStage* e = tData;
 	freeMemory(e->mName);
+	unloadSelectStageCredits(e);
 }
 
 static void unloadSelectStages() {
@@ -518,12 +626,21 @@ static void unloadSelectStages() {
 	delete_vector(&gData.mSelectStages);
 }
 
+static void unloadMenuCharacterCredits(SelectCharacter* e) {
+	if (gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
+
+	freeMemory(e->mCredits.mName); 
+	freeMemory(e->mCredits.mAuthorName);
+	freeMemory(e->mCredits.mVersionDate);
+}
+
 static void unloadSingleSelectCharacter(void* tCaller, void* tData) {
 	(void)tCaller;
 	SelectCharacter* e = tData;
 	if (e->mIsCharacter) {
 		unloadMugenSpriteFile(&e->mSprites);
 		freeMemory(e->mDisplayCharacterName);
+		unloadMenuCharacterCredits(e);
 	}
 }
 
@@ -601,6 +718,25 @@ static Vector3DI sanitizeCellPosition(int i, Vector3DI tCellPosition) {
 	return tCellPosition;	
 }
 
+static void updateCharacterSelectionCredits(SelectCharacter* character) {
+	if (gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
+
+	if (character->mIsCharacter) {
+		char text[1024];
+		sprintf(text, "Name: %s", character->mCredits.mName);
+		changeMugenText(gData.mCredits.mNameID, text);
+		sprintf(text, "Author: %s", character->mCredits.mAuthorName);
+		changeMugenText(gData.mCredits.mAuthorNameID, text);
+		sprintf(text, "Date: %s", character->mCredits.mVersionDate);
+		changeMugenText(gData.mCredits.mVersionDateID, text);
+	}
+	else {
+		changeMugenText(gData.mCredits.mNameID, "Name:");
+		changeMugenText(gData.mCredits.mAuthorNameID, "Author:");
+		changeMugenText(gData.mCredits.mVersionDateID, "Date:");
+	}
+}
+
 static void moveSelectionToTarget(int i, Vector3DI tTarget, int tDoesPlaySound) {
 	PlayerHeader* player = &gData.mHeader.mPlayers[i];
 	PlayerHeader* owner = &gData.mHeader.mPlayers[gData.mSelectors[i].mOwner];
@@ -625,6 +761,21 @@ static void moveSelectionToTarget(int i, Vector3DI tTarget, int tDoesPlaySound) 
 		setMugenAnimationBaseDrawScale(gData.mSelectors[i].mBigPortraitAnimationID, 0);
 		changeMugenText(gData.mSelectors[i].mNameTextID, " ");
 	}
+
+	updateCharacterSelectionCredits(character);
+}
+
+static int hasCreditSelectionMovedToStage(Vector3DI tTarget) {
+	if (gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return 0;
+
+	return (tTarget.y == -1 || tTarget.y == gData.mHeader.mRows);
+}
+
+static void setStageSelectActive(int i);
+
+static void moveCreditSelectionToStage(int i) {
+	setStageSelectActive(i);
+	unloadSingleSelector(i);
 }
 
 static void updateSingleSelection(int i) {
@@ -646,6 +797,11 @@ static void updateSingleSelection(int i) {
 		target = vecAddI(target, makeVector3DI(0, -1, 0));
 	}
 
+	if (hasCreditSelectionMovedToStage(target)) {
+		moveCreditSelectionToStage(i);
+		return;
+	}
+	
 	target = sanitizeCellPosition(i, target);
 	if (vecEqualsI(gData.mSelectors[i].mSelectedCharacter, target)) return;
 
@@ -653,11 +809,21 @@ static void updateSingleSelection(int i) {
 }
 
 static void updateStageSelection(int i, int tNewStage, int tDoesPlaySound);
+static void setStageSelectInactive(int i);
+
+static int updateCreditStageSelectionAndReturnIfStageSelectionOver(int i) {
+	if (gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return 0;
+
+	if (hasPressedUpFlankSingle(i) || hasPressedDownFlankSingle(i)) {
+		setStageSelectInactive(i);
+		loadSingleSelector(i, i);
+	}
+}
 
 static void updateSingleStageSelection(int i) {
-	if (!gData.mSelectors[i].mIsActive) return;
-	if (!gData.mSelectors[i].mIsDone) return;
-	if (gData.mDoesPlayerOneSelectEverything && i == 1) return;
+	if (!gData.mSelectors[i].mIsActive && gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
+	if (!gData.mSelectors[i].mIsDone && gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
+	if (gData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING && i == 1) return;
 	if (!gData.mStageSelect.mIsUsing) return;
 	if (!gData.mStageSelect.mIsActive) return;
 	if (gData.mStageSelect.mIsDone) return;
@@ -671,6 +837,8 @@ static void updateSingleStageSelection(int i) {
 		target--;
 		if (target < 0) target += stageAmount;
 	}
+
+	if (updateCreditStageSelectionAndReturnIfStageSelectionOver(i)) return;
 
 	if (target == gData.mStageSelect.mSelectedStage) return;
 	updateStageSelection(i, target, 1);
@@ -729,12 +897,25 @@ static void updateMugenTextBasedOnVector3DI(int tID, Vector3DI tFontData) {
 	setMugenTextAlignment(tID, getMugenTextAlignmentFromMugenAlignmentIndex(tFontData.z));
 }
 
+static void updateStageCredit(SelectStage* tStage) {
+	if (gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
+
+	char text[1024];
+	sprintf(text, "Name: %s", tStage->mCredits.mName);
+	changeMugenText(gData.mCredits.mNameID, text);
+	sprintf(text, "Author: %s", tStage->mCredits.mAuthorName);
+	changeMugenText(gData.mCredits.mAuthorNameID, text);
+	sprintf(text, "Date: %s", tStage->mCredits.mVersionDate);
+	changeMugenText(gData.mCredits.mVersionDateID, text);
+}
+
 static void updateStageSelection(int i, int tNewStage, int tDoesPlaySound) {
 	SelectStage* stage = vector_get(&gData.mSelectStages, tNewStage);
 
 	char newText[200];
 	sprintf(newText, "Stage %d: %s", tNewStage + 1, stage->mName);
 	changeMugenText(gData.mStageSelect.mTextID, newText);
+	updateStageCredit(stage);
 
 	if (tDoesPlaySound) {
 		tryPlayMugenSound(&gData.mSounds, gData.mHeader.mPlayers[i].mCursorMoveSound.x, gData.mHeader.mPlayers[i].mCursorMoveSound.y);
@@ -755,7 +936,7 @@ static void setStageSelectActive(int i) {
 static void checkSetStageSelectActive(int i) {
 	if (!gData.mStageSelect.mIsUsing) return;
 	if (gData.mStageSelect.mIsActive) return;
-	if (gData.mDoesPlayerOneSelectEverything && i == 0) return;
+	if (gData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING && i == 0) return;
 
 	setStageSelectActive(i);
 }
@@ -768,12 +949,12 @@ static void setStageSelectInactive(int i) {
 static int checkSetStageSelectInactive(int i) {
 	if (!gData.mStageSelect.mIsUsing) return 0;
 	if (!gData.mStageSelect.mIsActive) return 0;
-	if (gData.mDoesPlayerOneSelectEverything && i == 0) return 0;
+	if (gData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING && i == 0) return 0;
 
 	int otherPlayer = i ^ 1;
 	int isOtherPlayerFinished = !gData.mSelectors[otherPlayer].mIsActive || gData.mSelectors[otherPlayer].mIsDone;
 	if (!gData.mStageSelect.mIsDone) {
-		if (gData.mDoesPlayerOneSelectEverything || !isOtherPlayerFinished) {
+		if (gData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING || !isOtherPlayerFinished) {
 			setStageSelectInactive(i);
 		}
 		return 0;
@@ -788,7 +969,7 @@ static int checkSetStageSelectInactive(int i) {
 }
 
 static void checkSetSecondPlayerActive(int i) {
-	if (i == 0 && gData.mDoesPlayerOneSelectEverything) {
+	if (i == 0 && gData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING) {
 		loadSingleSelector(1, 0);
 	}
 }
@@ -796,7 +977,7 @@ static void checkSetSecondPlayerActive(int i) {
 static void deselectSelection(int i, int tDoesPlaySound);
 
 static void checkSetSecondPlayerInactive(int i) {
-	if (i == 1 && gData.mDoesPlayerOneSelectEverything && !gData.mSelectors[i].mIsDone) {
+	if (i == 1 && gData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING && !gData.mSelectors[i].mIsDone) {
 		unloadSingleSelector(1);
 		deselectSelection(0, 0);
 	}
@@ -860,7 +1041,8 @@ static void deselectSelection(int i, int tDoesPlaySound) {
 
 static void updateSingleSelectionConfirmation(int i) {
 	if (!gData.mSelectors[i].mIsActive) return;
-	if (gData.mDoesPlayerOneSelectEverything && i == 0 && gData.mSelectors[1].mIsActive) return;
+	if (gData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
+	if (gData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING && i == 0 && gData.mSelectors[1].mIsActive) return;
 
 	if (hasPressedAFlankSingle(gData.mSelectors[i].mOwner) || hasPressedStartFlankSingle(gData.mSelectors[i].mOwner)) {
 		setSelectionFinished(i);
@@ -869,12 +1051,13 @@ static void updateSingleSelectionConfirmation(int i) {
 
 static void updateSingleSelectionDeselect(int i) {
 	if (gData.mIsFadingOut) return;
-	if (!gData.mSelectors[i].mIsActive) return;
-	if (gData.mDoesPlayerOneSelectEverything && i == 0 && gData.mSelectors[i].mIsDone) return;
+	if (!gData.mSelectors[i].mIsActive && gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
+	if (gData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING && i == 0 && gData.mSelectors[i].mIsDone) return;
 
 	if (hasPressedBFlankSingle(gData.mSelectors[i].mOwner)) {
-		int canGoBackToFirstPlayer = i == 1 && gData.mDoesPlayerOneSelectEverything && !gData.mSelectors[i].mIsDone;
-		if (gData.mSelectors[i].mIsDone || canGoBackToFirstPlayer) {
+		int isSelectorDone = gData.mSelectors[i].mIsDone && gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS;
+		int canGoBackToFirstPlayer = i == 1 && gData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING && !gData.mSelectors[i].mIsDone;
+		if (isSelectorDone || canGoBackToFirstPlayer) {
 			deselectSelection(i, 1);
 		}
 		else {
@@ -884,6 +1067,7 @@ static void updateSingleSelectionDeselect(int i) {
 }
 
 static void updateSelectionInputs() {
+
 	int i;
 	for (i = 0; i < 2; i++) {
 		updateSingleSelectionConfirmation(i);
@@ -937,18 +1121,21 @@ void setCharacterSelectStageInactive()
 
 void setCharacterSelectOnePlayer()
 {
-	gData.mIsInTwoPlayerMode = 0;
-	gData.mDoesPlayerOneSelectEverything = 0;
+	gData.mSelectScreenType = CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_MODE;
 }
 
 void setCharacterSelectOnePlayerSelectAll()
 {
-	gData.mIsInTwoPlayerMode = 0;
-	gData.mDoesPlayerOneSelectEverything = 1;
+	gData.mSelectScreenType = CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING;
 }
 
 void setCharacterSelectTwoPlayers()
 {
-	gData.mIsInTwoPlayerMode = 1;
-	gData.mDoesPlayerOneSelectEverything = 0;
+	gData.mSelectScreenType = CHARACTER_SELECT_SCREEN_TYPE_TWO_PLAYER_MODE;
+
+}
+
+void setCharacterSelectCredits()
+{
+	gData.mSelectScreenType = CHARACTER_SELECT_SCREEN_TYPE_CREDITS;
 }

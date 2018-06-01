@@ -153,6 +153,7 @@
     <ClCompile Include="..\characterselectscreen.c" />
     <ClCompile Include="..\collision.c" />
     <ClCompile Include="..\config.c" />
+    <ClCompile Include="..\creditsmode.c" />
     <ClCompile Include="..\dolmexicastoryscreen.c" />
     <ClCompile Include="..\fightdebug.c" />
     <ClCompile Include="..\fightscreen.c" />
@@ -195,6 +196,7 @@
     <ClInclude Include="..\characterselectscreen.h" />
     <ClInclude Include="..\collision.h" />
     <ClInclude Include="..\config.h" />
+    <ClInclude Include="..\creditsmode.h" />
     <ClInclude Include="..\dolmexicastoryscreen.h" />
     <ClInclude Include="..\fightdebug.h" />
     <ClInclude Include="..\fightscreen.h" />

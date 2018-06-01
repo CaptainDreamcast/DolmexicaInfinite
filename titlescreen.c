@@ -24,6 +24,7 @@
 #include "trainingmode.h"
 #include "fightscreen.h"
 #include "storymode.h"
+#include "creditsmode.h"
 
 typedef struct {
 	void(*mCB)();
@@ -113,6 +114,15 @@ static void gotoStoryMode(void* tCaller) {
 
 static void storyCB() {
 	addFadeOut(gData.mHeader.mFadeOutTime, gotoStoryMode, NULL);
+}
+
+static void gotoCreditsMode(void* tCaller) {
+	(void)tCaller;
+	startCreditsMode();
+}
+
+static void creditsCB() {
+	addFadeOut(gData.mHeader.mFadeOutTime, gotoCreditsMode, NULL);
 }
 
 static void exitCB() {
@@ -264,6 +274,7 @@ static void loadTitleScreen() {
 	addMenuPoint("menu.itemname.training", trainingCB);
 	addMenuPoint("menu.itemname.watch", arcadeCB);
 	addMenuPoint("menu.itemname.options", arcadeCB);
+	addMenuPoint("menu.itemname.credits", creditsCB);
 	addMenuPoint("menu.itemname.exit", exitCB);
 
 	loadBoxCursor();

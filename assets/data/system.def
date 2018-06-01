@@ -83,6 +83,7 @@ menu.itemname.survivalcoop = ""
 menu.itemname.training = "TRAINING"
 menu.itemname.watch = ""
 menu.itemname.options = ""
+menu.itemname.credits = "CREDITS"
 menu.itemname.exit = "EXIT"
 ; These parameters define the window in which the items are visible
 ; in.
@@ -231,6 +232,15 @@ p2.teammenu.value.empty.icon.offset = -60,1
 p2.teammenu.value.empty.icon.spr = 192,0
 p2.teammenu.value.spacing = -6,0
 ;Sounds
+;Credits
+credits.position = 150,100
+credits.name.offset = 0,0
+credits.name.font = 3,0, 1
+credits.author.offset = 0,15
+credits.author.font = 3,0, 1
+credits.versiondate.offset = 0,30
+credits.versiondate.font = 3,0, 1
+
 
 ;-----------------------
 ;Character select screen background
