@@ -817,7 +817,10 @@ static int updateCreditStageSelectionAndReturnIfStageSelectionOver(int i) {
 	if (hasPressedUpFlankSingle(i) || hasPressedDownFlankSingle(i)) {
 		setStageSelectInactive(i);
 		loadSingleSelector(i, i);
+		return 1;
 	}
+
+	return 0;
 }
 
 static void updateSingleStageSelection(int i) {

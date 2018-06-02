@@ -127,12 +127,12 @@ typedef struct {
 } DreamMugenStateControllerTrigger;
 
 typedef struct {
-	DreamMugenStateControllerType mType;
 	DreamMugenStateControllerTrigger mTrigger;
-	int mPersistence;
-	int mAccessAmount;
-
 	void* mData;
+
+	int16_t mPersistence;
+	int16_t mAccessAmount;
+	uint8_t mType;
 } DreamMugenStateController;
 
 typedef struct {

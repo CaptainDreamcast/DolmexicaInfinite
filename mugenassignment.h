@@ -3,6 +3,7 @@
 #include <prism/geometry.h>
 
 #include <prism/mugendefreader.h>
+#include <prism/memorystack.h>
 
 typedef enum {
 	MUGEN_ASSIGNMENT_TYPE_FIXED_BOOLEAN,
@@ -67,8 +68,8 @@ typedef struct {
 
 typedef struct {
 	uint8_t mType;
-	int mExcludeLeft;
-	int mExcludeRight;
+	uint8_t mExcludeLeft;
+	uint8_t mExcludeRight;
 	DreamMugenAssignment* a;
 } DreamMugenRangeAssignment;
 
@@ -82,6 +83,9 @@ typedef struct {
 	uint8_t mType;
 	DreamMugenAssignment* a;
 } DreamMugenDependOnOneAssignment;
+
+void setupDreamAssignmentReader(MemoryStack* tMemoryStack);
+void shutdownDreamAssignmentReader();
 
 DreamMugenAssignment* makeDreamTrueMugenAssignment();
 

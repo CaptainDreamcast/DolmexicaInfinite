@@ -11,6 +11,7 @@
 #include <prism/mugenanimationhandler.h>
 #include <prism/mugentexthandler.h>
 #include <prism/clipboardhandler.h>
+#include <prism/memorystack.h>
 
 #include <prism/log.h>
 
@@ -38,19 +39,24 @@
 
 static struct {
 	void(*mFinishedCB)();
-
+	MemoryStack mMemoryStack;
 } gData;
 
 extern int gDebugAssignmentAmount;
 extern int gDebugStateControllerAmount;
+extern int gDebugStringMapAmount;
 
 static void loadFightScreen() {
+	gData.mMemoryStack = createMemoryStack(1024 * 1024 * 8);
+
 	gDebugAssignmentAmount = 0;
 	gDebugStateControllerAmount = 0;
+	gDebugStringMapAmount = 0;
 
 	setupDreamGameCollisions();
+	setupDreamAssignmentReader(&gData.mMemoryStack);
 	setupDreamAssignmentEvaluator();
-	setupDreamMugenStateControllerHandler();
+	setupDreamMugenStateControllerHandler(&gData.mMemoryStack);
 
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
 	instantiateActor(MugenTextHandler);
@@ -81,14 +87,18 @@ static void loadFightScreen() {
 	// activateCollisionHandlerDebugMode();
 	printf("assignments: %d\n", gDebugAssignmentAmount);
 	printf("controllers: %d\n", gDebugStateControllerAmount);
+	printf("maps: %d\n", gDebugStringMapAmount);
 	printf("memory blocks: %d\n", getAllocatedMemoryBlockAmount());
+	printf("memory stack used: %d\n", gData.mMemoryStack.mOffset);
 }
 
 static void unloadFightScreen() {
-	unloadPlayers();
-
 	shutdownDreamMugenStoryStateControllerHandler();
 	shutdownDreamAssignmentEvaluator();
+	shutdownDreamAssignmentReader();
+
+	return; // TODO: reevaluate
+	unloadPlayers();
 }
 
 static void updateFightScreen() {

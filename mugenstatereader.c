@@ -226,7 +226,7 @@ static void unloadSingleState(DreamMugenState* e);
 
 static void removeState(DreamMugenStates* tStates, int tState) {
 	DreamMugenState* e = int_map_get(&tStates->mStates, tState);
-	unloadSingleState(e);
+	// unloadSingleState(e); // TODO: reinsert
 	int_map_remove(&tStates->mStates, tState);
 }
 
@@ -261,7 +261,7 @@ static void handleMugenStateDef(DreamMugenStates* tStates, MugenDefScriptGroup* 
 	string_map_map(&tGroup->mElements, handleSingleMugenStateDefElement, &caller);
 
 	if (int_map_contains(&tStates->mStates, state->mID)) {
-		removeState(tStates, state->mID);
+		removeState(tStates, state->mID); // TODO
 	}
 	int_map_push_owned(&tStates->mStates, state->mID, state);
 }
