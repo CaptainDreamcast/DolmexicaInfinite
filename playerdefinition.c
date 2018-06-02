@@ -37,6 +37,7 @@ static struct {
 	DreamPlayer mPlayers[2];
 	int mUniqueIDCounter;
 	int mIsInTrainingMode;
+	MemoryStack* mMemoryStack;
 } gData;
 
 static void loadPlayerHeaderFromScript(DreamPlayerHeader* tHeader, MugenDefScript* tScript) {
@@ -136,7 +137,7 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	getMugenDefStringOrDefault(file, tScript, "Files", "anim", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
-	tPlayer->mAnimations = loadMugenAnimationFile(scriptPath);
+	tPlayer->mAnimations = loadMugenAnimationFileWithMemoryStack(scriptPath, gData.mMemoryStack);
 	malloc_stats();
 
 
@@ -325,7 +326,9 @@ static void loadSinglePlayerFromMugenDefinition(DreamPlayer* p)
 
 }
 
-void loadPlayers() {
+void loadPlayers(MemoryStack* tMemoryStack) {
+
+	gData.mMemoryStack = tMemoryStack;
 	int i = 0;
 	for (i = 0; i < 2; i++) {
 		gData.mPlayers[i].mRoot = &gData.mPlayers[i];

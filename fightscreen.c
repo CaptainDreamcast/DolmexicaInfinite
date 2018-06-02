@@ -74,7 +74,7 @@ static void loadFightScreen() {
 
 	instantiateActor(DreamStageBP);
 
-	loadPlayers();
+	loadPlayers(&gData.mMemoryStack);
 
 	instantiateActor(DreamFightUIBP);
 	instantiateActor(DreamGameLogic);

@@ -195,7 +195,7 @@ typedef struct Player_t{
 	int mIsDestroyed;
 } DreamPlayer;
 
-void loadPlayers();
+void loadPlayers(MemoryStack* tMemoryStack);
 void unloadPlayers();
 void resetPlayers();
 void resetPlayersEntirely();
