@@ -47,7 +47,7 @@ extern int gDebugStateControllerAmount;
 extern int gDebugStringMapAmount;
 
 static void loadFightScreen() {
-	gData.mMemoryStack = createMemoryStack(1024 * 1024 * 8);
+	gData.mMemoryStack = createMemoryStack(1024 * 1024 * 4);
 
 	gDebugAssignmentAmount = 0;
 	gDebugStateControllerAmount = 0;
