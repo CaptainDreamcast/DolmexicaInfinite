@@ -359,6 +359,9 @@ void changePlayerAnimationToPlayer2AnimationWithStartStep(DreamPlayer* p, int tN
 int isPlayerStartingAnimationElementWithID(DreamPlayer* p, int tStepID);
 int getPlayerTimeFromAnimationElement(DreamPlayer* p, int tStep);
 int getPlayerAnimationElementFromTimeOffset(DreamPlayer* p, int tTime);
+int isPlayerAnimationTimeOffsetInAnimation(DreamPlayer* p, int tTime);
+int getPlayerAnimationTimeWhenStepStarts(DreamPlayer* p, int tStep);
+
 
 void setPlayerSpritePriority(DreamPlayer* p, int tPriority);
 

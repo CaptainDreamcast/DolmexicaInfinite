@@ -2079,6 +2079,15 @@ int getPlayerAnimationElementFromTimeOffset(DreamPlayer* p, int tTime)
 	return getMugenAnimationElementFromTimeOffset(p->mAnimationID, tTime);
 }
 
+int isPlayerAnimationTimeOffsetInAnimation(DreamPlayer* p, int tTime) {
+	
+	return isMugenAnimationTimeOffsetInAnimation(p->mAnimationID, tTime);
+}
+
+int getPlayerAnimationTimeWhenStepStarts(DreamPlayer* p, int tStep) {
+	return getMugenAnimationTimeWhenStepStarts(p->mAnimationID, tStep);
+}
+
 void setPlayerSpritePriority(DreamPlayer* p, int tPriority)
 {
 	Position pos = getMugenAnimationPosition(p->mAnimationID);

@@ -200,6 +200,10 @@ static AssignmentReturnValue evaluateAnimElemVectorAssignment(AssignmentReturnVa
 	else if (items == 4) {
 		int time = atoi(number2);
 		int timeTillAnimation = getPlayerTimeFromAnimationElement(tPlayer, animationStep);
+		int stepTime = getPlayerAnimationTimeWhenStepStarts(tPlayer, animationStep);
+		if (!isPlayerAnimationTimeOffsetInAnimation(tPlayer, stepTime + time)) {
+			time = 0; // TODO: fix to total animation time
+		}
 
 		if (!strcmp("=", oper)) {
 			ret = timeTillAnimation == time;

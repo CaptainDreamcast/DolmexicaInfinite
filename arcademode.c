@@ -4,6 +4,7 @@
 
 #include <prism/mugendefreader.h>
 #include <prism/math.h>
+#include <prism/log.h>
 
 #include "characterselectscreen.h"
 #include "titlescreen.h"
@@ -16,7 +17,9 @@
 #include "fightui.h"
 
 typedef struct {
-	char mDefinitionPath[1024];
+	char mDefinitionPath[300];
+	char mStagePath[300];
+	char mMusicPath[300];
 } ArcadeCharacter;
 
 static struct {
@@ -35,14 +38,15 @@ static void versusScreenFinishedCB() {
 	setPlayerArtificial(1);
 	setPlayerPreferredPalette(0, 1);
 	setPlayerPreferredPalette(1, 2);
-	setDreamStageMugenDefinition("assets/stages/kfm.def"); // TODO: remove
 	startFightScreen();
 }
 
 typedef struct {
 	int mIsSelected;
 	int mOrder;
-	char mDefinitionPath[1024];
+	char mDefinitionPath[300];
+	char mStagePath[300];
+	char mMusicPath[300];
 } SingleArcadeEnemy;
 
 typedef struct {
@@ -64,22 +68,29 @@ static void addSingleEnemyToSelection(void* tCaller, void* tData) {
 	AddEnemyCaller* caller = tCaller;
 	MugenDefScriptGroupElement* element = tData;
 
-	assert(isMugenDefStringVectorVariableAsElement(element));
+	if (!isMugenDefStringVectorVariableAsElement(element)) return;
+
 	MugenStringVector stringVector = getMugenDefStringVectorVariableAsElement(element);
 	assert(stringVector.mSize >= 2);
 
-	// TODO: get real order
-	int orderIndex = 1;
-
-	if (!int_map_contains(&caller->mOrders, orderIndex)) {
-		addNewEnemyOrderToCaller(caller, orderIndex);
-	}
-	Order* order = int_map_get(&caller->mOrders, orderIndex);
-
 	SingleArcadeEnemy* e = allocMemory(sizeof(SingleArcadeEnemy));
 	e->mIsSelected = 0;
-	e->mOrder = orderIndex;
-	sprintf(e->mDefinitionPath, "assets/chars/%s/%s.def", stringVector.mElement[0], stringVector.mElement[0]); // TODO: fix
+	e->mOrder = 1;
+	getCharacterSelectNamePath(stringVector.mElement[0], e->mDefinitionPath);
+	if (!isFile(e->mDefinitionPath)) {
+		logWarningFormat("Unable to find def file %s. Ignoring character.", e->mDefinitionPath);
+		freeMemory(e);
+		return;
+	}
+	sprintf(e->mStagePath, "assets/%s", stringVector.mElement[1]); 
+	*e->mMusicPath = '\0';
+
+	parseOptionalCharacterSelectParameters(stringVector, &e->mOrder, NULL, e->mMusicPath);
+
+	if (!int_map_contains(&caller->mOrders, e->mOrder)) {
+		addNewEnemyOrderToCaller(caller, e->mOrder);
+	}
+	Order* order = int_map_get(&caller->mOrders, e->mOrder);
 
 	vector_push_back_owned(&order->mEnemies, e);
 }
@@ -88,6 +99,8 @@ static void addArcadeEnemy(SingleArcadeEnemy* tEnemy) {
 	int index = gData.mEnemyAmount;
 	ArcadeCharacter* e = &gData.mEnemies[index];
 	strcpy(e->mDefinitionPath, tEnemy->mDefinitionPath);
+	strcpy(e->mStagePath, tEnemy->mStagePath);
+	strcpy(e->mMusicPath, tEnemy->mMusicPath);
 
 	gData.mEnemyAmount++;
 }
@@ -184,7 +197,7 @@ static void fightFinishedCB() {
 	}
 
 	setPlayerDefinitionPath(1, gData.mEnemies[gData.mCurrentEnemy].mDefinitionPath);
-	// TODO: set stage
+	setDreamStageMugenDefinition(gData.mEnemies[gData.mCurrentEnemy].mStagePath);
 	setVersusScreenFinishedCB(versusScreenFinishedCB);
 	setNewScreen(&VersusScreen);
 }

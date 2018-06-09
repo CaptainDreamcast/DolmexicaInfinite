@@ -83,6 +83,8 @@ static void loadFightScreen() {
 		instantiateActor(FightDebug);
 	}
 
+	// TODO: music
+
 	malloc_stats();
 	// activateCollisionHandlerDebugMode();
 	printf("assignments: %d\n", gDebugAssignmentAmount);

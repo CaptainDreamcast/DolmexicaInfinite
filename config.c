@@ -16,7 +16,7 @@ static void loadRules(MugenDefScript* tScript) {
 static void loadMugenConfig(void* tData) {
 	(void)tData;
 
-	MugenDefScript script = loadMugenDefScript("assets/data/mugen.cfg"); // TODO: proper path
+	MugenDefScript script = loadMugenDefScript("assets/data/mugen.cfg"); 
 	loadRules(&script);
 	unloadMugenDefScript(script);
 }
