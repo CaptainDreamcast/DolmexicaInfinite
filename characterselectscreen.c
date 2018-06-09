@@ -19,8 +19,7 @@
 #include "playerdefinition.h"
 #include "gamelogic.h"
 #include "stage.h"
-
-// TODO: random character
+#include "storymode.h"
 
 typedef struct {
 	Vector3DI mCursorStartCell;
@@ -161,6 +160,7 @@ typedef enum {
 	CHARACTER_SELECT_SCREEN_TYPE_TWO_PLAYER_MODE,
 	CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING,
 	CHARACTER_SELECT_SCREEN_TYPE_CREDITS,
+	CHARACTER_SELECT_SCREEN_TYPE_STORY,
 
 } CharacterSelectScreenType;
 
@@ -465,6 +465,18 @@ static Position getCellScreenPosition(Vector3DI tCellPosition) {
 	return pos;
 }
 
+static void showMenuSelectableAnimations(MenuCharacterLoadCaller* tCaller, SelectCharacter* e) {
+	Position pos = getCellScreenPosition(e->mCellPosition);
+	pos.z = 40;
+	e->mPortraitAnimationID = addMugenAnimation(gData.mHeader.mSmallPortraitAnimation, &e->mSprites, pos);
+	if (!gData.mHeader.mIsShowingEmptyBoxes) {
+		pos.z = 30;
+		e->mBackgroundAnimationID = addMugenAnimation(gData.mHeader.mCellBackgroundAnimation, &gData.mSprites, pos);
+	}
+
+	tCaller->i++;
+}
+
 static void loadSingleRealMenuCharacter(MenuCharacterLoadCaller* tCaller, MugenDefScriptVectorElement* tVectorElement) {
 	assert(tVectorElement->mVector.mSize >= 2);
 	char* characterName = tVectorElement->mVector.mElement[0];
@@ -488,15 +500,7 @@ static void loadSingleRealMenuCharacter(MenuCharacterLoadCaller* tCaller, MugenD
 		}
 	}
 
-	Position pos = getCellScreenPosition(e->mCellPosition);
-	pos.z = 40;
-	e->mPortraitAnimationID = addMugenAnimation(gData.mHeader.mSmallPortraitAnimation, &e->mSprites, pos);
-	if (!gData.mHeader.mIsShowingEmptyBoxes) {
-		pos.z = 30;
-		e->mBackgroundAnimationID = addMugenAnimation(gData.mHeader.mCellBackgroundAnimation, &gData.mSprites, pos);
-	}
-
-	tCaller->i++;
+	showMenuSelectableAnimations(tCaller, e);
 }
 
 static void loadSingleRandomMenuCharacter(MenuCharacterLoadCaller* tCaller) {
@@ -540,13 +544,94 @@ static void loadSingleMenuCharacter(void* tCaller, void* tData) {
 }
 
 static void loadMenuCharacters() {
-	MugenDefScriptGroup* e = string_map_get(&gData.mCharacterScript.mGroups, "Characters"); // TODO: story characters
+	MugenDefScriptGroup* e = string_map_get(&gData.mCharacterScript.mGroups, "Characters");
 
 	MenuCharacterLoadCaller caller;
 	caller.i = 0;
-	
+
 	list_map(&e->mOrderedElementList, loadSingleMenuCharacter, &caller);
 	gData.mCharacterAmount = caller.i;
+}
+
+static int loadSingleStoryFileAndReturnWhetherItExists(SelectCharacter* e, char* tPath) {
+	char file[200];
+	char path[1024];
+	char scriptPath[1024];
+
+	sprintf(scriptPath, "assets/%s", tPath);
+	MugenDefScript script;
+	if (!isFile(scriptPath)) {
+		logWarningFormat("Unable to find file %s. Cannot load story %s. Ignoring.", scriptPath, tPath);
+		return 0;
+	}
+	script = loadMugenDefScript(scriptPath);
+
+	getPathToFile(path, scriptPath);
+
+	getMugenDefStringOrDefault(file, &script, "Info", "select.spr", "");
+	assert(strcmp("", file));
+	sprintf(scriptPath, "%s%s", path, file);
+	e->mSprites = loadMugenSpriteFileWithoutPalette(scriptPath);
+
+	strcpy(e->mCharacterName, tPath);
+	e->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "Info", "name");
+
+	e->mType = SELECT_CHARACTER_TYPE_CHARACTER;
+
+	unloadMugenDefScript(script);
+
+	vector_push_back(&gData.mRealSelectCharacters, e);
+	return 1;
+}
+
+static void loadSingleStory(MenuCharacterLoadCaller* tCaller, char* tPath) {
+	if (!strcmp("randomselect", tPath)) {
+		loadSingleRandomMenuCharacter(tCaller);
+		return;
+	}
+
+	int row = tCaller->i / gData.mHeader.mColumns;
+	int column = tCaller->i % gData.mHeader.mColumns;
+	SelectCharacter* e = vector_get(vector_get(&gData.mSelectCharacters, row), column);
+	strcpy(e->mStageName, "");
+	if (!loadSingleStoryFileAndReturnWhetherItExists(e, tPath)) {
+		return;
+	}
+
+	showMenuSelectableAnimations(tCaller, e);
+}
+
+static void loadSingleMenuStory(void* tCaller, void* tData) {
+	
+	MenuCharacterLoadCaller* caller = tCaller;
+	MugenDefScriptGroupElement* element = tData;
+
+	if (element->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
+		MugenDefScriptStringElement* stringElement = element->mData;
+		loadSingleStory(caller, stringElement->mString);
+	}
+
+
+}
+
+static void loadMenuStories() {
+	MugenDefScriptGroup* e = string_map_get(&gData.mCharacterScript.mGroups, "Stories"); 
+
+	MenuCharacterLoadCaller caller;
+	caller.i = 0;
+
+	list_map(&e->mOrderedElementList, loadSingleMenuStory, &caller);
+	gData.mCharacterAmount = caller.i;
+}
+
+
+static void loadMenuSelectables() {
+	if (gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_STORY) {
+		loadMenuCharacters();
+	}
+	else {
+		loadMenuStories();
+	}
 }
 
 static void loadSingleMenuCell(Vector3DI tCellPosition) {
@@ -685,7 +770,7 @@ static void loadCharacterSelectScreen() {
 
 	loadStageSelectStages();
 	loadMenuCells();
-	loadMenuCharacters();
+	loadMenuSelectables();
 	loadExtraStages();
 
 	loadCredits();
@@ -1143,9 +1228,14 @@ static void setCharacterSelectionFinished(int i) {
 		character = vector_get(&gData.mRealSelectCharacters, gData.mSelectors[i].mRandom.mCurrentCharacter);
 	}
 
-	char path[1024];
-	getCharacterSelectNamePath(character->mCharacterName, path);
-	setPlayerDefinitionPath(i, path);
+	if (gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_STORY) {
+		char path[1024];
+		getCharacterSelectNamePath(character->mCharacterName, path);
+		setPlayerDefinitionPath(i, path);
+	}
+	else {
+		setStoryModeStoryPath(character->mCharacterName);
+	}
 
 	flashSelection(i);
 
@@ -1290,6 +1380,11 @@ void setCharacterSelectTwoPlayers()
 void setCharacterSelectCredits()
 {
 	gData.mSelectScreenType = CHARACTER_SELECT_SCREEN_TYPE_CREDITS;
+}
+
+void setCharacterSelectStory()
+{
+	gData.mSelectScreenType = CHARACTER_SELECT_SCREEN_TYPE_STORY;
 }
 
 static char* removeEmptyParameterSpace(char* p, int delta, char* startChar) {

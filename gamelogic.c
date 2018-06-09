@@ -11,8 +11,7 @@
 #include "playerdefinition.h"
 #include "fightui.h"
 #include "mugenstagehandler.h"
-#include "gameoverscreen.h"
-
+#include "titlescreen.h"
 #include "fightscreen.h"
 
 static struct {
@@ -26,8 +25,10 @@ static struct {
 	int mRoundNotOverFlag;
 
 	DreamPlayer* mRoundWinner;
+	int mMatchWinnerIndex;
 
 	int mIsInSinglePlayerMode;
+	int mIsContinueActive;
 } gData;
 
 static void fightAnimationFinishedCB() {
@@ -112,7 +113,7 @@ static void setWinIcon() {
 	}
 }
 
-static void setWinner() {
+static void setRoundWinner() {
 	if (getPlayerLife(getRootPlayer(0)) >= getPlayerLife(getRootPlayer(1))) {
 		gData.mRoundWinner = getRootPlayer(0);
 	}
@@ -126,11 +127,15 @@ static void setWinner() {
 	setPlayerControl(getRootPlayer(1), 0);
 }
 
+static void setMatchWinner() {
+	gData.mMatchWinnerIndex = gData.mRoundWinner->mRootID;
+}
+
 static void startWinPose();
 
 static void timerFinishedCB() {
 	disableDreamTimer();
-	setWinner();
+	setRoundWinner();
 	startWinPose();
 }
 
@@ -166,13 +171,13 @@ static void goToNextScreen(void* tCaller) {
 	stopFightScreen();
 }
 
-static void goToGameOverScreen(void* tCaller) {
+static void goToTitleScreen(void* tCaller) {
 	(void)tCaller;
-	stopFightScreenToFixedScreen(&DreamGameOverScreen);
+	stopFightScreenToFixedScreen(&DreamTitleScreen);
 }
 
 static void continueAnimationFinishedCB() {
-	addFadeOut(30, goToGameOverScreen, NULL);
+	addFadeOut(30, goToTitleScreen, NULL);
 }
 
 static void resetGameLogic(void* tCaller) {
@@ -199,7 +204,9 @@ static void startContinue() {
 }
 
 static void winAnimationFinishedCB() {
-	if (getPlayerAILevel(gData.mRoundWinner)) {
+	setMatchWinner();
+
+	if (gData.mIsContinueActive) {
 		startContinue();
 	}
 	else {
@@ -223,7 +230,7 @@ static void koAnimationFinishedCB() {
 
 static void startKO() {
 	disableDreamTimer();
-	setWinner();
+	setRoundWinner();
 	playDreamKOAnimation(koAnimationFinishedCB);
 }
 
@@ -337,5 +344,20 @@ void setDreamGameModeTwoPlayer()
 int getDreamTicksPerSecond()
 {
 	return 60; // TODO: variable framerate
+}
+
+int getDreamMatchWinnerIndex()
+{
+	return gData.mMatchWinnerIndex;
+}
+
+void setFightContinueActive()
+{
+	gData.mIsContinueActive = 1;
+}
+
+void setFightContinueInactive()
+{
+	gData.mIsContinueActive = 0;
 }
 

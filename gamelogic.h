@@ -20,3 +20,7 @@ void setDreamGameModeTwoPlayer();
 
 
 int getDreamTicksPerSecond();
+int getDreamMatchWinnerIndex();
+
+void setFightContinueActive();
+void setFightContinueInactive();

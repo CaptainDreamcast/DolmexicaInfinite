@@ -16,7 +16,6 @@
 
 #include <prism/log.h>
 
-#include "menuscreen.h"
 #include "menubackground.h"
 #include "characterselectscreen.h"
 #include "arcademode.h"

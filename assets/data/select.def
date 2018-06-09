@@ -78,6 +78,11 @@ randomselect
 stages/kfm.def
 stages/stage0.def
 
+[Stories]
+story/connection.def
+story/connection.def
+randomselect
+
 ;---------------------------------------------------------------------
 [Options]
  ;Here you set the maximum number of matches to fight before game ends

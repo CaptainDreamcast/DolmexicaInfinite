@@ -21,16 +21,10 @@
     <ClCompile Include="..\warningscreen.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\twoplayerselectscreen.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\titlescreen.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\storyscreen.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\story.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\stage.c">
@@ -76,12 +70,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\mugenassignment.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\menuscreen.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\gameoverscreen.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\gamelogic.c">
@@ -158,12 +146,6 @@
     <ClInclude Include="..\gamelogic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\gameoverscreen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\menuscreen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\mugenassignment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -209,16 +191,10 @@
     <ClInclude Include="..\stage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\story.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\storyscreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\titlescreen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\twoplayerselectscreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\warningscreen.h">

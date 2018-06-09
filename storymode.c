@@ -1,4 +1,4 @@
-#include "trainingmode.h"
+#include "storymode.h"
 
 #include <prism/log.h>
 
@@ -19,6 +19,7 @@ static struct {
 	int mCurrentState;
 
 	int mNextStateAfterWin;
+	int mNextStateAfterLose;
 } gData;
 
 static MugenDefScriptGroup* getMugenDefStoryScriptGroupByIndex(MugenDefScript* tScript, int tIndex) {
@@ -41,7 +42,7 @@ static void loadStoryboardGroup(MugenDefScriptGroup* tGroup) {
 	getPathToFile(folder, gData.mStoryPath);
 	char* file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "file");
 
-	sprintf(path, "assets/%s%s", folder, file); // TODO: remove assets
+	sprintf(path, "assets/%s%s", folder, file);
 	if (!isFile(path)) {
 		logWarningFormat("Unable to open storyboard %s. Returning to title.", path);
 		setNewScreen(&DreamTitleScreen);
@@ -64,11 +65,11 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	getPathToFile(folder, gData.mStoryPath);
 
 	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "player1");
-	sprintf(path, "assets/chars/%s/%s.def", file, file); // TODO: remove assets
+	sprintf(path, "assets/chars/%s/%s.def", file, file); 
 	setPlayerDefinitionPath(0, path);
 
 	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "player2");
-	sprintf(path, "assets/chars/%s/%s.def", file, file); // TODO: remove assets
+	sprintf(path, "assets/chars/%s/%s.def", file, file); 
 	setPlayerDefinitionPath(1, path);
 
 	int palette1 = getMugenDefIntegerOrDefaultAsGroup(tGroup, "palette1", 1);
@@ -77,15 +78,26 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	setPlayerPreferredPalette(1, palette2);
 
 	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "stage");
-	sprintf(path, "assets/%s", file); // TODO: remove assets
+	sprintf(path, "assets/%s", file); 
 	setDreamStageMugenDefinition(path);
 
 	gData.mNextStateAfterWin = getMugenDefIntegerOrDefaultAsGroup(tGroup, "win", gData.mCurrentState + 1);
+	char* afterLoseState = getAllocatedMugenDefStringOrDefaultAsGroup(tGroup, "lose", "continue");
+	turnStringLowercase(afterLoseState);
+	if (!strcmp("continue", afterLoseState)) {
+		gData.mNextStateAfterLose = -1;
+		setFightContinueActive();
+	}
+	else {
+		gData.mNextStateAfterLose = atoi(afterLoseState);
+		setFightContinueInactive();
+	}
+	freeMemory(afterLoseState);
 
 	setTimerFinite();
 	setPlayersToRealFightMode();
 	setPlayerHuman(0);
-	setPlayerArtificial(1); // TODO: implement lose
+	setPlayerArtificial(1);
 	setFightScreenFinishedCB(fightFinishedCB);
 	startFightScreen();
 }
@@ -118,6 +130,7 @@ static void loadStoryModeScreen() {
 		logWarningFormat("Unable to read story state %d type %s (from %s). Returning to title.", gData.mCurrentState, type, gData.mStoryPath);
 		setNewScreen(&DreamTitleScreen);
 	}
+	freeMemory(type);
 }
 
 
@@ -125,14 +138,32 @@ static Screen StoryModeScreen = {
 	.mLoad = loadStoryModeScreen,
 };
 
-static void loadStoryHeader(char* tScriptPath) {
-	strcpy(gData.mStoryPath, tScriptPath);
+static void loadStoryHeader() {
 
 	char path[1024];
 	sprintf(path, "assets/%s", gData.mStoryPath);
 	MugenDefScript storyScript = loadMugenDefScript(path);
 
 	gData.mCurrentState = getMugenDefIntegerOrDefault(&storyScript, "Info", "startstate", 0);
+}
+
+static void startFirstStoryElement(MugenDefScriptGroup* tStories) {
+	MugenDefScriptGroupElement* story = list_front(&tStories->mOrderedElementList);
+
+	if (story->mType != MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
+		setNewScreen(&DreamTitleScreen);
+		return;
+	}
+
+	MugenDefScriptStringElement* stringElement = story->mData;
+	setStoryModeStoryPath(stringElement->mString);
+	loadStoryHeader();
+	setNewScreen(&StoryModeScreen);
+}
+
+static void characterSelectFinishedCB() {
+	loadStoryHeader();
+	setNewScreen(&StoryModeScreen);
 }
 
 void startStoryMode()
@@ -149,19 +180,25 @@ void startStoryMode()
 		return;
 	}
 
-	MugenDefScriptGroupElement* story = list_front(&stories->mOrderedElementList);
-	if (story->mType != MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
-		setNewScreen(&DreamTitleScreen);
-		return;
+	if (list_size(&stories->mOrderedElementList) == 1) {
+		startFirstStoryElement(stories);
 	}
-
-	MugenDefScriptStringElement* stringElement = story->mData;
-	loadStoryHeader(stringElement->mString);
-	setNewScreen(&StoryModeScreen);
+	else {
+		setCharacterSelectScreenModeName("Story");
+		setCharacterSelectStory();
+		setCharacterSelectStageInactive();
+		setCharacterSelectFinishedCB(characterSelectFinishedCB);
+		setNewScreen(&CharacterSelectScreen);
+	}
 }
 
 void storyModeOverCB(int tStep)
 {
 	gData.mCurrentState = tStep;
 	setNewScreen(&StoryModeScreen);
+}
+
+void setStoryModeStoryPath(char * tPath)
+{
+	strcpy(gData.mStoryPath, tPath);
 }

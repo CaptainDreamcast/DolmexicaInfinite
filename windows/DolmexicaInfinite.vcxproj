@@ -159,9 +159,7 @@
     <ClCompile Include="..\fightscreen.c" />
     <ClCompile Include="..\fightui.c" />
     <ClCompile Include="..\gamelogic.c" />
-    <ClCompile Include="..\gameoverscreen.c" />
     <ClCompile Include="..\menubackground.c" />
-    <ClCompile Include="..\menuscreen.c" />
     <ClCompile Include="..\mugenanimationutilities.c" />
     <ClCompile Include="..\mugenassignment.c" />
     <ClCompile Include="..\mugenassignmentevaluator.c" />
@@ -179,12 +177,10 @@
     <ClCompile Include="..\playerhitdata.c" />
     <ClCompile Include="..\projectile.c" />
     <ClCompile Include="..\stage.c" />
-    <ClCompile Include="..\story.c" />
     <ClCompile Include="..\storymode.c" />
     <ClCompile Include="..\storyscreen.c" />
     <ClCompile Include="..\titlescreen.c" />
     <ClCompile Include="..\trainingmode.c" />
-    <ClCompile Include="..\twoplayerselectscreen.c" />
     <ClCompile Include="..\versusmode.c" />
     <ClCompile Include="..\versusscreen.c" />
     <ClCompile Include="..\warningscreen.c" />
@@ -202,9 +198,7 @@
     <ClInclude Include="..\fightscreen.h" />
     <ClInclude Include="..\fightui.h" />
     <ClInclude Include="..\gamelogic.h" />
-    <ClInclude Include="..\gameoverscreen.h" />
     <ClInclude Include="..\menubackground.h" />
-    <ClInclude Include="..\menuscreen.h" />
     <ClInclude Include="..\mugenanimationutilities.h" />
     <ClInclude Include="..\mugenassignment.h" />
     <ClInclude Include="..\mugenassignmentevaluator.h" />
@@ -222,12 +216,10 @@
     <ClInclude Include="..\playerhitdata.h" />
     <ClInclude Include="..\projectile.h" />
     <ClInclude Include="..\stage.h" />
-    <ClInclude Include="..\story.h" />
     <ClInclude Include="..\storymode.h" />
     <ClInclude Include="..\storyscreen.h" />
     <ClInclude Include="..\titlescreen.h" />
     <ClInclude Include="..\trainingmode.h" />
-    <ClInclude Include="..\twoplayerselectscreen.h" />
     <ClInclude Include="..\versusmode.h" />
     <ClInclude Include="..\versusscreen.h" />
     <ClInclude Include="..\warningscreen.h" />

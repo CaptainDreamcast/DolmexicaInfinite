@@ -12,6 +12,7 @@
 static void fightFinishedCB();
 
 static void versusScreenFinishedCB() {
+	setFightContinueActive();
 	setTimerInfinite();
 	setPlayersToTrainingMode();
 	setPlayerHuman(0);

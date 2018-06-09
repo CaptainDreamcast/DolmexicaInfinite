@@ -31,6 +31,7 @@ static struct {
 static void fightFinishedCB();
 
 static void versusScreenFinishedCB() {
+	setFightContinueActive();
 	setTimerFinite();
 	setPlayersToRealFightMode();
 	setFightScreenFinishedCB(fightFinishedCB); 

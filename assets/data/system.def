@@ -84,6 +84,7 @@ menu.itemname.training = "TRAINING"
 menu.itemname.watch = ""
 menu.itemname.options = ""
 menu.itemname.credits = "CREDITS"
+menu.itemname.story = "STORY"
 menu.itemname.exit = "EXIT"
 ; These parameters define the window in which the items are visible
 ; in.
