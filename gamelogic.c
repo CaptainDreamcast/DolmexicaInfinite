@@ -77,7 +77,7 @@ static void startRound() {
 	addFadeIn(30, fadeInFinished, NULL);
 }
 
-static void resetRound(void*);
+static void gotoNextRound(void*);
 
 static void setWinIcon() {
 	VictoryType type = getPlayerVictoryType(gData.mRoundWinner);
@@ -183,7 +183,7 @@ static void continueAnimationFinishedCB() {
 static void resetGameLogic(void* tCaller) {
 	(void)tCaller;
 
-	resetRound(NULL);
+	gotoNextRound(NULL);
 	removeAllWinIcons();
 	resetPlayersEntirely();
 
@@ -206,7 +206,7 @@ static void startContinue() {
 static void winAnimationFinishedCB() {
 	setMatchWinner();
 
-	if (gData.mIsContinueActive) {
+	if (gData.mIsContinueActive && getPlayerAILevel(gData.mRoundWinner)) {
 		startContinue();
 	}
 	else {
@@ -253,15 +253,19 @@ static void updateNoControl() {
 	setPlayerControl(getRootPlayer(1), 0);
 }
 
-static void resetRound(void* tCaller) {
-	(void)tCaller;
+static void resetRoundData(void* tCaller) {
 	enableDrawing();
-	increasePlayerRoundsExisted();
-	gData.mRoundNumber++;
 	resetPlayers();
 	resetDreamMugenStageHandlerCameraPosition();
 	resetDreamTimer();
 	startRound();
+}
+
+static void gotoNextRound(void* tCaller) {
+	(void)tCaller;
+	increasePlayerRoundsExisted();
+	gData.mRoundNumber++;
+	resetRoundData(NULL);
 }
 
 static void updateWinPose() {
@@ -273,7 +277,7 @@ static void updateWinPose() {
 			playDreamWinAnimation(getPlayerDisplayName(gData.mRoundWinner), winAnimationFinishedCB);
 		}
 		else {
-			addFadeOut(30, resetRound, NULL);
+			addFadeOut(30, gotoNextRound, NULL);
 		}
 		gData.mIsDisplayingWinPose = 0;
 	}
@@ -349,6 +353,15 @@ int getDreamTicksPerSecond()
 int getDreamMatchWinnerIndex()
 {
 	return gData.mMatchWinnerIndex;
+}
+
+void resetRound() {
+	addFadeOut(30,  resetRoundData, NULL);
+}
+
+void reloadFight()
+{
+	startFightScreen();
 }
 
 void setFightContinueActive()

@@ -15,6 +15,7 @@ void setDreamPowerBarPercentage(DreamPlayer* tPlayer, double tPercentage, int tV
 void enableDreamTimer();
 void disableDreamTimer();
 void resetDreamTimer();
+void setTimerFinished();
 
 MugenAnimation* getDreamFightEffectAnimation(int tNumber);
 MugenSpriteFile* getDreamFightEffectSprites();

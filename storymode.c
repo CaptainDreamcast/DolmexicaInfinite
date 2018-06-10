@@ -54,7 +54,8 @@ static void loadStoryboardGroup(MugenDefScriptGroup* tGroup) {
 }
 
 static void fightFinishedCB() {
-	storyModeOverCB(gData.mNextStateAfterWin); // TODO: lose + dynamic
+	if(getDreamMatchWinnerIndex()) storyModeOverCB(gData.mNextStateAfterLose);
+	else storyModeOverCB(gData.mNextStateAfterWin);
 }
 
 static void loadFightGroup(MugenDefScriptGroup* tGroup) {

@@ -1116,9 +1116,7 @@ static void updateTimeDisplay() {
 		gData.mTime.mNow = 0;
 		gData.mTime.mValue--;
 		if (gData.mTime.mValue < 0) {
-			gData.mTime.mValue = 0;
-			gData.mTime.mIsFinished = 1;
-			gData.mTime.mFinishedCB();
+			setTimerFinished();
 		}
 
 		updateTimeDisplayText();
@@ -1284,6 +1282,15 @@ void resetDreamTimer()
 	gData.mTime.mIsFinished = 0;
 	updateTimeDisplayText();
 }
+
+void setTimerFinished() {
+	gData.mTime.mIsInfinite = 0;
+	gData.mTime.mValue = 0;
+	gData.mTime.mIsFinished = 1;
+	updateTimeDisplayText();
+	gData.mTime.mFinishedCB();
+}
+
 
 MugenAnimation * getDreamFightEffectAnimation(int tNumber)
 {

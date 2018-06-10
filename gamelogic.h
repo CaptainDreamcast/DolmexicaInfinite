@@ -18,9 +18,11 @@ int isDreamGameModeTwoPlayer();
 void setDreamGameModeSinglePlayer();
 void setDreamGameModeTwoPlayer();
 
-
 int getDreamTicksPerSecond();
 int getDreamMatchWinnerIndex();
+
+void resetRound();
+void reloadFight();
 
 void setFightContinueActive();
 void setFightContinueInactive();

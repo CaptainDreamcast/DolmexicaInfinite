@@ -38,6 +38,8 @@ static struct {
 	int mUniqueIDCounter;
 	int mIsInTrainingMode;
 	MemoryStack* mMemoryStack;
+
+	List mAllPlayers; // contains DreamPlayer
 } gData;
 
 static void loadPlayerHeaderFromScript(DreamPlayerHeader* tHeader, MugenDefScript* tScript) {
@@ -265,7 +267,6 @@ static void loadPlayerState(DreamPlayer* p) {
 	p->mParent = NULL;
 	p->mHelperIDInParent = -1;
 	p->mHelperIDInRoot = -1;
-	p->mAllChildHelpers = new_list();
 
 	p->mIsProjectile = 0;
 	p->mProjectileID = -1;
@@ -328,6 +329,10 @@ static void loadSinglePlayerFromMugenDefinition(DreamPlayer* p)
 
 void loadPlayers(MemoryStack* tMemoryStack) {
 
+	gData.mAllPlayers = new_list();
+	list_push_back(&gData.mAllPlayers, &gData.mPlayers[0]);
+	list_push_back(&gData.mAllPlayers, &gData.mPlayers[1]);
+
 	gData.mMemoryStack = tMemoryStack;
 	int i = 0;
 	for (i = 0; i < 2; i++) {
@@ -372,7 +377,6 @@ static void unloadHelperState(DreamPlayer* p) {
 
 static void unloadPlayerState(DreamPlayer* p) {
 	unloadHelperState(p);
-	delete_list(&p->mAllChildHelpers);
 }
 
 static void unloadPlayerFiles(DreamPlayer* tPlayer) {
@@ -394,6 +398,8 @@ void unloadPlayers() {
 	for (i = 0; i < 2; i++) {
 		unloadSinglePlayer(&gData.mPlayers[i]);
 	}
+
+	delete_list(&gData.mAllPlayers);
 }
 
 
@@ -1501,9 +1507,33 @@ int getPlayerAnimationNumber(DreamPlayer* p)
 	return getMugenAnimationAnimationNumber(p->mAnimationID);
 }
 
+int getPlayerAnimationStep(DreamPlayer* p) {
+	return getMugenAnimationAnimationStep(p->mAnimationID);
+}
+
+int getPlayerAnimationStepAmount(DreamPlayer* p) {
+	return getMugenAnimationAnimationStepAmount(p->mAnimationID);
+}
+
 int getRemainingPlayerAnimationTime(DreamPlayer* p)
 {
 	return getMugenAnimationRemainingAnimationTime(p->mAnimationID);
+}
+
+int getPlayerAnimationDuration(DreamPlayer* p) {
+	return getMugenAnimationDuration(p->mAnimationID);
+}
+
+int getPlayerAnimationTime(DreamPlayer* p) {
+	return getMugenAnimationTime(p->mAnimationID);
+}
+
+int getPlayerSpriteGroup(DreamPlayer* p) {
+	return getMugenAnimationSprite(p->mAnimationID).x;
+}
+
+int getPlayerSpriteElement(DreamPlayer* p) {
+	return getMugenAnimationSprite(p->mAnimationID).y;
 }
 
 Vector3D getPlayerPosition(DreamPlayer* p, int tCoordinateP)
@@ -2391,9 +2421,15 @@ int getPlayerTargetAmountWithID(DreamPlayer* p, int tID)
 	return 0; // TODO
 }
 
-int getPlayerTotalHelperAmount(DreamPlayer * p)
+DreamPlayer* getPlayerByIndex(int i) {
+	i = min(i, list_size(&gData.mAllPlayers) - 1);
+	DreamPlayer* p = list_get(&gData.mAllPlayers, i);
+	return p;
+}
+
+int getTotalPlayerAmount()
 {
-	return list_size(&getPlayerRoot(p)->mAllChildHelpers);
+	return list_size(&gData.mAllPlayers);
 }
 
 int getPlayerHelperAmount(DreamPlayer* p)
@@ -2847,7 +2883,8 @@ int getPlayerAILevel(DreamPlayer* p)
 
 void setPlayerLife(DreamPlayer * p, int tLife)
 {
-	p->mLife = tLife;
+	int delta = tLife - p->mLife;
+	addPlayerDamage(p, delta);
 }
 
 void addPlayerLife(DreamPlayer * p, int tLife)
@@ -3019,7 +3056,7 @@ DreamPlayer * clonePlayerAsHelper(DreamPlayer * p)
 	helper->mParent = p;
 	helper->mIsHelper = 1;
 	helper->mHelperIDInParent = list_push_back(&p->mHelpers, helper);
-	helper->mHelperIDInRoot = list_push_back(&getPlayerRoot(p)->mAllChildHelpers, helper);
+	helper->mHelperIDInRoot = list_push_back(&gData.mAllPlayers, helper);
 
 	return helper;
 }
@@ -3074,7 +3111,7 @@ void destroyPlayer(DreamPlayer * p) // TODO: rename
 	assert(p->mParent);
 	assert(p->mHelperIDInParent != -1);
 
-	list_remove(&getPlayerRoot(p)->mAllChildHelpers, p->mHelperIDInRoot);
+	list_remove(&gData.mAllPlayers, p->mHelperIDInRoot);
 	removePlayerBoundHelpers(p);
 	movePlayerHelpersToParent(p);
 	destroyGeneralPlayer(p);
@@ -3594,4 +3631,9 @@ void setPlayersToTrainingMode()
 void setPlayersToRealFightMode()
 {
 	gData.mIsInTrainingMode = 0;
+}
+
+int isPlayer(DreamPlayer * p)
+{
+	return list_contains(&gData.mAllPlayers, p);
 }

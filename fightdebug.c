@@ -6,27 +6,31 @@
 
 #include "playerdefinition.h"
 #include "stage.h"
+#include "gamelogic.h"
+#include "fightui.h"
 
-#define PLAYER_TEXT_AMOUNT 10
+#define PLAYER_TEXT_AMOUNT 4
 
 typedef struct {
-	Position mBasePosition;
+	int mActive;
+	int mTargetIndex;
 
+	Position mBasePosition;
+	DreamPlayer* mTarget;
 	int mTextIDs[PLAYER_TEXT_AMOUNT];
 
 } PlayerDebugData;
 
 static struct {
-	PlayerDebugData mPlayer[2];
-	int mTextActive;
+	PlayerDebugData mPlayer;
 	int mTextColorStep;
 
 	int mSpeedLevel;
 	int mIsTimeFrozen;
 } gData;
 
-static void loadPlayerDebugData(int i, Position tBasePosition, MugenTextAlignment tAlignment) {
-	PlayerDebugData* e = &gData.mPlayer[i];
+static void loadPlayerDebugData(Position tBasePosition, MugenTextAlignment tAlignment) {
+	PlayerDebugData* e = &gData.mPlayer;
 	e->mBasePosition = tBasePosition;
 
 	Position pos = e->mBasePosition;
@@ -50,8 +54,7 @@ static void setDebugTextColor();
 
 static void loadFightDebug(void* tData) {
 	(void)tData;
-	loadPlayerDebugData(0, makePosition(5, 235, 80), MUGEN_TEXT_ALIGNMENT_LEFT);
-	loadPlayerDebugData(1, makePosition(315, 235, 80), MUGEN_TEXT_ALIGNMENT_RIGHT);
+	loadPlayerDebugData(makePosition(5, 235, 80), MUGEN_TEXT_ALIGNMENT_LEFT);
 
 	setSpeedLevel();
 	setDebugTextColor();
@@ -62,12 +65,17 @@ static void unloadFightDebug(void* tData) {
 	setWrapperTimeDilatation(1);
 }
 
-static void setDebugTextActive() {
-	gData.mTextActive = 1;
+static void setPlayerTextActive() {
+	gData.mPlayer.mTarget = getRootPlayer(0);
 }
 
-static void setPlayerTextInactive(int i) {
-	PlayerDebugData* e = &gData.mPlayer[i];
+static void setDebugTextActive() {
+	setPlayerTextActive();
+	gData.mPlayer.mActive = 1;
+}
+
+static void setPlayerTextInactive() {
+	PlayerDebugData* e = &gData.mPlayer;
 	
 	char text[3];
 	text[0] = '\0';
@@ -78,15 +86,31 @@ static void setPlayerTextInactive(int i) {
 }
 
 static void setDebugTextInactive() {
-	setPlayerTextInactive(0);
-	setPlayerTextInactive(1);
+	setPlayerTextInactive();
 
-	gData.mTextActive = 0;
+	gData.mPlayer.mActive = 0;
+}
+
+static void setTargetPlayer() {
+	gData.mPlayer.mTarget = getPlayerByIndex(gData.mPlayer.mTargetIndex);
 }
 
 static void switchDebugTextActivity() {
-	if (gData.mTextActive) setDebugTextInactive();
-	else setDebugTextActive();
+	if (gData.mPlayer.mActive) {
+		gData.mPlayer.mTargetIndex++;
+		if (gData.mPlayer.mTargetIndex >= getTotalPlayerAmount()) {
+			setDebugTextInactive();
+		}
+		else {
+			setTargetPlayer();
+		}
+
+	}
+	else {
+		gData.mPlayer.mTargetIndex = 0;
+		setTargetPlayer();
+		setDebugTextActive();
+	}
 }
 
 static void setSpeedLevel() {
@@ -123,8 +147,8 @@ static void switchDebugTimeOff() {
 	setSpeedLevel();
 }
 
-static void setPlayerTextColor(int i, double tR, double tG, double tB) {
-	PlayerDebugData* e = &gData.mPlayer[i];
+static void setPlayerTextColor(double tR, double tG, double tB) {
+	PlayerDebugData* e = &gData.mPlayer;
 
 	int j;
 	for (j = 0; j < PLAYER_TEXT_AMOUNT; j++) {
@@ -135,18 +159,17 @@ static void setPlayerTextColor(int i, double tR, double tG, double tB) {
 static void setDebugTextColor() {
 	double r, g, b;
 	if (gData.mTextColorStep == 0) {
-		r = g = b = 1;
+		r = g = b = 0;
 	}
 	else if (gData.mTextColorStep == 1) {
-		r = g = b = 0;
+		r = g = b = 1;
 	}
 	else {
 		r = 1;
 		g = b = 0;
 	}
 
-	setPlayerTextColor(0, r, g, b);
-	setPlayerTextColor(1, r, g, b);
+	setPlayerTextColor(r, g, b);
 }
 
 static void switchDebugTextColor() {
@@ -154,58 +177,102 @@ static void switchDebugTextColor() {
 	setDebugTextColor();
 }
 
+
+
 static void updateDebugInput() {
-	if (hasPressedKeyboardKeyFlank(KEYBOARD_F2_PRISM)) {
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_D_PRISM)) {
 		switchDebugTextActivity();
 	} 
 
-	if (hasPressedKeyboardKeyFlank(KEYBOARD_F3_PRISM)) {
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_D_PRISM)) {
 		switchDebugTextColor();
 	}
 
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_F1_PRISM)) {
+		setPlayerLife(getRootPlayer(1), 0);
+	}
+
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_F1_PRISM)) {
+		setPlayerLife(getRootPlayer(0), 0);
+	}
+
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_F2_PRISM)) {
+		setPlayerLife(getRootPlayer(0), 1);
+		setPlayerLife(getRootPlayer(1), 1);
+	}
+
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_F2_PRISM)) {
+		setPlayerLife(getRootPlayer(0), 1);
+	}
+
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_F2_PRISM)) {
+		setPlayerLife(getRootPlayer(0), 1);
+	}
+
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_F3_PRISM)) {
+		setPlayerPower(getRootPlayer(0), getPlayerPowerMax(getRootPlayer(0)));
+		setPlayerPower(getRootPlayer(1), getPlayerPowerMax(getRootPlayer(1)));
+	}
+
 	if (hasPressedKeyboardKeyFlank(KEYBOARD_F4_PRISM)) {
-		switchDebugTimeDilatation();
+		resetRound();
+	}
+
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_F4_PRISM)) {
+		reloadFight();
 	}
 
 	if (hasPressedKeyboardKeyFlank(KEYBOARD_F5_PRISM)) {
+		setTimerFinished();
+	}
+
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_PAUSE_PRISM)) {
+		switchDebugTimeDilatation();
+	}
+
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_PAUSE_PRISM)) {
 		switchDebugTimeOff();
+	}
+
+
+}
+
+static void updateSingleDebugText() {
+	PlayerDebugData* e = &gData.mPlayer;
+	DreamPlayer* player = gData.mPlayer.mTarget;
+
+	int j = 0;
+	char text[1000];
+	sprintf(text, "FRAMES: %d (60.0 FPS) VRET: 0, SPEED: 0, SKIP: A", getDreamGameTime());
+	changeMugenText(e->mTextIDs[j++], text);
+
+	if (player) {
+		sprintf(text, "%s %d (%d)", getPlayerDisplayName(player), gData.mPlayer.mTargetIndex, getPlayerID(getPlayerRoot(player)));
+		changeMugenText(e->mTextIDs[j++], text);
+		sprintf(text, "ACTIONID: %d; SPR: %d,%d; ELEMNO: %d/%d; TIME: %d/%d", getPlayerAnimationNumber(player), getPlayerSpriteGroup(player), getPlayerSpriteElement(player), getPlayerAnimationStep(player) + 1, getPlayerAnimationStepAmount(player), getPlayerAnimationTime(player), getPlayerAnimationDuration(player));
+		changeMugenText(e->mTextIDs[j++], text);
+		sprintf(text, "STATE NO: %d; CTRL: %d; TYPE: %d; MOVETYPE %d; TIME: %d", getPlayerState(player), getPlayerControl(player), getPlayerStateType(player), getPlayerStateMoveType(player), getPlayerTimeInState(player));
+		changeMugenText(e->mTextIDs[j++], text);
+	}
+	else {
+		sprintf(text, "DESTROYED %d", gData.mPlayer.mTargetIndex);
+		changeMugenText(e->mTextIDs[j++], text);
+		sprintf(text, " ");
+		changeMugenText(e->mTextIDs[j++], text);
+		sprintf(text, " ");
+		changeMugenText(e->mTextIDs[j++], text);
 	}
 }
 
-static void updateSingleDebugText(int i) {
-	PlayerDebugData* e = &gData.mPlayer[i];
-	DreamPlayer* player = getRootPlayer(i);
-
-	int j = 0;
-
-	char text[1000];
-	strcpy(text, "Type: Player");
-	changeMugenText(e->mTextIDs[j++], text);
-	sprintf(text, "ID: %d", getPlayerID(player));
-	changeMugenText(e->mTextIDs[j++], text);
-	sprintf(text, "Control: %d", getPlayerControl(player));
-	changeMugenText(e->mTextIDs[j++], text);
-	sprintf(text, "Position: %.2f %.2f", getPlayerPositionX(player, getDreamStageCoordinateP()), getPlayerPositionY(player, getDreamStageCoordinateP()));
-	changeMugenText(e->mTextIDs[j++], text);
-	sprintf(text, "State: %d; Time in state: %d", getPlayerState(player), getPlayerTimeInState(player));
-	changeMugenText(e->mTextIDs[j++], text);
-	sprintf(text, "Animation: %d", getPlayerAnimationNumber(player));
-	changeMugenText(e->mTextIDs[j++], text);
-	sprintf(text, "Time left in animation: %d", getRemainingPlayerAnimationTime(player));
-	changeMugenText(e->mTextIDs[j++], text);
-	sprintf(text, "Total helper amount: %d", getPlayerTotalHelperAmount(player));
-	changeMugenText(e->mTextIDs[j++], text);
-	sprintf(text, "Helper amount: %d", getPlayerHelperAmount(player));
-	changeMugenText(e->mTextIDs[j++], text);
-	sprintf(text, "Projectile amount: %d", getPlayerProjectileAmount(player));
-	changeMugenText(e->mTextIDs[j++], text);
+static void updateTarget() {
+	if (!isPlayer(gData.mPlayer.mTarget)) gData.mPlayer.mTarget = NULL;
 }
 
 static void updateDebugText() {
-	if (!gData.mTextActive) return;
+	if (!gData.mPlayer.mActive) return;
 
-	updateSingleDebugText(0);
-	updateSingleDebugText(1);
+	updateTarget();
+	updateSingleDebugText();
 }
 
 static void updateFightDebug(void* tData) {
