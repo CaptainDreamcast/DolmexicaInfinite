@@ -3,11 +3,14 @@
 #include <prism/mugentexthandler.h>
 #include <prism/input.h>
 #include <prism/wrapper.h>
+#include <prism/drawing.h>
 
 #include "playerdefinition.h"
 #include "stage.h"
 #include "gamelogic.h"
 #include "fightui.h"
+
+#define DEBUG_Z 79
 
 #define PLAYER_TEXT_AMOUNT 4
 
@@ -54,7 +57,7 @@ static void setDebugTextColor();
 
 static void loadFightDebug(void* tData) {
 	(void)tData;
-	loadPlayerDebugData(makePosition(5, 235, 80), MUGEN_TEXT_ALIGNMENT_LEFT);
+	loadPlayerDebugData(makePosition(5, 235, DEBUG_Z), MUGEN_TEXT_ALIGNMENT_LEFT);
 
 	setSpeedLevel();
 	setDebugTextColor();
@@ -177,7 +180,9 @@ static void switchDebugTextColor() {
 	setDebugTextColor();
 }
 
-
+static void switchCollisionDebugActivity() {
+	setPlayerCollisionDebug(!isPlayerCollisionDebugActive());
+}
 
 static void updateDebugInput() {
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_D_PRISM)) {
@@ -188,6 +193,10 @@ static void updateDebugInput() {
 		switchDebugTextColor();
 	}
 
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_C_PRISM)) {
+		switchCollisionDebugActivity();
+	} 
+	
 	if (hasPressedKeyboardKeyFlank(KEYBOARD_F1_PRISM)) {
 		setPlayerLife(getRootPlayer(1), 0);
 	}
@@ -226,7 +235,7 @@ static void updateDebugInput() {
 		setTimerFinished();
 	}
 
-	if (hasPressedKeyboardKeyFlank(KEYBOARD_PAUSE_PRISM)) {
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_PAUSE_PRISM)) {
 		switchDebugTimeDilatation();
 	}
 
@@ -243,7 +252,7 @@ static void updateSingleDebugText() {
 
 	int j = 0;
 	char text[1000];
-	sprintf(text, "FRAMES: %d (60.0 FPS) VRET: 0, SPEED: 0, SKIP: A", getDreamGameTime());
+	sprintf(text, "FRAMES: %d (%.1f FPS) VRET: 0, SPEED: 0, SKIP: A", getDreamGameTime(), getRealFramerate());
 	changeMugenText(e->mTextIDs[j++], text);
 
 	if (player) {

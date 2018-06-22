@@ -16,6 +16,11 @@
 #include "mugenstagehandler.h"
 #include "mugenanimationutilities.h"
 
+#define ENVIRONMENT_COLOR_LOWER_Z 29
+#define HITSPARK_BASE_Z 51
+#define ENVIRONMENT_COLOR_UPPER_Z 62
+#define UI_BASE_Z 72
+
 #define COORD_P 240
 
 typedef struct {
@@ -460,7 +465,7 @@ static void loadSingleHealthBar(int i, MugenDefScript* tScript) {
 	Position basePosition;
 	sprintf(name, "p%d.pos", i + 1);
 	basePosition = getMugenDefVectorOrDefault(tScript, "Lifebar", name, makePosition(0,0,0));
-	basePosition.z = 20;
+	basePosition.z = UI_BASE_Z;
 
 	int coordP = COORD_P; // TODO
 	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Lifebar", "bg0", 1, &bar->mBG0Animation, &bar->mOwnsBG0Animation, &bar->mBG0AnimationID, &bar->mBG0Position, coordP);
@@ -484,7 +489,7 @@ static void loadSinglePowerBar(int i, MugenDefScript* tScript) {
 	Position basePosition;
 	sprintf(name, "p%d.pos", i + 1);
 	basePosition = getMugenDefVectorOrDefault(tScript, "Powerbar", name, makePosition(0, 0, 0));
-	basePosition.z = 20;
+	basePosition.z = UI_BASE_Z;
 
 	int coordP = COORD_P; // TODO
 	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "bg0", 1, &bar->mBG0Animation, &bar->mOwnsBG0Animation, &bar->mBG0AnimationID, &bar->mBG0Position, coordP);
@@ -515,7 +520,7 @@ static void loadSingleFace(int i, MugenDefScript* tScript) {
 	Position basePosition;
 	sprintf(name, "p%d.pos", i + 1);
 	basePosition = getMugenDefVectorOrDefault(tScript, "Face", name, makePosition(0, 0, 0));
-	basePosition.z = 20;
+	basePosition.z = UI_BASE_Z;
 
 	DreamPlayer* p = getRootPlayer(i);
 	int coordP = COORD_P; // TODO
@@ -534,7 +539,7 @@ static void loadSingleName(int i, MugenDefScript* tScript) {
 	Position basePosition;
 	sprintf(name, "p%d.pos", i + 1);
 	basePosition = getMugenDefVectorOrDefault(tScript, "Name", name, makePosition(0, 0, 0));
-	basePosition.z = 20;
+	basePosition.z = UI_BASE_Z;
 
 	int coordP = COORD_P; // TODO
 	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Name", "bg", 0, &displayName->mBGAnimation, &displayName->mOwnsBGAnimation, &displayName->mBGAnimationID, &displayName->mBGPosition, coordP);
@@ -551,7 +556,7 @@ static void loadSingleWinIcon(int i, MugenDefScript* tScript) {
 
 	sprintf(name, "p%d.pos", i + 1);
 	winIcon->mPosition = getMugenDefVectorOrDefault(tScript, "WinIcon", name, makePosition(0, 0, 0));
-	winIcon->mPosition.z = 20;
+	winIcon->mPosition.z = UI_BASE_Z;
 
 	sprintf(name, "p%d.iconoffset", i + 1);
 	winIcon->mOffset = getMugenDefVectorOrDefault(tScript, "WinIcon", name, makePosition(0, 0, 0));
@@ -609,7 +614,7 @@ static void playDisplayText(int* oTextID, char* tText, Position tPosition, Vecto
 static void loadTimer(MugenDefScript* tScript) {
 	Position basePosition;
 	basePosition = getMugenDefVectorOrDefault(tScript, "Time", "pos", makePosition(0, 0, 0));
-	basePosition.z = 20;
+	basePosition.z = UI_BASE_Z;
 
 	int coordP = COORD_P; // TODO
 	loadSingleUIComponentWithFullComponentName(tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Time", "bg", 0, &gData.mTime.mBGAnimation, &gData.mTime.mOwnsBGAnimation, &gData.mTime.mBGAnimationID, &gData.mTime.mBGPosition, coordP);
@@ -638,7 +643,7 @@ static void loadTimer(MugenDefScript* tScript) {
 static void loadRound(MugenDefScript* tScript) {
 	Position basePosition;
 	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0,0,0));
-	basePosition.z = 20;
+	basePosition.z = UI_BASE_Z;
 
 	gData.mRound.mRoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "round.time", 0);
 	gData.mRound.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "Round", "round.default.displaytime", 0);
@@ -683,7 +688,7 @@ static void loadRound(MugenDefScript* tScript) {
 static void loadFight(MugenDefScript* tScript) {
 	Position basePosition;
 	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
-	basePosition.z = 20;
+	basePosition.z = UI_BASE_Z;
 
 	assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "fight", 1, &gData.mFight.mAnimation, &gData.mFight.mOwnsAnimation, &gData.mFight.mPosition, &gData.mFight.mFaceDirection));
 	gData.mFight.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "fight.sndtime", 0);
@@ -695,7 +700,7 @@ static void loadFight(MugenDefScript* tScript) {
 static void loadKO(MugenDefScript* tScript) {
 	Position basePosition;
 	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
-	basePosition.z = 20;
+	basePosition.z = UI_BASE_Z;
 
 	assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "ko", 1, &gData.mKO.mAnimation, &gData.mKO.mOwnsAnimation, &gData.mKO.mPosition, &gData.mKO.mFaceDirection));
 	gData.mKO.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "ko.sndtime", 0);
@@ -707,7 +712,7 @@ static void loadKO(MugenDefScript* tScript) {
 static void loadWinDisplay(MugenDefScript* tScript) {
 	Position basePosition;
 	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
-	basePosition.z = 20;
+	basePosition.z = UI_BASE_Z;
 
 	loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "Round", "win", 1, &gData.mWin.mPosition, 1, gData.mWin.mText, &gData.mWin.mFont);
 
@@ -1213,7 +1218,7 @@ void playDreamHitSpark(Position tPosition, DreamPlayer* tPlayer, int tIsInPlayer
 	HitSpark* e = allocMemory(sizeof(HitSpark));
 	
 	e->mPosition = tPosition;
-	e->mPosition.z = 16;
+	e->mPosition.z = HITSPARK_BASE_Z;
 	e->mAnimationID = addMugenAnimation(anim, spriteFile, getDreamStageCoordinateSystemOffset(tPositionCoordinateP));
 	setMugenAnimationBasePosition(e->mAnimationID, &e->mPosition);
 	setMugenAnimationCameraPositionReference(e->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
@@ -1411,8 +1416,8 @@ void playDreamContinueAnimation(void(*tAnimationFinishedFunc)(), void(*tContinue
 	gData.mContinue.mNow = 0;
 	gData.mContinue.mDuration = 60;
 
-	playDisplayText(&gData.mContinue.mContinueTextID, "Continue?", makePosition(160, 100, 20), makeVector3DI(3, 0, 0));
-	playDisplayText(&gData.mContinue.mValueTextID, "10", makePosition(160, 120, 20), makeVector3DI(2, 0, 0));
+	playDisplayText(&gData.mContinue.mContinueTextID, "Continue?", makePosition(160, 100, UI_BASE_Z), makeVector3DI(3, 0, 0));
+	playDisplayText(&gData.mContinue.mValueTextID, "10", makePosition(160, 120, UI_BASE_Z), makeVector3DI(2, 0, 0));
 
 
 	gData.mContinue.mIsActive = 1;
@@ -1486,7 +1491,7 @@ int isTimerFinished()
 
 void setEnvironmentColor(Vector3DI tColors, int tTime, int tIsUnderCharacters)
 {
-	setAnimationPosition(gData.mEnvironmentEffects.mAnimationID, makePosition(0, 0, tIsUnderCharacters ? 20 : 80));
+	setAnimationPosition(gData.mEnvironmentEffects.mAnimationID, makePosition(0, 0, tIsUnderCharacters ? ENVIRONMENT_COLOR_LOWER_Z : ENVIRONMENT_COLOR_UPPER_Z));
 	setAnimationSize(gData.mEnvironmentEffects.mAnimationID, makePosition(640, 480, 1), makePosition(0, 0, 0));
 	setAnimationColor(gData.mEnvironmentEffects.mAnimationID, tColors.x / 255.0, tColors.y / 255.0, tColors.z / 255.0);
 

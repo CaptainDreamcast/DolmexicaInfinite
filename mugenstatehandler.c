@@ -61,6 +61,7 @@ static void updateSingleController(void* tCaller, void* tData) {
 	MugenStateControllerCaller* caller = tCaller;
 	DreamMugenStateController* controller = tData;
 	
+	if (caller->mRegisteredState->mPlayer && isPlayerDestroyed(caller->mRegisteredState->mPlayer)) return;
 	if (caller->mHasChangedState) return;
 	if (!evaluateTrigger(&controller->mTrigger, caller->mRegisteredState->mPlayer)) return;
 

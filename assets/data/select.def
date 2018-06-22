@@ -66,15 +66,18 @@
  ;
  ;Insert your characters below.
 
-kfm, stages/kfm.def, order=1, includestage=0, music=sound/song.mp3
-ryu, stages/kfm.def, order = 1
-Charlie, stages/kfm.def, order =   1
-randomselect
+Charlie, stages/kfm.def
+Dong, stages/kfm.def
+;mow_terry, stages/kfm.def
+;rock2000, stages/kfm.def
+;randomselect
 
 ;-----------------------
 [ExtraStages]
  ;Put extra stages here. They will be available in VS and Watch modes.
  ;For example, you can insert "stages/mybg.def".
+stages/snk/OldlineTX.def
+stages/snk/CasinoTX.def
 stages/kfm.def
 stages/stage0.def
 

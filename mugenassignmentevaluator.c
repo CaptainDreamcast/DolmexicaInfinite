@@ -674,7 +674,7 @@ static AssignmentReturnValue evaluateComparisonAssignment(DreamMugenAssignment* 
 
 		if (isPlayerAccessVectorAssignment(vecA, tPlayer)) {
 			DreamPlayer* target = getPlayerFromFirstVectorPartOrNullIfNonexistant(vecA, tPlayer);
-			if (!target) {
+			if (!isPlayerTargetValid(target)) {
 				logWarning("Accessed player was NULL. Defaulting to bottom.");
 				return makeBooleanAssignmentReturn(0); // TODO: use bottom
 			}
@@ -1003,7 +1003,7 @@ static AssignmentReturnValue evaluateStringAssignment(DreamMugenAssignment* tAss
 
 static AssignmentReturnValue evaluatePlayerVectorAssignment(AssignmentReturnValue tFirstValue, DreamMugenDependOnTwoAssignment* tVectorAssignment, DreamPlayer* tPlayer) {
 	DreamPlayer* target = getPlayerFromFirstVectorPartOrNullIfNonexistant(tFirstValue, tPlayer);
-	if (!target) {
+	if (!isPlayerTargetValid(target)) {
 		logWarningFormat("Unable to evaluate player vector assignment with NULL (%s). Defaulting to bottom.", tFirstValue.mValue);
 		return makeBooleanAssignmentReturn(0); // TODO: use bottom
 	}

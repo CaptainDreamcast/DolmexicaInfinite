@@ -83,10 +83,10 @@ static void loadFightScreen() {
 		instantiateActor(FightDebug);
 	}
 
-	// TODO: music
+	playDreamStageMusic();
 
 	malloc_stats();
-	// activateCollisionHandlerDebugMode();
+
 	printf("assignments: %d\n", gDebugAssignmentAmount);
 	printf("controllers: %d\n", gDebugStateControllerAmount);
 	printf("maps: %d\n", gDebugStringMapAmount);
@@ -111,10 +111,15 @@ static void updateFightScreen() {
 	}
 }
 
+static void drawFightScreen() {
+	drawPlayers();
+}
+
 static Screen DreamFightScreen = {
 	.mLoad = loadFightScreen,
 	.mUnload = unloadFightScreen,
 	.mUpdate = updateFightScreen,
+	.mDraw = drawFightScreen,
 };
 
 static void loadFightFonts(void* tCaller) {

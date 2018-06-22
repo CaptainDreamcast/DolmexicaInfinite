@@ -5,6 +5,8 @@
 #include <prism/mugenspritefilereader.h>
 #include <prism/mugenanimationreader.h>
 
+#define BACKGROUND_UPPER_BASE_Z 52
+
 void setDreamMugenStageHandlerCameraCoordinates(Vector3DI tCoordinates);
 void setDreamMugenStageHandlerCameraRange(GeoRectangle tRect);
 void setDreamMugenStageHandlerCameraPosition(Position p);

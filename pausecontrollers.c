@@ -9,6 +9,8 @@
 #include "fightui.h"
 #include "mugenstagehandler.h"
 
+#define SUPERPAUSE_Z 52
+
 typedef struct {
 	int mIsActive;
 	DreamPlayer* mPlayer;
@@ -157,7 +159,7 @@ void setDreamSuperPausePosition(Position tPosition)
 
 	Position mPlayerPosition = getPlayerPosition(gData.mSuperPause.mPlayer, getPlayerCoordinateP(gData.mSuperPause.mPlayer));
 	gData.mSuperPause.mAnimationReferencePosition = vecAdd(tPosition, mPlayerPosition);
-	gData.mSuperPause.mAnimationReferencePosition.z = 20; // TODO: better
+	gData.mSuperPause.mAnimationReferencePosition.z = SUPERPAUSE_Z; // TODO: better
 }
 
 void setDreamSuperPauseDarkening(int tIsDarkening)

@@ -12,6 +12,7 @@
 #include <prism/input.h>
 #include <prism/mugendefreader.h>
 #include <prism/mugenspritefilereader.h>
+#include <prism/sound.h>
 
 #include "playerdefinition.h"
 #include "mugenstagehandler.h"
@@ -142,6 +143,9 @@ static struct {
 
 	int mIsCameraManual;
 	char mDefinitionPath[1024];
+
+	int mHasCustomMusicPath;
+	char mCustomMusicPath[1024];
 } gData;
 
 static void loadStageInfo(MugenDefScript* s) {
@@ -212,7 +216,10 @@ static void loadStageShadow(MugenDefScript* s) {
 	gData.mShadow.mIntensity = getMugenDefIntegerOrDefault(s, "Shadow", "intensity", 128);
 	gData.mShadow.mColor = getMugenDefVectorIOrDefault(s, "Shadow", "color", makeVector3DI(0, 0, 0));
 	gData.mShadow.mScaleY = getMugenDefFloatOrDefault(s, "Shadow", "yscale", 1);
-	gData.mShadow.mFadeRange = getMugenDefVectorOrDefault(s, "Shadow", "fade.range", makePosition(-1000, -1000, 0));
+	gData.mShadow.mFadeRange = getMugenDefVectorOrDefault(s, "Shadow", "fade.range", makePosition(-1001, -1000, 0));
+	if (gData.mShadow.mFadeRange.x >= gData.mShadow.mFadeRange.y) {
+		gData.mShadow.mFadeRange = makePosition(-1001, -1000, 0);
+	}
 	gData.mShadow.mXShear = getMugenDefFloatOrDefault(s, "Shadow", "xshear", 0);
 }
 
@@ -263,7 +270,7 @@ static int isActionGroup(MugenDefScriptGroup* tGroup) {
 }
 
 static void addBackgroundElementToStageHandler(StageBackgroundElement* e, MugenAnimation* tAnimation, int tOwnsAnimation) {
-	e->mStart.z = e->mListPosition + e->mLayerNo * 30; // TODO
+	e->mStart.z = e->mListPosition + e->mLayerNo * BACKGROUND_UPPER_BASE_Z;
 	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, tOwnsAnimation, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), makePosition(0, 0, 0), e->mStartScaleY, e->mScaleDeltaY, e->mLayerNo, gData.mStageInfo.mLocalCoordinates);
 }
 
@@ -302,7 +309,7 @@ static void loadBackgroundElement(MugenDefScript* s, char* tName, int i) {
  	debugString(tName);
 
 	char type[100];
-	getMugenDefStringOrDefault(type, s, tName, "type", "normal");
+	getMugenDefStringOrDefault(type, s, tName, "type", "unknown");
 	turnStringLowercase(type);
 
 	e->mSpriteNo = getMugenDefVectorIOrDefault(s, tName, "spriteno", makeVector3DI(0, 0, 0));
@@ -328,9 +335,9 @@ static void loadBackgroundElement(MugenDefScript* s, char* tName, int i) {
 		addBackgroundElementToStageHandler(e, getMugenAnimation(&gData.mAnimations, e->mActionNumber), 0);
 	}
 	else {
-		logWarningFormat("Unknown type %s. Treat as normal type.", type);
-		e->mType = STAGE_BACKGROUND_STATIC;
-		addBackgroundElementToStageHandler(e, createOneFrameMugenAnimationForSprite(e->mSpriteNo.x, e->mSpriteNo.y), 1);
+		logWarningFormat("Unknown type %s. Ignore.", type);
+		freeMemory(e);
+		return;
 	}
 
 	list_push_back_owned(&gData.mBackgroundElements, e);
@@ -357,7 +364,7 @@ static void loadStageTextures(char* tPath) {
 		sprintf(sffFile, "assets/%s", gData.mBackgroundDefinition.mSpritePath);
 	}
 
-	setMugenSpriteFileReaderToUsePalette(2); // TODO: check
+	setMugenSpriteFileReaderToUsePalette(2);
 	gData.mSprites = loadMugenSpriteFileWithoutPalette(sffFile);
 	setMugenSpriteFileReaderToNotUsePalette();
 }
@@ -465,7 +472,6 @@ static void updateCameraMovement() {
 
 static void updateStage(void* tData) {
 	(void)tData;
-	return; // TODO
 	updateCameraMovement();
 }
 
@@ -476,9 +482,61 @@ ActorBlueprint DreamStageBP = {
 };
 
 
-void setDreamStageMugenDefinition(char * tPath)
+void setDreamStageMugenDefinition(char * tPath, char* tCustomMusicPath)
 {
 	strcpy(gData.mDefinitionPath, tPath);
+	strcpy(gData.mCustomMusicPath, tCustomMusicPath);
+}
+
+static int isStageMusicPath(char* tPath) {
+	if (!strchr(tPath, '.')) return 0;
+	char* fileExtension = getFileExtension(tPath);
+	if (!strcmp("da", fileExtension)) return 1;
+
+	char inFolderPath[1024];
+	sprintf(inFolderPath, "assets/music/%s", tPath);
+	if (isFile(inFolderPath)) return 1;
+
+	return isFile(tPath);
+}
+
+static void playStageTrack(char* tPath) {
+	char modPath[1024];
+	strcpy(modPath, tPath);
+	*strrchr(modPath, '.') = '\0';
+	playTrack(atoi(modPath));
+}
+
+static void playStageMusicCompletePath(char* tPath) {
+	streamMusicFile(tPath);
+}
+
+
+static void playStageMusicPath(char* tPath) {
+	char* fileExtension = getFileExtension(tPath);
+	if (!strcmp("da", fileExtension)) {
+		playStageTrack(tPath);
+		return;
+	}
+
+	char inFolderPath[1024];
+	sprintf(inFolderPath, "assets/music/%s", tPath);
+	if (isFile(inFolderPath)) {
+		playStageMusicCompletePath(inFolderPath);
+		return;
+	}
+
+	playStageMusicCompletePath(tPath);
+}
+
+void playDreamStageMusic()
+{
+	if (isStageMusicPath(gData.mCustomMusicPath)) {
+		playStageMusicPath(gData.mCustomMusicPath);
+	}
+	else if (isStageMusicPath(gData.mMusic.mBGMusic)) {
+		playStageMusicPath(gData.mMusic.mBGMusic);
+	}
 }
 
 double parseDreamCoordinatesToLocalCoordinateSystem(double tCoordinate, int tOtherCoordinateSystemAsP)

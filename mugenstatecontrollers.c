@@ -4047,6 +4047,16 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 		handleHelperTwoFloatElements(e->mSizeMiddlePosition, tPlayer, helper, setPlayerMiddlePosition, getPlayerMiddlePositionX(tPlayer), getPlayerMiddlePositionY(tPlayer));
 		handleHelperOneIntegerElement(e->mSizeShadowOffset, tPlayer, helper, setPlayerShadowOffset, getPlayerShadowOffset(tPlayer));
 
+		char* type = evaluateDreamAssignmentAndReturnAsAllocatedString(e->mType, tPlayer);
+		turnStringLowercase(type);
+		if (!strcmp("player", type)) {
+			setPlayerScreenBound(helper, 1, 1, 1);
+		}
+		else {
+			setPlayerScreenBound(helper, 0, 0, 0);
+		}
+		freeMemory(type);
+
 		setPlayerPosition(helper, position, getPlayerCoordinateP(helper));
 	} 
 
@@ -4054,6 +4064,8 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 }
 
 static int handleDestroySelf(DreamPlayer* tPlayer) {
+	printf("%d %d destroying self\n", tPlayer->mRootID, tPlayer->mID);
+
 	destroyPlayer(tPlayer);
 
 	return 1;

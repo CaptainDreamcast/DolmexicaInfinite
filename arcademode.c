@@ -198,7 +198,7 @@ static void fightFinishedCB() {
 	}
 
 	setPlayerDefinitionPath(1, gData.mEnemies[gData.mCurrentEnemy].mDefinitionPath);
-	setDreamStageMugenDefinition(gData.mEnemies[gData.mCurrentEnemy].mStagePath);
+	setDreamStageMugenDefinition(gData.mEnemies[gData.mCurrentEnemy].mStagePath, gData.mEnemies[gData.mCurrentEnemy].mMusicPath);
 	setVersusScreenFinishedCB(versusScreenFinishedCB);
 	setNewScreen(&VersusScreen);
 }

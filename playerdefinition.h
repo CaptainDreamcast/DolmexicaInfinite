@@ -26,6 +26,9 @@ typedef enum {
 	VICTORY_TYPE_TEAMMATE,
 } VictoryType;
 
+// TODO: move to proper place
+#define PLAYER_Z 40
+
 #define MAXIMUM_HITSLOT_FLAG_2_AMOUNT 10
 
 typedef struct {
@@ -68,6 +71,12 @@ typedef struct {
 	int mLastDustTime;
 
 } DreamPlayerDust;
+
+typedef struct {
+	int mCollisionTextID;
+	Position mCollisionTextPosition;
+
+} DreamPlayerDebugData;
 
 typedef struct Player_t{
 	struct Player_t* mRoot;
@@ -190,6 +199,7 @@ typedef struct Player_t{
 
 	DreamPlayerShadow mShadow;
 	DreamPlayerReflection mReflection;
+	DreamPlayerDebugData mDebug;
 
 	int mIsDestroyed;
 } DreamPlayer;
@@ -199,6 +209,7 @@ void unloadPlayers();
 void resetPlayers();
 void resetPlayersEntirely();
 void updatePlayers();
+void drawPlayers();
 
 void playerHitCB(void* tData, void* tHitData);
 
@@ -619,3 +630,7 @@ void setPlayersToTrainingMode();
 void setPlayersToRealFightMode();
 
 int isPlayer(DreamPlayer* p);
+int isPlayerTargetValid(DreamPlayer* p);
+
+int isPlayerCollisionDebugActive();
+void setPlayerCollisionDebug(int tIsActive);

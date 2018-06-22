@@ -79,8 +79,10 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	setPlayerPreferredPalette(1, palette2);
 
 	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "stage");
-	sprintf(path, "assets/%s", file); 
-	setDreamStageMugenDefinition(path);
+	sprintf(path, "assets/%s", file);
+	char dummyMusicPath[2];
+	*dummyMusicPath = '\0';
+	setDreamStageMugenDefinition(path, dummyMusicPath);
 
 	gData.mNextStateAfterWin = getMugenDefIntegerOrDefaultAsGroup(tGroup, "win", gData.mCurrentState + 1);
 	char* afterLoseState = getAllocatedMugenDefStringOrDefaultAsGroup(tGroup, "lose", "continue");

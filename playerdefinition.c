@@ -12,6 +12,8 @@
 #include <prism/mugendefreader.h>
 #include <prism/mugenanimationreader.h>
 #include <prism/mugenanimationhandler.h>
+#include <prism/mugentexthandler.h>
+#include <prism/screeneffect.h>
 
 #include "mugencommandreader.h"
 #include "mugenstatereader.h"
@@ -30,13 +32,19 @@
 #include "mugensound.h"
 #include "mugenanimationutilities.h"
 
-// TODO: move to proper place
-#define PLAYER_Z 10
+
+#define SHADOW_Z 33
+#define REFLECTION_Z 34
+#define DUST_Z 47
+#define WIDTH_LINE_Z 48
+#define CENTER_POINT_Z 49
+#define PLAYER_DEBUG_TEXT_Z 79
 
 static struct {
 	DreamPlayer mPlayers[2];
 	int mUniqueIDCounter;
 	int mIsInTrainingMode;
+	int mIsCollisionDebugActive;
 	MemoryStack* mMemoryStack;
 
 	List mAllPlayers; // contains DreamPlayer
@@ -285,7 +293,7 @@ static void loadPlayerStateWithConstantsLoaded(DreamPlayer* p) {
 
 static void loadPlayerShadow(DreamPlayer* p) {
 	Position pos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
-	pos.z = PLAYER_Z - 2;
+	pos.z = SHADOW_Z;
 	p->mShadow.mShadowPosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
 	p->mShadow.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), &p->mSprites, pos);
 	setMugenAnimationBasePosition(p->mShadow.mAnimationID, &p->mShadow.mShadowPosition);
@@ -300,7 +308,7 @@ static void loadPlayerShadow(DreamPlayer* p) {
 
 static void loadPlayerReflection(DreamPlayer* p) {
 	Position pos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
-	pos.z = PLAYER_Z - 1.9;
+	pos.z = REFLECTION_Z;
 	p->mReflection.mPosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
 	p->mReflection.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), &p->mSprites, pos);
 
@@ -310,6 +318,15 @@ static void loadPlayerReflection(DreamPlayer* p) {
 	setMugenAnimationBlendType(p->mReflection.mAnimationID, BLEND_TYPE_ADDITION);
 	setMugenAnimationTransparency(p->mReflection.mAnimationID, getDreamStageReflectionTransparency());
 	setMugenAnimationFaceDirection(p->mReflection.mAnimationID, getMugenAnimationIsFacingRight(p->mAnimationID));
+}
+
+static void loadPlayerDebug(DreamPlayer* p) {
+	setMugenAnimationCollisionDebug(p->mAnimationID, gData.mIsCollisionDebugActive);
+
+	char text[2];
+	text[0] = '\0';
+	p->mDebug.mCollisionTextID = addMugenText(text, makePosition(0, 0, 1), -1);
+	setMugenTextAlignment(p->mDebug.mCollisionTextID, MUGEN_TEXT_ALIGNMENT_CENTER);
 }
 
 static void loadSinglePlayerFromMugenDefinition(DreamPlayer* p)
@@ -322,6 +339,7 @@ static void loadSinglePlayerFromMugenDefinition(DreamPlayer* p)
 	loadPlayerStateWithConstantsLoaded(p);
 	loadPlayerShadow(p);
 	loadPlayerReflection(p);
+	loadPlayerDebug(p);
 	unloadMugenDefScript(script);
 	
 
@@ -863,6 +881,26 @@ static void updatePlayerTrainingMode(DreamPlayer* p) {
 	addPlayerPower(p, 50);
 }
 
+static void updatePlayerDebug(DreamPlayer* p) {
+	if (!gData.mIsCollisionDebugActive) return;
+
+	double sx = getPlayerScreenPositionX(p, getPlayerCoordinateP(p));
+	double sy = getPlayerScreenPositionY(p, getPlayerCoordinateP(p));
+
+	Position pos = makePosition(sx, sy+5, PLAYER_DEBUG_TEXT_Z);
+	setMugenTextPosition(p->mDebug.mCollisionTextID, pos);
+
+	char text[100];
+	if (getPlayerStateMoveType(p) == MUGEN_STATE_MOVE_TYPE_ATTACK) {
+		sprintf(text, "%s %d H", getPlayerDisplayName(p), getPlayerID(p));
+	}
+	else {
+		sprintf(text, "%s %d", getPlayerDisplayName(p), getPlayerID(p));
+	}
+
+	changeMugenText(p->mDebug.mCollisionTextID, text);
+}
+
 static void updatePlayerDestruction(DreamPlayer* p) {
 	freeMemory(p);
 }
@@ -897,6 +935,7 @@ static int updateSinglePlayer(DreamPlayer* p) {
 	updateShadow(p);
 	updateReflection(p);
 	updatePlayerTrainingMode(p);
+	updatePlayerDebug(p);
 
 	list_remove_predicate(&p->mHelpers, updateSinglePlayerCB, NULL);
 	int_map_map(&p->mProjectiles, updateSingleProjectileCB, NULL);
@@ -911,6 +950,57 @@ void updatePlayers()
 	}
 
 	updatePushFlags();
+}
+
+static void drawSinglePlayer(DreamPlayer* p);
+
+static void drawSinglePlayerCB(void* tCaller, void* tData) {
+	(void)tCaller;
+	DreamPlayer* p = tData;
+	drawSinglePlayer(p);
+}
+
+static void drawPlayerWidthAndCenter(DreamPlayer* p) {
+	double sx = getPlayerScreenPositionX(p, getPlayerCoordinateP(p));
+	double sy = getPlayerScreenPositionY(p, getPlayerCoordinateP(p));
+	
+	double x = getPlayerPositionX(p, getPlayerCoordinateP(p));
+	double fx = getPlayerFrontX(p);
+	double bx = getPlayerBackX(p);
+
+	double leftX, rightX;
+	if (getPlayerIsFacingRight(p)) {
+		rightX = sx + (fx - x);
+		leftX = sx - (x - bx);
+	}
+	else {
+		rightX = sx + (bx - x);
+		leftX = sx - (x - fx);
+	}
+
+	Position pa = makePosition(leftX, sy, WIDTH_LINE_Z);
+	Position pb = makePosition(rightX, sy, WIDTH_LINE_Z);
+	drawColoredHorizontalLine(pa, pb, COLOR_DARK_GREEN);
+	drawColoredPoint(makePosition(sx, sy, CENTER_POINT_Z), COLOR_YELLOW);
+}
+
+static void drawSinglePlayer(DreamPlayer* p) {
+	if (p->mIsDestroyed) return;
+
+	drawPlayerWidthAndCenter(p);
+
+
+	list_map(&p->mHelpers, drawSinglePlayerCB, NULL);
+	//int_map_map(&p->mProjectiles, drawSinglePlayerCB, NULL);
+}
+
+void drawPlayers() {
+	if (!gData.mIsCollisionDebugActive) return;
+
+	int i;
+	for (i = 0; i < 2; i++) {
+		drawSinglePlayer(&gData.mPlayers[i]);
+	}
 }
 
 static void setPlayerHitOver(void* tCaller) {
@@ -2121,7 +2211,7 @@ int getPlayerAnimationTimeWhenStepStarts(DreamPlayer* p, int tStep) {
 void setPlayerSpritePriority(DreamPlayer* p, int tPriority)
 {
 	Position pos = getMugenAnimationPosition(p->mAnimationID);
-	pos.z = PLAYER_Z + tPriority * 0.1 + p->mRootID * 0.01; // TODO: properly
+	pos.z = PLAYER_Z + tPriority * 1 + p->mRootID * 0.1; // TODO: properly
 	setMugenAnimationPosition(p->mAnimationID, pos);
 }
 
@@ -2537,8 +2627,8 @@ double getPlayerFrontAxisDistanceToScreen(DreamPlayer* p)
 {
 	double x = getPlayerPositionX(p, getPlayerCoordinateP(p));
 	double screenX = getPlayerScreenEdgeInFrontX(p);
-
-	return screenX - x;
+	if (getPlayerIsFacingRight(p)) return screenX - x;
+	else return x - screenX;
 }
 
 double getPlayerBackAxisDistanceToScreen(DreamPlayer* p)
@@ -2546,7 +2636,8 @@ double getPlayerBackAxisDistanceToScreen(DreamPlayer* p)
 	double x = getPlayerPositionX(p, getPlayerCoordinateP(p));
 	double screenX = getDreamCameraPositionX(getPlayerCoordinateP(p));
 
-	return x - screenX;
+	if (getPlayerIsFacingRight(p)) return x - screenX;
+	else return screenX - x;
 }
 
 double getPlayerFrontBodyDistanceToScreen(DreamPlayer* p)
@@ -3051,6 +3142,7 @@ DreamPlayer * clonePlayerAsHelper(DreamPlayer * p)
 	setPlayerExternalDependencies(helper);
 	loadPlayerShadow(helper);
 	loadPlayerReflection(helper);
+	loadPlayerDebug(helper);
 	setDreamRegisteredStateToHelperMode(helper->mStateMachineID);
 
 	helper->mParent = p;
@@ -3100,6 +3192,7 @@ static void destroyGeneralPlayer(DreamPlayer* p) {
 	removeMugenAnimation(p->mAnimationID);
 	removeMugenAnimation(p->mShadow.mAnimationID);
 	removeMugenAnimation(p->mReflection.mAnimationID);
+	removeMugenText(p->mDebug.mCollisionTextID);
 	removeFromPhysicsHandler(p->mPhysicsID);
 	removePlayerHitData(p);
 	p->mIsDestroyed = 1;
@@ -3124,6 +3217,7 @@ int getPlayerID(DreamPlayer * p)
 
 void setPlayerID(DreamPlayer * p, int tID)
 {
+	printf("%d add helper %d\n", p->mRootID, tID);
 	p->mID = tID;
 }
 
@@ -3149,6 +3243,7 @@ DreamPlayer * createNewProjectileFromPlayer(DreamPlayer * p)
 	setPlayerExternalDependencies(helper);
 	loadPlayerShadow(helper);
 	loadPlayerReflection(helper);
+	loadPlayerDebug(helper);
 	disableDreamRegisteredStateMachine(helper->mStateMachineID);
 	addProjectileToRoot(p, helper);
 	addAdditionalProjectileData(helper);
@@ -3589,7 +3684,7 @@ void addPlayerDust(DreamPlayer * p, int tDustIndex, Position tPos, int tSpacing)
 	p->mDustClouds[tDustIndex].mLastDustTime = time;
 	Position playerPosition = getPlayerPosition(p, getPlayerCoordinateP(p));
 	Position pos = vecAdd(tPos, playerPosition); 
-	pos.z = PLAYER_Z + 1; // TODO: fix z
+	pos.z = DUST_Z; // TODO: fix z
 	addDreamDustCloud(pos, getPlayerIsFacingRight(p), getPlayerCoordinateP(p));
 }
 
@@ -3636,4 +3731,29 @@ void setPlayersToRealFightMode()
 int isPlayer(DreamPlayer * p)
 {
 	return list_contains(&gData.mAllPlayers, p);
+}
+
+int isPlayerTargetValid(DreamPlayer* p) {
+	return p && !isPlayerDestroyed(p);
+}
+
+int isPlayerCollisionDebugActive() {
+	return gData.mIsCollisionDebugActive;
+}
+
+static void setPlayerCollisionDebugRecursiveCB(void* tCaller, void* tData) {
+	(void)tCaller;
+	DreamPlayer* p = tData;
+	setMugenAnimationCollisionDebug(p->mAnimationID, gData.mIsCollisionDebugActive);
+
+	if (!gData.mIsCollisionDebugActive) {
+		char text[3];
+		text[0] = '\0';
+		changeMugenText(p->mDebug.mCollisionTextID, text);
+	}
+}
+
+void setPlayerCollisionDebug(int tIsActive) {
+	gData.mIsCollisionDebugActive = tIsActive;
+	list_map(&gData.mAllPlayers, setPlayerCollisionDebugRecursiveCB, NULL);
 }

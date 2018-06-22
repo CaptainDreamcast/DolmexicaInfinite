@@ -71,7 +71,9 @@ static void loadStoryFilesFromScript(MugenDefScript* tScript) {
 
 	getMugenDefStringOrDefault(path, tScript, "Info", "stage", "");
 	sprintf(fullPath, "assets/%s", path);
-	setDreamStageMugenDefinition(fullPath);
+	char dummyMusicPath[2];
+	*dummyMusicPath = '\0'; // TODO: story music
+	setDreamStageMugenDefinition(fullPath, dummyMusicPath);
 }
 
 static void loadStoryScreen() {

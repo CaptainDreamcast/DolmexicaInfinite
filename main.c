@@ -10,6 +10,7 @@
 #include <prism/logoscreen.h>
 #include <prism/mugentexthandler.h>
 #include <prism/clipboardhandler.h>
+#include <prism/sound.h>
 
 #include "titlescreen.h"
 #include "fightscreen.h"
@@ -77,12 +78,7 @@ int main(int argc, char** argv) {
 
 	setMemoryHandlerCompressionActive();
 	initClipboardForGame();
-	setDreamStageMugenDefinition("assets/stages/kfm.def");
-	setPlayerDefinitionPath(0, "assets/chars/Chipp/Chipp.def");
-	setPlayerDefinitionPath(1, "assets/chars/Chipp/Chipp.def");
-	setPlayerHuman(0);
-	setPlayerArtificial(1);
-	setDolmexicaStoryScreenFile("assets/story/9.def");
+	setVolume(0);
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
 	startScreenHandling(&DreamWarningScreen);
 	

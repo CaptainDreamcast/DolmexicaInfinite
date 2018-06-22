@@ -248,7 +248,7 @@ void finalizeExplod(int tID)
 	addAccelerationToHandledPhysics(e->mPhysicsID, e->mVelocity);
 
 	Position p = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(e->mPlayer));
-	p.z = 10 + 0.1 * e->mSpritePriority;
+	p.z = PLAYER_Z + 1 * e->mSpritePriority;
 	e->mAnimationID = addMugenAnimation(animation, sprites, p);
 	setMugenAnimationBasePosition(e->mAnimationID, getHandledPhysicsPositionReference(e->mPhysicsID));
 	setMugenAnimationCameraPositionReference(e->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());

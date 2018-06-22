@@ -9,8 +9,10 @@
 // documentation at http://www.elecbyte.com/mugendocs-11b1/bgs.html
 
 
-void setDreamStageMugenDefinition(char* tPath);
+void setDreamStageMugenDefinition(char* tPath, char* tCustomMusicPath);
 extern ActorBlueprint DreamStageBP;
+
+void playDreamStageMusic();
 
 double parseDreamCoordinatesToLocalCoordinateSystem(double tCoordinate, int tOtherCoordinateSystemAsP);
 

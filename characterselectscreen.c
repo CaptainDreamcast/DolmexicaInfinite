@@ -1253,7 +1253,9 @@ static void setStageSelectionFinished(int i) {
 	tryPlayMugenSound(&gData.mSounds, gData.mHeader.mPlayers[i].mCursorDoneSound.x, gData.mHeader.mPlayers[i].mCursorDoneSound.y);
 
 	SelectStage* stage = vector_get(&gData.mSelectStages, gData.mStageSelect.mSelectedStage);
-	setDreamStageMugenDefinition(stage->mPath);
+	char dummyMusicPath[2];
+	*dummyMusicPath = '\0';
+	setDreamStageMugenDefinition(stage->mPath, dummyMusicPath);
 
 	updateMugenTextBasedOnVector3DI(gData.mStageSelect.mTextID, gData.mHeader.mStageSelect.mDoneFont);
 	gData.mStageSelect.mIsDone = 1;

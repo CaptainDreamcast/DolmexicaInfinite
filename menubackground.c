@@ -9,6 +9,7 @@
 #include "mugenstagehandler.h"
 #include "stage.h"
 
+
 static struct {
 	Vector3DI mLocalCoordinates;
 } gData;
@@ -70,7 +71,7 @@ static void loadAnimatedMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, 
 	int animation = getMugenDefIntegerOrDefaultAsGroup(tGroup, "actionno", -1);
 	int layerNo = getMugenDefIntegerOrDefaultAsGroup(tGroup, "layerno", 0);
 	Vector3D start = getMugenDefVectorOrDefaultAsGroup(tGroup, "start", makePosition(0, 0, 0));
-	start.z = i+layerNo*60;
+	start.z = i + layerNo*BACKGROUND_UPPER_BASE_Z;
 	Vector3D delta = getMugenDefVectorOrDefaultAsGroup(tGroup, "delta", makePosition(1, 1, 0));
 	int mask = getMugenDefIntegerOrDefaultAsGroup(tGroup, "mask", 0);
 	Vector3DI tile = getMugenDefVectorIOrDefaultAsGroup(tGroup, "tile", makeVector3DI(0, 0, 0));
