@@ -83,6 +83,14 @@ static void loadFightScreen() {
 		instantiateActor(FightDebug);
 	}
 
+	malloc_stats();
+	printf("shrinking memory stack\n");
+	resizeMemoryStackToCurrentSize(&gData.mMemoryStack); // TODO: test extensively
+	malloc_stats();
+
+	loadPlayerSprites();
+	setUIFaces();
+
 	playDreamStageMusic();
 
 	malloc_stats();

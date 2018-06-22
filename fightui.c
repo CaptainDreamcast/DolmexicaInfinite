@@ -527,7 +527,7 @@ static void loadSingleFace(int i, MugenDefScript* tScript) {
 	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Face", "bg", 1, &face->mBGAnimation, &face->mOwnsBGAnimation, &face->mBGAnimationID, &face->mBGPosition, coordP);
 	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Face", "bg0", 1, &face->mBG0Animation, &face->mOwnsBG0Animation, &face->mBG0AnimationID, &face->mBG0Position, coordP);
 	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Face", "bg1", 2, &face->mBG1Animation, &face->mOwnsBG1Animation, &face->mBG1AnimationID, &face->mBG1Position, coordP);
-	loadSingleUIComponent(i, tScript, getPlayerSprites(p), getPlayerAnimations(p), basePosition, "Face", "face", 3, &face->mFaceAnimation, &face->mOwnsFaceAnimation, &face->mFaceAnimationID, &face->mFacePosition, getPlayerCoordinateP(p));
+	loadSingleUIComponent(i, tScript, NULL, getPlayerAnimations(p), basePosition, "Face", "face", 3, &face->mFaceAnimation, &face->mOwnsFaceAnimation, &face->mFaceAnimationID, &face->mFacePosition, getPlayerCoordinateP(p));
 
 }
 
@@ -1597,4 +1597,9 @@ void removeAllWinIcons()
 		removeSinglePlayerWinIcons(i);
 	}
 
+}
+
+void setUIFaces() {
+	setMugenAnimationSprites(gData.mFaces[0].mFaceAnimationID, getPlayerSprites(getRootPlayer(0)));
+	setMugenAnimationSprites(gData.mFaces[1].mFaceAnimationID, getPlayerSprites(getRootPlayer(1)));
 }

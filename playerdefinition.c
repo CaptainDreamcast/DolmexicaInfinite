@@ -46,6 +46,7 @@ static struct {
 	int mIsInTrainingMode;
 	int mIsCollisionDebugActive;
 	MemoryStack* mMemoryStack;
+	int mIsLoading;
 
 	List mAllPlayers; // contains DreamPlayer
 } gData;
@@ -90,7 +91,7 @@ static void setPlayerExternalDependencies(DreamPlayer* tPlayer) {
 
 	Position p = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(tPlayer));
 	p.z = PLAYER_Z;
-	tPlayer->mAnimationID = addMugenAnimation(getMugenAnimation(&tPlayer->mAnimations, 0), &tPlayer->mSprites, p);
+	tPlayer->mAnimationID = addMugenAnimation(getMugenAnimation(&tPlayer->mAnimations, 0), gData.mIsLoading ? NULL : &tPlayer->mSprites, p);
 	setMugenAnimationBasePosition(tPlayer->mAnimationID, getHandledPhysicsPositionReference(tPlayer->mPhysicsID));
 	setMugenAnimationCameraPositionReference(tPlayer->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationAttackCollisionActive(tPlayer->mAnimationID, getDreamPlayerAttackCollisionList(tPlayer), NULL, NULL, getPlayerHitDataReference(tPlayer));
@@ -161,10 +162,9 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
 
-	setMugenSpriteFileReaderToUsePalette(tPlayer->mRootID);
-	tPlayer->mSprites = loadMugenSpriteFile(scriptPath, preferredPalette, hasPalettePath, palettePath);
-	setMugenSpriteFileReaderToNotUsePalette();
-	malloc_stats();
+	tPlayer->mHasPalettePath = hasPalettePath;
+	tPlayer->mPalettePath = copyToAllocatedString(palettePath);
+	tPlayer->mSpritePath = copyToAllocatedString(scriptPath);
 
 	getMugenDefStringOrDefault(file, tScript, "Files", "sound", "");
 	if (strcmp("", file)) {
@@ -295,7 +295,7 @@ static void loadPlayerShadow(DreamPlayer* p) {
 	Position pos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
 	pos.z = SHADOW_Z;
 	p->mShadow.mShadowPosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
-	p->mShadow.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), &p->mSprites, pos);
+	p->mShadow.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), gData.mIsLoading ? NULL : &p->mSprites, pos);
 	setMugenAnimationBasePosition(p->mShadow.mAnimationID, &p->mShadow.mShadowPosition);
 	setMugenAnimationCameraPositionReference(p->mShadow.mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationDrawScale(p->mShadow.mAnimationID, makePosition(1, -getDreamStageShadowScaleY(), 1));
@@ -310,7 +310,7 @@ static void loadPlayerReflection(DreamPlayer* p) {
 	Position pos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
 	pos.z = REFLECTION_Z;
 	p->mReflection.mPosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
-	p->mReflection.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), &p->mSprites, pos);
+	p->mReflection.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), gData.mIsLoading ? NULL : &p->mSprites, pos);
 
 	setMugenAnimationBasePosition(p->mReflection.mAnimationID, &p->mReflection.mPosition);
 	setMugenAnimationCameraPositionReference(p->mReflection.mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
@@ -346,6 +346,7 @@ static void loadSinglePlayerFromMugenDefinition(DreamPlayer* p)
 }
 
 void loadPlayers(MemoryStack* tMemoryStack) {
+	gData.mIsLoading = 1;
 
 	gData.mAllPlayers = new_list();
 	list_push_back(&gData.mAllPlayers, &gData.mPlayers[0]);
@@ -359,6 +360,26 @@ void loadPlayers(MemoryStack* tMemoryStack) {
 		gData.mPlayers[i].mRootID = i;
 		gData.mPlayers[i].mControllerID = i; // TODO: remove
 		loadSinglePlayerFromMugenDefinition(&gData.mPlayers[i]);
+	}
+
+	gData.mIsLoading = 0;
+}
+
+static void loadSinglePlayerSprites(DreamPlayer* tPlayer) {
+	setMugenSpriteFileReaderToUsePalette(tPlayer->mRootID);
+	tPlayer->mSprites = loadMugenSpriteFile(tPlayer->mSpritePath, tPlayer->mPreferredPalette, tPlayer->mHasPalettePath, tPlayer->mPalettePath);
+	setMugenSpriteFileReaderToNotUsePalette();
+	malloc_stats();
+
+	setMugenAnimationSprites(tPlayer->mAnimationID, &tPlayer->mSprites);
+	setMugenAnimationSprites(tPlayer->mShadow.mAnimationID, &tPlayer->mSprites);
+	setMugenAnimationSprites(tPlayer->mReflection.mAnimationID, &tPlayer->mSprites);
+}
+
+void loadPlayerSprites() {
+	int i;
+	for (i = 0; i < 2; i++) {
+		loadSinglePlayerSprites(&gData.mPlayers[i]);
 	}
 }
 

@@ -100,6 +100,9 @@ typedef struct Player_t{
 	int mAILevel;
 
 	char mDefinitionPath[1024];
+	int mHasPalettePath;
+	char* mPalettePath;
+	char* mSpritePath;
 	DreamPlayerHeader mHeader;
 	DreamMugenCommands mCommands;
 	DreamMugenConstants mConstants;
@@ -205,6 +208,7 @@ typedef struct Player_t{
 } DreamPlayer;
 
 void loadPlayers(MemoryStack* tMemoryStack);
+void loadPlayerSprites();
 void unloadPlayers();
 void resetPlayers();
 void resetPlayersEntirely();

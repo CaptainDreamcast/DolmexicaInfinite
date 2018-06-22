@@ -50,4 +50,6 @@ void addTeammateWinIcon(int tPlayer, int tIsPerfect);
 
 void removeAllWinIcons();
 
+void setUIFaces();
+
 extern ActorBlueprint DreamFightUIBP;
