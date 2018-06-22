@@ -66,10 +66,10 @@
  ;
  ;Insert your characters below.
 
-Charlie, stages/kfm.def
-Dong, stages/kfm.def
-;mow_terry, stages/kfm.def
-;rock2000, stages/kfm.def
+;Charlie, stages/kfm.def
+;Dong, stages/kfm.def
+mow_terry, stages/kfm.def
+rock2000, stages/kfm.def
 ;randomselect
 
 ;-----------------------

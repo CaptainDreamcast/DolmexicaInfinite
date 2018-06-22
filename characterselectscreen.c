@@ -938,7 +938,6 @@ static void showSelectCharacterForSelector(int i, SelectCharacter* tCharacter) {
 static void showNewRandomSelectCharacter(int i);
 
 static void moveSelectionToTarget(int i, Vector3DI tTarget, int tDoesPlaySound) {
-	PlayerHeader* player = &gData.mHeader.mPlayers[i];
 	PlayerHeader* owner = &gData.mHeader.mPlayers[gData.mSelectors[i].mOwner];
 
 	gData.mSelectors[i].mSelectedCharacter = tTarget;

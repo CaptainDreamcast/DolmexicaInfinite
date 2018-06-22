@@ -91,7 +91,7 @@ static void loadFightScreen() {
 	printf("controllers: %d\n", gDebugStateControllerAmount);
 	printf("maps: %d\n", gDebugStringMapAmount);
 	printf("memory blocks: %d\n", getAllocatedMemoryBlockAmount());
-	printf("memory stack used: %d\n", gData.mMemoryStack.mOffset);
+	printf("memory stack used: %d\n", (int)gData.mMemoryStack.mOffset);
 }
 
 static void unloadFightScreen() {

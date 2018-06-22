@@ -1,8 +1,8 @@
 OBJS = main.o \
 ai.o arcademode.o characterselectscreen.o collision.o config.o creditsmode.o dolmexicastoryscreen.o fightdebug.o fightscreen.o fightui.o \
-gamelogic.o gameoverscreen.o menubackground.o menuscreen.o mugenanimationutilities.o mugenassignment.o \
+gamelogic.o menubackground.o mugenanimationutilities.o mugenassignment.o \
 mugenassignmentevaluator.o mugencommandhandler.o mugencommandreader.o mugenexplod.o \
 mugensound.o mugenstagehandler.o mugenstatecontrollers.o mugenstatehandler.o mugenstatereader.o \
-pausecontrollers.o playerdefinition.o playerhitdata.o projectile.o stage.o story.o storymode.o storyscreen.o \
-titlescreen.o trainingmode.o twoplayerselectscreen.o versusmode.o versusscreen.o warningscreen.o \
+pausecontrollers.o playerdefinition.o playerhitdata.o projectile.o stage.o storymode.o storyscreen.o \
+titlescreen.o trainingmode.o versusmode.o versusscreen.o warningscreen.o \
 
