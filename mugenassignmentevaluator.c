@@ -1,4 +1,4 @@
-#define HAVE_M_PI // TODO fix
+#define HAVE_M_PI 
 
 #include "mugenassignmentevaluator.h"
 
@@ -103,29 +103,34 @@ static char* convertAssignmentReturnToAllocatedString(AssignmentReturnValue tAss
 	char* ret;
 	char buffer[100]; // TODO: without buffer
 
-	// TODO: switch
-	if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_STRING) {
-		char* string = getStringAssignmentReturnValue(&tAssignmentReturn);
+	char* string;
+	int valueI;
+	double valueF;
+	switch (tAssignmentReturn.mType) {
+	case ASSIGNMENT_RETURN_TYPE_STRING:
+		string = getStringAssignmentReturnValue(&tAssignmentReturn);
 		ret = copyToAllocatedString(string);
-	}
-	else if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_NUMBER) {
-		int value = getNumberAssignmentReturnValue(tAssignmentReturn);
-		sprintf(buffer, "%d", value);
+		break;
+	case ASSIGNMENT_RETURN_TYPE_NUMBER:
+		valueI = getNumberAssignmentReturnValue(tAssignmentReturn);
+		sprintf(buffer, "%d", valueI);
 		ret = copyToAllocatedString(buffer);
-	}
-	else if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_FLOAT) {
-		double value = getFloatAssignmentReturnValue(tAssignmentReturn);
-		sprintf(buffer, "%f", value);
+		break;
+	case ASSIGNMENT_RETURN_TYPE_FLOAT:
+		valueF = getFloatAssignmentReturnValue(tAssignmentReturn);
+		sprintf(buffer, "%f", valueF);
 		ret = copyToAllocatedString(buffer);
-	}
-	else if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_BOOLEAN) {
-		int value = getBooleanAssignmentReturnValue(tAssignmentReturn);
-		sprintf(buffer, "%d", value);
+		break;
 		ret = copyToAllocatedString(buffer);
-	}
-	else {
+	case ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+		valueI = getBooleanAssignmentReturnValue(tAssignmentReturn);
+		sprintf(buffer, "%d", valueI);
+		ret = copyToAllocatedString(buffer);
+		break;
+	default:
 		*buffer = '\0';
 		ret = copyToAllocatedString(buffer);
+		break;
 	}
 
 	destroyAssignmentReturn(tAssignmentReturn);
@@ -136,25 +141,29 @@ static char* convertAssignmentReturnToAllocatedString(AssignmentReturnValue tAss
 static int convertAssignmentReturnToBool(AssignmentReturnValue tAssignmentReturn) {
 	int ret;
 
-	// TODO: switch
-	if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_STRING) {
-		char* string = getStringAssignmentReturnValue(&tAssignmentReturn);
+	char* string;
+	int valueI;
+	double valueF;
+	switch (tAssignmentReturn.mType) {
+	case ASSIGNMENT_RETURN_TYPE_STRING:
+		string = getStringAssignmentReturnValue(&tAssignmentReturn);
 		ret = strcmp("", string); // TODO: catch float and integer overlap
-	}
-	else if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_NUMBER) {
-		int value = getNumberAssignmentReturnValue(tAssignmentReturn);
-		ret = value;
-	}
-	else if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_FLOAT) {
-		double value = getFloatAssignmentReturnValue(tAssignmentReturn);
-		ret = (int)value;
-	}
-	else if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_BOOLEAN) {
-		int value = getBooleanAssignmentReturnValue(tAssignmentReturn);
-		ret = value;
-	}
-	else {
+		break;
+	case ASSIGNMENT_RETURN_TYPE_NUMBER:
+		valueI = getNumberAssignmentReturnValue(tAssignmentReturn);
+		ret = valueI;
+		break;
+	case ASSIGNMENT_RETURN_TYPE_FLOAT:
+		valueF = getFloatAssignmentReturnValue(tAssignmentReturn);
+		ret = (int)valueF;
+		break;
+	case ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+		valueI = getBooleanAssignmentReturnValue(tAssignmentReturn);
+		ret = valueI;
+		break;
+	default:
 		ret = 0;
+		break;
 	}
 
 	destroyAssignmentReturn(tAssignmentReturn);
@@ -166,25 +175,29 @@ static int convertAssignmentReturnToBool(AssignmentReturnValue tAssignmentReturn
 static int convertAssignmentReturnToNumber(AssignmentReturnValue tAssignmentReturn) {
 	int ret;
 
-	// TODO: switch
-	if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_STRING) {
-		char* string = getStringAssignmentReturnValue(&tAssignmentReturn);
+	char* string;
+	int valueI;
+	double valueF;
+	switch (tAssignmentReturn.mType) {
+	case ASSIGNMENT_RETURN_TYPE_STRING:
+		string = getStringAssignmentReturnValue(&tAssignmentReturn);
 		ret = atoi(string);
-	}
-	else if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_NUMBER) {
-		int value = getNumberAssignmentReturnValue(tAssignmentReturn);
-		ret = value;
-	}
-	else if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_FLOAT) {
-		double value = getFloatAssignmentReturnValue(tAssignmentReturn);
-		ret = (int)value;
-	}
-	else if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_BOOLEAN) {
-		int value = getBooleanAssignmentReturnValue(tAssignmentReturn);
-		ret = value;
-	}
-	else {
+		break;
+	case ASSIGNMENT_RETURN_TYPE_NUMBER:
+		valueI = getNumberAssignmentReturnValue(tAssignmentReturn);
+		ret = valueI;
+		break;
+	case ASSIGNMENT_RETURN_TYPE_FLOAT:
+		valueF = getFloatAssignmentReturnValue(tAssignmentReturn);
+		ret = (int)valueF;
+		break;
+	case ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+		valueI = getBooleanAssignmentReturnValue(tAssignmentReturn);
+		ret = valueI;
+		break;
+	default:
 		ret = 0;
+		break;
 	}
 
 	destroyAssignmentReturn(tAssignmentReturn);
@@ -195,25 +208,29 @@ static int convertAssignmentReturnToNumber(AssignmentReturnValue tAssignmentRetu
 static double convertAssignmentReturnToFloat(AssignmentReturnValue tAssignmentReturn) {
 	double ret;
 
-	// TODO: switch
-	if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_STRING) {
-		char* string = getStringAssignmentReturnValue(&tAssignmentReturn);
+	char* string;
+	int valueI;
+	double valueF;
+	switch (tAssignmentReturn.mType) {
+	case ASSIGNMENT_RETURN_TYPE_STRING:
+		string = getStringAssignmentReturnValue(&tAssignmentReturn);
 		ret = atof(string);
-	}
-	else if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_NUMBER) {
-		int value = getNumberAssignmentReturnValue(tAssignmentReturn);
-		ret = value;
-	}
-	else if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_FLOAT) {
-		double value = getFloatAssignmentReturnValue(tAssignmentReturn);
-		ret = value;
-	}
-	else if (tAssignmentReturn.mType == ASSIGNMENT_RETURN_TYPE_BOOLEAN) {
-		int value = getBooleanAssignmentReturnValue(tAssignmentReturn);
-		ret = value;
-	}
-	else {
+		break;
+	case ASSIGNMENT_RETURN_TYPE_NUMBER:
+		valueI = getNumberAssignmentReturnValue(tAssignmentReturn);
+		ret = valueI;
+		break;
+	case ASSIGNMENT_RETURN_TYPE_FLOAT:
+		valueF = getFloatAssignmentReturnValue(tAssignmentReturn);
+		ret = valueF;
+		break;
+	case ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+		valueI = getBooleanAssignmentReturnValue(tAssignmentReturn);
+		ret = valueI;
+		break;
+	default:
 		ret = 0;
+		break;
 	}
 
 	destroyAssignmentReturn(tAssignmentReturn);
@@ -515,7 +532,7 @@ static int isPlayerAccessVectorAssignment(AssignmentReturnValue a, DreamPlayer* 
 static AssignmentReturnValue evaluateTeamModeAssignment(AssignmentReturnValue tCommand, DreamPlayer* tPlayer) {
 	(void)tPlayer;
 
-	char* test = convertAssignmentReturnToAllocatedString(tCommand); // TODO: faster
+	char* test = convertAssignmentReturnToAllocatedString(tCommand); 
 	turnStringLowercase(test);
 	int ret = !strcmp(test, "single"); // TODO
 	freeMemory(test);
@@ -527,9 +544,7 @@ static int isRangeAssignmentReturn(AssignmentReturnValue ret) {
 	if (ret.mType != ASSIGNMENT_RETURN_TYPE_STRING) return 0;
 	char* test = getStringAssignmentReturnValue(&ret);
 
-	char brace[100];
-	sscanf(test, "%s", brace); // TODO: test faster version with char
-	return !strcmp("[", brace);
+	return test[0] == '[' && test[1] == ' ';
 }
 
 static AssignmentReturnValue evaluateRangeComparisonAssignment(AssignmentReturnValue a, AssignmentReturnValue tRange) {
@@ -798,54 +813,38 @@ static int isProjAssignment(char* tName, char* tBaseName) {
 
 }
 
+typedef AssignmentReturnValue(*VariableFunction)(DreamPlayer*);
+typedef AssignmentReturnValue(*ArrayFunction)(DreamMugenDependOnTwoAssignment*, DreamPlayer*);
+typedef AssignmentReturnValue(*ComparisonFunction)(char*, AssignmentReturnValue, DreamPlayer*);
+
+static struct {
+	StringMap mVariables; // contains VariableFunction
+	StringMap mConstants; // contains VariableFunction
+	StringMap mArrays; // contains ArrayFunction
+	StringMap mComparisons; // contains ComparisonFunction
+} gVariableHandler;
+
 static AssignmentReturnValue evaluateComparisonAssignmentInternal(DreamMugenAssignment* mAssignment, AssignmentReturnValue b, DreamPlayer* tPlayer) {
-	char name[MUGEN_DEF_STRING_LENGTH];
 	
 	if (mAssignment->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE) {
+		char name[MUGEN_DEF_STRING_LENGTH];
 		DreamMugenVariableAssignment* var = (DreamMugenVariableAssignment*)mAssignment;
 		strcpy(name, var->mName);
 		turnStringLowercase(name);
-	}
-	else {
-		name[0] = '\0';
-	}
 
-	// TODO: map
-	if (!strcmp("command", name)) {
-		return evaluateCommandAssignment(b, tPlayer);
-	}
-	else if (!strcmp("statetype", name)) {
-		return evaluateStateTypeAssignment(b, tPlayer);
-	}
-	else if (!strcmp("p2statetype", name)) {
-		return evaluateStateTypeAssignment(b, getPlayerOtherPlayer(tPlayer));
-	}
-	else if (!strcmp("movetype", name)) {
-		return evaluateMoveTypeAssignment(b, tPlayer);
-	}
-	else if (!strcmp("p2movetype", name)) {
-		return evaluateMoveTypeAssignment(b, getPlayerOtherPlayer(tPlayer));
-	}
-	else if (!strcmp("animelem", name)) {
-		return evaluateAnimElemAssignment(b, tPlayer);
-	}
-	else if (!strcmp("timemod", name)) {
-		return evaluateTimeModAssignment(b, tPlayer);
-	}
-	else if (!strcmp("teammode", name)) {
-		return evaluateTeamModeAssignment(b, tPlayer);
-	}
-	else if (!strcmp("hitdefattr", name)) {
-		return evaluateHitDefAttributeAssignment(b, tPlayer);
-	}
-	else if (isProjAssignment(name, "projcontact")) {
-		return evaluateProjAssignment(name, "projcontact", b, tPlayer, getPlayerProjectileTimeSinceContact);
-	}
-	else if (isProjAssignment(name, "projguarded")) {
-		return evaluateProjAssignment(name, "projguarded", b, tPlayer, getPlayerProjectileTimeSinceGuarded);
-	}
-	else if (isProjAssignment(name, "projhit")) {
-		return evaluateProjAssignment(name, "projhit", b, tPlayer, getPlayerProjectileTimeSinceHit);
+		if (string_map_contains(&gVariableHandler.mComparisons, name)) {
+			ComparisonFunction func = string_map_get(&gVariableHandler.mComparisons, name);
+			return func(name, b, tPlayer);
+		}
+		else if (isProjAssignment(name, "projcontact")) {
+			return evaluateProjAssignment(name, "projcontact", b, tPlayer, getPlayerProjectileTimeSinceContact);
+		}
+		else if (isProjAssignment(name, "projguarded")) {
+			return evaluateProjAssignment(name, "projguarded", b, tPlayer, getPlayerProjectileTimeSinceGuarded);
+		}
+		else if (isProjAssignment(name, "projhit")) {
+			return evaluateProjAssignment(name, "projhit", b, tPlayer, getPlayerProjectileTimeSinceHit);
+		}
 	}
 
 	AssignmentReturnValue a = evaluateAssignmentInternal(mAssignment, tPlayer);
@@ -1287,14 +1286,30 @@ static AssignmentReturnValue evaluateRangeAssignment(DreamMugenAssignment* tAssi
 	return makeStringAssignmentReturn(buffer);
 }
 
-typedef AssignmentReturnValue(*VariableFunction)(DreamPlayer*);
-typedef AssignmentReturnValue(*ArrayFunction)(DreamMugenDependOnTwoAssignment*, DreamPlayer*);
+static AssignmentReturnValue commandComparisonFunction(char* tName, AssignmentReturnValue b, DreamPlayer* tPlayer) { return evaluateCommandAssignment(b, tPlayer); }
+static AssignmentReturnValue stateTypeComparisonFunction(char* tName, AssignmentReturnValue b, DreamPlayer* tPlayer) { return evaluateStateTypeAssignment(b, tPlayer); }
+static AssignmentReturnValue p2StateTypeComparisonFunction(char* tName, AssignmentReturnValue b, DreamPlayer* tPlayer) { return evaluateStateTypeAssignment(b, getPlayerOtherPlayer(tPlayer)); }
+static AssignmentReturnValue moveTypeComparisonFunction(char* tName, AssignmentReturnValue b, DreamPlayer* tPlayer) { return evaluateMoveTypeAssignment(b, tPlayer); }
+static AssignmentReturnValue p2MoveTypeComparisonFunction(char* tName, AssignmentReturnValue b, DreamPlayer* tPlayer) { return evaluateMoveTypeAssignment(b, getPlayerOtherPlayer(tPlayer)); }
+static AssignmentReturnValue animElemComparisonFunction(char* tName, AssignmentReturnValue b, DreamPlayer* tPlayer) { return evaluateAnimElemAssignment(b, tPlayer); }
+static AssignmentReturnValue timeModComparisonFunction(char* tName, AssignmentReturnValue b, DreamPlayer* tPlayer) { return evaluateTimeModAssignment(b, tPlayer); }
+static AssignmentReturnValue teamModeComparisonFunction(char* tName, AssignmentReturnValue b, DreamPlayer* tPlayer) { return evaluateTeamModeAssignment(b, tPlayer); }
+static AssignmentReturnValue hitDefAttributeComparisonFunction(char* tName, AssignmentReturnValue b, DreamPlayer* tPlayer) { return evaluateHitDefAttributeAssignment(b, tPlayer); }
 
-static struct {
-	StringMap mVariables; // contains VariableFunction
-	StringMap mConstants; // contains VariableFunction
-	StringMap mArrays; // contains ArrayFunction
-} gVariableHandler;
+
+static void setupComparisons() {
+	gVariableHandler.mComparisons = new_string_map();
+
+	string_map_push(&gVariableHandler.mComparisons, "command", commandComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "statetype", stateTypeComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "p2statetype", p2StateTypeComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "movetype", moveTypeComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "p2movetype", p2MoveTypeComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "animelem", animElemComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "timemod", timeModComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "teammode", teamModeComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "hitdefattr", hitDefAttributeComparisonFunction);
+}
 
 static AssignmentReturnValue aiLevelFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerAILevel(tPlayer)); }
 static AssignmentReturnValue aliveFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(isPlayerAlive(tPlayer)); }
@@ -1681,6 +1696,7 @@ void setupDreamAssignmentEvaluator() {
 	setupVariableAssignments();
 	setupConstantAssignments();
 	setupArrayAssignments();
+	setupComparisons();
 }
 
 static int isIsInOtherFileVariable(char* tName) {
@@ -2317,6 +2333,7 @@ void setupDreamStoryAssignmentEvaluator()
 
 void shutdownDreamAssignmentEvaluator()
 {
+	delete_string_map(&gVariableHandler.mComparisons);
 	delete_string_map(&gVariableHandler.mArrays);
 	delete_string_map(&gVariableHandler.mConstants);
 	delete_string_map(&gVariableHandler.mVariables);
