@@ -60,10 +60,6 @@ int main(int argc, char** argv) {
 	
 	initPrismWrapperWithDefaultFlags();
 	
-	if (isOnDreamcast()) {
-		setMemoryHandlingInactive();
-	}
-
 	setMainFileSystem();	
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
 	loadMugenTextHandler();

@@ -81,6 +81,8 @@ static void destroyAssignmentReturn(AssignmentReturnValue* tAssignmentReturn) {
 	case ASSIGNMENT_RETURN_TYPE_STRING:
 		destroyAssignmentReturnString(tAssignmentReturn);
 			break;
+	default:
+		break;
 	}
 
 	freeMemory(tAssignmentReturn);
@@ -104,16 +106,6 @@ static double getFloatAssignmentReturnValue(AssignmentReturnValue* tAssignmentRe
 static int getBooleanAssignmentReturnValue(AssignmentReturnValue* tAssignmentReturn) {
 	AssignmentReturnBoolean* boolean = (AssignmentReturnBoolean*)tAssignmentReturn;
 	return boolean->mBoolean;
-}
-
-static Vector3D getVectorFloatAssignmentReturnValue(AssignmentReturnValue* tAssignmentReturn) {
-	AssignmentReturnVectorFloat* vecF = (AssignmentReturnVectorFloat*)tAssignmentReturn;
-	return vecF->mVector;
-}
-
-static Vector3DI getVectorIntegerAssignmentReturnValue(AssignmentReturnValue* tAssignmentReturn) {
-	AssignmentReturnVectorInteger* vecI = (AssignmentReturnVectorInteger*)tAssignmentReturn;
-	return vecI->mVectorI;
 }
 
 static AssignmentReturnValue* makeBooleanAssignmentReturn(int tValue);
@@ -1979,17 +1971,13 @@ static AssignmentReturnValue* evaluateIfElseArrayAssignment(AssignmentReturnValu
 	}
 	freeMemory(test);
 
-	AssignmentReturnValue* condRet = makeBooleanAssignmentReturn(atof(condText) != 0);
-	AssignmentReturnValue* yesRet = makeStringAssignmentReturn(yesText);
-	AssignmentReturnValue* noRet = makeStringAssignmentReturn(noText);
-
-	int cond = getBooleanAssignmentReturnValue(condRet);
+	int cond = atof(condText) != 0;
 	if (cond) {
-		destroyAssignmentReturn(noRet);
+		AssignmentReturnValue* yesRet = makeStringAssignmentReturn(yesText);
 		return yesRet;
 	}
 	else {
-		destroyAssignmentReturn(yesRet);
+		AssignmentReturnValue* noRet = makeStringAssignmentReturn(noText);
 		return noRet;
 	}
 }
@@ -2285,6 +2273,7 @@ static void* gEvaluationFunctions[] = {
 };
 
 static AssignmentReturnValue* evaluateAssignmentInternal(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
+
 	if (!tAssignment) {
 		logWarning("Invalid assignment. Defaulting to bottom.");
 		return makeBottomAssignmentReturn(); 
