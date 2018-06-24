@@ -57,6 +57,7 @@ static void setDebugTextColor();
 
 static void loadFightDebug(void* tData) {
 	(void)tData;
+
 	loadPlayerDebugData(makePosition(5, 235, DEBUG_Z), MUGEN_TEXT_ALIGNMENT_LEFT);
 
 	setSpeedLevel();
@@ -185,7 +186,7 @@ static void switchCollisionDebugActivity() {
 }
 
 static void updateDebugInput() {
-	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_D_PRISM)) {
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_D_PRISM) || (hasPressedA() && hasPressedStartFlank())) { // TODO: proper
 		switchDebugTextActivity();
 	} 
 

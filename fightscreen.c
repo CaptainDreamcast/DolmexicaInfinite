@@ -79,7 +79,7 @@ static void loadFightScreen() {
 	instantiateActor(DreamFightUIBP);
 	instantiateActor(DreamGameLogic);
 
-	if (isOnWindows()) {
+	if (isOnWindows() || isOnDreamcast()) {
 		instantiateActor(FightDebug);
 	}
 
