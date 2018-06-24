@@ -1216,25 +1216,29 @@ static AssignmentReturnValue* evaluateOperatorArgumentAssignment(DreamMugenAssig
 	return makeStringAssignmentReturn(buffer);
 }
 
-static AssignmentReturnValue* evaluateBooleanAssignment(DreamMugenAssignment* tAssignment) {
+static AssignmentReturnValue* evaluateBooleanAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
+	(void)tPlayer;
 	DreamMugenFixedBooleanAssignment* fixedAssignment = (DreamMugenFixedBooleanAssignment*)tAssignment;
 
 	return makeBooleanAssignmentReturn(fixedAssignment->mValue);
 }
 
-static AssignmentReturnValue* evaluateNumberAssignment(DreamMugenAssignment* tAssignment) {
+static AssignmentReturnValue* evaluateNumberAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
+	(void)tPlayer;
 	DreamMugenNumberAssignment* number = (DreamMugenNumberAssignment*)tAssignment;
 
 	return makeNumberAssignmentReturn(number->mValue);
 }
 
-static AssignmentReturnValue* evaluateFloatAssignment(DreamMugenAssignment* tAssignment) {
+static AssignmentReturnValue* evaluateFloatAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
+	(void)tPlayer;
 	DreamMugenFloatAssignment* f = (DreamMugenFloatAssignment*)tAssignment;
 
 	return makeFloatAssignmentReturn(f->mValue);
 }
 
-static AssignmentReturnValue* evaluateStringAssignment(DreamMugenAssignment* tAssignment) {
+static AssignmentReturnValue* evaluateStringAssignment(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
+	(void)tPlayer;
 	DreamMugenStringAssignment* s = (DreamMugenStringAssignment*)tAssignment;
 
 	return makeStringAssignmentReturn(s->mValue);
@@ -1975,12 +1979,11 @@ static AssignmentReturnValue* evaluateIfElseArrayAssignment(AssignmentReturnValu
 	}
 	freeMemory(test);
 
-	AssignmentReturnValue* condRet = makeStringAssignmentReturn(condText);
+	AssignmentReturnValue* condRet = makeBooleanAssignmentReturn(atof(condText) != 0);
 	AssignmentReturnValue* yesRet = makeStringAssignmentReturn(yesText);
 	AssignmentReturnValue* noRet = makeStringAssignmentReturn(noText);
 
-	int cond = convertAssignmentReturnToBool(condRet);
-
+	int cond = getBooleanAssignmentReturnValue(condRet);
 	if (cond) {
 		destroyAssignmentReturn(noRet);
 		return yesRet;
@@ -2247,110 +2250,54 @@ static AssignmentReturnValue* evaluateNegationAssignment(DreamMugenAssignment* t
 	return makeBooleanAssignmentReturn(!val);
 }
 
+typedef AssignmentReturnValue*(AssignmentEvaluationFunction)(DreamMugenAssignment*, DreamPlayer*);
+
+static void* gEvaluationFunctions[] = {
+	evaluateBooleanAssignment,
+	evaluateAndAssignment,
+	evaluateOrAssignment,
+	evaluateComparisonAssignment,
+	evaluateInequalityAssignment,
+	evaluateLessOrEqualAssignment,
+	evaluateGreaterOrEqualAssignment,
+	evaluateVectorAssignment,
+	evaluateRangeAssignment,
+	evaluateBooleanAssignment,
+	evaluateNegationAssignment,
+	evaluateVariableAssignment,
+	evaluateNumberAssignment,
+	evaluateFloatAssignment,
+	evaluateStringAssignment,
+	evaluateArrayAssignment,
+	evaluateLessAssignment,
+	evaluateGreaterAssignment,
+	evaluateAdditionAssignment,
+	evaluateMultiplicationAssignment,
+	evaluateModuloAssignment,
+	evaluateSubtractionAssignment,
+	evaluateSetVariableAssignment,
+	evaluateDivisionAssignment,
+	evaluateExponentiationAssignment,
+	evaluateUnaryMinusAssignment,
+	evaluateOperatorArgumentAssignment,
+	evaluateBitwiseAndAssignment,
+	evaluateBitwiseOrAssignment,
+};
+
 static AssignmentReturnValue* evaluateAssignmentInternal(DreamMugenAssignment* tAssignment, DreamPlayer* tPlayer) {
 	if (!tAssignment) {
 		logWarning("Invalid assignment. Defaulting to bottom.");
-		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+		return makeBottomAssignmentReturn(); 
 	}
 
-	if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_OR) {
-		return evaluateOrAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_AND) {
-		return evaluateAndAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_BITWISE_OR) {
-		return evaluateBitwiseOrAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_BITWISE_AND) {
-		return evaluateBitwiseAndAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_COMPARISON) {
-		return evaluateComparisonAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_SET_VARIABLE) {
-		return evaluateSetVariableAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_FIXED_BOOLEAN) {
-		return evaluateBooleanAssignment(tAssignment);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE) {
-		return evaluateVariableAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_NUMBER) {
-		return evaluateNumberAssignment(tAssignment);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_VECTOR) {
-		return evaluateVectorAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_INEQUALITY) {
-		return evaluateInequalityAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_RANGE) {
-		return evaluateRangeAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_ARRAY) {
-		return evaluateArrayAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_NULL) {
-		return evaluateBooleanAssignment(tAssignment);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_GREATER) {
-		return evaluateGreaterAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_GREATER_OR_EQUAL) {
-		return evaluateGreaterOrEqualAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_LESS) {
-		return evaluateLessAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_LESS_OR_EQUAL) {
-		return evaluateLessOrEqualAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_MODULO) {
-		return evaluateModuloAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_EXPONENTIATION) {
-		return evaluateExponentiationAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_MULTIPLICATION) {
-		return evaluateMultiplicationAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_DIVISION) {
-		return evaluateDivisionAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_ADDITION) {
-		return evaluateAdditionAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_SUBTRACTION) {
-		return evaluateSubtractionAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_OPERATOR_ARGUMENT) {
-		return evaluateOperatorArgumentAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_UNARY_MINUS) {
-		return evaluateUnaryMinusAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_NEGATION) {
-		return evaluateNegationAssignment(tAssignment, tPlayer);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_FLOAT) {
-		return evaluateFloatAssignment(tAssignment);
-	}
-	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_STRING) {
-		return evaluateStringAssignment(tAssignment);
-	}
-	else {
+	if (tAssignment->mType >= MUGEN_ASSIGNMENT_TYPE_AMOUNT) {
 		logWarningFormat("Unidentified assignment type %d. Returning bottom.", tAssignment->mType);
-		return makeBooleanAssignmentReturn(0); // TODO: use bottom
+		return makeBottomAssignmentReturn();
 	}
+
+	AssignmentEvaluationFunction* func = (AssignmentEvaluationFunction*)gEvaluationFunctions[tAssignment->mType];
+	return func(tAssignment, tPlayer);
 }
-
-
-
-
-
-
 
 static AssignmentReturnValue* timeStoryFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getDolmexicaStoryTimeInState()); }
 
