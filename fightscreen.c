@@ -45,6 +45,7 @@ static struct {
 extern int gDebugAssignmentAmount;
 extern int gDebugStateControllerAmount;
 extern int gDebugStringMapAmount;
+extern int gPruneAmount;
 
 static void loadFightScreen() {
 	gData.mMemoryStack = createMemoryStack(1024 * 1024 * 3);
@@ -52,6 +53,7 @@ static void loadFightScreen() {
 	gDebugAssignmentAmount = 0;
 	gDebugStateControllerAmount = 0;
 	gDebugStringMapAmount = 0;
+	gPruneAmount = 0;
 
 	setupDreamGameCollisions();
 	setupDreamAssignmentReader(&gData.mMemoryStack);
@@ -106,9 +108,6 @@ static void unloadFightScreen() {
 	shutdownDreamMugenStoryStateControllerHandler();
 	shutdownDreamAssignmentEvaluator();
 	shutdownDreamAssignmentReader();
-
-	return; // TODO: reevaluate
-	unloadPlayers();
 }
 
 static void updateFightScreen() {

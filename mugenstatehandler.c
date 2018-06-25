@@ -54,7 +54,7 @@ typedef struct {
 } MugenStateControllerCaller;
 
 static int evaluateTrigger(DreamMugenStateControllerTrigger* tTrigger, DreamPlayer* tPlayer) {
-	return evaluateDreamAssignment(tTrigger->mAssignment, tPlayer);
+	return evaluateDreamAssignment(&tTrigger->mAssignment, tPlayer);
 }
 
 static void updateSingleController(void* tCaller, void* tData) {
@@ -307,23 +307,23 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 	}
 
 	if (newState->mIsChangingAnimation) {
-		int anim = evaluateDreamAssignmentAndReturnAsInteger(newState->mAnimation, e->mPlayer);
+		int anim = evaluateDreamAssignmentAndReturnAsInteger(&newState->mAnimation, e->mPlayer);
 		changePlayerAnimation(e->mPlayer, anim);
 	}
 
 	if (newState->mIsChangingControl) {
-		int control = evaluateDreamAssignmentAndReturnAsInteger(newState->mControl, e->mPlayer);
+		int control = evaluateDreamAssignmentAndReturnAsInteger(&newState->mControl, e->mPlayer);
 		setPlayerControl(e->mPlayer, control);
 	}
 
 	if (newState->mIsSettingVelocity) {
-		Vector3D vel = evaluateDreamAssignmentAndReturnAsVector3D(newState->mVelocity, e->mPlayer);
+		Vector3D vel = evaluateDreamAssignmentAndReturnAsVector3D(&newState->mVelocity, e->mPlayer);
 		setPlayerVelocityX(e->mPlayer, vel.x, getPlayerCoordinateP(e->mPlayer));
 		setPlayerVelocityY(e->mPlayer, vel.y, getPlayerCoordinateP(e->mPlayer));
 	}
 
 	if (newState->mIsAddingPower) {
-		int power = evaluateDreamAssignmentAndReturnAsInteger(newState->mPowerAdd, e->mPlayer);
+		int power = evaluateDreamAssignmentAndReturnAsInteger(&newState->mPowerAdd, e->mPlayer);
 		addPlayerPower(e->mPlayer, power);
 	}
 
