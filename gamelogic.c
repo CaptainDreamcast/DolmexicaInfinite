@@ -70,8 +70,8 @@ static void startRound() {
 	gData.mRoundStateNumber = 0;
 	gData.mIsDisplayingIntro = 0;
 	gData.mIsDisplayingWinPose = 0;
-	changePlayerState(getRootPlayer(0), 0);
-	changePlayerState(getRootPlayer(1), 0);
+	// changePlayerState(getRootPlayer(0), 0);
+	// changePlayerState(getRootPlayer(1), 0);
 	setPlayerControl(getRootPlayer(0), 0);
 	setPlayerControl(getRootPlayer(1), 0);
 	addFadeIn(30, fadeInFinished, NULL);

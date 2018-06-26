@@ -67,11 +67,10 @@
  ;Insert your characters below.
 
 kfm, stages/kfm.def
-;Charlie, stages/kfm.def
-;Dong, stages/kfm.def
-mow_terry, stages/kfm.def
-rock2000, stages/kfm.def
-;randomselect
+cvsdan, stages/kfm.def
+Dan[Chotto-Komaru], stages/kfm.def
+Dan_TLE, stages/kfm.def
+
 
 ;-----------------------
 [ExtraStages]

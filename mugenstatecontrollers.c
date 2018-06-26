@@ -3571,6 +3571,7 @@ static int handleFallEnvironmentShake(DreamPlayer* tPlayer) {
 static void handleExplodAnimation(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID) {
 	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
 	turnStringLowercase(text);
+	printf("text: %s\n", text);
 
 	char* numberPos;
 	int isInFightDefFile;

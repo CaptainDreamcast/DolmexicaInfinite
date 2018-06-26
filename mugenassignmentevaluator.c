@@ -843,27 +843,50 @@ static struct {
 	StringMap mComparisons; // contains ComparisonFunction
 } gVariableHandler;
 
-static AssignmentReturnValue evaluateComparisonAssignmentInternal(DreamMugenAssignment** mAssignment, AssignmentReturnValue b, DreamPlayer* tPlayer, int* tIsStatic) {
-	
-	if ((*mAssignment)->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE) {
-		char name[MUGEN_DEF_STRING_LENGTH];
-		DreamMugenVariableAssignment* var = (DreamMugenVariableAssignment*)*mAssignment;
-		strcpy(name, var->mName);
-		turnStringLowercase(name);
+static int tryEvaluateVariableComparison(DreamMugenVariableAssignment* tVariableAssignment, AssignmentReturnValue* oRet, AssignmentReturnValue b, DreamPlayer* tPlayer, int* tIsStatic) {
+	char name[MUGEN_DEF_STRING_LENGTH];
+	strcpy(name, tVariableAssignment->mName);
+	turnStringLowercase(name);
 
-		if (string_map_contains(&gVariableHandler.mComparisons, name)) {
-			ComparisonFunction func = string_map_get(&gVariableHandler.mComparisons, name);
-			return func(name, b, tPlayer, tIsStatic);
+	int hasReturn = 0;
+	if (string_map_contains(&gVariableHandler.mComparisons, name)) {
+		ComparisonFunction func = string_map_get(&gVariableHandler.mComparisons, name);
+		hasReturn = 1;
+		*oRet = func(name, b, tPlayer, tIsStatic);
+	}
+	else if (isProjAssignment(name, "projcontact")) {
+		hasReturn = 1;
+		*oRet = evaluateProjAssignment(name, "projcontact", b, tPlayer, getPlayerProjectileTimeSinceContact, tIsStatic);
+	}
+	else if (isProjAssignment(name, "projguarded")) {
+		hasReturn = 1;
+		*oRet = evaluateProjAssignment(name, "projguarded", b, tPlayer, getPlayerProjectileTimeSinceGuarded, tIsStatic);
+	}
+	else if (isProjAssignment(name, "projhit")) {
+		hasReturn = 1;
+		*oRet = evaluateProjAssignment(name, "projhit", b, tPlayer, getPlayerProjectileTimeSinceHit, tIsStatic);
+	}
+
+	return hasReturn;
+}
+
+static AssignmentReturnValue evaluateComparisonAssignmentInternal(DreamMugenAssignment** mAssignment, AssignmentReturnValue b, DreamPlayer* tPlayer, int* tIsStatic) {
+	if ((*mAssignment)->mType == MUGEN_ASSIGNMENT_TYPE_NEGATION) {
+		DreamMugenDependOnOneAssignment* neg = (DreamMugenDependOnOneAssignment*)(*mAssignment);
+		if (neg->a->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE) {
+			DreamMugenVariableAssignment* negVar = (DreamMugenVariableAssignment*)neg->a;
+			AssignmentReturnValue retVal;
+			if (tryEvaluateVariableComparison(negVar, &retVal, b, tPlayer, tIsStatic)) {
+				return makeBooleanAssignmentReturn(!convertAssignmentReturnToBool(retVal));
+			}
 		}
-		else if (isProjAssignment(name, "projcontact")) {
-			return evaluateProjAssignment(name, "projcontact", b, tPlayer, getPlayerProjectileTimeSinceContact, tIsStatic);
-		}
-		else if (isProjAssignment(name, "projguarded")) {
-			return evaluateProjAssignment(name, "projguarded", b, tPlayer, getPlayerProjectileTimeSinceGuarded, tIsStatic);
-		}
-		else if (isProjAssignment(name, "projhit")) {
-			return evaluateProjAssignment(name, "projhit", b, tPlayer, getPlayerProjectileTimeSinceHit, tIsStatic);
-		}
+	}
+	else if ((*mAssignment)->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE) {
+		DreamMugenVariableAssignment* var = (DreamMugenVariableAssignment*)*mAssignment;
+		AssignmentReturnValue retVal;
+		if (tryEvaluateVariableComparison(var, &retVal, b, tPlayer, tIsStatic)) {
+			return retVal;
+		}	
 	}
 
 	AssignmentReturnValue a = evaluateAssignmentDependency(mAssignment, tPlayer, tIsStatic);
@@ -1742,10 +1765,10 @@ static AssignmentReturnValue evaluateVariableAssignment(DreamMugenAssignment** t
 	char testString[100];
 	strcpy(testString, variable->mName);
 	turnStringLowercase(testString);
+	*tIsStatic = 0;
 
 	if (string_map_contains(&gVariableHandler.mVariables, testString)) {
 		VariableFunction func = string_map_get(&gVariableHandler.mVariables, testString);
-		*tIsStatic = 0;
 		return func(tPlayer);
 	}
 	
@@ -2391,7 +2414,6 @@ static void setAssignmentStatic(DreamMugenAssignment** tAssignment, AssignmentRe
 	case MUGEN_ASSIGNMENT_TYPE_OPERATOR_ARGUMENT:
 	case MUGEN_ASSIGNMENT_TYPE_BITWISE_AND:
 	case MUGEN_ASSIGNMENT_TYPE_BITWISE_OR:
-		printf("prune %d\n", (*tAssignment)->mType);
 		*tAssignment = makeStaticDreamMugenAssignment(tValue);
 		break;
 	default:
