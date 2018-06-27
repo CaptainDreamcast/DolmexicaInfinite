@@ -48,7 +48,12 @@ extern int gDebugStringMapAmount;
 extern int gPruneAmount;
 
 static void loadFightScreen() {
+	malloc_stats();
+	printf("create mem stack\n");
 	gData.mMemoryStack = createMemoryStack(1024 * 1024 * 3);
+
+	malloc_stats();
+	printf("init evaluators\n");
 
 	gDebugAssignmentAmount = 0;
 	gDebugStateControllerAmount = 0;
@@ -60,9 +65,15 @@ static void loadFightScreen() {
 	setupDreamAssignmentEvaluator();
 	setupDreamMugenStateControllerHandler(&gData.mMemoryStack);
 
+	malloc_stats();
+	printf("init handlers\n");
+
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
 	instantiateActor(MugenTextHandler);
 	instantiateActor(ClipboardHandler);
+
+	malloc_stats();
+	printf("init custom handlers\n");
 
 	instantiateActor(MugenAnimationUtilityHandler);
 	instantiateActor(DreamAIHandler);
@@ -74,7 +85,14 @@ static void loadFightScreen() {
 	instantiateActor(DreamMugenStateHandler);
 	instantiateActor(DreamExplodHandler);
 
+	malloc_stats();
+	printf("init stage\n");
+
 	instantiateActor(DreamStageBP);
+
+
+	malloc_stats();
+	printf("init players\n");
 
 	loadPlayers(&gData.mMemoryStack);
 

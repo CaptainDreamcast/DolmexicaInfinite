@@ -849,7 +849,17 @@ static int tryEvaluateVariableComparison(DreamMugenVariableAssignment* tVariable
 	turnStringLowercase(name);
 
 	int hasReturn = 0;
-	if (string_map_contains(&gVariableHandler.mComparisons, name)) {
+	if(!strcmp("command", name)) {
+		hasReturn = 1;
+		if(b.mType != ASSIGNMENT_RETURN_TYPE_STRING) {
+			*oRet = makeBooleanAssignmentReturn(0);
+		} else {
+			char* comp = getStringAssignmentReturnValue(&b);
+			*oRet = makeBooleanAssignmentReturn(isPlayerCommandActive(tPlayer, comp));
+		}	
+		*tIsStatic = 0;
+	}
+	else if (string_map_contains(&gVariableHandler.mComparisons, name)) {
 		ComparisonFunction func = string_map_get(&gVariableHandler.mComparisons, name);
 		hasReturn = 1;
 		*oRet = func(name, b, tPlayer, tIsStatic);
