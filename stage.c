@@ -667,7 +667,6 @@ Position getDreamStageCenterOfScreenBasedOnPlayer(int tCoordinateP)
 	Position ret = *getDreamMugenStageHandlerCameraPositionReference();
 
 	ret = vecAdd(ret, makePosition(gData.mStageInfo.mLocalCoordinates.x / 2, 0, 0));
-
 	return vecScale(ret, tCoordinateP / (double)gData.mStageInfo.mLocalCoordinates.y);
 }
 

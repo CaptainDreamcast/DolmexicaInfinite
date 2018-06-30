@@ -453,12 +453,28 @@ Position getFinalPositionFromPositionType(DreamExplodPositionType tPositionType,
 		return vecAdd(p, mOffset);
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT) {
-		Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), 0);
-		return vecAdd(p, mOffset);
+		if (getPlayerIsFacingRight(tPlayer)) {
+			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), 0);
+			return vecAdd(p, mOffset);
+		}
+		else {
+			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), 0);
+			p.x -= mOffset.x;
+			p.y += mOffset.y;
+			return p;
+		}
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT) {
-		Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), 0);
-		return vecAdd(p, mOffset);
+		if (getPlayerIsFacingRight(tPlayer)) {
+			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), 0);
+			return vecAdd(p, mOffset);
+		}
+		else {
+			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), 0);
+			p.x -= mOffset.x;
+			p.y += mOffset.y;
+			return p;
+		}
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_NONE) {
 		Position p = makePosition(getDreamGameWidth(getPlayerCoordinateP(tPlayer)) / 2, 0, 0);

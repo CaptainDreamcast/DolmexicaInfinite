@@ -251,6 +251,7 @@ void addDolmexicaStoryText(int tID, char * tText, Vector3DI tFont, Position tBas
 	e->mTextOffset = tTextOffset;
 
 	Position textPosition = vecAdd(e->mPosition, e->mTextOffset);
+	printf("spos: %f %f %f\n", textPosition.x, textPosition.y, textPosition.z);
 	e->mTextID = addMugenText(tText, textPosition, tFont.x);
 	setMugenTextColor(e->mTextID, getMugenTextColorFromMugenTextColorIndex(tFont.y));
 	setMugenTextAlignment(e->mTextID, getMugenTextAlignmentFromMugenAlignmentIndex(tFont.z));
@@ -313,7 +314,9 @@ void setDolmexicaStoryTextBasePosition(int tID, Position tPosition)
 	tPosition.z = 50 + tID;
 	e->mPosition = tPosition;
 
-	setMugenTextPosition(e->mTextID, vecAdd(e->mPosition, e->mTextOffset));
+	Position textPosition = vecAdd(e->mPosition, e->mTextOffset);
+	printf("pos: %f %f %f\n", textPosition.x, textPosition.y, textPosition.z);
+	setMugenTextPosition(e->mTextID, textPosition);
 	if (e->mHasBackground) {	
 		setMugenAnimationPosition(e->mBackgroundAnimationID, vecAdd(e->mPosition, e->mBackgroundOffset));
 	}

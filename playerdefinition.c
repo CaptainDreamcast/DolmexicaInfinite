@@ -3037,22 +3037,58 @@ void addPlayerPower(DreamPlayer* p, int tPower)
 	setPlayerPower(p, p->mPower + tPower);
 }
 
+typedef struct {
+	int mIsAttacking;
+
+	int mIsInDistance;
+	DreamPlayer* p;
+} PlayerBeingAttackedSearchCaller;
+// TODO: split in two
+
+static void searchPlayerBeingAttackedRecursive(void* tCaller, void* tData) {
+	PlayerBeingAttackedSearchCaller* caller = tCaller;
+	DreamPlayer* p = tData;
+	caller->mIsAttacking |= isHitDataActive(p);
+
+	list_map(&p->mHelpers, searchPlayerBeingAttackedRecursive, caller);
+	int_map_map(&p->mProjectiles, searchPlayerBeingAttackedRecursive, caller);
+}
+
 int isPlayerBeingAttacked(DreamPlayer* p) {
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p);
+	PlayerBeingAttackedSearchCaller caller;
+	caller.mIsAttacking = 0;
+	searchPlayerBeingAttackedRecursive(&caller, otherPlayer);
+	return caller.mIsAttacking;
+}
 
-	return isHitDataActive(otherPlayer);
+static void searchPlayerInGuardDistanceRecursive(void* tCaller, void* tData) {
+	PlayerBeingAttackedSearchCaller* caller = tCaller;
+	DreamPlayer* otherPlayer = tData;
+
+	int isAttacking = isHitDataActive(otherPlayer);
+	if (isAttacking) {
+		caller->mIsAttacking = 1;
+		double dist = fabs(getPlayerAxisDistanceForTwoReferencesX(otherPlayer, caller->p));
+		caller->mIsInDistance = dist < getHitDataGuardDistance(otherPlayer);
+	}
+
+	list_map(&otherPlayer->mHelpers, searchPlayerInGuardDistanceRecursive, caller);
+	int_map_map(&otherPlayer->mProjectiles, searchPlayerInGuardDistanceRecursive, caller);
 }
 
 int isPlayerInGuardDistance(DreamPlayer* p)
 {
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p);
 
-	int isBeingAttacked = isPlayerBeingAttacked(p);
+	PlayerBeingAttackedSearchCaller caller;
+	caller.mIsAttacking = 0;
+	caller.mIsInDistance = 0;
+	caller.p = p;
 
-	double dist = fabs(getPlayerAxisDistanceX(p));
-	int isInDistance = dist < getHitDataGuardDistance(otherPlayer); // TODO: check helpers
+	searchPlayerInGuardDistanceRecursive(&caller, otherPlayer);
 
-	return isBeingAttacked && isInDistance;
+	return caller.mIsAttacking && caller.mIsInDistance;
 }
 
 int getDefaultPlayerAttackDistance(DreamPlayer * p)

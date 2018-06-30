@@ -2632,21 +2632,37 @@ static void handleSoundEffectValue(DreamMugenAssignment** tAssignment, DreamPlay
 
 	char firstW[20], comma[10];
 	int items = sscanf(flag, "%s", firstW);
-	assert(items == 1);
+	if (items != 1) {
+		logWarningFormat("Unable to parse flag: %s. Abort.");
+		freeMemory(flag);
+		return;
+	}
 
 	if (!strcmp("isinotherfilef", firstW)) {
 		soundFile = getDreamCommonSounds();
 		int items = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
-		assert(items == 4);
+		if (items != 4) {
+			logWarningFormat("Unable to parse flag: %s. Abort.");
+			freeMemory(flag);
+			return;
+		}
 	} else if (!strcmp("isinotherfiles", firstW)) {
 		soundFile = getPlayerSounds(tPlayer);
 		int items = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
-		assert(items == 4);
+		if (items != 4) {
+			logWarningFormat("Unable to parse flag: %s. Abort.");
+			freeMemory(flag);
+			return;
+		}
 	}
 	else {
 		soundFile = getPlayerSounds(tPlayer);
 		int items = sscanf(flag, "%d %s %d", &group, comma, &item);
-		assert(items == 3);
+		if (items != 3) {
+			logWarningFormat("Unable to parse flag: %s. Abort.");
+			freeMemory(flag);
+			return;
+		}
 	}
 
 
@@ -2892,18 +2908,24 @@ static void handleHitDefinitionSingleSound(DreamMugenAssignment** tAssignment, D
 	else if (!strcmp("isinotherfiles", firstW)) {
 		isInPlayerFile = 1;
 		int fullItems = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
-		assert(fullItems >= 2);
-
-		if (fullItems < 3) {
+		if (fullItems < 2) {
+			logWarningFormat("Unable to parse hit definition sound flag %s. Defaulting.", flag);
+			group = tDefaultGroup;
+			item = tDefaultItem;
+		}
+		else if (fullItems < 3) {
 			item = tDefaultItem;
 		}
 	}
 	else {
 		isInPlayerFile = 0;
 		int fullItems = sscanf(flag, "%d %s %d", &group, comma, &item);
-		assert(fullItems >= 1);
-
-		if (fullItems < 2) {
+		if (fullItems < 1) {
+			logWarningFormat("Unable to parse hit definition sound flag %s. Defaulting.", flag);
+			group = tDefaultGroup;
+			item = tDefaultItem;
+		}
+		else if (fullItems < 2) {
 			item = tDefaultItem;
 		}
 	}
@@ -3407,6 +3429,8 @@ static void handleSettingSingleVariable(void* tCaller, void* tData) {
 }
 
 static int handleSettingVariable(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	if (!tPlayer) return 0;
+
 	VarSetController* e = tController->mData;
 	VarSetHandlingCaller caller;
 	caller.mPlayer = tPlayer;
@@ -3442,6 +3466,8 @@ static void handleAddingSingleVariable(void* tCaller, void* tData) {
 }
 
 static int handleAddingVariable(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	if (!tPlayer) return 0;
+	
 	VarSetController* e = tController->mData;
 	VarSetHandlingCaller caller;
 	caller.mPlayer = tPlayer;
@@ -3571,21 +3597,22 @@ static int handleFallEnvironmentShake(DreamPlayer* tPlayer) {
 static void handleExplodAnimation(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID) {
 	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
 	turnStringLowercase(text);
-	printf("text: %s\n", text);
 
-	char* numberPos;
+	char firstW[100];
+	int anim;
+	int items = sscanf(text, "%s %d", firstW, &anim);
+
 	int isInFightDefFile;
-	if (text[0] == 'f') {
+	if (items > 1 && !strcmp("isinotherfilef", firstW)) {
 		isInFightDefFile = 1;
-		numberPos = text + 1;
+		if (items < 2) anim = -1;
 	}
 	else {
 		isInFightDefFile = 0;
-		numberPos = text;
+		anim = atoi(text);
 	}
-	int number = atoi(numberPos);
 
-	setExplodAnimation(tID, isInFightDefFile, number);
+	setExplodAnimation(tID, isInFightDefFile, anim);
 
 	freeMemory(text);
 }
@@ -4014,47 +4041,48 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 	DreamPlayer* helper = clonePlayerAsHelper(tPlayer);
 
 	handleHelperOneIntegerElement(&e->mID, tPlayer, helper, setPlayerID, 0);
-	
+
 	Vector3DI mOffset = makeVector3DI(0, 0, 0);
 	getTwoIntegerValuesWithDefaultValues(&e->mPosition, tPlayer, &mOffset.x, &mOffset.y, 0, 0);
 	DreamExplodPositionType positionType = getPositionTypeFromAssignment(&e->mPositionType, tPlayer);
 	Position position = getFinalPositionFromPositionType(positionType, makePosition(mOffset.x, mOffset.y, mOffset.z), tPlayer);
-	
+
 	handleHelperFacing(&e->mFacing, tPlayer, helper);
-	handleHelperOneIntegerElement(&e->mStateNumber, tPlayer, helper, changePlayerState, 0);	
 
-	if (!isPlayerDestroyed(helper)) { // TODO: fix
-		handleHelperOneIntegerElement(&e->mCanControl, tPlayer, helper, setPlayerHelperControl, 0);
-		// TODO: own palette
-		// TODO: supermovetime
-		// TODO: pausemovetime
 
-		handleHelperOneFloatElement(&e->mSizeScaleX, tPlayer, helper, setPlayerScaleX, getPlayerScaleX(tPlayer));
-		handleHelperOneFloatElement(&e->mSizeScaleY, tPlayer, helper, setPlayerScaleY, getPlayerScaleY(tPlayer));
-		handleHelperOneIntegerElement(&e->mSizeGroundBack, tPlayer, helper, setPlayerGroundSizeBack, getPlayerGroundSizeBack(tPlayer));
-		handleHelperOneIntegerElement(&e->mSizeGroundFront, tPlayer, helper, setPlayerGroundSizeFront, getPlayerGroundSizeFront(tPlayer));
-		handleHelperOneIntegerElement(&e->mSizeAirBack, tPlayer, helper, setPlayerAirSizeBack, getPlayerAirSizeBack(tPlayer));
-		handleHelperOneIntegerElement(&e->mSizeAirFront, tPlayer, helper, setPlayerAirSizeFront, getPlayerAirSizeFront(tPlayer));
-		handleHelperOneIntegerElement(&e->mSizeHeight, tPlayer, helper, setPlayerHeight, getPlayerHeight(tPlayer));
+	handleHelperOneIntegerElement(&e->mCanControl, tPlayer, helper, setPlayerHelperControl, 0);
+	// TODO: own palette
+	// TODO: supermovetime
+	// TODO: pausemovetime
 
-		// TODO: scale projectiles
+	handleHelperOneFloatElement(&e->mSizeScaleX, tPlayer, helper, setPlayerScaleX, getPlayerScaleX(tPlayer));
+	handleHelperOneFloatElement(&e->mSizeScaleY, tPlayer, helper, setPlayerScaleY, getPlayerScaleY(tPlayer));
+	handleHelperOneIntegerElement(&e->mSizeGroundBack, tPlayer, helper, setPlayerGroundSizeBack, getPlayerGroundSizeBack(tPlayer));
+	handleHelperOneIntegerElement(&e->mSizeGroundFront, tPlayer, helper, setPlayerGroundSizeFront, getPlayerGroundSizeFront(tPlayer));
+	handleHelperOneIntegerElement(&e->mSizeAirBack, tPlayer, helper, setPlayerAirSizeBack, getPlayerAirSizeBack(tPlayer));
+	handleHelperOneIntegerElement(&e->mSizeAirFront, tPlayer, helper, setPlayerAirSizeFront, getPlayerAirSizeFront(tPlayer));
+	handleHelperOneIntegerElement(&e->mSizeHeight, tPlayer, helper, setPlayerHeight, getPlayerHeight(tPlayer));
 
-		handleHelperTwoFloatElements(&e->mSizeHeadPosition, tPlayer, helper, setPlayerHeadPosition, getPlayerHeadPositionX(tPlayer), getPlayerHeadPositionY(tPlayer));
-		handleHelperTwoFloatElements(&e->mSizeMiddlePosition, tPlayer, helper, setPlayerMiddlePosition, getPlayerMiddlePositionX(tPlayer), getPlayerMiddlePositionY(tPlayer));
-		handleHelperOneIntegerElement(&e->mSizeShadowOffset, tPlayer, helper, setPlayerShadowOffset, getPlayerShadowOffset(tPlayer));
+	// TODO: scale projectiles
 
-		char* type = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mType, tPlayer);
-		turnStringLowercase(type);
-		if (!strcmp("player", type)) {
-			setPlayerScreenBound(helper, 1, 1, 1);
-		}
-		else {
-			setPlayerScreenBound(helper, 0, 0, 0);
-		}
-		freeMemory(type);
+	handleHelperTwoFloatElements(&e->mSizeHeadPosition, tPlayer, helper, setPlayerHeadPosition, getPlayerHeadPositionX(tPlayer), getPlayerHeadPositionY(tPlayer));
+	handleHelperTwoFloatElements(&e->mSizeMiddlePosition, tPlayer, helper, setPlayerMiddlePosition, getPlayerMiddlePositionX(tPlayer), getPlayerMiddlePositionY(tPlayer));
+	handleHelperOneIntegerElement(&e->mSizeShadowOffset, tPlayer, helper, setPlayerShadowOffset, getPlayerShadowOffset(tPlayer));
 
-		setPlayerPosition(helper, position, getPlayerCoordinateP(helper));
-	} 
+	char* type = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mType, tPlayer);
+	turnStringLowercase(type);
+	if (!strcmp("player", type)) {
+		setPlayerScreenBound(helper, 1, 1, 1);
+	}
+	else {
+		setPlayerScreenBound(helper, 0, 0, 0);
+	}
+	freeMemory(type);
+
+	setPlayerPosition(helper, position, getPlayerCoordinateP(helper));
+	handleHelperOneIntegerElement(&e->mStateNumber, tPlayer, helper, changePlayerState, 0);
+
+
 
 	return 0;
 }

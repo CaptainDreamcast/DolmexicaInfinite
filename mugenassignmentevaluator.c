@@ -1770,6 +1770,13 @@ static int isIsInOtherFileVariable(char* tName) {
 	return 1;
 }
 
+static AssignmentReturnValue makeExternalFileAssignmentReturn(char tIdentifierCharacter, char* tValueString) {
+	char buffer[100];
+	sprintf(buffer, "isinotherfile%c %s", tIdentifierCharacter, tValueString);
+	return makeStringAssignmentReturn(buffer);
+}
+
+
 static AssignmentReturnValue evaluateVariableAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* tIsStatic) {
 	DreamMugenVariableAssignment* variable = (DreamMugenVariableAssignment*)*tAssignment;
 	char testString[100];
@@ -1783,9 +1790,7 @@ static AssignmentReturnValue evaluateVariableAssignment(DreamMugenAssignment** t
 	}
 	
 	if (isIsInOtherFileVariable(testString)) { // TODO: fix
-		char buffer[100];
-		sprintf(buffer, "isinotherfile%c %s", testString[0], testString + 1);
-		return makeStringAssignmentReturn(buffer);
+		return makeExternalFileAssignmentReturn(testString[0], testString + 1);
 	}
 	
 	return makeStringAssignmentReturn(testString);
@@ -2110,14 +2115,14 @@ static AssignmentReturnValue evaluateConstCoordinatesArrayAssignment(AssignmentR
 	return makeFloatAssignmentReturn(ret);
 }
 
+
 static AssignmentReturnValue evaluateExternalFileAnimationArrayAssignment(AssignmentReturnValue a, AssignmentReturnValue b) {
 	char* val1 = convertAssignmentReturnToAllocatedString(a);
 	char* val2 = convertAssignmentReturnToAllocatedString(b);
-	char buffer[100]; // TODO: dynamic
-	sprintf(buffer, "%s%s", val1, val2);
+	AssignmentReturnValue ret = makeExternalFileAssignmentReturn(val1[0], val2);
 	freeMemory(val1);
 	freeMemory(val2);
-	return makeStringAssignmentReturn(buffer);
+	return ret;
 }
 
 static AssignmentReturnValue evaluateNumTargetArrayAssignment(AssignmentReturnValue tIndex, DreamPlayer* tPlayer, int* tIsStatic) {

@@ -80,7 +80,7 @@ static void loadFightScreen() {
 	instantiateActor(DreamMugenConfig);
 	instantiateActor(HitDataHandler);
 	instantiateActor(ProjectileHandler);
-
+	
 	instantiateActor(DreamMugenCommandHandler);
 	instantiateActor(DreamMugenStateHandler);
 	instantiateActor(DreamExplodHandler);

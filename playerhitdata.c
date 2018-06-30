@@ -310,7 +310,8 @@ void setHitDataInactive(DreamPlayer* tPlayer)
 
 void setActiveHitDataInactive(DreamPlayer * tPlayer)
 {
-	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	if (!int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID)) return; // TODO: fix
+	
 	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
 	e->mIsActive = 0;
 }
