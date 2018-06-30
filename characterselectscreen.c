@@ -438,6 +438,7 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 	getMugenDefStringOrDefault(file, &script, "Files", name, "");
 	int hasPalettePath = strcmp("", file);
 	sprintf(palettePath, "%s%s", path, file);
+	printf("%s\n", palettePath);
 
 	getMugenDefStringOrDefault(file, &script, "Files", "sprite", "");
 	assert(strcmp("", file));
