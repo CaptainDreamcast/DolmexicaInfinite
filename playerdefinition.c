@@ -2721,7 +2721,8 @@ static double getPlayerAxisDistanceForTwoReferencesX(DreamPlayer* p1, DreamPlaye
 	double x1 = getPlayerPositionX(p1, getPlayerCoordinateP(p1));
 	double x2 = getPlayerPositionX(p2, getPlayerCoordinateP(p1));
 
-	return x2 - x1;
+	if(getPlayerIsFacingRight(p1)) return x2 - x1;
+	else return x1 - x2;
 }
 
 double getPlayerAxisDistanceForTwoReferencesY(DreamPlayer* p1, DreamPlayer* p2)
