@@ -220,7 +220,7 @@ static void characterSelectFinishedCB() {
 	char* introDefinitionFile;
 	hasIntro = isMugenDefStringVariable(&script, "Arcade", "intro.storyboard");
 
-	int isGoingToStory;
+	int isGoingToStory = 0;
 
 	if (hasIntro) {
 		introDefinitionFile = getAllocatedMugenDefStringVariable(&script, "Arcade", "intro.storyboard");

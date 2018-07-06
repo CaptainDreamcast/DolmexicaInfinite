@@ -90,7 +90,7 @@ static void loadFightScreen() {
 	
 	instantiateActor(DreamStageBP);
 
-
+	
 	malloc_stats();
 	printf("init players\n");
 
@@ -99,10 +99,8 @@ static void loadFightScreen() {
 	instantiateActor(DreamFightUIBP);
 	instantiateActor(DreamGameLogic);
 
-	if (isOnWindows() || isOnDreamcast()) {
-		instantiateActor(FightDebug);
-	}
-
+	instantiateActor(FightDebug);
+	
 	malloc_stats();
 	printf("shrinking memory stack\n");
 	resizeMemoryStackToCurrentSize(&gData.mMemoryStack); // TODO: test extensively

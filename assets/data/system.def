@@ -66,7 +66,7 @@ vs.bgm.loop = 1
 [Title Info]
 fadein.time = 10
 fadeout.time = 10
-menu.pos = 159,158
+menu.pos = 159,163
 menu.item.font = 3,0,0
 menu.item.active.font = 3,5,0
 menu.item.spacing = 0, 13
@@ -83,12 +83,12 @@ menu.itemname.survivalcoop = ""
 menu.itemname.training = "TRAINING"
 menu.itemname.watch = ""
 menu.itemname.options = ""
-menu.itemname.credits = ""
-menu.itemname.story = ""
+menu.itemname.credits = "CREDITS"
+menu.itemname.story = "STORY"
 menu.itemname.exit = "EXIT"
 ; These parameters define the window in which the items are visible
 ; in.
-menu.window.margins.y = 12, 8
+menu.window.margins.y = 13, 4
 menu.window.visibleitems = 5
 menu.boxcursor.visible = 1     ;Set to 0 to disable default cursor display
 menu.boxcursor.coords = -58,-10,57,2
@@ -103,35 +103,34 @@ cancel.snd = 100,2
 bgclearcolor = 0,0,0
 
 [TitleBG 0]
+type  = normal
+spriteno = 5,3
+start = 0, 0
+tile = 1,1
+velocity = -1,-1
+
+[TitleBG 1]
 type  = parallax
 spriteno = 5, 1
-start = 0, 145
+start = 0, 150
 width = 400, 1200
 yscalestart = 100
 yscaledelta = 1
-tile  = 1,1
+tile  = 1,0
 velocity = -1
-
-[TitleBG 1]
-type  = normal
-spriteno = 5, 2
-start = -160, 145
 trans = sub
 
 [TitleBG 2]
 type  = normal
-spriteno = 5,0
-start = 0, 10
-tile = 1,2
-velocity = -1
-mask = 0
+spriteno = 5, 2
+start = -160, 150
+trans = sub
 
-[TitleBG 3]
+[TitleBG 4]
 type  = normal
 spriteno = 0,0
 start = 0, 40
 mask = 1
-trans = add
 
 ;-------------------------------------------------------------------
 ;Character select definition
@@ -139,9 +138,9 @@ trans = add
 fadein.time = 10
 fadeout.time = 10
 rows = 2
-columns = 5
+columns = 6
 wrapping = 1              ;1 to let cursor wrap around
-pos = 90,170              ;Position to draw to
+pos = 76,170              ;Position to draw to
 showemptyboxes = 1       ;1 to show empty boxes
 moveoveremptyboxes = 1    ;1 to allow cursor to move over empty boxes
 cell.size = 27,27         ;x,y size of each cell (in pixels)
@@ -155,7 +154,7 @@ p1.cursor.done.spr = 161,0
 p1.cursor.move.snd = 100,0
 p1.cursor.done.snd = 100,1
 p1.random.move.snd = 100,0
-p2.cursor.startcell = 0,4
+p2.cursor.startcell = 0,5
 p2.cursor.active.spr = 170,0
 p2.cursor.done.spr = 171,0
 p2.cursor.blink = 1       ;1 to blink p2's cursor if overlapping p1's
@@ -264,7 +263,7 @@ start = 0, 166
 delta = 0,0
 tile  = 1,0
 trans = sub
-window = 85,0, 235,239
+window = 71,0, 249,239
 velocity = -1, 0
 
 [SelectBG 2.A] ;Title background
