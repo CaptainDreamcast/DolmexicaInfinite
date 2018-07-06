@@ -1107,6 +1107,8 @@ static void updateTimeDisplayText() {
 	changeMugenText(gData.mTime.mTextID, text);
 }
 
+static void setTimerFinishedInternal();
+
 static void updateTimeDisplay() {
 	if (!gData.mTime.mIsActive) return;
 	if (gData.mTime.mIsInfinite) return;
@@ -1121,7 +1123,7 @@ static void updateTimeDisplay() {
 		gData.mTime.mNow = 0;
 		gData.mTime.mValue--;
 		if (gData.mTime.mValue < 0) {
-			setTimerFinished();
+			setTimerFinishedInternal();
 		}
 
 		updateTimeDisplayText();
@@ -1289,6 +1291,13 @@ void resetDreamTimer()
 }
 
 void setTimerFinished() {
+	gData.mTime.mIsInfinite = 0;
+	gData.mTime.mValue = 0;
+	gData.mTime.mIsFinished = 0;
+	updateTimeDisplayText();
+}
+
+static void setTimerFinishedInternal() {
 	gData.mTime.mIsInfinite = 0;
 	gData.mTime.mValue = 0;
 	gData.mTime.mIsFinished = 1;

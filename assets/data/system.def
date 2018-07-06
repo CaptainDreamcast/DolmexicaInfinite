@@ -66,7 +66,7 @@ vs.bgm.loop = 1
 [Title Info]
 fadein.time = 10
 fadeout.time = 10
-menu.pos = 159,158
+menu.pos = 159,163
 menu.item.font = 3,0,0
 menu.item.active.font = 3,5,0
 menu.item.spacing = 0, 13
@@ -88,7 +88,7 @@ menu.itemname.story = "STORY"
 menu.itemname.exit = "EXIT"
 ; These parameters define the window in which the items are visible
 ; in.
-menu.window.margins.y = 12, 8
+menu.window.margins.y = 13, 4
 menu.window.visibleitems = 5
 menu.boxcursor.visible = 1     ;Set to 0 to disable default cursor display
 menu.boxcursor.coords = -58,-10,57,2
@@ -138,9 +138,9 @@ mask = 1
 fadein.time = 10
 fadeout.time = 10
 rows = 2
-columns = 5
+columns = 6
 wrapping = 1              ;1 to let cursor wrap around
-pos = 90,170              ;Position to draw to
+pos = 76,170              ;Position to draw to
 showemptyboxes = 1       ;1 to show empty boxes
 moveoveremptyboxes = 1    ;1 to allow cursor to move over empty boxes
 cell.size = 27,27         ;x,y size of each cell (in pixels)
@@ -154,7 +154,7 @@ p1.cursor.done.spr = 161,0
 p1.cursor.move.snd = 100,0
 p1.cursor.done.snd = 100,1
 p1.random.move.snd = 100,0
-p2.cursor.startcell = 0,4
+p2.cursor.startcell = 0,5
 p2.cursor.active.spr = 170,0
 p2.cursor.done.spr = 171,0
 p2.cursor.blink = 1       ;1 to blink p2's cursor if overlapping p1's
@@ -263,7 +263,7 @@ start = 0, 166
 delta = 0,0
 tile  = 1,0
 trans = sub
-window = 85,0, 235,239
+window = 71,0, 249,239
 velocity = -1, 0
 
 [SelectBG 2.A] ;Title background

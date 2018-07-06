@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include <prism/log.h>
+#include <prism/math.h>
 #include <prism/actorhandler.h>
 #include <prism/mugenanimationhandler.h>
 #include <prism/mugentexthandler.h>
@@ -12,6 +14,7 @@
 #include "mugenstatehandler.h"
 #include "titlescreen.h"
 #include "stage.h"
+#include "mugenstagehandler.h"
 #include "storymode.h"
 
 typedef struct {
@@ -99,6 +102,7 @@ static void loadStoryScreen() {
 }
 
 static void unloadDolmexicaStoryText(StoryText* e);
+static void changeDolmexicaStoryStateOutsideStateHandler(int tNextState);
 
 static int updateSingleText(void* tCaller, void* tData) {
 	(void)tCaller;
@@ -108,7 +112,7 @@ static int updateSingleText(void* tCaller, void* tData) {
 	if (hasPressedAFlank()) {
 		if (isMugenTextBuiltUp(e->mTextID)) {
 			if (e->mGoesToNextState) {
-				changeDolmexicaStoryState(e->mNextState);
+				changeDolmexicaStoryStateOutsideStateHandler(e->mNextState);
 			}
 			e->mGoesToNextState = 0;
 			e->mHasFinished = 1;
@@ -175,6 +179,14 @@ void setDolmexicaStoryAnimationLooping(int tID, int tIsLooping)
 	if (!tIsLooping) {
 		setMugenAnimationNoLoop(e->mAnimationID);
 		setMugenAnimationCallback(e->mAnimationID, storyAnimationOverCB, e);
+	}
+}
+
+void setDolmexicaStoryAnimationBoundToStage(int tID, int tIsBoundToStage)
+{
+	StoryAnimation* e = int_map_get(&gData.mStoryAnimations, tID);
+	if (tIsBoundToStage) {
+		setMugenAnimationCameraPositionReference(e->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	}
 }
 
@@ -251,7 +263,6 @@ void addDolmexicaStoryText(int tID, char * tText, Vector3DI tFont, Position tBas
 	e->mTextOffset = tTextOffset;
 
 	Position textPosition = vecAdd(e->mPosition, e->mTextOffset);
-	printf("spos: %f %f %f\n", textPosition.x, textPosition.y, textPosition.z);
 	e->mTextID = addMugenText(tText, textPosition, tFont.x);
 	setMugenTextColor(e->mTextID, getMugenTextColorFromMugenTextColorIndex(tFont.y));
 	setMugenTextAlignment(e->mTextID, getMugenTextAlignmentFromMugenAlignmentIndex(tFont.z));
@@ -315,7 +326,6 @@ void setDolmexicaStoryTextBasePosition(int tID, Position tPosition)
 	e->mPosition = tPosition;
 
 	Position textPosition = vecAdd(e->mPosition, e->mTextOffset);
-	printf("pos: %f %f %f\n", textPosition.x, textPosition.y, textPosition.z);
 	setMugenTextPosition(e->mTextID, textPosition);
 	if (e->mHasBackground) {	
 		setMugenAnimationPosition(e->mBackgroundAnimationID, vecAdd(e->mPosition, e->mBackgroundOffset));
@@ -373,8 +383,13 @@ void setDolmexicaStoryTextNextState(int tID, int tNextState)
 void changeDolmexicaStoryState(int tNextState)
 {
 	changeDreamHandledStateMachineState(gData.mStateMachineID, tNextState);
-	setDreamRegisteredStateTimeInState(gData.mStateMachineID, -1);
+	setDreamRegisteredStateTimeInState(gData.mStateMachineID, 0);
+}
 
+static void changeDolmexicaStoryStateOutsideStateHandler(int tNextState)
+{
+	changeDreamHandledStateMachineState(gData.mStateMachineID, tNextState);
+	setDreamRegisteredStateTimeInState(gData.mStateMachineID, -1);
 }
 
 void endDolmexicaStoryboard(int tNextStoryState)
@@ -384,11 +399,16 @@ void endDolmexicaStoryboard(int tNextStoryState)
 
 int getDolmexicaStoryTimeInState()
 {
+	int ret = getDreamRegisteredStateTimeInState(gData.mStateMachineID);
 	return getDreamRegisteredStateTimeInState(gData.mStateMachineID);
 }
 
 int getDolmexicaStoryAnimationTimeLeft(int tID)
 {
+	if (!int_map_contains(&gData.mStoryAnimations, tID)) {
+		logWarningFormat("Querying time left for non-existing story animation %d. Defaulting to infinite.", tID); // TODO: fix
+		return INF;
+	}
 	StoryAnimation* e = int_map_get(&gData.mStoryAnimations, tID);
 	return getMugenAnimationRemainingAnimationTime(e->mAnimationID);
 }

@@ -478,7 +478,7 @@ void resetPlayersEntirely()
 	resetSinglePlayerEntirely(&gData.mPlayers[1]);
 }
 
-
+static int isPlayerGuarding(DreamPlayer* p);
 
 static void updateWalking(DreamPlayer* p) {
 	if (p->mIsHelper) return;
@@ -488,6 +488,7 @@ static void updateWalking(DreamPlayer* p) {
 	}
 
 	if (!p->mIsInControl) return;
+	if (isPlayerGuarding(p)) return;
 
 	if (getPlayerStateType(p) != MUGEN_STATE_TYPE_STANDING) return;
 
@@ -1033,6 +1034,11 @@ static void setPlayerHitOver(void* tCaller) {
 
 static void setPlayerHitShakeOver(void* tCaller) {
 	DreamPlayer* p = tCaller;
+	if (!isPlayer(p)) { // TODO: fix
+		logWarning("Trying to access nonexistant character. Ignoring.");
+		return;
+	}
+
 
 	p->mIsHitShakeOver = 1;
 
@@ -1415,7 +1421,9 @@ DreamMugenStateType getPlayerStateType(DreamPlayer* p)
 
 void setPlayerStateType(DreamPlayer* p, DreamMugenStateType tType)
 {
-	if (tType == MUGEN_STATE_TYPE_UNCHANGED) return;
+	if (tType == MUGEN_STATE_TYPE_UNCHANGED) {
+		return;
+	}
 
 	p->mStateType = tType;
 }
@@ -1672,7 +1680,8 @@ double getPlayerScreenPositionX(DreamPlayer * p, int tCoordinateP)
 double getPlayerPositionX(DreamPlayer* p, int tCoordinateP)
 {
 	double scale = tCoordinateP / getPlayerCoordinateP(p);
-	return getHandledPhysicsPositionReference(p->mPhysicsID)->x * scale;
+	double val = getHandledPhysicsPositionReference(p->mPhysicsID)->x * scale;
+	return val;
 }
 
 double getPlayerPositionBasedOnStageFloorY(DreamPlayer * p, int tCoordinateP)
@@ -2129,6 +2138,12 @@ void addPlayerPositionY(DreamPlayer* p, double y, int tCoordinateP)
 
 	double scale = getPlayerCoordinateP(p) / tCoordinateP;
 	pos->y += y*scale;
+}
+
+void setPlayerPositionBasedOnScreenCenterX(DreamPlayer* p, double x, int tCoordinateP) {
+	Position pos = getDreamStageCenterOfScreenBasedOnPlayer(tCoordinateP);
+	double nx = x + pos.x;
+	setPlayerPositionX(p, nx, tCoordinateP);
 }
 
 int isPlayerCommandActive(DreamPlayer* p, char * tCommandName)
@@ -2997,7 +3012,7 @@ int getPlayerAILevel(DreamPlayer* p)
 void setPlayerLife(DreamPlayer * p, int tLife)
 {
 	int delta = tLife - p->mLife;
-	addPlayerDamage(p, delta);
+	addPlayerDamage(p, -delta);
 }
 
 void addPlayerLife(DreamPlayer * p, int tLife)
@@ -3261,6 +3276,8 @@ void destroyPlayer(DreamPlayer * p) // TODO: rename
 	assert(p->mIsHelper);
 	assert(p->mParent);
 	assert(p->mHelperIDInParent != -1);
+
+	printf("destroy %d %d\n", p->mRootID, p->mID);
 
 	list_remove(&gData.mAllPlayers, p->mHelperIDInRoot);
 	removePlayerBoundHelpers(p);

@@ -2465,6 +2465,8 @@ static AssignmentReturnValue timeStoryFunction(DreamPlayer* tPlayer) { return ma
 static void setupStoryVariableAssignments() {
 	gVariableHandler.mVariables = new_string_map();
 	string_map_push(&gVariableHandler.mVariables, "time", timeStoryFunction);
+
+	string_map_push(&gVariableHandler.mVariables, "random", randomFunction);
 }
 
 //static AssignmentReturnValue movementDownFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerLyingDownFrictionThreshold(tPlayer)); }

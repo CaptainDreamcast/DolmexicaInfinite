@@ -274,14 +274,16 @@ int isReceivedHitDataActive(void* tHitData)
 
 int isHitDataActive(DreamPlayer* tPlayer)
 {
-	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
+	if (!int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID)) return 0;
+	
 	PlayerHitData* e = int_map_get(&gData.mPassiveHitDataMap, tPlayer->mHitDataID);
 	return e->mIsActive;
 }
 
 int isActiveHitDataActive(DreamPlayer * tPlayer)
 {
-	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	if(!int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID)) return 0;
+
 	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
 	return e->mIsActive;
 }

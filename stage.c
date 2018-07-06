@@ -119,6 +119,8 @@ typedef struct {
 	int mListPosition;
 	BlendType mBlendType;
 
+	Velocity mVelocity;
+
 	double mStartScaleY;
 	double mScaleDeltaY;
 
@@ -271,7 +273,7 @@ static int isActionGroup(MugenDefScriptGroup* tGroup) {
 
 static void addBackgroundElementToStageHandler(StageBackgroundElement* e, MugenAnimation* tAnimation, int tOwnsAnimation) {
 	e->mStart.z = e->mListPosition + e->mLayerNo * BACKGROUND_UPPER_BASE_Z;
-	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, tOwnsAnimation, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), makePosition(0, 0, 0), e->mStartScaleY, e->mScaleDeltaY, e->mLayerNo, gData.mStageInfo.mLocalCoordinates);
+	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, tOwnsAnimation, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), e->mVelocity, e->mStartScaleY, e->mScaleDeltaY, e->mLayerNo, gData.mStageInfo.mLocalCoordinates);
 }
 
 static BlendType getBackgroundBlendType(MugenDefScript* tScript, char* tGroupName) {
@@ -319,6 +321,8 @@ static void loadBackgroundElement(MugenDefScript* s, char* tName, int i) {
 	e->mMask = getMugenDefIntegerOrDefault(s, tName, "mask", 0);
 	e->mTile = getMugenDefVectorIOrDefault(s, tName, "tile", makeVector3DI(0, 0, 0));
 	e->mTileSpacing = getMugenDefVectorIOrDefault(s, tName, "tilespacing", makeVector3DI(0, 0, 0));
+	e->mVelocity = getMugenDefVectorOrDefault(s, tName, "velocity", makePosition(0, 0, 0));
+	
 	e->mBlendType = getBackgroundBlendType(s, tName);
 	e->mListPosition = i;
 

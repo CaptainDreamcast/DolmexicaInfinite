@@ -12,6 +12,7 @@ void setDreamMugenStageHandlerCameraRange(GeoRectangle tRect);
 void setDreamMugenStageHandlerCameraPosition(Position p);
 void addDreamMugenStageHandlerCameraPositionX(double tX);
 void setDreamMugenStageHandlerCameraPositionX(double tX);
+void addDreamMugenStageHandlerCameraPositionY(double tY);
 void setDreamMugenStageHandlerCameraPositionY(double tY);
 void resetDreamMugenStageHandlerCameraPosition();
 

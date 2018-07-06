@@ -89,7 +89,7 @@ typedef struct{
 } updateStageTileCaller;
 
 int getTileAmountSingleAxis(int tSize, double tMinCam, double tMaxCam, int tScreenSize) {
-	int length = (int)(tMaxCam - tMinCam) + tScreenSize;
+	int length = (int)(tMaxCam - (tMinCam - tSize)) + tScreenSize;
 	return length / tSize + 1;
 }
 
@@ -118,13 +118,13 @@ static void updateSingleStaticStageElementTileVelocity(StaticStageHandlerElement
 	maxCam.x = gData.mCameraRange.mBottomRight.x*cameraToElementScale;
 	maxCam.y = gData.mCameraRange.mBottomRight.y*cameraToElementScale;
 
-
 	double right = tSingleAnimation->mOffset.x + e->mTileSize.x - offset.x + (e->mCoordinates.x / 2);
 	if (right < minCam.x) {
 		tSingleAnimation->mOffset.x += amount.x*e->mTileSize.x;
 	}
 	double left = tSingleAnimation->mOffset.x - offset.x + (e->mCoordinates.x / 2);
-	if (left > maxCam.x) {
+	double cameraRight = maxCam.x + e->mCoordinates.x;
+	if (left > cameraRight) {
 		tSingleAnimation->mOffset.x -= amount.x*e->mTileSize.x;
 	}
 
@@ -133,7 +133,8 @@ static void updateSingleStaticStageElementTileVelocity(StaticStageHandlerElement
 		tSingleAnimation->mOffset.y += amount.y*e->mTileSize.y;
 	}
 	double up = tSingleAnimation->mOffset.y - offset.y;
-	if (up > maxCam.y) {
+	double cameraDown = maxCam.y + e->mCoordinates.y;
+	if (up > cameraDown) {
 		tSingleAnimation->mOffset.y -= amount.y*e->mTileSize.y;
 	}
 }
@@ -246,6 +247,12 @@ void setDreamMugenStageHandlerCameraPositionX(double tX)
 	gData.mCameraPosition.x = gData.mCameraTargetPosition.x;
 }
 
+void addDreamMugenStageHandlerCameraPositionY(double tY) {
+	gData.mCameraTargetPosition.y += tY;
+	gData.mCameraTargetPosition = clampPositionToGeoRectangle(gData.mCameraTargetPosition, gData.mCameraRange);
+	gData.mCameraPosition.y = gData.mCameraTargetPosition.y;
+}
+
 void setDreamMugenStageHandlerCameraPositionY(double tY)
 {
 	gData.mCameraTargetPosition.y = tY;
@@ -260,14 +267,14 @@ void resetDreamMugenStageHandlerCameraPosition()
 	
 }
 
-static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, double tMinCam, double tMaxCam, double tDeltaScale, int tScreenSize) {
+static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, double tMinCam, double tMaxCam, double tDeltaScale, double tCoordinates) {
 	if (!tTile) {
 		*tStart = 0;
 		*tAmount = 1;
 	}
 	else if (tTile == 1) {
-		*tStart = (int)tMinCam - (tScreenSize / 2);
-		int length = (int)(((tMaxCam - tMinCam) + tScreenSize)*tDeltaScale);
+		*tStart = (int)tMinCam - tSize;
+		int length = (int)(((tMaxCam - (tMinCam - tSize)) + tCoordinates)*tDeltaScale);
 		*tAmount = length / tSize + 1;
 	}
 	else {

@@ -87,7 +87,7 @@ static void loadFightScreen() {
 
 	malloc_stats();
 	printf("init stage\n");
-
+	
 	instantiateActor(DreamStageBP);
 
 
@@ -112,7 +112,7 @@ static void loadFightScreen() {
 	setUIFaces();
 
 	playDreamStageMusic();
-
+	
 	malloc_stats();
 
 	printf("assignments: %d\n", gDebugAssignmentAmount);

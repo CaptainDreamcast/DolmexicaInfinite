@@ -74,7 +74,6 @@ int main(int argc, char** argv) {
 
 	setMemoryHandlerCompressionActive();
 	initClipboardForGame();
-	setVolume(0);
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
 	startScreenHandling(&DreamWarningScreen);
 	

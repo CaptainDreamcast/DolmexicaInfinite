@@ -10,6 +10,7 @@ void setDolmexicaStoryScreenFile(char* tPath);
 void addDolmexicaStoryAnimation(int tID, int tAnimation, Position tPosition);
 void removeDolmexicaStoryAnimation(int tID);
 void setDolmexicaStoryAnimationLooping(int tID, int tIsLooping);
+void setDolmexicaStoryAnimationBoundToStage(int tID, int tIsBoundToStage);
 void changeDolmexicaStoryAnimation(int tID, int tAnimation);
 void setDolmexicaStoryAnimationPositionX(int tID, double tX);
 void setDolmexicaStoryAnimationPositionY(int tID, double tY);

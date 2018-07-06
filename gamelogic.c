@@ -6,6 +6,7 @@
 #include <prism/wrapper.h>
 #include <prism/framerate.h>
 #include <prism/wrapper.h>
+#include <prism/input.h>
 #include <prism/log.h>
 
 #include "playerdefinition.h"
@@ -70,8 +71,6 @@ static void startRound() {
 	gData.mRoundStateNumber = 0;
 	gData.mIsDisplayingIntro = 0;
 	gData.mIsDisplayingWinPose = 0;
-	// changePlayerState(getRootPlayer(0), 0);
-	// changePlayerState(getRootPlayer(1), 0);
 	setPlayerControl(getRootPlayer(0), 0);
 	setPlayerControl(getRootPlayer(1), 0);
 	addFadeIn(30, fadeInFinished, NULL);
@@ -258,6 +257,8 @@ static void resetRoundData(void* tCaller) {
 	resetPlayers();
 	resetDreamMugenStageHandlerCameraPosition();
 	resetDreamTimer();
+	changePlayerState(getRootPlayer(0), 0);
+	changePlayerState(getRootPlayer(1), 0);
 	startRound();
 }
 
@@ -271,7 +272,8 @@ static void gotoNextRound(void* tCaller) {
 static void updateWinPose() {
 	if (!gData.mIsDisplayingWinPose) return;
 
-	if (!getRemainingPlayerAnimationTime(gData.mRoundWinner)) {
+	int hasSkipped = hasPressedStartFlankSingle(0) || hasPressedStartFlankSingle(1);
+	if (!getRemainingPlayerAnimationTime(gData.mRoundWinner) || hasSkipped) {
 		increasePlayerRoundsWon(gData.mRoundWinner);
 		if (hasPlayerWon(gData.mRoundWinner)) {
 			playDreamWinAnimation(getPlayerDisplayName(gData.mRoundWinner), winAnimationFinishedCB);

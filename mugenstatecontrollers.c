@@ -2530,7 +2530,7 @@ static int handlePositionSetting(DreamMugenStateController* tController, DreamPl
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
-		setPlayerPositionX(tPlayer, x, getPlayerCoordinateP(tPlayer));
+		setPlayerPositionBasedOnScreenCenterX(tPlayer, x, getPlayerCoordinateP(tPlayer));
 	}
 
 	if (e->mIsSettingY) {
@@ -3541,14 +3541,14 @@ static int handleStateTypeSet(DreamMugenStateController* tController, DreamPlaye
 		setPlayerStateType(tPlayer, type);
 	}
 
-	if (e->mHasPhysics) {
-		DreamMugenStatePhysics physics = handleStatePhysicsAssignment(&e->mPhysics, tPlayer);
-		setPlayerPhysics(tPlayer, physics);
-	}
-
 	if (e->mHasMoveType) {
 		DreamMugenStateMoveType moveType = handleStateMoveTypeAssignment(&e->mMoveType, tPlayer);
 		setPlayerStateMoveType(tPlayer, moveType);
+	}
+
+	if (e->mHasPhysics) {
+		DreamMugenStatePhysics physics = handleStatePhysicsAssignment(&e->mPhysics, tPlayer);
+		setPlayerPhysics(tPlayer, physics);
 	}
 
 	return 0;
@@ -5393,6 +5393,7 @@ typedef struct {
 	DreamMugenAssignment* mAnimation;
 	DreamMugenAssignment* mIsLooping;
 	DreamMugenAssignment* mPosition;
+	DreamMugenAssignment* mIsBoundToStage;
 } CreateAnimationStoryController;
 
 static void parseCreateAnimationStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
@@ -5402,6 +5403,7 @@ static void parseCreateAnimationStoryController(DreamMugenStateController* tCont
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mAnimation, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("loop", tGroup, &e->mIsLooping, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("stage", tGroup, &e->mIsBoundToStage, "");
 
 	tController->mType = MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_ANIMATION;
 	tController->mData = e;
@@ -5571,7 +5573,6 @@ static void parseAnimationSetFaceDirectionStoryController(DreamMugenStateControl
 	tController->mData = e;
 }
 
-
 void nullStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseNullController(tController, MUGEN_STORY_STATE_CONTROLLER_TYPE_NULL); }
 void createAnimationStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseCreateAnimationStoryController(tController, tGroup); }
 void removeAnimationStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseRemoveAnimationStoryController(tController, tGroup); }
@@ -5588,6 +5589,7 @@ void animationAddPositionStoryParseFunction(DreamMugenStateController* tControll
 void animationSetScaleStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseTarget2DPhysicsController(tController, tGroup, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_SCALE); }
 void animationSetFaceDirectionStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationSetFaceDirectionStoryController(tController, tGroup); }
 void endStoryboardStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseSingleRequiredValueController(tController, tGroup, MUGEN_STORY_STATE_CONTROLLER_TYPE_END_STORYBOARD); }
+void moveStageStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parse2DPhysicsController(tController, tGroup, MUGEN_STORY_STATE_CONTROLLER_TYPE_MOVE_STAGE); }
 
 
 static void setupStoryStateControllerParsers() {
@@ -5609,21 +5611,24 @@ static void setupStoryStateControllerParsers() {
 	string_map_push(&gVariableHandler.mStateControllerParsers, "animscaleset", animationSetScaleStoryParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "animsetfacing", animationSetFaceDirectionStoryParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "endstoryboard", endStoryboardStoryParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "movestage", moveStageStoryParseFunction);
 }
 
 static int handleCreateAnimationStoryController(DreamMugenStateController* tController) {
 	CreateAnimationStoryController* e = tController->mData;
 
-	int id, animation, isLooping;
+	int id, animation, isLooping, isBoundToStage;
 	Position position = makePosition(0, 0, 0);
 
 	getSingleIntegerValueOrDefault(&e->mID, NULL, &id, 1);
 	getSingleIntegerValueOrDefault(&e->mAnimation, NULL, &animation, 0);
 	getSingleIntegerValueOrDefault(&e->mIsLooping, NULL, &isLooping, 1);
+	getSingleIntegerValueOrDefault(&e->mIsBoundToStage, NULL, &isBoundToStage, 0);
 	getTwoFloatValuesWithDefaultValues(&e->mPosition, NULL, &position.x, &position.y, 0, 0);
 
 	addDolmexicaStoryAnimation(id, animation, position);
 	setDolmexicaStoryAnimationLooping(id, isLooping);
+	setDolmexicaStoryAnimationBoundToStage(id, isBoundToStage);
 
 	return 0;
 }
@@ -5859,6 +5864,21 @@ static int handleEndStoryboardController(DreamMugenStateController* tController)
 	return 0;
 }
 
+static int handleMoveStageStoryController(DreamMugenStateController* tController) {
+	Set2DPhysicsController* e = tController->mData;
+
+	if (e->mIsSettingX) {
+		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, NULL);
+		addDreamMugenStageHandlerCameraPositionX(x);
+	}
+
+	if (e->mIsSettingY) {
+		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, NULL);
+		addDreamMugenStageHandlerCameraPositionY(y);
+	}
+	return 0;
+}
+
 int nullStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleNull(); }
 int createAnimationStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleCreateAnimationStoryController(tController); }
 int removeAnimationStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleRemoveAnimationStoryController(tController); }
@@ -5875,6 +5895,7 @@ int animationAddPositionStoryHandleFunction(DreamMugenStateController* tControll
 int animationSetScaleStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAnimationSetScaleStoryController(tController); }
 int animationSetFaceDirectionStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAnimationSetFaceDirectionController(tController); }
 int endStoryboardStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleEndStoryboardController(tController); }
+int moveStageStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleMoveStageStoryController(tController); }
 
 
 static void setupStoryStateControllerHandlers() {
@@ -5896,6 +5917,7 @@ static void setupStoryStateControllerHandlers() {
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_SCALE, animationSetScaleStoryHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_FACEDIRECTION, animationSetFaceDirectionStoryHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_END_STORYBOARD, endStoryboardStoryHandleFunction);
+	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_MOVE_STAGE, moveStageStoryHandleFunction);
 
 }
 
