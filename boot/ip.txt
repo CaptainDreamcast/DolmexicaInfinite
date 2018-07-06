@@ -8,4 +8,4 @@ Version       : V1.000
 Release Date  : 20180203
 Boot Filename : 1ST_READ.BIN
 SW Maker Name : JOSH TARI
-Game Title    : DOLINFDEMO2
+Game Title    : DOLINFDEMO3

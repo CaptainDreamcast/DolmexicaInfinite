@@ -4,6 +4,7 @@
 #include <prism/input.h>
 #include <prism/wrapper.h>
 #include <prism/drawing.h>
+#include <prism/system.h>
 
 #include "playerdefinition.h"
 #include "stage.h"
@@ -185,8 +186,10 @@ static void switchCollisionDebugActivity() {
 	setPlayerCollisionDebug(!isPlayerCollisionDebugActive());
 }
 
-static void updateDebugInput() {
-	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_D_PRISM) || (hasPressedA() && hasPressedStartFlank())) { // TODO: proper
+
+
+static void updateDebugInputWindows() {
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_D_PRISM)) { // TODO: proper
 		switchDebugTextActivity();
 	} 
 
@@ -245,6 +248,75 @@ static void updateDebugInput() {
 	}
 
 
+}
+
+static void updateDebugInputDreamcast() {
+	int wasStartPressed = hasPressedStartFlank(); // TODO: remove when fixed
+
+	if (wasStartPressed && hasPressedR()) { // TODO: proper
+		switchDebugTextActivity();
+	} 
+
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_D_PRISM)) {
+		switchDebugTextColor();
+	}
+
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_C_PRISM)) {
+		switchCollisionDebugActivity();
+	} 
+	
+	if (wasStartPressed && hasPressedL()) {
+		setPlayerLife(getRootPlayer(1), 0);
+	}
+
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_F1_PRISM)) {
+		setPlayerLife(getRootPlayer(0), 0);
+	}
+
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_F2_PRISM)) {
+		setPlayerLife(getRootPlayer(0), 1);
+		setPlayerLife(getRootPlayer(1), 1);
+	}
+
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_F2_PRISM)) {
+		setPlayerLife(getRootPlayer(0), 1);
+	}
+
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_F2_PRISM)) {
+		setPlayerLife(getRootPlayer(0), 1);
+	}
+
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_F3_PRISM)) {
+		setPlayerPower(getRootPlayer(0), getPlayerPowerMax(getRootPlayer(0)));
+		setPlayerPower(getRootPlayer(1), getPlayerPowerMax(getRootPlayer(1)));
+	}
+
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_F4_PRISM)) {
+		resetRound();
+	}
+
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_F4_PRISM)) {
+		reloadFight();
+	}
+
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_F5_PRISM)) {
+		setTimerFinished();
+	}
+
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_PAUSE_PRISM)) {
+		switchDebugTimeDilatation();
+	}
+
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_PAUSE_PRISM)) {
+		switchDebugTimeOff();
+	}
+
+
+}
+
+static void updateDebugInput() {
+	if(isOnDreamcast()) updateDebugInputDreamcast();
+	else updateDebugInputWindows();
 }
 
 static void updateSingleDebugText() {
