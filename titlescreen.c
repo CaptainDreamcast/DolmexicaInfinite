@@ -13,6 +13,8 @@
 #include <prism/mugentexthandler.h>
 #include <prism/tweening.h>
 #include <prism/clipboardhandler.h>
+#include <prism/screeneffect.h>
+#include <prism/timer.h>
 
 #include <prism/log.h>
 
@@ -24,6 +26,11 @@
 #include "fightscreen.h"
 #include "storymode.h"
 #include "creditsmode.h"
+#include "optionsscreen.h"
+#include "boxcursorhandler.h"
+#include "survivalmode.h"
+#include "watchmode.h"
+#include "exhibitmode.h"
 
 typedef struct {
 	void(*mCB)();
@@ -55,6 +62,12 @@ typedef struct {
 
 } MenuHeader;
 
+typedef struct {
+	int mWaitTime;
+	int mIsEnabled;
+
+} DemoHeader;
+
 static struct {
 	MugenDefScript mScript;
 	MugenSpriteFile mSprites;
@@ -62,13 +75,13 @@ static struct {
 	MugenSounds mSounds;
 
 	MenuHeader mHeader;
+	DemoHeader mDemo;
 	Vector mMenus;
 
 	Position mMenuBasePosition;
 	Position mMenuTargetPosition;
 
-	int mBoxCursorAnimationID;
-	Position mBoxCursorBasePosition;
+	int mBoxCursorID;
 
 	TextureData mWhiteTexture;
 	int mCreditBGAnimationID;
@@ -124,6 +137,43 @@ static void creditsCB() {
 	addFadeOut(gData.mHeader.mFadeOutTime, gotoCreditsMode, NULL);
 }
 
+static void gotoOptionsScreen(void* tCaller) {
+	(void)tCaller;
+	startOptionsScreen();
+}
+
+static void optionsCB() {
+	addFadeOut(gData.mHeader.mFadeOutTime, gotoOptionsScreen, NULL);
+}
+
+static void gotoSurvivalMode(void* tCaller) {
+	(void)tCaller;
+	startSurvivalMode();
+}
+
+static void survivalCB() {
+	addFadeOut(gData.mHeader.mFadeOutTime, gotoSurvivalMode, NULL);
+}
+
+static void gotoWatchMode(void* tCaller) {
+	(void)tCaller;
+	startWatchMode();
+}
+
+static void watchCB() {
+	addFadeOut(gData.mHeader.mFadeOutTime, gotoWatchMode, NULL);
+}
+
+static void gotoExhibitMode(void* tCaller) {
+	(void)tCaller;
+	startExhibitMode();
+}
+
+static void exhibitCB(void* tCaller) {
+	(void)tCaller;
+	addFadeOut(gData.mHeader.mFadeOutTime, gotoExhibitMode, NULL);
+}
+
 static void exitCB() {
 	abortScreenHandling();
 }
@@ -154,6 +204,15 @@ static void loadMenuHeader() {
 	gData.mHeader.mCursorMoveSound = getMugenDefVectorIOrDefault(&gData.mScript, "Title Info", "cursor.move.snd", makeVector3DI(0, 0, 0));
 	gData.mHeader.mCursorDoneSound = getMugenDefVectorIOrDefault(&gData.mScript, "Title Info", "cursor.done.snd", makeVector3DI(0, 0, 0));
 	gData.mHeader.mCancelSound = getMugenDefVectorIOrDefault(&gData.mScript, "Title Info", "cancel.snd", makeVector3DI(0, 0, 0));
+}
+
+static void loadDemoHeader() {
+	gData.mDemo.mIsEnabled = getMugenDefIntegerOrDefault(&gData.mScript, "Demo Mode", "enabled", 1);
+	gData.mDemo.mWaitTime = getMugenDefIntegerOrDefault(&gData.mScript, "Demo Mode", "title.waittime", 600);
+
+	if (gData.mDemo.mIsEnabled) {
+		addTimerCB(gData.mDemo.mWaitTime, exhibitCB, NULL);
+	}
 }
 
 static void addMenuPoint(char* tVariableName, void(*tCB)()) {
@@ -221,19 +280,10 @@ static void loadCredits() {
 	setMugenTextAlignment(gData.mRightCreditTextID, MUGEN_TEXT_ALIGNMENT_RIGHT);
 }
 
-static void boxCursorCB1(void* tCaller);
 
 static void loadBoxCursor() {
 	if (gData.mHeader.mIsBoxCursorVisible) {
-		gData.mBoxCursorBasePosition = makePosition(0, 0, 0);
-		gData.mBoxCursorAnimationID = playOneFrameAnimationLoop(makePosition(gData.mHeader.mBoxCursorCoordinates.mTopLeft.x, gData.mHeader.mBoxCursorCoordinates.mTopLeft.y + 7.5, 49), &gData.mWhiteTexture); // TODO: fix the "+ 7"
-		double w = gData.mHeader.mBoxCursorCoordinates.mBottomRight.x - gData.mHeader.mBoxCursorCoordinates.mTopLeft.x;
-		double h = gData.mHeader.mBoxCursorCoordinates.mBottomRight.y - gData.mHeader.mBoxCursorCoordinates.mTopLeft.y;
-		setAnimationSize(gData.mBoxCursorAnimationID, makePosition(w, h, 1), makePosition(0, 0, 0));
-		setAnimationBasePositionReference(gData.mBoxCursorAnimationID, &gData.mBoxCursorBasePosition);
-		setAnimationColor(gData.mBoxCursorAnimationID, 0, 1, 1);
-		setAnimationTransparency(gData.mBoxCursorAnimationID, 1);
-		boxCursorCB1(NULL);
+		gData.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 7.5, 49), gData.mHeader.mBoxCursorCoordinates); // TODO: fix the "+ 7";
 	}
 }
 
@@ -241,8 +291,9 @@ static void loadTitleScreen() {
 	instantiateActor(MugenTextHandler);
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
 	instantiateActor(ClipboardHandler);
-	
-	gData.mWhiteTexture = createWhiteTexture();
+	instantiateActor(BoxCursorHandler);
+
+	gData.mWhiteTexture = getEmptyWhiteTexture();
 
 	char folder[1024];
 	gData.mScript = loadMugenDefScript("assets/data/system.def");
@@ -259,6 +310,7 @@ static void loadTitleScreen() {
 	freeMemory(text);
 
 	loadMenuHeader();
+	loadDemoHeader();
 	loadMenuBackground(&gData.mScript, &gData.mSprites, &gData.mAnimations, "TitleBGdef", "TitleBG");
 
 	gData.mMenus = new_vector();
@@ -268,11 +320,11 @@ static void loadTitleScreen() {
 	addMenuPoint("menu.itemname.teamarcade", arcadeCB);
 	addMenuPoint("menu.itemname.teamversus", arcadeCB);
 	addMenuPoint("menu.itemname.teamcoop", arcadeCB);
-	addMenuPoint("menu.itemname.survival", arcadeCB);
+	addMenuPoint("menu.itemname.survival", survivalCB);
 	addMenuPoint("menu.itemname.survivalcoop", arcadeCB);
 	addMenuPoint("menu.itemname.training", trainingCB);
-	addMenuPoint("menu.itemname.watch", arcadeCB);
-	addMenuPoint("menu.itemname.options", arcadeCB);
+	addMenuPoint("menu.itemname.watch", watchCB);
+	addMenuPoint("menu.itemname.options", optionsCB);
 	addMenuPoint("menu.itemname.credits", creditsCB);
 	addMenuPoint("menu.itemname.exit", exitCB);
 
@@ -300,16 +352,6 @@ static void unloadTitleScreen() {
 	unloadMugenSoundFile(&gData.mSounds);
 
 	delete_vector(&gData.mMenus);
-
-	unloadTexture(gData.mWhiteTexture);
-}
-
-static void boxCursorCB2(void* tCaller) {
-	tweenDouble(getAnimationTransparencyReference(gData.mBoxCursorAnimationID), 0.2, 0.1, linearTweeningFunction, 20, boxCursorCB1, NULL);
-}
-
-static void boxCursorCB1(void* tCaller) {
-	tweenDouble(getAnimationTransparencyReference(gData.mBoxCursorAnimationID), 0.1, 0.2, linearTweeningFunction, 20, boxCursorCB2, NULL);
 }
 
 static void updateItemSelection() {
@@ -354,8 +396,9 @@ static void updateItemSelectionConfirmation() {
 static void updateSelectionBoxPosition() {
 	MenuText* e = vector_get(&gData.mMenus, gData.mSelected);
 
-	gData.mBoxCursorBasePosition = getMugenTextPosition(e->mTextID);
-	gData.mBoxCursorBasePosition.z = 0;
+	Position pos = getMugenTextPosition(e->mTextID);
+	pos.z = 0;
+	setBoxCursorPosition(gData.mBoxCursorID, pos);
 }
 
 static void updateSelectionBox() {

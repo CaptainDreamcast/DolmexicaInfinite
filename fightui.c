@@ -596,6 +596,16 @@ static void loadSingleWinIcon(int i, MugenDefScript* tScript) {
 	winIcon->mIconAmount = 0;
 }
 
+static void setBarToPercentage(int tAnimationID, Vector3D tRange, double tPercentage);
+
+static void setDreamLifeBarPercentageStart(DreamPlayer* tPlayer, double tPercentage) {
+	int i = tPlayer->mRootID;
+	setDreamLifeBarPercentage(tPlayer, tPercentage);
+	gData.mHealthBars[i].mDisplayedPercentage = getPlayerLifePercentage(getRootPlayer(i));
+	setBarToPercentage(gData.mHealthBars[i].mMidAnimationID, gData.mHealthBars[i].mHealthRangeX, gData.mHealthBars[i].mDisplayedPercentage);
+}
+
+
 static void loadPlayerUIs(MugenDefScript* tScript) {
 	int i;
 	for (i = 0; i < 2; i++) {
@@ -604,7 +614,7 @@ static void loadPlayerUIs(MugenDefScript* tScript) {
 		loadSingleFace(i, tScript);
 		loadSingleName(i, tScript);
 		loadSingleWinIcon(i, tScript);
-		setDreamLifeBarPercentage(getRootPlayer(i), 1);
+		setDreamLifeBarPercentageStart(getRootPlayer(i), getPlayerLifePercentage(getRootPlayer(i)));
 		setDreamPowerBarPercentage(getRootPlayer(i), 0, 0);
 	}
 }

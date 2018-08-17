@@ -1,4 +1,4 @@
-#include "trainingmode.h"
+#include "watchmode.h"
 
 #include "characterselectscreen.h"
 #include "titlescreen.h"
@@ -13,7 +13,7 @@
 static void fightFinishedCB();
 
 static void versusScreenFinishedCB() {
-	setGameModeTraining();
+	setGameModeWatch();
 	setFightScreenFinishedCBs(fightFinishedCB, NULL);
 	startFightScreen();
 }
@@ -24,14 +24,14 @@ static void characterSelectFinishedCB() {
 }
 
 static void fightFinishedCB() {
-	setCharacterSelectScreenModeName("Training Mode");
+	setCharacterSelectScreenModeName("Watch Mode");
 	setCharacterSelectOnePlayerSelectAll();
 	setCharacterSelectStageActive();
 	setCharacterSelectFinishedCB(characterSelectFinishedCB);
 	setNewScreen(&CharacterSelectScreen);
 }
 
-void startTrainingMode()
+void startWatchMode()
 {
 	fightFinishedCB();
 }

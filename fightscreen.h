@@ -2,7 +2,8 @@
 
 #include <prism/wrapper.h>
 
-void setFightScreenFinishedCB(void(*tCB)());
+void setFightScreenFinishedCBs(void(*tWinCB)(), void(*tLoseCB)());
 void startFightScreen();
-void stopFightScreen();
+void stopFightScreenWin();
+void stopFightScreenLose();
 void stopFightScreenToFixedScreen(Screen* tNextScreen);

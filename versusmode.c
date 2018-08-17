@@ -8,18 +8,14 @@
 #include "fightscreen.h"
 #include "playerdefinition.h"
 #include "fightui.h"
+#include "fightresultdisplay.h"
+
 
 static void fightFinishedCB();
 
 static void versusScreenFinishedCB() {
-	setFightContinueInactive();
-	setTimerFinite();
-	setPlayersToRealFightMode();
-	setPlayerHuman(0);
-	setPlayerHuman(1);
-	setPlayerPreferredPalette(0, 1);
-	setPlayerPreferredPalette(1, 2);
-	setFightScreenFinishedCB(fightFinishedCB);
+	setGameModeVersus();
+	setFightScreenFinishedCBs(fightFinishedCB, NULL);
 	startFightScreen();
 }
 

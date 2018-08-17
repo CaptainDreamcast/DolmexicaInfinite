@@ -5,6 +5,7 @@
 #include <prism/actorhandler.h>
 
 #include <prism/mugenspritefilereader.h>
+#include <prism/mugenanimationhandler.h>
 
 // documentation at http://www.elecbyte.com/mugendocs-11b1/bgs.html
 
@@ -12,6 +13,7 @@
 void setDreamStageMugenDefinition(char* tPath, char* tCustomMusicPath);
 extern ActorBlueprint DreamStageBP;
 
+MugenAnimations* getStageAnimations();
 void playDreamStageMusic();
 
 double parseDreamCoordinatesToLocalCoordinateSystem(double tCoordinate, int tOtherCoordinateSystemAsP);

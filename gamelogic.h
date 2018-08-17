@@ -3,11 +3,22 @@
 #include <prism/actorhandler.h>
 #include <prism/wrapper.h>
 
+typedef enum {
+	GAME_MODE_ARCADE,
+	GAME_MODE_STORY,
+	GAME_MODE_VERSUS,
+	GAME_MODE_SURVIVAL,
+	GAME_MODE_TRAINING,
+	GAME_MODE_WATCH,
+	GAME_MODE_EXHIBIT
+} GameMode;
+
 extern ActorBlueprint DreamGameLogic;
 
 int getDreamGameTime();
 
 int getDreamRoundNumber();
+int getRoundsToWin();
 int getDreamRoundStateNumber();
 int getDreamMatchNumber();
 
@@ -26,3 +37,13 @@ void reloadFight();
 
 void setFightContinueActive();
 void setFightContinueInactive();
+
+void setGameModeArcade();
+void setGameModeVersus();
+void setGameModeSurvival(double tLifePercentage, int tRound);
+void setGameModeTraining(); 
+void setGameModeWatch();
+void setGameModeExhibit(int tEndTime, int tIsDisplayingBars);
+void setGameModeStory();
+
+GameMode getGameMode();

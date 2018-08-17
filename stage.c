@@ -16,6 +16,7 @@
 
 #include "playerdefinition.h"
 #include "mugenstagehandler.h"
+#include "mugenbackgroundstatehandler.h"
 
 typedef struct {
 	char mName[1024];
@@ -125,6 +126,7 @@ typedef struct {
 	double mScaleDeltaY;
 
 	int mActionNumber;
+	int mID;
 } StageBackgroundElement;
 
 static struct {
@@ -273,7 +275,7 @@ static int isActionGroup(MugenDefScriptGroup* tGroup) {
 
 static void addBackgroundElementToStageHandler(StageBackgroundElement* e, MugenAnimation* tAnimation, int tOwnsAnimation) {
 	e->mStart.z = e->mListPosition + e->mLayerNo * BACKGROUND_UPPER_BASE_Z;
-	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, tOwnsAnimation, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), e->mVelocity, e->mStartScaleY, e->mScaleDeltaY, e->mLayerNo, gData.mStageInfo.mLocalCoordinates);
+	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, tOwnsAnimation, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), e->mVelocity, e->mStartScaleY, e->mScaleDeltaY, e->mLayerNo, e->mID, gData.mStageInfo.mLocalCoordinates);
 }
 
 static BlendType getBackgroundBlendType(MugenDefScript* tScript, char* tGroupName) {
@@ -328,6 +330,8 @@ static void loadBackgroundElement(MugenDefScript* s, char* tName, int i) {
 
 	e->mStartScaleY = getMugenDefFloatOrDefault(s, tName, "yscalestart", 100) / 100.0;
 	e->mScaleDeltaY = getMugenDefFloatOrDefault(s, tName, "yscaledelta", 0) / 100.0;
+
+	e->mID = getMugenDefIntegerOrDefault(s, tName, "id", -1);
 
 	if (!strcmp("normal", type) || !strcmp("parallax", type)) { // TODO: parallax
 		e->mType = STAGE_BACKGROUND_STATIC;
@@ -400,6 +404,7 @@ static void loadStage(void* tData)
 {
 	(void)tData;
 	instantiateActor(DreamMugenStageHandler);
+	instantiateActor(BackgroundStateHandler);
 
 	gData.mAnimations = loadMugenAnimationFile(gData.mDefinitionPath);
 
@@ -418,6 +423,8 @@ static void loadStage(void* tData)
 	setStageCamera();
 	loadStageBackgroundElements(gData.mDefinitionPath, &s);
 	gData.mIsCameraManual = 0;
+
+	setBackgroundStatesFromScript(&s);
 
 	unloadMugenDefScript(s);
 }
@@ -531,6 +538,11 @@ static void playStageMusicPath(char* tPath) {
 	}
 
 	playStageMusicCompletePath(tPath);
+}
+
+MugenAnimations * getStageAnimations()
+{
+	return &gData.mAnimations;
 }
 
 void playDreamStageMusic()

@@ -192,8 +192,7 @@ static void updateDebugInputWindows() {
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_D_PRISM)) { // TODO: proper
 		switchDebugTextActivity();
 	} 
-
-	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_D_PRISM)) {
+	else if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_D_PRISM)) {
 		switchDebugTextColor();
 	}
 
@@ -201,22 +200,24 @@ static void updateDebugInputWindows() {
 		switchCollisionDebugActivity();
 	} 
 	
-	if (hasPressedKeyboardKeyFlank(KEYBOARD_F1_PRISM)) {
-		setPlayerLife(getRootPlayer(1), 0);
-	}
+
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_F1_PRISM)) {
 		setPlayerLife(getRootPlayer(0), 0);
 	}
-
-	if (hasPressedKeyboardKeyFlank(KEYBOARD_F2_PRISM)) {
-		setPlayerLife(getRootPlayer(0), 1);
-		setPlayerLife(getRootPlayer(1), 1);
+	else if (hasPressedKeyboardKeyFlank(KEYBOARD_F1_PRISM)) {
+		setPlayerLife(getRootPlayer(1), 0);
 	}
+
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_F2_PRISM)) {
 		setPlayerLife(getRootPlayer(0), 1);
 	}
+	else if (hasPressedKeyboardKeyFlank(KEYBOARD_F2_PRISM)) {
+		setPlayerLife(getRootPlayer(0), 1);
+		setPlayerLife(getRootPlayer(1), 1);
+	}
+
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_F2_PRISM)) {
 		setPlayerLife(getRootPlayer(0), 1);

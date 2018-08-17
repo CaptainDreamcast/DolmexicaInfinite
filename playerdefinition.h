@@ -196,6 +196,8 @@ typedef struct Player_t{
 
 	int mIsBoundToScreen;
 
+	double mStartLifePercentage;
+
 	DreamPlayerDust mDustClouds[2];
 
 	DreamHitDefAttributeSlot mNotHitBy[2];
@@ -525,8 +527,11 @@ double getPlayerFallDefenseMultiplier(DreamPlayer* p);
 
 void setPlayerHuman(int i);
 void setPlayerArtificial(int i);
+int isPlayerHuman(DreamPlayer* p);
 int getPlayerAILevel(DreamPlayer* p);
 
+void setPlayerStartLifePercentage(int tIndex, double tPercentage);
+double getPlayerLifePercentage(DreamPlayer* p);
 void setPlayerLife(DreamPlayer* p, int tLife);
 void addPlayerLife(DreamPlayer* p, int tLife);
 int getPlayerLife(DreamPlayer* p);

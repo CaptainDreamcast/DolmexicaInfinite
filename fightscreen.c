@@ -36,9 +36,11 @@
 #include "mugenstatecontrollers.h"
 #include "mugenanimationutilities.h"
 #include "fightdebug.h"
+#include "fightresultdisplay.h"
 
 static struct {
-	void(*mFinishedCB)();
+	void(*mWinCB)();
+	void(*mLoseCB)();
 	MemoryStack mMemoryStack;
 } gData;
 
@@ -99,6 +101,7 @@ static void loadFightScreen() {
 	instantiateActor(DreamFightUIBP);
 	instantiateActor(DreamGameLogic);
 
+	instantiateActor(FightResultDisplay);
 	instantiateActor(FightDebug);
 	
 	malloc_stats();
@@ -161,12 +164,23 @@ void startFightScreen() {
 	setNewScreen(&DreamFightScreen);
 }
 
-void stopFightScreen() {
+void stopFightScreenWin() {
 	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
-	if (!gData.mFinishedCB) return;
+	if (!gData.mWinCB) return;
 
-	gData.mFinishedCB();
+	gData.mWinCB();
  }
+
+void stopFightScreenLose()
+{
+	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
+	if (!gData.mLoseCB) {
+		setNewScreen(&DreamTitleScreen);
+		return;
+	}
+
+	gData.mLoseCB();
+}
 
 
 void stopFightScreenToFixedScreen(Screen* tNextScreen) {
@@ -174,6 +188,7 @@ void stopFightScreenToFixedScreen(Screen* tNextScreen) {
 	setNewScreen(tNextScreen);
 }
 
-void setFightScreenFinishedCB(void(*tCB)()) {
-	gData.mFinishedCB = tCB;
+void setFightScreenFinishedCBs(void(*tWinCB)(), void(*tLoseCB)()) {
+	gData.mWinCB = tWinCB;
+	gData.mLoseCB = tLoseCB;
 }

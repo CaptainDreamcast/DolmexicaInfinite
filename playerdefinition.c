@@ -286,7 +286,7 @@ static void loadPlayerState(DreamPlayer* p) {
 }
 
 static void loadPlayerStateWithConstantsLoaded(DreamPlayer* p) {
-	p->mLife = p->mConstants.mHeader.mLife;
+	p->mLife = (int)(p->mConstants.mHeader.mLife * p->mStartLifePercentage);
 	setPlayerDrawOffsetX(p, 0, getPlayerCoordinateP(p));
 	setPlayerDrawOffsetY(p, 0, getPlayerCoordinateP(p));
 }
@@ -445,8 +445,8 @@ void unloadPlayers() {
 static void resetSinglePlayer(DreamPlayer* p) {
 	p->mIsAlive = 1;
 
-	p->mLife = p->mConstants.mHeader.mLife;
-	setDreamLifeBarPercentage(p, 1);
+	p->mLife = (int)(p->mConstants.mHeader.mLife * p->mStartLifePercentage);
+	setDreamLifeBarPercentage(p, p->mStartLifePercentage);
 
 	setPlayerPosition(p, getDreamPlayerStartingPosition(p->mRootID, getPlayerCoordinateP(p)), getPlayerCoordinateP(p));
 	
@@ -2880,7 +2880,7 @@ int hasPlayerWonPerfectly(DreamPlayer* p)
 
 int hasPlayerWon(DreamPlayer* p)
 {
-	return p->mRoundsWon == 2; // TODO: getDreamRoundNumber
+	return p->mRoundsWon == getRoundsToWin(); 
 }
 
 int hasPlayerLost(DreamPlayer* p)
@@ -3004,9 +3004,21 @@ void setPlayerArtificial(int i)
 	p->mAILevel = 8; // TODO: properly
 }
 
+int isPlayerHuman(DreamPlayer* p) {
+	return !getPlayerAILevel(p);
+}
+
 int getPlayerAILevel(DreamPlayer* p)
 {
 	return p->mAILevel;
+}
+
+void setPlayerStartLifePercentage(int tIndex, double tPercentage) {
+	gData.mPlayers[tIndex].mStartLifePercentage = tPercentage;
+}
+
+double getPlayerLifePercentage(DreamPlayer* p) {
+	return p->mLife / (double)p->mConstants.mHeader.mLife;
 }
 
 void setPlayerLife(DreamPlayer * p, int tLife)

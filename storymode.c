@@ -13,6 +13,7 @@
 #include "dolmexicastoryscreen.h"
 #include "storymode.h"
 #include "stage.h"
+#include "fightresultdisplay.h"
 
 static struct {
 	char mStoryPath[1024];
@@ -97,11 +98,8 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	}
 	freeMemory(afterLoseState);
 
-	setTimerFinite();
-	setPlayersToRealFightMode();
-	setPlayerHuman(0);
-	setPlayerArtificial(1);
-	setFightScreenFinishedCB(fightFinishedCB);
+	setGameModeStory();
+	setFightScreenFinishedCBs(fightFinishedCB, NULL);
 	startFightScreen();
 }
 

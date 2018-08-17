@@ -298,9 +298,13 @@ static int isSelectStageLoadedAlready(char* tPath) {
 	return 0;
 }
 
+static void getStagePath(char* tDst, char* tPath) {
+	sprintf(tDst, "assets/%s", tPath);
+}
+
 static void addSingleSelectStage(char* tPath) {
 	char path[1024];
-	sprintf(path, "assets/%s", tPath);
+	getStagePath(path, tPath);
 
 	if (!isFile(path)) {
 		logWarningFormat("Unable to find stage file %s. Ignoring.", path);
@@ -1187,7 +1191,7 @@ static int checkSetStageSelectInactive(int i) {
 	int otherPlayer = i ^ 1;
 	int isOtherPlayerFinished = !gData.mSelectors[otherPlayer].mIsActive || gData.mSelectors[otherPlayer].mIsDone;
 	if (!gData.mStageSelect.mIsDone) {
-		if (gData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING || !isOtherPlayerFinished) {
+		if (gData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING || gData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_MODE || !isOtherPlayerFinished) {
 			setStageSelectInactive(i);
 		}
 		return 0;
@@ -1452,4 +1456,117 @@ void getCharacterSelectNamePath(char* tName, char* oDst) {
 		else sprintf(oDst, "assets/chars/%s", tName);
 	}
 	else sprintf(oDst, "assets/chars/%s/%s.def", tName, tName);
+}
+
+typedef struct {
+	char mPath[1024];
+
+} PossibleRandomCharacterElement;
+
+typedef struct {
+	Vector mElements; // contains SurvivalCharacter
+
+} RandomCharacterCaller;
+
+static void loadRandomCharacter(RandomCharacterCaller* tCaller, MugenDefScriptVectorElement* tVectorElement) {
+	PossibleRandomCharacterElement* e = allocMemory(sizeof(PossibleRandomCharacterElement));
+	getCharacterSelectNamePath(tVectorElement->mVector.mElement[0], e->mPath);
+
+	vector_push_back_owned(&tCaller->mElements, e);
+}
+
+static void loadSingleRandomCharacter(void* tCaller, void* tData) {
+
+	RandomCharacterCaller* caller = tCaller;
+	MugenDefScriptGroupElement* element = tData;
+	if (element->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
+		MugenDefScriptVectorElement* vectorElement = element->mData;
+		loadRandomCharacter(caller, vectorElement);
+	}
+}
+
+void setCharacterRandom(MugenDefScript * tScript, int i)
+{
+	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, "Characters");
+
+	RandomCharacterCaller caller;
+	caller.mElements = new_vector();
+
+	list_map(&e->mOrderedElementList, loadSingleRandomCharacter, &caller);
+
+	int index = randfromInteger(0, vector_size(&caller.mElements) - 1);
+	PossibleRandomCharacterElement* newChar = vector_get(&caller.mElements, index);
+	setPlayerDefinitionPath(i, newChar->mPath);
+
+	delete_vector(&caller.mElements);
+}
+
+typedef struct {
+	char mPath[1024];
+
+} PossibleRandomStageElement;
+
+typedef struct {
+	Vector mElements; // contains SurvivalCharacter
+	StringMap mAllElements; // contains NULL
+} RandomStageCaller;
+
+static void addPossibleRandomStage(RandomStageCaller* tCaller, char* tPath) {
+	if (string_map_contains(&tCaller->mAllElements, tPath)) return;
+
+	PossibleRandomStageElement* e = allocMemory(sizeof(PossibleRandomStageElement));
+	getStagePath(e->mPath, tPath);
+
+	string_map_push(&tCaller->mAllElements, tPath, NULL);
+	vector_push_back_owned(&tCaller->mElements, e);
+}
+
+static void loadRandomCharacterStage(RandomStageCaller* tCaller, MugenDefScriptVectorElement* tVectorElement) {
+	if (tVectorElement->mVector.mSize < 2) return;
+
+	addPossibleRandomStage(tCaller, tVectorElement->mVector.mElement[1]);
+}
+
+static void loadSingleRandomCharacterStage(void* tCaller, void* tData) {
+
+	RandomStageCaller* caller = tCaller;
+	MugenDefScriptGroupElement* element = tData;
+	if (element->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
+		MugenDefScriptVectorElement* vectorElement = element->mData;
+		loadRandomCharacterStage(caller, vectorElement);
+	}
+}
+
+static void loadSingleRandomStageStage(void* tCaller, void* tData) {
+
+	RandomStageCaller* caller = tCaller;
+	MugenDefScriptGroupElement* element = tData;
+	if (element->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
+		MugenDefScriptStringElement* stringElement = element->mData;
+		addPossibleRandomStage(tCaller, stringElement->mString);
+	}
+}
+
+void setStageRandom(MugenDefScript * tScript)
+{
+
+	RandomStageCaller caller;
+	caller.mElements = new_vector();
+	caller.mAllElements = new_string_map();
+
+	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, "Characters");
+	list_map(&e->mOrderedElementList, loadSingleRandomCharacterStage, &caller);
+
+	e = string_map_get(&tScript->mGroups, "ExtraStages");
+	list_map(&e->mOrderedElementList, loadSingleRandomStageStage, &caller);
+
+
+	int index = randfromInteger(0, vector_size(&caller.mElements) - 1);
+	PossibleRandomStageElement* newStage = vector_get(&caller.mElements, index);
+	char dummyMusicPath[2];
+	*dummyMusicPath = '\0'; // TODO
+	setDreamStageMugenDefinition(newStage->mPath, dummyMusicPath);
+
+	delete_vector(&caller.mElements);
+	delete_string_map(&caller.mAllElements);
 }

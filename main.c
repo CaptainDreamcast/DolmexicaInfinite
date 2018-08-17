@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
 		exitGame();
 	}
 	
-
+	setDisplayedScreenSize(320, 240);
 	setMemoryHandlerCompressionActive();
 	initClipboardForGame();
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);

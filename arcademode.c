@@ -15,6 +15,7 @@
 #include "gamelogic.h"
 #include "stage.h"
 #include "fightui.h"
+#include "fightresultdisplay.h"
 
 typedef struct {
 	char mDefinitionPath[300];
@@ -26,19 +27,41 @@ static struct {
 	int mEnemyAmount;
 	ArcadeCharacter mEnemies[100];
 	int mCurrentEnemy;
+	int mHasEnding;
+
+	int mHasGameOver;
+	char mGameOverPath[300];
+
+	int mHasDefaultEnding;
+	char mDefaultEndingPath[300];
+
+	int mHasCredits;
+	char mCreditsPath[300];
 } gData;
 
 static void fightFinishedCB();
 
+static void gameOverFinishedCB() {
+	setNewScreen(&DreamTitleScreen);
+}
+
+static void fightLoseCB() {
+	if (gData.mHasGameOver) {
+		setStoryDefinitionFile(gData.mGameOverPath);
+		setStoryScreenFinishedCB(gameOverFinishedCB);
+		setNewScreen(&StoryScreen);
+	}
+	else {
+		gameOverFinishedCB();
+	}
+}
+
 static void versusScreenFinishedCB() {
-	setFightContinueActive();
-	setTimerFinite();
-	setPlayersToRealFightMode();
-	setFightScreenFinishedCB(fightFinishedCB); 
-	setPlayerHuman(0);
-	setPlayerArtificial(1);
-	setPlayerPreferredPalette(0, 1);
-	setPlayerPreferredPalette(1, 2);
+
+	int isFinalFight = gData.mCurrentEnemy == gData.mEnemyAmount - 1;
+	setGameModeArcade();
+	setFightResultActive(isFinalFight && !gData.mHasEnding);
+	setFightScreenFinishedCBs(fightFinishedCB, fightLoseCB); 
 	startFightScreen();
 }
 
@@ -159,8 +182,20 @@ static void generateEnemies() {
 	unloadMugenDefScript(script);
 }
 
-static void endingScreenFinishedCB() {
+static void creditsFinishedCB() {
 	startArcadeMode();
+
+}
+
+static void endingScreenFinishedCB() {
+	if (gData.mHasCredits) {
+		setStoryDefinitionFile(gData.mCreditsPath);
+		setStoryScreenFinishedCB(creditsFinishedCB);
+		setNewScreen(&StoryScreen);
+		return;
+	}
+
+	creditsFinishedCB();
 }
 
 static void startEnding() {
@@ -169,12 +204,9 @@ static void startEnding() {
 	getPlayerDefinitionPath(path, 0);
 	getPathToFile(folder, path);
 	MugenDefScript script = loadMugenDefScript(path);
-	int hasEnding;
 	char* endingDefinitionFile;
-	hasEnding = isMugenDefStringVariable(&script, "Arcade", "ending.storyboard");
 
-
-	if (hasEnding) {
+	if (gData.mHasEnding) {
 		endingDefinitionFile = getAllocatedMugenDefStringVariable(&script, "Arcade", "ending.storyboard");
 		sprintf(path, "%s%s", folder, endingDefinitionFile);
 		if (isFile(path)) {
@@ -183,6 +215,12 @@ static void startEnding() {
 			setNewScreen(&StoryScreen);
 			return;
 		}
+	}
+	else if (gData.mHasDefaultEnding) {
+		setStoryDefinitionFile(gData.mDefaultEndingPath);
+		setStoryScreenFinishedCB(endingScreenFinishedCB);
+		setNewScreen(&StoryScreen);
+		return;
 	}
 
 	endingScreenFinishedCB();
@@ -196,7 +234,7 @@ static void fightFinishedCB() {
 		startEnding();
 		return;
 	}
-
+		
 	setPlayerDefinitionPath(1, gData.mEnemies[gData.mCurrentEnemy].mDefinitionPath);
 	setDreamStageMugenDefinition(gData.mEnemies[gData.mCurrentEnemy].mStagePath, gData.mEnemies[gData.mCurrentEnemy].mMusicPath);
 	setVersusScreenFinishedCB(versusScreenFinishedCB);
@@ -219,6 +257,7 @@ static void characterSelectFinishedCB() {
 	int hasIntro;
 	char* introDefinitionFile;
 	hasIntro = isMugenDefStringVariable(&script, "Arcade", "intro.storyboard");
+	gData.mHasEnding = isMugenDefStringVariable(&script, "Arcade", "ending.storyboard");
 
 	int isGoingToStory = 0;
 
@@ -244,8 +283,58 @@ static void characterSelectFinishedCB() {
 	}
 }
 
+static void loadWinScreenFromScript(MugenDefScript* tScript) {
+	int isEnabled = getMugenDefIntegerOrDefault(tScript, "Win Screen", "enabled", 0);
+	char* message = getAllocatedMugenDefStringOrDefault(tScript, "Win Screen", "wintext.text", "Congratulations!");
+	Vector3DI font = getMugenDefVectorIOrDefault(tScript, "Win Screen", "wintext.font", makeVector3DI(2, 0, 0));
+	Position offset = getMugenDefVectorOrDefault(tScript, "Win Screen", "wintext.offset", makePosition(0, 0, 0));
+	int displayTime = getMugenDefIntegerOrDefault(tScript, "Win Screen", "wintext.displaytime", -1);
+	int layerNo = getMugenDefIntegerOrDefault(tScript, "Win Screen", "wintext.layerno", 2);
+	int fadeInTime = getMugenDefIntegerOrDefault(tScript, "Win Screen", "fadein.time", 30);
+	int poseTime = getMugenDefIntegerOrDefault(tScript, "Win Screen", "pose.time", 300);
+	int fadeOutTime = getMugenDefIntegerOrDefault(tScript, "Win Screen", "fadeout.time", 30);
+
+	setFightResultData(isEnabled, message, font, offset, displayTime, layerNo, fadeInTime, poseTime, fadeOutTime, 1);
+
+	freeMemory(message);
+}
+
+static void loadSingleStoryboard(MugenDefScript* tScript, char* tFolder, char* tGroup, int* oHasStoryboard, char* oStoryBoardPath) {
+
+	*oHasStoryboard = getMugenDefIntegerOrDefault(tScript, tGroup, "enabled", 0);
+	if (!(*oHasStoryboard)) return;
+
+	char* name = getAllocatedMugenDefStringOrDefault(tScript, tGroup, "storyboard", "");
+	sprintf(oStoryBoardPath, "%s%s", tFolder, name); // TODO: non-relative
+	freeMemory(name);
+}
+
+static void loadStoryboardsFromScript(MugenDefScript* tScript, char* tFolder) {
+	
+	loadSingleStoryboard(tScript, tFolder, "Game Over Screen", &gData.mHasGameOver, gData.mGameOverPath);
+	loadSingleStoryboard(tScript, tFolder, "Default Ending", &gData.mHasDefaultEnding, gData.mDefaultEndingPath);
+	loadSingleStoryboard(tScript, tFolder, "End Credits", &gData.mHasCredits, gData.mCreditsPath);
+}
+
+static void loadArcadeModeHeaderFromScript() {
+	char scriptPath[1000];
+	char folder[1000];
+
+	strcpy(scriptPath, "assets/data/system.def");
+	getPathToFile(folder, scriptPath);
+
+	MugenDefScript script = loadMugenDefScript(scriptPath);
+
+	loadWinScreenFromScript(&script);
+	loadStoryboardsFromScript(&script, folder);
+
+	unloadMugenDefScript(script);
+}
+
 void startArcadeMode()
 {
+	loadArcadeModeHeaderFromScript();
+
 	setCharacterSelectScreenModeName("Arcade");
 	setCharacterSelectOnePlayer();
 	setCharacterSelectStageInactive();

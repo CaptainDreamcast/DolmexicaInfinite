@@ -61,10 +61,11 @@ static void loadNormalMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, Mu
 	BlendType blendType = getBackgroundBlendType(tGroup);
 	GeoRectangle constraintRectangle = getMugenDefGeoRectangleOrDefaultAsGroup(tGroup, "window", makeGeoRectangle(-INF / 2, -INF / 2, INF, INF));
 	Vector3D velocity = getMugenDefVectorOrDefaultAsGroup(tGroup, "velocity", makePosition(0, 0, 0));
+	int id = getMugenDefIntegerOrDefaultAsGroup(tGroup, "id", -1);
 
 	(void)mask; // TODO
 	(void)layerNo; // TODO
-	addDreamMugenStageHandlerAnimatedBackgroundElement(start, createOneFrameMugenAnimationForSprite(spriteNo.x, spriteNo.y), 1, tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, 0, gData.mLocalCoordinates);
+	addDreamMugenStageHandlerAnimatedBackgroundElement(start, createOneFrameMugenAnimationForSprite(spriteNo.x, spriteNo.y), 1, tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, 0, id, gData.mLocalCoordinates);
 }
 
 static void loadAnimatedMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, MugenSpriteFile* tSprites, MugenAnimations* tAnimations) {
@@ -79,9 +80,10 @@ static void loadAnimatedMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, 
 	BlendType blendType = getBackgroundBlendType(tGroup);
 	GeoRectangle constraintRectangle = getMugenDefGeoRectangleOrDefaultAsGroup(tGroup, "window", makeGeoRectangle(-INF / 2, -INF / 2, INF, INF));
 	Vector3D velocity = getMugenDefVectorOrDefaultAsGroup(tGroup, "velocity", makePosition(0, 0, 0));
+	int id = getMugenDefIntegerOrDefaultAsGroup(tGroup, "id", -1);
 
 	(void)mask; // TODO
-	addDreamMugenStageHandlerAnimatedBackgroundElement(start, getMugenAnimation(tAnimations, animation), 0, tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, 0, gData.mLocalCoordinates);
+	addDreamMugenStageHandlerAnimatedBackgroundElement(start, getMugenAnimation(tAnimations, animation), 0, tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, 0, id, gData.mLocalCoordinates);
 }
 
 static void loadMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, MugenSpriteFile* tSprites, MugenAnimations* tAnimations) {

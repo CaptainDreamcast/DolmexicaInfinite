@@ -14,11 +14,20 @@
 #include "mugenstagehandler.h"
 #include "titlescreen.h"
 #include "fightscreen.h"
+#include "fightresultdisplay.h"
+
+typedef struct {
+	int mEndTime;
+	int mIsDisplayingBars;
+	int mIsFadingOut;
+} ExhibitLogic;
 
 static struct {
 	int mGameTime;
 	int mRoundNumber;
 	int mRoundStateNumber;
+	int mRoundsToWin;
+	int mStartRound;
 
 	int mIsDisplayingIntro;
 	int mIsDisplayingWinPose;
@@ -30,6 +39,11 @@ static struct {
 
 	int mIsInSinglePlayerMode;
 	int mIsContinueActive;
+
+	ExhibitLogic mExhibit;
+	
+
+	GameMode mMode;
 } gData;
 
 static void fightAnimationFinishedCB() {
@@ -143,7 +157,7 @@ static void loadGameLogic(void* tData) {
 	setDreamTimeDisplayFinishedCB(timerFinishedCB);
 
 	gData.mGameTime = 0;
-	gData.mRoundNumber = 1;
+	gData.mRoundNumber = gData.mStartRound;
 	startRound();
 }
 
@@ -167,16 +181,16 @@ static void updateIntro() {
 static void goToNextScreen(void* tCaller) {
 	(void)tCaller;
 
-	stopFightScreen();
+	stopFightScreenWin();
 }
 
-static void goToTitleScreen(void* tCaller) {
+static void goToLoseScreen(void* tCaller) {
 	(void)tCaller;
-	stopFightScreenToFixedScreen(&DreamTitleScreen);
+	stopFightScreenLose();
 }
 
 static void continueAnimationFinishedCB() {
-	addFadeOut(30, goToTitleScreen, NULL);
+	addFadeOut(30, goToLoseScreen, NULL);
 }
 
 static void resetGameLogic(void* tCaller) {
@@ -187,7 +201,7 @@ static void resetGameLogic(void* tCaller) {
 	resetPlayersEntirely();
 
 	gData.mGameTime = 0;
-	gData.mRoundNumber = 1;
+	gData.mRoundNumber = gData.mStartRound;
 }
 
 static void resetGameStart() {
@@ -205,10 +219,13 @@ static void startContinue() {
 static void winAnimationFinishedCB() {
 	setMatchWinner();
 
+	int isShowingResultsSurvival = gData.mMode == GAME_MODE_SURVIVAL && !isPlayerHuman(gData.mRoundWinner);
 	if (gData.mIsContinueActive && getPlayerAILevel(gData.mRoundWinner)) {
 		startContinue();
 	}
-	else {
+	else if (isShowingFightResults() || isShowingResultsSurvival) {
+		showFightResults(goToNextScreen, goToLoseScreen);
+	} else {
 		addFadeOut(30, goToNextScreen, NULL);
 	}
 }
@@ -269,6 +286,13 @@ static void gotoNextRound(void* tCaller) {
 	resetRoundData(NULL);
 }
 
+static void restoreSurvivalHealth() {
+	if (gData.mMode != GAME_MODE_SURVIVAL) return;
+	if (!isPlayerHuman(gData.mRoundWinner)) return;
+
+	addPlayerLife(gData.mRoundWinner, getPlayerLifeMax(gData.mRoundWinner) / 2);
+}
+
 static void updateWinPose() {
 	if (!gData.mIsDisplayingWinPose) return;
 
@@ -276,6 +300,7 @@ static void updateWinPose() {
 	if (!getRemainingPlayerAnimationTime(gData.mRoundWinner) || hasSkipped) {
 		increasePlayerRoundsWon(gData.mRoundWinner);
 		if (hasPlayerWon(gData.mRoundWinner)) {
+			restoreSurvivalHealth();
 			playDreamWinAnimation(getPlayerDisplayName(gData.mRoundWinner), winAnimationFinishedCB);
 		}
 		else {
@@ -286,6 +311,20 @@ static void updateWinPose() {
 
 }
 
+static void updateExhibitMode() {
+	if (gData.mMode != GAME_MODE_EXHIBIT) return;
+
+	if (!gData.mExhibit.mIsDisplayingBars) {
+		setDreamBarInvisibleForOneFrame();
+	}
+
+	int isOver = (hasPressedStartFlank() || gData.mGameTime >= gData.mExhibit.mEndTime);
+	if (!gData.mExhibit.mIsFadingOut && isOver) {
+		addFadeOut(180, goToNextScreen, NULL);
+		gData.mExhibit.mIsFadingOut = 1;
+	}
+}
+
 static void updateGameLogic(void* tData) {
 	(void)tData;
 	gData.mGameTime++;
@@ -294,6 +333,7 @@ static void updateGameLogic(void* tData) {
 	updateWinCondition();
 	updateNoControl();
 	updateWinPose();
+	updateExhibitMode();
 }
 
 ActorBlueprint DreamGameLogic = {
@@ -310,6 +350,11 @@ int getDreamGameTime()
 int getDreamRoundNumber()
 {
 	return gData.mRoundNumber; 
+}
+
+int getRoundsToWin()
+{
+	return gData.mRoundsToWin;
 }
 
 int getDreamRoundStateNumber()
@@ -376,3 +421,135 @@ void setFightContinueInactive()
 	gData.mIsContinueActive = 0;
 }
 
+void setGameModeArcade() {
+	gData.mRoundsToWin = 2;
+	gData.mStartRound = 1;
+
+	setFightContinueActive();
+	setTimerFinite();
+	setPlayersToRealFightMode();
+	setPlayerHuman(0);
+	setPlayerArtificial(1);
+	setPlayerPreferredPalette(0, 1);
+	setPlayerPreferredPalette(1, 2);
+	setPlayerStartLifePercentage(0, 1);
+	setPlayerStartLifePercentage(1, 1);
+
+	gData.mMode = GAME_MODE_ARCADE;
+}
+
+void setGameModeVersus() {
+	gData.mRoundsToWin = 2;
+	gData.mStartRound = 1;
+
+	setFightResultActive(0);
+	setFightContinueInactive();
+	setTimerFinite();
+	setPlayersToRealFightMode();
+	setPlayerHuman(0);
+	setPlayerHuman(1);
+	setPlayerPreferredPalette(0, 1);
+	setPlayerPreferredPalette(1, 2);
+	setPlayerStartLifePercentage(0, 1);
+	setPlayerStartLifePercentage(1, 1);
+
+	gData.mMode = GAME_MODE_VERSUS;
+}
+
+void setGameModeSurvival(double tLifePercentage, int tRound) {
+	gData.mRoundsToWin = 1;
+	gData.mStartRound = tRound;
+
+	setFightResultActive(0);
+	setFightContinueInactive();
+	setTimerFinite();
+	setPlayersToRealFightMode();
+	setPlayerHuman(0);
+	setPlayerArtificial(1);
+	setPlayerPreferredPalette(0, 1);
+	setPlayerPreferredPalette(1, 2);
+	setPlayerStartLifePercentage(0, tLifePercentage);
+	setPlayerStartLifePercentage(1, 1);
+
+	gData.mMode = GAME_MODE_SURVIVAL;
+}
+
+void setGameModeTraining() {
+	gData.mRoundsToWin = 2;
+	gData.mStartRound = 1;
+
+	setFightResultActive(0);
+	setFightContinueActive();
+	setTimerInfinite();
+	setPlayersToTrainingMode();
+	setPlayerHuman(0);
+	setPlayerHuman(1);
+	setPlayerPreferredPalette(0, 1);
+	setPlayerPreferredPalette(1, 2);
+	setPlayerStartLifePercentage(0, 1);
+	setPlayerStartLifePercentage(1, 1);
+
+	gData.mMode = GAME_MODE_TRAINING;
+}
+
+void setGameModeWatch()
+{
+	gData.mRoundsToWin = 2;
+	gData.mStartRound = 1;
+
+	setFightResultActive(0);
+	setFightContinueInactive();
+	setTimerFinite();
+	setPlayersToRealFightMode();
+	setPlayerArtificial(0);
+	setPlayerArtificial(1);
+	setPlayerPreferredPalette(0, 1);
+	setPlayerPreferredPalette(1, 2);
+	setPlayerStartLifePercentage(0, 1);
+	setPlayerStartLifePercentage(1, 1);
+
+	gData.mMode = GAME_MODE_WATCH;
+}
+
+void setGameModeExhibit(int tEndTime, int tIsDisplayingBars)
+{
+	gData.mRoundsToWin = 1;
+	gData.mStartRound = 1;
+
+	setFightResultActive(0);
+	setFightContinueInactive();
+	setTimerInfinite();
+	setPlayersToTrainingMode();
+	setPlayerArtificial(0);
+	setPlayerArtificial(1);
+	setPlayerPreferredPalette(0, 1);
+	setPlayerPreferredPalette(1, 2);
+	setPlayerStartLifePercentage(0, 1);
+	setPlayerStartLifePercentage(1, 1);
+
+	gData.mExhibit.mEndTime = tEndTime;
+	gData.mExhibit.mIsDisplayingBars = tIsDisplayingBars;
+	gData.mExhibit.mIsFadingOut = 0;
+
+	gData.mMode = GAME_MODE_EXHIBIT;
+}
+
+void setGameModeStory() {
+	gData.mRoundsToWin = 2;
+	gData.mStartRound = 1;
+
+	setFightResultActive(0);
+	setTimerFinite();
+	setPlayersToRealFightMode();
+	setPlayerHuman(0);
+	setPlayerArtificial(1);
+	setPlayerStartLifePercentage(0, 1);
+	setPlayerStartLifePercentage(1, 1);
+
+	gData.mMode = GAME_MODE_STORY;
+}
+
+GameMode getGameMode()
+{
+	return gData.mMode;
+}

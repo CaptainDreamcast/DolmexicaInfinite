@@ -150,12 +150,15 @@
   <ItemGroup>
     <ClCompile Include="..\ai.c" />
     <ClCompile Include="..\arcademode.c" />
+    <ClCompile Include="..\boxcursorhandler.c" />
     <ClCompile Include="..\characterselectscreen.c" />
     <ClCompile Include="..\collision.c" />
     <ClCompile Include="..\config.c" />
     <ClCompile Include="..\creditsmode.c" />
     <ClCompile Include="..\dolmexicastoryscreen.c" />
+    <ClCompile Include="..\exhibitmode.c" />
     <ClCompile Include="..\fightdebug.c" />
+    <ClCompile Include="..\fightresultdisplay.c" />
     <ClCompile Include="..\fightscreen.c" />
     <ClCompile Include="..\fightui.c" />
     <ClCompile Include="..\gamelogic.c" />
@@ -163,6 +166,7 @@
     <ClCompile Include="..\mugenanimationutilities.c" />
     <ClCompile Include="..\mugenassignment.c" />
     <ClCompile Include="..\mugenassignmentevaluator.c" />
+    <ClCompile Include="..\mugenbackgroundstatehandler.c" />
     <ClCompile Include="..\mugencommandhandler.c" />
     <ClCompile Include="..\mugencommandreader.c" />
     <ClCompile Include="..\mugenexplod.c" />
@@ -172,6 +176,7 @@
     <ClCompile Include="..\mugenstatecontrollers.c" />
     <ClCompile Include="..\mugenstatehandler.c" />
     <ClCompile Include="..\mugenstatereader.c" />
+    <ClCompile Include="..\optionsscreen.c" />
     <ClCompile Include="..\pausecontrollers.c" />
     <ClCompile Include="..\playerdefinition.c" />
     <ClCompile Include="..\playerhitdata.c" />
@@ -179,22 +184,27 @@
     <ClCompile Include="..\stage.c" />
     <ClCompile Include="..\storymode.c" />
     <ClCompile Include="..\storyscreen.c" />
+    <ClCompile Include="..\survivalmode.c" />
     <ClCompile Include="..\titlescreen.c" />
     <ClCompile Include="..\trainingmode.c" />
     <ClCompile Include="..\versusmode.c" />
     <ClCompile Include="..\versusscreen.c" />
     <ClCompile Include="..\warningscreen.c" />
     <ClCompile Include="..\main.c" />
+    <ClCompile Include="..\watchmode.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ai.h" />
     <ClInclude Include="..\arcademode.h" />
+    <ClInclude Include="..\boxcursorhandler.h" />
     <ClInclude Include="..\characterselectscreen.h" />
     <ClInclude Include="..\collision.h" />
     <ClInclude Include="..\config.h" />
     <ClInclude Include="..\creditsmode.h" />
     <ClInclude Include="..\dolmexicastoryscreen.h" />
+    <ClInclude Include="..\exhibitmode.h" />
     <ClInclude Include="..\fightdebug.h" />
+    <ClInclude Include="..\fightresultdisplay.h" />
     <ClInclude Include="..\fightscreen.h" />
     <ClInclude Include="..\fightui.h" />
     <ClInclude Include="..\gamelogic.h" />
@@ -202,6 +212,7 @@
     <ClInclude Include="..\mugenanimationutilities.h" />
     <ClInclude Include="..\mugenassignment.h" />
     <ClInclude Include="..\mugenassignmentevaluator.h" />
+    <ClInclude Include="..\mugenbackgroundstatehandler.h" />
     <ClInclude Include="..\mugencommandhandler.h" />
     <ClInclude Include="..\mugencommandreader.h" />
     <ClInclude Include="..\mugenexplod.h" />
@@ -211,6 +222,7 @@
     <ClInclude Include="..\mugenstatecontrollers.h" />
     <ClInclude Include="..\mugenstatehandler.h" />
     <ClInclude Include="..\mugenstatereader.h" />
+    <ClInclude Include="..\optionsscreen.h" />
     <ClInclude Include="..\pausecontrollers.h" />
     <ClInclude Include="..\playerdefinition.h" />
     <ClInclude Include="..\playerhitdata.h" />
@@ -218,11 +230,13 @@
     <ClInclude Include="..\stage.h" />
     <ClInclude Include="..\storymode.h" />
     <ClInclude Include="..\storyscreen.h" />
+    <ClInclude Include="..\survivalmode.h" />
     <ClInclude Include="..\titlescreen.h" />
     <ClInclude Include="..\trainingmode.h" />
     <ClInclude Include="..\versusmode.h" />
     <ClInclude Include="..\versusscreen.h" />
     <ClInclude Include="..\warningscreen.h" />
+    <ClInclude Include="..\watchmode.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
