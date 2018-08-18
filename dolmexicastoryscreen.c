@@ -82,8 +82,6 @@ static void loadStoryFilesFromScript(MugenDefScript* tScript) {
 static void loadStoryScreen() {
 	setupDreamStoryAssignmentEvaluator();
 	setupDreamMugenStoryStateControllerHandler();
-	instantiateActor(getMugenAnimationHandlerActorBlueprint());
-	instantiateActor(MugenTextHandler);
 	instantiateActor(DreamMugenStateHandler);
 
 	gData.mStoryAnimations = new_int_map();

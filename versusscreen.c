@@ -133,9 +133,6 @@ static void loadVersusHeader() {
 static void screenTimeFinishedCB(void* tCaller);
 
 static void loadVersusScreen() {
-	instantiateActor(MugenTextHandler);
-	instantiateActor(getMugenAnimationHandlerActorBlueprint());
-	instantiateActor(ClipboardHandler);
 
 	// TODO: properly
 	char folder[1024];

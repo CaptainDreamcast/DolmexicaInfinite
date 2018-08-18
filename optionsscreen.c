@@ -159,9 +159,6 @@ static void loadGeneralOptionsScreen() {
 }
 
 static void loadOptionsScreen() {
-	instantiateActor(MugenTextHandler);
-	instantiateActor(getMugenAnimationHandlerActorBlueprint());
-	instantiateActor(ClipboardHandler);
 	instantiateActor(BoxCursorHandler);
 
 	gData.mWhiteTexture = getEmptyWhiteTexture();

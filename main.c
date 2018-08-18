@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 	setGameName("DOLMEXICA INFINITE");
 	setScreenSize(320, 240);
 	
-	initPrismWrapperWithDefaultFlags();
+	initPrismWrapperWithMugenFlags();
 	
 	setMainFileSystem();	
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");

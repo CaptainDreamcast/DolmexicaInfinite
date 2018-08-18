@@ -142,9 +142,6 @@ static void loadScenes() {
 static void startScene();
 
 static void loadStoryScreen() {
-	instantiateActor(MugenTextHandler);
-	instantiateActor(getMugenAnimationHandlerActorBlueprint());
-	instantiateActor(ClipboardHandler);
 
 	loadScriptAndSprites();
 	loadScenes();

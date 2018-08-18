@@ -290,9 +290,6 @@ static void loadBoxCursor() {
 static void loadTitleScreen() {
 	setWrapperTitleScreen(&DreamTitleScreen);
 
-	instantiateActor(MugenTextHandler);
-	instantiateActor(getMugenAnimationHandlerActorBlueprint());
-	instantiateActor(ClipboardHandler);
 	instantiateActor(BoxCursorHandler);
 
 	gData.mWhiteTexture = getEmptyWhiteTexture();

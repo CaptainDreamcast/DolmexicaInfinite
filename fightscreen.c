@@ -74,10 +74,6 @@ static void loadFightScreen() {
 	malloc_stats();
 	printf("init handlers\n");
 
-	instantiateActor(getMugenAnimationHandlerActorBlueprint());
-	instantiateActor(MugenTextHandler);
-	instantiateActor(ClipboardHandler);
-
 	malloc_stats();
 	printf("init custom handlers\n");
 

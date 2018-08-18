@@ -748,9 +748,6 @@ static void loadCredits() {
 }
 
 static void loadCharacterSelectScreen() {
-	instantiateActor(MugenTextHandler);
-	instantiateActor(getMugenAnimationHandlerActorBlueprint());
-	instantiateActor(ClipboardHandler);
 
 	gData.mCharacterScript = loadMugenDefScript("assets/data/select.def");
 
@@ -1335,10 +1332,6 @@ static void updateCharacterSelectScreen() {
 	updateSelections();
 	updateSelectionInputs();
 	updateStageSelect();
-
-	if (hasPressedAbortFlank()) {
-		setNewScreen(&DreamTitleScreen);
-	}
 }
 
 Screen CharacterSelectScreen = {
