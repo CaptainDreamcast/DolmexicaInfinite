@@ -72,9 +72,6 @@ static void loadFightScreen() {
 	setupDreamMugenStateControllerHandler(&gData.mMemoryStack);
 
 	malloc_stats();
-	printf("init handlers\n");
-
-	malloc_stats();
 	printf("init custom handlers\n");
 
 	instantiateActor(MugenAnimationUtilityHandler);
