@@ -288,6 +288,8 @@ static void loadBoxCursor() {
 }
 
 static void loadTitleScreen() {
+	setWrapperTitleScreen(&DreamTitleScreen);
+
 	instantiateActor(MugenTextHandler);
 	instantiateActor(getMugenAnimationHandlerActorBlueprint());
 	instantiateActor(ClipboardHandler);
@@ -415,10 +417,6 @@ static void updateTitleScreen() {
 	updateMenuElementPositions();
 	updateSelectionBox();
 	updateItemSelectionConfirmation();
-
-	if (hasPressedAbortFlank()) {
-		abortScreenHandling();
-	}
 
 	if (hasPressedXFlank()) {
 		addControllerRumbleBasic(20);

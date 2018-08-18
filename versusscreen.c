@@ -182,10 +182,6 @@ static void updateVersusScreen() {
 	if (hasPressedAFlank() || hasPressedStartFlank()) {
 		screenTimeFinishedCB(NULL);
 	}
-
-	if (hasPressedAbortFlank()) {
-		setNewScreen(&DreamTitleScreen);
-	}
 }
 
 Screen VersusScreen = {

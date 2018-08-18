@@ -132,9 +132,6 @@ static void updateTexts() {
 static void updateStoryScreen() {
 	updateTexts();
 
-	if (hasPressedAbortFlank()) {
-		setNewScreen(&DreamTitleScreen);
-	}
 }
 
 Screen DolmexicaStoryScreen = {

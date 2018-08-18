@@ -277,10 +277,6 @@ static void updateStoryScreen() {
 		gotoNextScreen();
 	}
 
-	if (hasPressedAbortFlank()) {
-		setNewScreen(&DreamTitleScreen);
-	}
-
 }
 
 Screen StoryScreen = {

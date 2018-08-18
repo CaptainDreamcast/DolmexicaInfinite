@@ -49,7 +49,11 @@ extern int gDebugStateControllerAmount;
 extern int gDebugStringMapAmount;
 extern int gPruneAmount;
 
+static void loadSystemFonts(void* tCaller);
+
 static void loadFightScreen() {
+	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
+
 	malloc_stats();
 	printf("create mem stack\n");
 	gData.mMemoryStack = createMemoryStack(1024 * 1024 * 3);
@@ -131,10 +135,6 @@ static void unloadFightScreen() {
 
 static void updateFightScreen() {
 	updatePlayers();
-
-	if (hasPressedAbortFlank()) {
-		stopFightScreenToFixedScreen(&DreamTitleScreen);
-	}
 }
 
 static void drawFightScreen() {

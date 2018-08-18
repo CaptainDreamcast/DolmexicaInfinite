@@ -216,7 +216,7 @@ static void updateOptionScreenSelection() {
 static void updateOptionsScreen() {
 	updateOptionScreenSelection();
 
-	if(hasPressedAbortFlank() || hasPressedBFlank()) {
+	if(hasPressedBFlank()) {
 		setNewScreen(&DreamTitleScreen);
 	}
 }
