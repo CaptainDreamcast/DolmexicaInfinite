@@ -1,5 +1,6 @@
 assets/*
 assets_normal/*
+assets_*/*
 
 *.o
 *.BIN

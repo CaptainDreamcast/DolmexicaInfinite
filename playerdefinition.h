@@ -644,3 +644,5 @@ int isPlayerTargetValid(DreamPlayer* p);
 
 int isPlayerCollisionDebugActive();
 void setPlayerCollisionDebug(int tIsActive);
+
+void turnPlayerTowardsOtherPlayer(DreamPlayer* p);

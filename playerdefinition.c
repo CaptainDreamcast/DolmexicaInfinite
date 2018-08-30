@@ -596,13 +596,7 @@ static void updateAutoTurn(DreamPlayer* p) {
 
 	if (getPlayerStateType(p) == MUGEN_STATE_TYPE_AIR) return;
 
-	DreamPlayer* p2 = getPlayerOtherPlayer(p);
-
-	double x1 = getHandledPhysicsPositionReference(p->mPhysicsID)->x;
-	double x2 = getHandledPhysicsPositionReference(p2->mPhysicsID)->x;
-
-	if (x1 > x2) setPlayerFaceDirection(p, FACE_DIRECTION_LEFT);
-	else if (x1 < x2) setPlayerFaceDirection(p, FACE_DIRECTION_RIGHT);
+	turnPlayerTowardsOtherPlayer(p);
 }
 
 static void updatePositionFreeze(DreamPlayer* p) {
@@ -935,13 +929,13 @@ static int updateSinglePlayer(DreamPlayer* p) {
 	}
 
 	updateWalking(p);
+	updateAutoTurn(p);
 	updateAirJumping(p);
 	updateJumpFlank(p);
 	updateJumping(p);
 	updateLanding(p);
 	updateCrouchingDown(p);
 	updateStandingUp(p);
-	updateAutoTurn(p);
 	updatePositionFreeze(p);
 	updateGettingUp(p);
 	updateHitPause(p);
@@ -3843,4 +3837,14 @@ static void setPlayerCollisionDebugRecursiveCB(void* tCaller, void* tData) {
 void setPlayerCollisionDebug(int tIsActive) {
 	gData.mIsCollisionDebugActive = tIsActive;
 	list_map(&gData.mAllPlayers, setPlayerCollisionDebugRecursiveCB, NULL);
+}
+
+void turnPlayerTowardsOtherPlayer(DreamPlayer* p) {
+	DreamPlayer* p2 = getPlayerOtherPlayer(p);
+
+	double x1 = getHandledPhysicsPositionReference(p->mPhysicsID)->x;
+	double x2 = getHandledPhysicsPositionReference(p2->mPhysicsID)->x;
+
+	if (x1 > x2) setPlayerFaceDirection(p, FACE_DIRECTION_LEFT);
+	else if (x1 < x2) setPlayerFaceDirection(p, FACE_DIRECTION_RIGHT);
 }

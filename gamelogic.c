@@ -231,6 +231,8 @@ static void winAnimationFinishedCB() {
 }
 
 static void startWinPose() {
+	turnPlayerTowardsOtherPlayer(gData.mRoundWinner);
+
 	if (hasPlayerStateSelf(gData.mRoundWinner, 180)) {
 		changePlayerState(gData.mRoundWinner, 180);
 
