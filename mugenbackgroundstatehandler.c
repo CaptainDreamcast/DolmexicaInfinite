@@ -181,7 +181,7 @@ static void handleSingleBackgroundControllerForOneElement(void* tCaller, void* t
 		handleSinYController(e, element);
 		break;
 	default:
-		logWarningFormat("Warning, unrecognized state controller type %d. Defaulting to null.");
+		logWarningFormat("Warning, unrecognized state controller type %d. Defaulting to null.", e->mType);
 		handleNullController();
 		break;
 	}
@@ -311,7 +311,7 @@ static void loadControllerType(BackgroundState* e, MugenDefScriptGroup* tGroup) 
 		loadSingleValueController(e, BACKGROUND_STATE_CONTROLLER_SIN_Y, tGroup);
 	}
 	else {
-		logErrorFormat("Unrecognized state controller %s. Defaulting to null.");
+		logErrorFormat("Unrecognized state controller %s. Defaulting to null.", text);
 		loadNullController(e);
 	}
 

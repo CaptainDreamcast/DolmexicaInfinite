@@ -282,7 +282,6 @@ static DreamMugenAssignment* parseTwoElementMugenAssignmentFromStringWithFixedPo
 	int m = strlen(tPattern);
 
 	assert(tPosition != -1);
-	assert(tPosition > 0);
 	assert(tPosition < n - m);
 
 	int start = tPosition;
@@ -766,7 +765,6 @@ static int isCommaContextFree(char* tText, int tPosition) {
 	assert(tText[tPosition] == ',');
 	tPosition--;
 	while (tPosition >= 0 && isEmptyCharacter(tText[tPosition])) tPosition--;
-	assert(tPosition >= 0);
 	int end = tPosition+1;
 
 	int depth1 = 0;
