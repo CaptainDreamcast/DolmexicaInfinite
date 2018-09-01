@@ -167,7 +167,7 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	tPlayer->mSpritePath = copyToAllocatedString(scriptPath);
 
 	getMugenDefStringOrDefault(file, tScript, "Files", "sound", "");
-	if (strcmp("", file)) {
+	if (strcmp("", file) && !isOnDreamcast()) {
 		sprintf(scriptPath, "%s%s", path, file);
 		tPlayer->mSounds = loadMugenSoundFile(scriptPath);
 	}
