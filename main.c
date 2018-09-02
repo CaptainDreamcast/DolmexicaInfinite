@@ -18,6 +18,7 @@
 #include "warningscreen.h"
 #include "dolmexicastoryscreen.h"
 #include "stage.h"
+#include "config.h"
 
 char romdisk_buffer[1];
 int romdisk_buffer_length;
@@ -75,6 +76,7 @@ int main(int argc, char** argv) {
 	setMemoryHandlerCompressionActive();
 	initClipboardForGame();
 	setMinimumLogType(LOG_TYPE_ERROR);
+	loadMugenConfig();
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
 	startScreenHandling(&DreamWarningScreen);
 	

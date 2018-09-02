@@ -259,7 +259,7 @@ static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, do
 		*tAmount = 1;
 	}
 	else if (tTile == 1) {
-		*tStart = (int)tMinCam - tSize;
+		*tStart = (int)tMinCam - tSize - (int)(tCoordinates / 2);
 		int length = (int)(((tMaxCam - (tMinCam - tSize)) + tCoordinates)*tDeltaScale);
 		*tAmount = length / tSize + 1;
 	}
@@ -297,7 +297,7 @@ static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement
 	handleSingleTile(tTile.x, &startX, &amountX, size.x, gData.mCameraRange.mTopLeft.x*cameraToElementScale, gData.mCameraRange.mBottomRight.x*cameraToElementScale, deltaScaleX, e->mCoordinates.x);
 	handleSingleTile(tTile.y, &startY, &amountY, size.y, gData.mCameraRange.mTopLeft.y*cameraToElementScale, gData.mCameraRange.mBottomRight.y*cameraToElementScale, deltaScaleY, e->mCoordinates.y);
 
-	Vector3D offset = makePosition(0, startY, 0);
+	Vector3D offset = makePosition(startX, startY, 0);
 	int j;
 	for (j = 0; j < amountY; j++) {
 		int i;

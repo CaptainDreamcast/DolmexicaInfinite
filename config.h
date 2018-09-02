@@ -2,7 +2,9 @@
 
 #include <prism/actorhandler.h>
 
-extern ActorBlueprint DreamMugenConfig;
+void loadMugenConfig();
 
 double getDreamDefaultAttackDamageDoneToPowerMultiplier();
 double getDreamDefaultAttackDamageReceivedToPowerMultiplier();
+
+int isMugenDebugActive();

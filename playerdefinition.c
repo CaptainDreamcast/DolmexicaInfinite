@@ -3678,7 +3678,11 @@ void addPlayerNotHitByFlag2(DreamPlayer * p, int tSlot, char * tFlag)
 
 	char* nFlag = allocMemory(strlen(tFlag) + 5);
 	copyOverCleanFlag2(nFlag, tFlag);
-	assert(strlen(nFlag) == 2);
+	if (strlen(nFlag) != 2) {
+		logErrorFormat("Unable to parse nothitby flag %s. Ignoring.", tFlag);
+		freeMemory(nFlag);
+		return;
+	}
 	turnStringLowercase(nFlag);
 
 	assert(p->mNotHitBy[tSlot].mFlag2Amount < MAXIMUM_HITSLOT_FLAG_2_AMOUNT);

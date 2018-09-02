@@ -63,6 +63,7 @@ typedef struct {
 } MenuHeader;
 
 typedef struct {
+	int mNow;
 	int mWaitTime;
 	int mIsEnabled;
 
@@ -209,10 +210,7 @@ static void loadMenuHeader() {
 static void loadDemoHeader() {
 	gData.mDemo.mIsEnabled = getMugenDefIntegerOrDefault(&gData.mScript, "Demo Mode", "enabled", 1);
 	gData.mDemo.mWaitTime = getMugenDefIntegerOrDefault(&gData.mScript, "Demo Mode", "title.waittime", 600);
-
-	if (gData.mDemo.mIsEnabled) {
-		addTimerCB(gData.mDemo.mWaitTime, exhibitCB, NULL);
-	}
+	gData.mDemo.mNow = 0;
 }
 
 static void addMenuPoint(char* tVariableName, void(*tCB)()) {
@@ -283,7 +281,7 @@ static void loadCredits() {
 
 static void loadBoxCursor() {
 	if (gData.mHeader.mIsBoxCursorVisible) {
-		gData.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 7.5, 49), gData.mHeader.mBoxCursorCoordinates); // TODO: fix the "+ 7";
+		gData.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 49), gData.mHeader.mBoxCursorCoordinates); // TODO: fix the "+ 7";
 	}
 }
 
@@ -406,6 +404,21 @@ static void updateSelectionBox() {
 	updateSelectionBoxPosition();
 }
 
+static void updateDemoMode() {
+	if (!gData.mDemo.mIsEnabled) return;
+
+	if (hasPressedAnyButton()) {
+		gData.mDemo.mNow = 0;
+	}
+
+	if (gData.mDemo.mNow >= gData.mDemo.mWaitTime) {
+		exhibitCB(NULL);
+		gData.mDemo.mNow = 0;
+	}
+
+	gData.mDemo.mNow++;
+}
+
 static void updateTitleScreen() {
 	// startFightScreen(); // TODO
 	
@@ -414,10 +427,7 @@ static void updateTitleScreen() {
 	updateMenuElementPositions();
 	updateSelectionBox();
 	updateItemSelectionConfirmation();
-
-	if (hasPressedXFlank()) {
-		addControllerRumbleBasic(20);
-	}
+	updateDemoMode();
 }
 
 Screen DreamTitleScreen = {

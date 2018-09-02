@@ -76,7 +76,6 @@ static void loadFightScreen() {
 
 	instantiateActor(MugenAnimationUtilityHandler);
 	instantiateActor(DreamAIHandler);
-	instantiateActor(DreamMugenConfig);
 	instantiateActor(HitDataHandler);
 	instantiateActor(ProjectileHandler);
 	
@@ -99,7 +98,10 @@ static void loadFightScreen() {
 	instantiateActor(DreamGameLogic);
 
 	instantiateActor(FightResultDisplay);
-	instantiateActor(FightDebug);
+
+	if (isMugenDebugActive()) {
+		instantiateActor(FightDebug);
+	}
 	
 	malloc_stats();
 	printf("shrinking memory stack\n");
