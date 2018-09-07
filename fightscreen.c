@@ -114,7 +114,7 @@ static void loadFightScreen() {
 	playDreamStageMusic();
 	
 	malloc_stats();
-
+	
 	printf("assignments: %d\n", gDebugAssignmentAmount);
 	printf("controllers: %d\n", gDebugStateControllerAmount);
 	printf("maps: %d\n", gDebugStringMapAmount);

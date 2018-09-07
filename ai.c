@@ -89,7 +89,7 @@ static void updateAICommands(PlayerAI* e) {
 	e->mRandomInputNow++;
 	if (e->mRandomInputNow >= e->mRandomInputDuration) {
 		e->mRandomInputNow = 0;
-		e->mRandomInputDuration = randfromInteger(15, 30);
+		e->mRandomInputDuration = randfromInteger(30, 45);
 
 		setRandomPlayerCommandActive(e);
 	}

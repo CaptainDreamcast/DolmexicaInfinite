@@ -29,16 +29,21 @@ KOS_INIT_FLAGS(INIT_DEFAULT);
 extern uint8 romdisk[];
 KOS_INIT_ROMDISK(romdisk);
 
-#define DEVELOP
-
 #endif
+
+#define DEVELOP
 
 
 void exitGame() {
 	shutdownPrismWrapper();
 
 #ifdef DEVELOP
-	abortSystem();
+	if (isOnDreamcast()) {
+		abortSystem();
+	}
+	else {
+		returnToMenu();
+	}
 #else
 	returnToMenu();
 #endif
@@ -72,10 +77,14 @@ int main(int argc, char** argv) {
 		exitGame();
 	}
 	
+#ifdef DEVELOP
 	setDisplayedScreenSize(320, 240);
+	disableWrapperErrorRecovery();
+#endif
+
 	setMemoryHandlerCompressionActive();
 	initClipboardForGame();
-	setMinimumLogType(LOG_TYPE_ERROR);
+	setMinimumLogType(LOG_TYPE_NORMAL);
 	loadMugenConfig();
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
 	startScreenHandling(&DreamWarningScreen);

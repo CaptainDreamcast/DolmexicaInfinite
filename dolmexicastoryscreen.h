@@ -11,6 +11,7 @@ void addDolmexicaStoryAnimation(int tID, int tAnimation, Position tPosition);
 void removeDolmexicaStoryAnimation(int tID);
 void setDolmexicaStoryAnimationLooping(int tID, int tIsLooping);
 void setDolmexicaStoryAnimationBoundToStage(int tID, int tIsBoundToStage);
+void setDolmexicaStoryAnimationShadow(int tID, double tBasePositionY);
 void changeDolmexicaStoryAnimation(int tID, int tAnimation);
 void setDolmexicaStoryAnimationPositionX(int tID, double tX);
 void setDolmexicaStoryAnimationPositionY(int tID, double tY);
@@ -39,3 +40,4 @@ void endDolmexicaStoryboard(int tNextStoryState);
 int getDolmexicaStoryTimeInState();
 
 int getDolmexicaStoryAnimationTimeLeft(int tID);
+double getDolmexicaStoryAnimationPositionX(int tID);

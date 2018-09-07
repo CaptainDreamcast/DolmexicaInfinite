@@ -262,6 +262,13 @@ int hasDreamHandledStateMachineStateSelf(int tID, int tNewState)
 	return int_map_contains(&e->mStates->mStates, tNewState);
 }
 
+int isInOwnStateMachine(int tID)
+{
+	assert(int_map_contains(&gData.mRegisteredStates, tID));
+	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	return !e->mIsUsingTemporaryOtherStateMachine;
+}
+
 static void resetSingleStateController(void* tCaller, void* tData) {
 	(void)tCaller;
 	DreamMugenStateController* controller = tData;
@@ -351,6 +358,13 @@ void changeDreamHandledStateMachineStateToOwnStateMachine(int tID, int tNewState
 	e->mIsUsingTemporaryOtherStateMachine = 0;
 
 	changeDreamHandledStateMachineState(tID, tNewState);
+}
+
+void changeDreamHandledStateMachineStateToOwnStateMachineWithoutChangingState(int tID)
+{
+	assert(int_map_contains(&gData.mRegisteredStates, tID));
+	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	e->mIsUsingTemporaryOtherStateMachine = 0;
 }
 
 void updateDreamSingleStateMachineByID(int tID) {

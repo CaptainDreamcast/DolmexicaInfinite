@@ -2159,6 +2159,10 @@ int hasPlayerStateSelf(DreamPlayer * p, int mNewState)
 
 void changePlayerState(DreamPlayer* p, int mNewState)
 {
+	if (getPlayerControl(p) && !isInOwnStateMachine(p->mStateMachineID)) {
+		changeDreamHandledStateMachineStateToOwnStateMachineWithoutChangingState(p->mStateMachineID);
+	}
+
 	if (!hasPlayerState(p, mNewState)) {
 		logWarning("Trying to change into state that does not exist");
 		logWarningInteger(mNewState);
@@ -2178,6 +2182,10 @@ void changePlayerStateToOtherPlayerStateMachine(DreamPlayer * p, DreamPlayer * t
 
 void changePlayerStateBeforeImmediatelyEvaluatingIt(DreamPlayer * p, int mNewState)
 {
+	if (getPlayerControl(p) && !isInOwnStateMachine(p->mStateMachineID)) {
+		changeDreamHandledStateMachineStateToOwnStateMachineWithoutChangingState(p->mStateMachineID);
+	}
+
 	if (!hasPlayerState(p, mNewState)) {
 		logWarning("Trying to change into state that does not exist");
 		logWarningInteger(mNewState);

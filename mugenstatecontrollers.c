@@ -5394,6 +5394,10 @@ typedef struct {
 	DreamMugenAssignment* mIsLooping;
 	DreamMugenAssignment* mPosition;
 	DreamMugenAssignment* mIsBoundToStage;
+
+	int mHasShadow;
+	DreamMugenAssignment* mShadowBasePositionY;
+
 } CreateAnimationStoryController;
 
 static void parseCreateAnimationStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
@@ -5404,6 +5408,7 @@ static void parseCreateAnimationStoryController(DreamMugenStateController* tCont
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("loop", tGroup, &e->mIsLooping, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("stage", tGroup, &e->mIsBoundToStage, "");
+	e->mHasShadow = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("shadow", tGroup, &e->mShadowBasePositionY);
 
 	tController->mType = MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_ANIMATION;
 	tController->mData = e;
@@ -5620,6 +5625,7 @@ static int handleCreateAnimationStoryController(DreamMugenStateController* tCont
 	int id, animation, isLooping, isBoundToStage;
 	Position position = makePosition(0, 0, 0);
 
+
 	getSingleIntegerValueOrDefault(&e->mID, NULL, &id, 1);
 	getSingleIntegerValueOrDefault(&e->mAnimation, NULL, &animation, 0);
 	getSingleIntegerValueOrDefault(&e->mIsLooping, NULL, &isLooping, 1);
@@ -5627,8 +5633,14 @@ static int handleCreateAnimationStoryController(DreamMugenStateController* tCont
 	getTwoFloatValuesWithDefaultValues(&e->mPosition, NULL, &position.x, &position.y, 0, 0);
 
 	addDolmexicaStoryAnimation(id, animation, position);
+	if (e->mHasShadow) {
+		double shadowBasePosition;
+		getSingleFloatValueOrDefault(&e->mShadowBasePositionY, NULL, &shadowBasePosition, 0);
+		setDolmexicaStoryAnimationShadow(id, shadowBasePosition);
+	}
 	setDolmexicaStoryAnimationLooping(id, isLooping);
 	setDolmexicaStoryAnimationBoundToStage(id, isBoundToStage);
+
 
 	return 0;
 }

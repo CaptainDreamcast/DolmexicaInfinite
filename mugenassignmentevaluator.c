@@ -2481,12 +2481,20 @@ static AssignmentReturnValue evaluateAnimTimeStoryArrayAssignment(AssignmentRetu
 	return makeNumberAssignmentReturn(getDolmexicaStoryAnimationTimeLeft(id));
 }
 
+static AssignmentReturnValue evaluateAnimPosXStoryArrayAssignment(AssignmentReturnValue tIndex, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeFloatAssignmentReturn(getDolmexicaStoryAnimationPositionX(id));
+}
+
 static AssignmentReturnValue animTimeStoryFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tIsStatic); }
+static AssignmentReturnValue animPosXStoryFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimPosXStoryArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tIsStatic); }
 
 static void setupStoryArrayAssignments() {
 	gVariableHandler.mArrays = new_string_map();
 
 	string_map_push(&gVariableHandler.mArrays, "animtime", animTimeStoryFunction);
+	string_map_push(&gVariableHandler.mArrays, "x", animPosXStoryFunction);
 	string_map_push(&gVariableHandler.mArrays, "ifelse", ifElseFunction);
 }
 

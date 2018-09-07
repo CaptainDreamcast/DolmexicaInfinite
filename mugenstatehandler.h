@@ -23,9 +23,12 @@ void setDreamRegisteredStateDisableCommandState(int tID);
 
 int hasDreamHandledStateMachineState(int tID, int tNewState);
 int hasDreamHandledStateMachineStateSelf(int tID, int tNewState);
+int isInOwnStateMachine(int tID);
 void changeDreamHandledStateMachineState(int tID, int tNewState);
 void changeDreamHandledStateMachineStateToOtherPlayerStateMachine(int tID, int tTemporaryID, int tNewState);
 void changeDreamHandledStateMachineStateToOwnStateMachine(int tID, int tNewState);
+void changeDreamHandledStateMachineStateToOwnStateMachineWithoutChangingState(int tID);
+
 
 void updateDreamSingleStateMachineByID(int tID);
 

@@ -272,22 +272,22 @@ static void loadCredits() {
 	setAnimationSize(gData.mCreditBGAnimationID, makePosition(320, 20, 1), makePosition(0, 0, 0));
 	setAnimationColor(gData.mCreditBGAnimationID, 0, 0, 0.5);
 
-	gData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 3", makePosition(0, 240, 51), 1);
-
-	gData.mRightCreditTextID = addMugenText("07/06/18 Presented by Dogma", makePosition(320, 240, 51), 1);
+	gData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 4", makePosition(0, 240, 51), 1);
+	
+	gData.mRightCreditTextID = addMugenText("09/07/18 Presented by Dogma", makePosition(320, 240, 51), 1);
 	setMugenTextAlignment(gData.mRightCreditTextID, MUGEN_TEXT_ALIGNMENT_RIGHT);
 }
 
 
 static void loadBoxCursor() {
 	if (gData.mHeader.mIsBoxCursorVisible) {
-		gData.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 49), gData.mHeader.mBoxCursorCoordinates); // TODO: fix the "+ 7";
+		gData.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 49), gData.mHeader.mBoxCursorCoordinates); 
 	}
 }
 
 static void loadTitleScreen() {
 	setWrapperTitleScreen(&DreamTitleScreen);
-
+	
 	instantiateActor(BoxCursorHandler);
 
 	gData.mWhiteTexture = getEmptyWhiteTexture();
@@ -321,7 +321,7 @@ static void loadTitleScreen() {
 	addMenuPoint("menu.itemname.survivalcoop", arcadeCB);
 	addMenuPoint("menu.itemname.training", trainingCB);
 	addMenuPoint("menu.itemname.watch", watchCB);
-	addMenuPoint("menu.itemname.options", optionsCB);
+	addMenuPoint("menu.itemname.options", arcadeCB); // TODO: readd
 	addMenuPoint("menu.itemname.credits", creditsCB);
 	addMenuPoint("menu.itemname.exit", exitCB);
 
