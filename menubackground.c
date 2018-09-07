@@ -81,7 +81,7 @@ static void loadAnimatedMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, 
 	GeoRectangle constraintRectangle = getMugenDefGeoRectangleOrDefaultAsGroup(tGroup, "window", makeGeoRectangle(-INF / 2, -INF / 2, INF, INF));
 	Vector3D velocity = getMugenDefVectorOrDefaultAsGroup(tGroup, "velocity", makePosition(0, 0, 0));
 	int id = getMugenDefIntegerOrDefaultAsGroup(tGroup, "id", -1);
-
+	
 	(void)mask; // TODO
 	addDreamMugenStageHandlerAnimatedBackgroundElement(start, getMugenAnimation(tAnimations, animation), 0, tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, 0, id, gData.mLocalCoordinates);
 }
