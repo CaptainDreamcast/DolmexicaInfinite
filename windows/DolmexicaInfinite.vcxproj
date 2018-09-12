@@ -162,6 +162,7 @@
     <ClCompile Include="..\fightscreen.c" />
     <ClCompile Include="..\fightui.c" />
     <ClCompile Include="..\gamelogic.c" />
+    <ClCompile Include="..\intro.c" />
     <ClCompile Include="..\menubackground.c" />
     <ClCompile Include="..\mugenanimationutilities.c" />
     <ClCompile Include="..\mugenassignment.c" />
@@ -208,6 +209,7 @@
     <ClInclude Include="..\fightscreen.h" />
     <ClInclude Include="..\fightui.h" />
     <ClInclude Include="..\gamelogic.h" />
+    <ClInclude Include="..\intro.h" />
     <ClInclude Include="..\menubackground.h" />
     <ClInclude Include="..\mugenanimationutilities.h" />
     <ClInclude Include="..\mugenassignment.h" />

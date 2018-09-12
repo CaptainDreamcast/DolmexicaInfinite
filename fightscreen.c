@@ -73,7 +73,7 @@ static void loadFightScreen() {
 
 	malloc_stats();
 	printf("init custom handlers\n");
-
+	
 	instantiateActor(MugenAnimationUtilityHandler);
 	instantiateActor(DreamAIHandler);
 	instantiateActor(HitDataHandler);

@@ -49,6 +49,7 @@ void addSuicideWinIcon(int tPlayer, int tIsPerfect);
 void addTeammateWinIcon(int tPlayer, int tIsPerfect);
 
 void removeAllWinIcons();
+void stopFightAndRoundAnimation();
 
 void setUIFaces();
 

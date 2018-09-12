@@ -41,6 +41,7 @@
 #define PLAYER_DEBUG_TEXT_Z 79
 
 static struct {
+	DreamPlayerHeader mPlayerHeader[2];
 	DreamPlayer mPlayers[2];
 	int mUniqueIDCounter;
 	int mIsInTrainingMode;
@@ -52,14 +53,14 @@ static struct {
 } gData;
 
 static void loadPlayerHeaderFromScript(DreamPlayerHeader* tHeader, MugenDefScript* tScript) {
-	getMugenDefStringOrDefault(tHeader->mName, tScript, "Info", "name", "Character");
-	getMugenDefStringOrDefault(tHeader->mDisplayName, tScript, "Info", "displayname", tHeader->mName);
-	getMugenDefStringOrDefault(tHeader->mVersion, tScript, "Info", "versiondate", "09,09,2017");
-	getMugenDefStringOrDefault(tHeader->mMugenVersion, tScript, "Info", "mugenversion", "1.1");
-	getMugenDefStringOrDefault(tHeader->mAuthor, tScript, "Info", "author", "John Doe");
-	getMugenDefStringOrDefault(tHeader->mPaletteDefaults, tScript, "Info", "pal.defaults", "1");
+	getMugenDefStringOrDefault(tHeader->mConstants.mName, tScript, "Info", "name", "Character");
+	getMugenDefStringOrDefault(tHeader->mConstants.mDisplayName, tScript, "Info", "displayname", tHeader->mConstants.mName);
+	getMugenDefStringOrDefault(tHeader->mConstants.mVersion, tScript, "Info", "versiondate", "09,09,2017");
+	getMugenDefStringOrDefault(tHeader->mConstants.mMugenVersion, tScript, "Info", "mugenversion", "1.1");
+	getMugenDefStringOrDefault(tHeader->mConstants.mAuthor, tScript, "Info", "author", "John Doe");
+	getMugenDefStringOrDefault(tHeader->mConstants.mPaletteDefaults, tScript, "Info", "pal.defaults", "1");
 
-	tHeader->mLocalCoordinates = getMugenDefVectorIOrDefault(tScript, "Info", "localcoord", makeVector3DI(320, 240, 0));
+	tHeader->mConstants.mLocalCoordinates = getMugenDefVectorIOrDefault(tScript, "Info", "localcoord", makeVector3DI(320, 240, 0));
 }
 
 static void loadOptionalStateFiles(MugenDefScript* tScript, char* tPath, DreamPlayer* tPlayer) {
@@ -74,7 +75,7 @@ static void loadOptionalStateFiles(MugenDefScript* tScript, char* tPath, DreamPl
 		sprintf(scriptPath, "%s%s", tPath, file);
 		if (!isFile(scriptPath)) continue;
 		
-		loadDreamMugenStateDefinitionsFromFile(&tPlayer->mConstants.mStates, scriptPath);
+		loadDreamMugenStateDefinitionsFromFile(&tPlayer->mHeader->mFiles.mConstants.mStates, scriptPath);
 		malloc_stats();
 	}
 
@@ -84,19 +85,19 @@ static void loadOptionalStateFiles(MugenDefScript* tScript, char* tPath, DreamPl
 static void setPlayerFaceDirection(DreamPlayer* p, FaceDirection tDirection);
 
 static void setPlayerExternalDependencies(DreamPlayer* tPlayer) {
-	tPlayer->mPhysicsID = addToPhysicsHandler(getDreamPlayerStartingPosition(tPlayer->mRootID, tPlayer->mHeader.mLocalCoordinates.y));
+	tPlayer->mPhysicsID = addToPhysicsHandler(getDreamPlayerStartingPosition(tPlayer->mRootID, tPlayer->mHeader->mConstants.mLocalCoordinates.y));
 	setPlayerPhysics(tPlayer, MUGEN_STATE_PHYSICS_STANDING);
 	setPlayerStateMoveType(tPlayer, MUGEN_STATE_MOVE_TYPE_IDLE);
 	setPlayerStateType(tPlayer, MUGEN_STATE_TYPE_STANDING);
 
 	Position p = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(tPlayer));
 	p.z = PLAYER_Z;
-	tPlayer->mAnimationID = addMugenAnimation(getMugenAnimation(&tPlayer->mAnimations, 0), gData.mIsLoading ? NULL : &tPlayer->mSprites, p);
+	tPlayer->mAnimationID = addMugenAnimation(getMugenAnimation(&tPlayer->mHeader->mFiles.mAnimations, 0), gData.mIsLoading ? NULL : &tPlayer->mHeader->mFiles.mSprites, p);
 	setMugenAnimationBasePosition(tPlayer->mAnimationID, getHandledPhysicsPositionReference(tPlayer->mPhysicsID));
 	setMugenAnimationCameraPositionReference(tPlayer->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationAttackCollisionActive(tPlayer->mAnimationID, getDreamPlayerAttackCollisionList(tPlayer), NULL, NULL, getPlayerHitDataReference(tPlayer));
 	setMugenAnimationPassiveCollisionActive(tPlayer->mAnimationID, getDreamPlayerPassiveCollisionList(tPlayer), playerHitCB, tPlayer, getPlayerHitDataReference(tPlayer));
-	tPlayer->mStateMachineID = registerDreamMugenStateMachine(&tPlayer->mConstants.mStates, tPlayer); 
+	tPlayer->mStateMachineID = registerDreamMugenStateMachine(&tPlayer->mHeader->mFiles.mConstants.mStates, tPlayer);
 }
 
 
@@ -111,19 +112,19 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	getMugenDefStringOrDefault(file, tScript, "Files", "cns", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
-	tPlayer->mConstants = loadDreamMugenConstantsFile(scriptPath);
+	tPlayer->mHeader->mFiles.mConstants = loadDreamMugenConstantsFile(scriptPath);
 	malloc_stats();
 
 	
 	getMugenDefStringOrDefault(file, tScript, "Files", "stcommon", "");
 	sprintf(scriptPath, "%s%s", path, file);
 	if (isFile(scriptPath)) {
-		loadDreamMugenStateDefinitionsFromFile(&tPlayer->mConstants.mStates, scriptPath);
+		loadDreamMugenStateDefinitionsFromFile(&tPlayer->mHeader->mFiles.mConstants.mStates, scriptPath);
 	}
 	else {
 		sprintf(scriptPath, "assets/data/%s", file);
 		if (isFile(scriptPath)) {
-			loadDreamMugenStateDefinitionsFromFile(&tPlayer->mConstants.mStates, scriptPath);
+			loadDreamMugenStateDefinitionsFromFile(&tPlayer->mHeader->mFiles.mConstants.mStates, scriptPath);
 		}
 	}
 	malloc_stats();
@@ -131,7 +132,7 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	getMugenDefStringOrDefault(file, tScript, "Files", "st", "");
 	sprintf(scriptPath, "%s%s", path, file);
 	if (isFile(scriptPath)) {
-		loadDreamMugenStateDefinitionsFromFile(&tPlayer->mConstants.mStates, scriptPath);
+		loadDreamMugenStateDefinitionsFromFile(&tPlayer->mHeader->mFiles.mConstants.mStates, scriptPath);
 	}
 	malloc_stats();	
 
@@ -140,15 +141,15 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	getMugenDefStringOrDefault(file, tScript, "Files", "cmd", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
-	tPlayer->mCommands = loadDreamMugenCommandFile(scriptPath);
-	loadDreamMugenStateDefinitionsFromFile(&tPlayer->mConstants.mStates, scriptPath);
+	tPlayer->mHeader->mFiles.mCommands = loadDreamMugenCommandFile(scriptPath);
+	loadDreamMugenStateDefinitionsFromFile(&tPlayer->mHeader->mFiles.mConstants.mStates, scriptPath);
 	malloc_stats();
 
 
 	getMugenDefStringOrDefault(file, tScript, "Files", "anim", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
-	tPlayer->mAnimations = loadMugenAnimationFileWithMemoryStack(scriptPath, gData.mMemoryStack);
+	tPlayer->mHeader->mFiles.mAnimations = loadMugenAnimationFileWithMemoryStack(scriptPath, gData.mMemoryStack);
 	malloc_stats();
 
 
@@ -162,22 +163,22 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
 
-	tPlayer->mHasPalettePath = hasPalettePath;
-	tPlayer->mPalettePath = copyToAllocatedString(palettePath);
-	tPlayer->mSpritePath = copyToAllocatedString(scriptPath);
+	tPlayer->mHeader->mFiles.mHasPalettePath = hasPalettePath;
+	tPlayer->mHeader->mFiles.mPalettePath = copyToAllocatedString(palettePath);
+	tPlayer->mHeader->mFiles.mSpritePath = copyToAllocatedString(scriptPath);
 
 	getMugenDefStringOrDefault(file, tScript, "Files", "sound", "");
 	if (strcmp("", file) && !isOnDreamcast()) {
 		sprintf(scriptPath, "%s%s", path, file);
-		tPlayer->mSounds = loadMugenSoundFile(scriptPath);
+		tPlayer->mHeader->mFiles.mSounds = loadMugenSoundFile(scriptPath);
 	}
 	else {
-		tPlayer->mSounds = createEmptyMugenSoundFile();
+		tPlayer->mHeader->mFiles.mSounds = createEmptyMugenSoundFile();
 	}
 	malloc_stats();
 
 	setPlayerExternalDependencies(tPlayer);
-	tPlayer->mCommandID = registerDreamMugenCommands(tPlayer, &tPlayer->mCommands);
+	tPlayer->mCommandID = registerDreamMugenCommands(tPlayer, &tPlayer->mHeader->mFiles.mCommands);
 	malloc_stats();
 
 	if (getPlayerAILevel(tPlayer)) {
@@ -286,7 +287,7 @@ static void loadPlayerState(DreamPlayer* p) {
 }
 
 static void loadPlayerStateWithConstantsLoaded(DreamPlayer* p) {
-	p->mLife = (int)(p->mConstants.mHeader.mLife * p->mStartLifePercentage);
+	p->mLife = (int)(p->mHeader->mFiles.mConstants.mHeader.mLife * p->mStartLifePercentage);
 	setPlayerDrawOffsetX(p, 0, getPlayerCoordinateP(p));
 	setPlayerDrawOffsetY(p, 0, getPlayerCoordinateP(p));
 }
@@ -295,7 +296,7 @@ static void loadPlayerShadow(DreamPlayer* p) {
 	Position pos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
 	pos.z = SHADOW_Z;
 	p->mShadow.mShadowPosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
-	p->mShadow.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), gData.mIsLoading ? NULL : &p->mSprites, pos);
+	p->mShadow.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mHeader->mFiles.mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), gData.mIsLoading ? NULL : &p->mHeader->mFiles.mSprites, pos);
 	setMugenAnimationBasePosition(p->mShadow.mAnimationID, &p->mShadow.mShadowPosition);
 	setMugenAnimationCameraPositionReference(p->mShadow.mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationDrawScale(p->mShadow.mAnimationID, makePosition(1, -getDreamStageShadowScaleY(), 1));
@@ -310,7 +311,7 @@ static void loadPlayerReflection(DreamPlayer* p) {
 	Position pos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
 	pos.z = REFLECTION_Z;
 	p->mReflection.mPosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
-	p->mReflection.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), gData.mIsLoading ? NULL : &p->mSprites, pos);
+	p->mReflection.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mHeader->mFiles.mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), gData.mIsLoading ? NULL : &p->mHeader->mFiles.mSprites, pos);
 
 	setMugenAnimationBasePosition(p->mReflection.mAnimationID, &p->mReflection.mPosition);
 	setMugenAnimationCameraPositionReference(p->mReflection.mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
@@ -331,11 +332,11 @@ static void loadPlayerDebug(DreamPlayer* p) {
 
 static void loadSinglePlayerFromMugenDefinition(DreamPlayer* p)
 {
-	MugenDefScript script = loadMugenDefScript(p->mDefinitionPath);
+	MugenDefScript script = loadMugenDefScript(p->mHeader->mFiles.mDefinitionPath);
 
 	loadPlayerState(p);
-	loadPlayerHeaderFromScript(&p->mHeader, &script);
-	loadPlayerFiles(p->mDefinitionPath, p, &script);
+	loadPlayerHeaderFromScript(p->mHeader, &script);
+	loadPlayerFiles(p->mHeader->mFiles.mDefinitionPath, p, &script);
 	loadPlayerStateWithConstantsLoaded(p);
 	loadPlayerShadow(p);
 	loadPlayerReflection(p);
@@ -355,6 +356,7 @@ void loadPlayers(MemoryStack* tMemoryStack) {
 	gData.mMemoryStack = tMemoryStack;
 	int i = 0;
 	for (i = 0; i < 2; i++) {
+		gData.mPlayers[i].mHeader = &gData.mPlayerHeader[i];
 		gData.mPlayers[i].mRoot = &gData.mPlayers[i];
 		gData.mPlayers[i].mOtherPlayer = &gData.mPlayers[i ^ 1];
 		gData.mPlayers[i].mRootID = i;
@@ -367,13 +369,13 @@ void loadPlayers(MemoryStack* tMemoryStack) {
 
 static void loadSinglePlayerSprites(DreamPlayer* tPlayer) {
 	setMugenSpriteFileReaderToUsePalette(tPlayer->mRootID);
-	tPlayer->mSprites = loadMugenSpriteFile(tPlayer->mSpritePath, tPlayer->mPreferredPalette, tPlayer->mHasPalettePath, tPlayer->mPalettePath);
+	tPlayer->mHeader->mFiles.mSprites = loadMugenSpriteFile(tPlayer->mHeader->mFiles.mSpritePath, tPlayer->mPreferredPalette, tPlayer->mHeader->mFiles.mHasPalettePath, tPlayer->mHeader->mFiles.mPalettePath);
 	setMugenSpriteFileReaderToNotUsePalette();
 	malloc_stats();
 
-	setMugenAnimationSprites(tPlayer->mAnimationID, &tPlayer->mSprites);
-	setMugenAnimationSprites(tPlayer->mShadow.mAnimationID, &tPlayer->mSprites);
-	setMugenAnimationSprites(tPlayer->mReflection.mAnimationID, &tPlayer->mSprites);
+	setMugenAnimationSprites(tPlayer->mAnimationID, &tPlayer->mHeader->mFiles.mSprites);
+	setMugenAnimationSprites(tPlayer->mShadow.mAnimationID, &tPlayer->mHeader->mFiles.mSprites);
+	setMugenAnimationSprites(tPlayer->mReflection.mAnimationID, &tPlayer->mHeader->mFiles.mSprites);
 }
 
 void loadPlayerSprites() {
@@ -418,24 +420,24 @@ static void unloadPlayerState(DreamPlayer* p) {
 	unloadHelperState(p);
 }
 
-static void unloadPlayerFiles(DreamPlayer* tPlayer) {
-	unloadDreamMugenConstantsFile(&tPlayer->mConstants);
-	unloadDreamMugenCommandFile(&tPlayer->mCommands);
-	unloadMugenAnimationFile(&tPlayer->mAnimations);
-	unloadMugenSpriteFile(&tPlayer->mSprites);
-	unloadMugenSoundFile(&tPlayer->mSounds);
+static void unloadPlayerFiles(DreamPlayerHeader* tHeader) {
+	unloadDreamMugenConstantsFile(&tHeader->mFiles.mConstants);
+	unloadDreamMugenCommandFile(&tHeader->mFiles.mCommands);
+	unloadMugenAnimationFile(&tHeader->mFiles.mAnimations);
+	unloadMugenSpriteFile(&tHeader->mFiles.mSprites);
+	unloadMugenSoundFile(&tHeader->mFiles.mSounds);
 
 }
 
-static void unloadSinglePlayer(DreamPlayer* p) {
+static void unloadSinglePlayer(DreamPlayer* p, DreamPlayerHeader* tHeader) {
 	unloadPlayerState(p);
-	unloadPlayerFiles(p);
+	unloadPlayerFiles(tHeader);
 }
 
 void unloadPlayers() {
 	int i;
 	for (i = 0; i < 2; i++) {
-		unloadSinglePlayer(&gData.mPlayers[i]);
+		unloadSinglePlayer(&gData.mPlayers[i], &gData.mPlayerHeader[i]);
 	}
 
 	delete_list(&gData.mAllPlayers);
@@ -445,7 +447,7 @@ void unloadPlayers() {
 static void resetSinglePlayer(DreamPlayer* p) {
 	p->mIsAlive = 1;
 
-	p->mLife = (int)(p->mConstants.mHeader.mLife * p->mStartLifePercentage);
+	p->mLife = (int)(p->mHeader->mFiles.mConstants.mHeader.mLife * p->mStartLifePercentage);
 	setDreamLifeBarPercentage(p, p->mStartLifePercentage);
 
 	setPlayerPosition(p, getDreamPlayerStartingPosition(p->mRootID, getPlayerCoordinateP(p)), getPlayerCoordinateP(p));
@@ -460,6 +462,7 @@ static void resetSinglePlayer(DreamPlayer* p) {
 
 void resetPlayers()
 {
+	removeAllProjectilesAndHelpers();
 	resetSinglePlayer(&gData.mPlayers[0]);
 	resetSinglePlayer(&gData.mPlayers[1]);
 }
@@ -507,8 +510,8 @@ static void updateAirJumping(DreamPlayer* p) {
 	if (!p->mIsInControl) return;
 	if (getPlayerStateType(p) != MUGEN_STATE_TYPE_AIR) return;
 
-	int hasJumpLeft = p->mAirJumpCounter < p->mConstants.mMovementData.mAllowedAirJumpAmount;
-	int hasMinimumHeight = -getPlayerPositionY(p, getPlayerCoordinateP(p)) >= p->mConstants.mMovementData.mAirJumpMinimumHeight;
+	int hasJumpLeft = p->mAirJumpCounter < p->mHeader->mFiles.mConstants.mMovementData.mAllowedAirJumpAmount;
+	int hasMinimumHeight = -getPlayerPositionY(p, getPlayerCoordinateP(p)) >= p->mHeader->mFiles.mConstants.mMovementData.mAirJumpMinimumHeight;
 
 	if (isPlayerCommandActive(p, "holdup") && p->mJumpFlank && hasJumpLeft && hasMinimumHeight) { // TODO: find something better than flank
 		p->mJumpFlank = 0;
@@ -623,7 +626,7 @@ static void updateGettingUp(DreamPlayer* p) {
 		return;
 	}
 
-	if (handleDurationAndCheckIfOver(&p->mLyingDownTime, p->mConstants.mHeader.mLiedownTime)) {
+	if (handleDurationAndCheckIfOver(&p->mLyingDownTime, p->mHeader->mFiles.mConstants.mHeader.mLiedownTime)) {
 		p->mIsLyingDown = 0;
 		changePlayerState(p, 5120);
 	}
@@ -793,8 +796,8 @@ static void updatePush(DreamPlayer* p) {
 	double distX = getPlayerDistanceToFrontOfOtherPlayerX(p);
 	double distY = getPlayerAxisDistanceY(p);
 
-	if (distY >= 0 && distY >= otherPlayer->mConstants.mSizeData.mHeight) return;
-	if (distY <= 0 && distY <= -p->mConstants.mSizeData.mHeight) return;
+	if (distY >= 0 && distY >= p->mHeader->mFiles.mConstants.mSizeData.mHeight) return;
+	if (distY <= 0 && distY <= -p->mHeader->mFiles.mConstants.mSizeData.mHeight) return;
 
 	if (x1 < x2) {
 		if (frontX1 > frontX2) {
@@ -1220,12 +1223,12 @@ static void playPlayerHitSpark(DreamPlayer* p1, DreamPlayer* p2, int tIsInPlayer
 
 	Position base;
 	if (pos1.x < pos2.x) {
-		int width = p1->mFaceDirection == FACE_DIRECTION_RIGHT ? p1->mConstants.mSizeData.mGroundFrontWidth : p1->mConstants.mSizeData.mGroundBackWidth;
+		int width = p1->mFaceDirection == FACE_DIRECTION_RIGHT ? p1->mHeader->mFiles.mConstants.mSizeData.mGroundFrontWidth : p1->mHeader->mFiles.mConstants.mSizeData.mGroundBackWidth;
 		base = vecAdd(pos1, makePosition(width, 0, 0));
 		base.y = pos2.y;
 	}
 	else {
-		int width = p1->mFaceDirection == FACE_DIRECTION_LEFT ? p1->mConstants.mSizeData.mGroundFrontWidth : p1->mConstants.mSizeData.mGroundBackWidth;
+		int width = p1->mFaceDirection == FACE_DIRECTION_LEFT ? p1->mHeader->mFiles.mConstants.mSizeData.mGroundFrontWidth : p1->mHeader->mFiles.mConstants.mSizeData.mGroundBackWidth;
 		base = vecAdd(pos1, makePosition(-width, 0, 0));
 		base.y = pos2.y;
 	}
@@ -1370,12 +1373,12 @@ void playerHitCB(void* tData, void* tHitData)
 
 void setPlayerDefinitionPath(int i, char * tDefinitionPath)
 {
-	strcpy(gData.mPlayers[i].mDefinitionPath, tDefinitionPath);
+	strcpy(gData.mPlayerHeader[i].mFiles.mDefinitionPath, tDefinitionPath);
 }
 
 void getPlayerDefinitionPath(char* tDst, int i)
 {
-	strcpy(tDst, gData.mPlayers[i].mDefinitionPath);
+	strcpy(tDst, gData.mPlayerHeader[i].mFiles.mDefinitionPath);
 }
 
 void setPlayerPreferredPalette(int i, int tPalette)
@@ -1451,12 +1454,11 @@ DreamMugenStatePhysics getPlayerPhysics(DreamPlayer* p) {
 
 void setPlayerPhysics(DreamPlayer* p, DreamMugenStatePhysics tNewPhysics)
 {
-
 	if (tNewPhysics == MUGEN_STATE_PHYSICS_UNCHANGED) {
 		return;
 	}
 	else if (tNewPhysics == MUGEN_STATE_PHYSICS_STANDING) {
-		setHandledPhysicsDragCoefficient(p->mPhysicsID, makePosition(p->mConstants.mMovementData.mStandFiction, 0, 0));
+		setHandledPhysicsDragCoefficient(p->mPhysicsID, makePosition(p->mHeader->mFiles.mConstants.mMovementData.mStandFiction, 0, 0));
 		setHandledPhysicsGravity(p->mPhysicsID, makePosition(0, 0, 0));
 		Position* pos = getHandledPhysicsPositionReference(p->mPhysicsID);
 		Velocity* vel = getHandledPhysicsVelocityReference(p->mPhysicsID);
@@ -1466,7 +1468,7 @@ void setPlayerPhysics(DreamPlayer* p, DreamMugenStatePhysics tNewPhysics)
 		acc->y = 0;
 	}
 	else if (tNewPhysics == MUGEN_STATE_PHYSICS_CROUCHING) {
-		setHandledPhysicsDragCoefficient(p->mPhysicsID, makePosition(p->mConstants.mMovementData.mCrouchFriction, 0, 0));
+		setHandledPhysicsDragCoefficient(p->mPhysicsID, makePosition(p->mHeader->mFiles.mConstants.mMovementData.mCrouchFriction, 0, 0));
 		setHandledPhysicsGravity(p->mPhysicsID, makePosition(0, 0, 0));
 		Position* pos = getHandledPhysicsPositionReference(p->mPhysicsID);
 		Velocity* vel = getHandledPhysicsVelocityReference(p->mPhysicsID);
@@ -1488,7 +1490,7 @@ void setPlayerPhysics(DreamPlayer* p, DreamMugenStatePhysics tNewPhysics)
 	}
 	else if (tNewPhysics == MUGEN_STATE_PHYSICS_AIR) {
 		setHandledPhysicsDragCoefficient(p->mPhysicsID, makePosition(0, 0, 0));
-		setHandledPhysicsGravity(p->mPhysicsID, makePosition(0, p->mConstants.mMovementData.mVerticalAcceleration, 0));
+		setHandledPhysicsGravity(p->mPhysicsID, makePosition(0, p->mHeader->mFiles.mConstants.mMovementData.mVerticalAcceleration, 0));
 
 		if (tNewPhysics != p->mStatePhysics) {
 			setPlayerNoLandFlag(p);			
@@ -1718,317 +1720,317 @@ double getPlayerVelocityY(DreamPlayer* p, int tCoordinateP)
 
 int getPlayerDataLife(DreamPlayer * p)
 {
-	return p->mConstants.mHeader.mLife;
+	return p->mHeader->mFiles.mConstants.mHeader.mLife;
 }
 
 int getPlayerDataAttack(DreamPlayer * p)
 {
-	return p->mConstants.mHeader.mAttack;
+	return p->mHeader->mFiles.mConstants.mHeader.mAttack;
 }
 
 int getPlayerDataDefense(DreamPlayer * p)
 {
-	return p->mConstants.mHeader.mDefense;
+	return p->mHeader->mFiles.mConstants.mHeader.mDefense;
 }
 
 int getPlayerDataLiedownTime(DreamPlayer * p)
 {
-	return (int)p->mConstants.mHeader.mLiedownTime; // TODO: fix
+	return (int)p->mHeader->mFiles.mConstants.mHeader.mLiedownTime; // TODO: fix
 }
 
 int getPlayerDataAirjuggle(DreamPlayer * p)
 {
-	return p->mConstants.mHeader.mAirJugglePoints;
+	return p->mHeader->mFiles.mConstants.mHeader.mAirJugglePoints;
 }
 
 int getPlayerDataSparkNo(DreamPlayer * p)
 {
-	return p->mConstants.mHeader.mSparkNo;
+	return p->mHeader->mFiles.mConstants.mHeader.mSparkNo;
 }
 
 int getPlayerDataGuardSparkNo(DreamPlayer * p)
 {
-	return p->mConstants.mHeader.mGuardSparkNo;
+	return p->mHeader->mFiles.mConstants.mHeader.mGuardSparkNo;
 }
 
 int getPlayerDataKOEcho(DreamPlayer * p)
 {
-	return p->mConstants.mHeader.mKOEcho;
+	return p->mHeader->mFiles.mConstants.mHeader.mKOEcho;
 }
 
 int getPlayerDataIntPersistIndex(DreamPlayer * p)
 {
-	return p->mConstants.mHeader.mIntPersistIndex;
+	return p->mHeader->mFiles.mConstants.mHeader.mIntPersistIndex;
 }
 
 int getPlayerDataFloatPersistIndex(DreamPlayer * p)
 {
-	return p->mConstants.mHeader.mFloatPersistIndex;
+	return p->mHeader->mFiles.mConstants.mHeader.mFloatPersistIndex;
 }
 
 int getPlayerSizeAirBack(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mAirBackWidth;
+	return p->mHeader->mFiles.mConstants.mSizeData.mAirBackWidth;
 }
 
 int getPlayerSizeAirFront(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mAirFrontWidth;
+	return p->mHeader->mFiles.mConstants.mSizeData.mAirFrontWidth;
 }
 
 int getPlayerSizeAttackDist(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mAttackDistance;
+	return p->mHeader->mFiles.mConstants.mSizeData.mAttackDistance;
 }
 
 int getPlayerSizeProjectileAttackDist(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mProjectileAttackDistance;
+	return p->mHeader->mFiles.mConstants.mSizeData.mProjectileAttackDistance;
 }
 
 int getPlayerSizeProjectilesDoScale(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mDoesScaleProjectiles;
+	return p->mHeader->mFiles.mConstants.mSizeData.mDoesScaleProjectiles;
 }
 
 int getPlayerSizeShadowOffset(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mShadowOffset;
+	return p->mHeader->mFiles.mConstants.mSizeData.mShadowOffset;
 }
 
 int getPlayerSizeDrawOffsetX(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mDrawOffset.x;
+	return p->mHeader->mFiles.mConstants.mSizeData.mDrawOffset.x;
 }
 
 int getPlayerSizeDrawOffsetY(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mDrawOffset.y;
+	return p->mHeader->mFiles.mConstants.mSizeData.mDrawOffset.y;
 }
 
 double getPlayerVelocityAirGetHitGroundRecoverX(DreamPlayer * p)
 {
-	return p->mConstants.mVelocityData.mAirGetHitGroundRecovery.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mAirGetHitGroundRecovery.x;
 }
 
 double getPlayerVelocityAirGetHitGroundRecoverY(DreamPlayer * p)
 {
-	return p->mConstants.mVelocityData.mAirGetHitGroundRecovery.y;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mAirGetHitGroundRecovery.y;
 }
 
 double getPlayerVelocityAirGetHitAirRecoverMulX(DreamPlayer * p)
 {
-	return p->mConstants.mVelocityData.mAirGetHitAirRecoveryMultiplier.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mAirGetHitAirRecoveryMultiplier.x;
 }
 
 double getPlayerVelocityAirGetHitAirRecoverMulY(DreamPlayer * p)
 {
-	return p->mConstants.mVelocityData.mAirGetHitAirRecoveryMultiplier.y;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mAirGetHitAirRecoveryMultiplier.y;
 }
 
 double getPlayerVelocityAirGetHitAirRecoverAddX(DreamPlayer * p)
 {
-	return p->mConstants.mVelocityData.mAirGetHitAirRecoveryOffset.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mAirGetHitAirRecoveryOffset.x;
 }
 
 double getPlayerVelocityAirGetHitAirRecoverAddY(DreamPlayer * p)
 {
-	return p->mConstants.mVelocityData.mAirGetHitAirRecoveryOffset.y;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mAirGetHitAirRecoveryOffset.y;
 }
 
 double getPlayerVelocityAirGetHitAirRecoverBack(DreamPlayer * p)
 {
-	return p->mConstants.mVelocityData.mAirGetHitExtraXWhenHoldingBackward;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mAirGetHitExtraXWhenHoldingBackward;
 }
 
 double getPlayerVelocityAirGetHitAirRecoverFwd(DreamPlayer * p)
 {
-	return p->mConstants.mVelocityData.mAirGetHitExtraXWhenHoldingForward;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mAirGetHitExtraXWhenHoldingForward;
 }
 
 double getPlayerVelocityAirGetHitAirRecoverUp(DreamPlayer * p)
 {
-	return p->mConstants.mVelocityData.mAirGetHitExtraYWhenHoldingUp;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mAirGetHitExtraYWhenHoldingUp;
 }
 
 double getPlayerVelocityAirGetHitAirRecoverDown(DreamPlayer * p)
 {
-	return p->mConstants.mVelocityData.mAirGetHitExtraYWhenHoldingDown;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mAirGetHitExtraYWhenHoldingDown;
 }
 
 int getPlayerMovementAirJumpNum(DreamPlayer * p)
 {
-	return p->mConstants.mMovementData.mAllowedAirJumpAmount;
+	return p->mHeader->mFiles.mConstants.mMovementData.mAllowedAirJumpAmount;
 }
 
 int getPlayerMovementAirJumpHeight(DreamPlayer * p)
 {
-	return p->mConstants.mMovementData.mAirJumpMinimumHeight;
+	return p->mHeader->mFiles.mConstants.mMovementData.mAirJumpMinimumHeight;
 }
 
 double getPlayerMovementJumpChangeAnimThreshold(DreamPlayer * p)
 {
-	return p->mConstants.mMovementData.mJumpChangeAnimThreshold;
+	return p->mHeader->mFiles.mConstants.mMovementData.mJumpChangeAnimThreshold;
 }
 
 double getPlayerMovementAirGetHitAirRecoverYAccel(DreamPlayer * p)
 {
-	return p->mConstants.mMovementData.mAirGetHitAirRecoveryVerticalAcceleration;
+	return p->mHeader->mFiles.mConstants.mMovementData.mAirGetHitAirRecoveryVerticalAcceleration;
 }
 
 double getPlayerStandFriction(DreamPlayer * p)
 {
-	return p->mConstants.mMovementData.mStandFiction;
+	return p->mHeader->mFiles.mConstants.mMovementData.mStandFiction;
 }
 
 double getPlayerStandFrictionThreshold(DreamPlayer* p)
 {
-	return p->mConstants.mMovementData.mStandFrictionThreshold;
+	return p->mHeader->mFiles.mConstants.mMovementData.mStandFrictionThreshold;
 }
 
 double getPlayerCrouchFriction(DreamPlayer * p)
 {
-	return p->mConstants.mMovementData.mCrouchFriction;
+	return p->mHeader->mFiles.mConstants.mMovementData.mCrouchFriction;
 }
 
 double getPlayerCrouchFrictionThreshold(DreamPlayer* p)
 {
-	return p->mConstants.mMovementData.mCrouchFrictionThreshold;
+	return p->mHeader->mFiles.mConstants.mMovementData.mCrouchFrictionThreshold;
 }
 
 double getPlayerAirGetHitGroundLevelY(DreamPlayer* p)
 {
-	return p->mConstants.mMovementData.mAirGetHitGroundLevelY;
+	return p->mHeader->mFiles.mConstants.mMovementData.mAirGetHitGroundLevelY;
 }
 
 double getPlayerAirGetHitGroundRecoveryGroundLevelY(DreamPlayer * p)
 {
-	return p->mConstants.mMovementData.mAirGetHitGroundRecoveryGroundGoundLevelY;
+	return p->mHeader->mFiles.mConstants.mMovementData.mAirGetHitGroundRecoveryGroundGoundLevelY;
 }
 
 double getPlayerAirGetHitGroundRecoveryGroundYTheshold(DreamPlayer* p)
 {
-	return p->mConstants.mMovementData.mAirGetHitGroundRecoveryGroundYTheshold;
+	return p->mHeader->mFiles.mConstants.mMovementData.mAirGetHitGroundRecoveryGroundYTheshold;
 }
 
 double getPlayerAirGetHitAirRecoveryVelocityYThreshold(DreamPlayer* p)
 {
-	return p->mConstants.mMovementData.mAirGetHitAirRecoveryVelocityYThreshold;
+	return p->mHeader->mFiles.mConstants.mMovementData.mAirGetHitAirRecoveryVelocityYThreshold;
 }
 
 double getPlayerAirGetHitTripGroundLevelY(DreamPlayer* p)
 {
-	return p->mConstants.mMovementData.mAirGetHitTripGroundLevelY;
+	return p->mHeader->mFiles.mConstants.mMovementData.mAirGetHitTripGroundLevelY;
 }
 
 double getPlayerDownBounceOffsetX(DreamPlayer* p, int tCoordinateP)
 {
-	return p->mConstants.mMovementData.mBounceOffset.x;
+	return p->mHeader->mFiles.mConstants.mMovementData.mBounceOffset.x;
 }
 
 double getPlayerDownBounceOffsetY(DreamPlayer* p, int tCoordinateP)
 {
-	return p->mConstants.mMovementData.mBounceOffset.y;
+	return p->mHeader->mFiles.mConstants.mMovementData.mBounceOffset.y;
 }
 
 double getPlayerDownVerticalBounceAcceleration(DreamPlayer* p)
 {
-	return p->mConstants.mMovementData.mVerticalBounceAcceleration;
+	return p->mHeader->mFiles.mConstants.mMovementData.mVerticalBounceAcceleration;
 }
 
 double getPlayerDownBounceGroundLevel(DreamPlayer* p, int tCoordinateP)
 {
-	return p->mConstants.mMovementData.mBounceGroundLevel;
+	return p->mHeader->mFiles.mConstants.mMovementData.mBounceGroundLevel;
 }
 
 double getPlayerLyingDownFrictionThreshold(DreamPlayer* p)
 {
-	return p->mConstants.mMovementData.mLyingDownFrictionThreshold;
+	return p->mHeader->mFiles.mConstants.mMovementData.mLyingDownFrictionThreshold;
 }
 
 double getPlayerVerticalAcceleration(DreamPlayer* p)
 {
-	return p->mConstants.mMovementData.mVerticalAcceleration;
+	return p->mHeader->mFiles.mConstants.mMovementData.mVerticalAcceleration;
 }
 
 double getPlayerForwardWalkVelocityX(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mWalkForward.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mWalkForward.x;
 }
 
 double getPlayerBackwardWalkVelocityX(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mWalkBackward.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mWalkBackward.x;
 }
 
 double getPlayerForwardRunVelocityX(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mRunForward.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mRunForward.x;
 }
 
 double getPlayerForwardRunVelocityY(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mRunForward.y;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mRunForward.y;
 }
 
 double getPlayerBackwardRunVelocityX(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mRunBackward.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mRunBackward.x;
 }
 
 double getPlayerBackwardRunVelocityY(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mRunBackward.y;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mRunBackward.y;
 }
 
 double getPlayerBackwardRunJumpVelocityX(DreamPlayer * p)
 {
-	return p->mConstants.mVelocityData.mRunJumpBackward.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mRunJumpBackward.x;
 }
 
 double getPlayerForwardRunJumpVelocityX(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mRunJumpForward.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mRunJumpForward.x;
 }
 
 double getPlayerNeutralJumpVelocityX(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mJumpNeutral.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mJumpNeutral.x;
 }
 
 double getPlayerForwardJumpVelocityX(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mJumpForward.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mJumpForward.x;
 }
 
 double getPlayerBackwardJumpVelocityX(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mJumpBackward.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mJumpBackward.x;
 }
 
 double getPlayerJumpVelocityY(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mJumpNeutral.y;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mJumpNeutral.y;
 }
 
 double getPlayerNeutralAirJumpVelocityX(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mAirJumpNeutral.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mAirJumpNeutral.x;
 }
 
 double getPlayerForwardAirJumpVelocityX(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mAirJumpForward.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mAirJumpForward.x;
 }
 
 double getPlayerBackwardAirJumpVelocityX(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mAirJumpBackward.x;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mAirJumpBackward.x;
 }
 
 double getPlayerAirJumpVelocityY(DreamPlayer* p)
 {
-	return p->mConstants.mVelocityData.mAirJumpNeutral.y;
+	return p->mHeader->mFiles.mConstants.mVelocityData.mAirJumpNeutral.y;
 }
 
 
@@ -2207,7 +2209,7 @@ void changePlayerAnimation(DreamPlayer* p, int tNewAnimation)
 
 void changePlayerAnimationWithStartStep(DreamPlayer* p, int tNewAnimation, int tStartStep)
 {
-	MugenAnimation* newAnimation = getMugenAnimation(&p->mAnimations, tNewAnimation);
+	MugenAnimation* newAnimation = getMugenAnimation(&p->mHeader->mFiles.mAnimations, tNewAnimation);
 	changeMugenAnimationWithStartStep(p->mAnimationID, newAnimation, tStartStep);
 	changeMugenAnimationWithStartStep(p->mShadow.mAnimationID, newAnimation, tStartStep);
 	changeMugenAnimationWithStartStep(p->mReflection.mAnimationID, newAnimation, tStartStep);
@@ -2216,7 +2218,7 @@ void changePlayerAnimationWithStartStep(DreamPlayer* p, int tNewAnimation, int t
 void changePlayerAnimationToPlayer2AnimationWithStartStep(DreamPlayer * p, int tNewAnimation, int tStartStep)
 {
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p);
-	MugenAnimation* newAnimation = getMugenAnimation(&otherPlayer->mAnimations, tNewAnimation);
+	MugenAnimation* newAnimation = getMugenAnimation(&otherPlayer->mHeader->mFiles.mAnimations, tNewAnimation);
 	changeMugenAnimationWithStartStep(p->mAnimationID, newAnimation, tStartStep);
 	changeMugenAnimationWithStartStep(p->mShadow.mAnimationID, newAnimation, tStartStep);
 	changeMugenAnimationWithStartStep(p->mReflection.mAnimationID, newAnimation, tStartStep);
@@ -2351,12 +2353,12 @@ int isPlayerInIntro(DreamPlayer * p)
 
 int doesPlayerHaveAnimation(DreamPlayer * p, int tAnimation)
 {
-	return hasMugenAnimation(&p->mAnimations, tAnimation); // TODO: check active animations; implement animation setting
+	return hasMugenAnimation(&p->mHeader->mFiles.mAnimations, tAnimation); // TODO: check active animations; implement animation setting
 }
 
 int doesPlayerHaveAnimationHimself(DreamPlayer* p, int tAnimation)
 {
-	return hasMugenAnimation(&p->mAnimations, tAnimation);
+	return hasMugenAnimation(&p->mHeader->mFiles.mAnimations, tAnimation);
 }
 
 int isPlayerHitShakeOver(DreamPlayer* p)
@@ -2413,42 +2415,42 @@ void setPlayerPositionUnfrozen(DreamPlayer* p)
 
 MugenSpriteFile * getPlayerSprites(DreamPlayer* p)
 {
-	return &p->mSprites;
+	return &p->mHeader->mFiles.mSprites;
 }
 
 MugenAnimations * getPlayerAnimations(DreamPlayer* p)
 {
-	return &p->mAnimations;
+	return &p->mHeader->mFiles.mAnimations;
 }
 
 MugenAnimation * getPlayerAnimation(DreamPlayer* p, int tNumber)
 {
-	return getMugenAnimation(&p->mAnimations, tNumber);
+	return getMugenAnimation(&p->mHeader->mFiles.mAnimations, tNumber);
 }
 
 MugenSounds * getPlayerSounds(DreamPlayer * p)
 {
-	return &p->mSounds;
+	return &p->mHeader->mFiles.mSounds;
 }
 
 int getPlayerCoordinateP(DreamPlayer* p)
 {
-	return p->mHeader.mLocalCoordinates.y;
+	return p->mHeader->mConstants.mLocalCoordinates.y;
 }
 
 char * getPlayerDisplayName(DreamPlayer* p)
 {
-	return p->mHeader.mDisplayName;
+	return p->mHeader->mConstants.mDisplayName;
 }
 
 char * getPlayerName(DreamPlayer * p)
 {
-	return p->mHeader.mName;
+	return p->mHeader->mConstants.mName;
 }
 
 char * getPlayerAuthorName(DreamPlayer * p)
 {
-	return p->mHeader.mAuthor;
+	return p->mHeader->mConstants.mAuthor;
 }
 
 int isPlayerPaused(DreamPlayer* p)
@@ -2518,7 +2520,7 @@ static void setPlayerDead(DreamPlayer* p) {
 	p->mIsAlive = 0;
 	
 	if (!p->mNoKOSoundFlag) {
-		tryPlayMugenSound(&p->mSounds, 11, 0);
+		tryPlayMugenSound(&p->mHeader->mFiles.mSounds, 11, 0);
 	}
 }
 
@@ -2531,7 +2533,7 @@ void addPlayerDamage(DreamPlayer* p, int tDamage)
 	}
 	p->mLife = min(p->mLife, getPlayerLifeMax(p));
 
-	double perc = p->mLife / (double)p->mConstants.mHeader.mLife;
+	double perc = p->mLife / (double)p->mHeader->mFiles.mConstants.mHeader.mLife;
 	setDreamLifeBarPercentage(p, perc);
 
 }
@@ -2697,22 +2699,22 @@ double getPlayerBackBodyDistanceToScreen(DreamPlayer* p)
 double getPlayerFrontX(DreamPlayer* p)
 {
 	double x = getPlayerPositionX(p, getPlayerCoordinateP(p));
-	if (p->mFaceDirection == FACE_DIRECTION_RIGHT) return x + p->mConstants.mSizeData.mGroundFrontWidth; // TODO: air
-	else return x - p->mConstants.mSizeData.mGroundFrontWidth; // TODO: air
+	if (p->mFaceDirection == FACE_DIRECTION_RIGHT) return x + p->mHeader->mFiles.mConstants.mSizeData.mGroundFrontWidth; // TODO: air
+	else return x - p->mHeader->mFiles.mConstants.mSizeData.mGroundFrontWidth; // TODO: air
 }
 
 double getPlayerBackX(DreamPlayer* p)
 {
 	double x = getPlayerPositionX(p, getPlayerCoordinateP(p));
-	if (p->mFaceDirection == FACE_DIRECTION_RIGHT) return x - p->mConstants.mSizeData.mGroundBackWidth; // TODO: air
-	else return x + p->mConstants.mSizeData.mGroundBackWidth; // TODO: air
+	if (p->mFaceDirection == FACE_DIRECTION_RIGHT) return x - p->mHeader->mFiles.mConstants.mSizeData.mGroundBackWidth; // TODO: air
+	else return x + p->mHeader->mFiles.mConstants.mSizeData.mGroundBackWidth; // TODO: air
 }
 
 double getPlayerScreenEdgeInFrontX(DreamPlayer* p)
 {
 	double x = getDreamCameraPositionX(getPlayerCoordinateP(p));
 
-	if (p->mFaceDirection == FACE_DIRECTION_RIGHT) return x + p->mHeader.mLocalCoordinates.x;
+	if (p->mFaceDirection == FACE_DIRECTION_RIGHT) return x + p->mHeader->mConstants.mLocalCoordinates.x;
 	else return  x;
 }
 
@@ -2721,7 +2723,7 @@ double getPlayerScreenEdgeInBackX(DreamPlayer* p)
 	double x = getDreamCameraPositionX(getPlayerCoordinateP(p));
 
 	if (p->mFaceDirection == FACE_DIRECTION_RIGHT) return x;
-	else return  x + p->mHeader.mLocalCoordinates.x;
+	else return  x + p->mHeader->mConstants.mLocalCoordinates.x;
 }
 
 double getPlayerDistanceToFrontOfOtherPlayerX(DreamPlayer* p)
@@ -2790,52 +2792,52 @@ double getPlayerDistanceToParentY(DreamPlayer * p)
 
 int getPlayerGroundSizeFront(DreamPlayer* p)
 {
-	return p->mConstants.mSizeData.mGroundFrontWidth;
+	return p->mHeader->mFiles.mConstants.mSizeData.mGroundFrontWidth;
 }
 
 void setPlayerGroundSizeFront(DreamPlayer * p, int tGroundSizeFront)
 {
-	p->mConstants.mSizeData.mGroundFrontWidth = tGroundSizeFront;
+	p->mHeader->mFiles.mConstants.mSizeData.mGroundFrontWidth = tGroundSizeFront;
 }
 
 int getPlayerGroundSizeBack(DreamPlayer* p)
 {
-	return p->mConstants.mSizeData.mGroundBackWidth;
+	return p->mHeader->mFiles.mConstants.mSizeData.mGroundBackWidth;
 }
 
 void setPlayerGroundSizeBack(DreamPlayer * p, int tGroundSizeBack)
 {
-	p->mConstants.mSizeData.mGroundBackWidth = tGroundSizeBack;
+	p->mHeader->mFiles.mConstants.mSizeData.mGroundBackWidth = tGroundSizeBack;
 }
 
 int getPlayerAirSizeFront(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mAirFrontWidth;
+	return p->mHeader->mFiles.mConstants.mSizeData.mAirFrontWidth;
 }
 
 void setPlayerAirSizeFront(DreamPlayer * p, int tAirSizeFront)
 {
-	p->mConstants.mSizeData.mAirFrontWidth = tAirSizeFront;
+	p->mHeader->mFiles.mConstants.mSizeData.mAirFrontWidth = tAirSizeFront;
 }
 
 int getPlayerAirSizeBack(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mAirBackWidth;
+	return p->mHeader->mFiles.mConstants.mSizeData.mAirBackWidth;
 }
 
 void setPlayerAirSizeBack(DreamPlayer * p, int tAirSizeBack)
 {
-	p->mConstants.mSizeData.mAirBackWidth = tAirSizeBack;
+	p->mHeader->mFiles.mConstants.mSizeData.mAirBackWidth = tAirSizeBack;
 }
 
 int getPlayerHeight(DreamPlayer* p)
 {
-	return p->mConstants.mSizeData.mHeight;
+	return p->mHeader->mFiles.mConstants.mSizeData.mHeight;
 }
 
 void setPlayerHeight(DreamPlayer * p, int tHeight)
 {
-	p->mConstants.mSizeData.mHeight = tHeight;
+	p->mHeader->mFiles.mConstants.mSizeData.mHeight = tHeight;
 }
 
 static void increaseSinglePlayerRoundsExisted(DreamPlayer * p);
@@ -2877,7 +2879,7 @@ int hasPlayerLostByKO(DreamPlayer * p)
 
 int hasPlayerWonPerfectly(DreamPlayer* p)
 {
-	return hasPlayerWon(p) && p->mLife == p->mConstants.mHeader.mLife;
+	return hasPlayerWon(p) && p->mLife == p->mHeader->mFiles.mConstants.mHeader.mLife;
 }
 
 int hasPlayerWon(DreamPlayer* p)
@@ -2990,7 +2992,7 @@ void setPlayerAttackMultiplier(DreamPlayer* p, double tValue)
 
 double getPlayerFallDefenseMultiplier(DreamPlayer* p)
 {
-	int f = p->mConstants.mHeader.mFallDefenseUp;
+	int f = p->mHeader->mFiles.mConstants.mHeader.mFallDefenseUp;
 	return 100.0 / (f+100);
 }
 
@@ -3020,7 +3022,7 @@ void setPlayerStartLifePercentage(int tIndex, double tPercentage) {
 }
 
 double getPlayerLifePercentage(DreamPlayer* p) {
-	return p->mLife / (double)p->mConstants.mHeader.mLife;
+	return p->mLife / (double)p->mHeader->mFiles.mConstants.mHeader.mLife;
 }
 
 void setPlayerLife(DreamPlayer * p, int tLife)
@@ -3041,7 +3043,7 @@ int getPlayerLife(DreamPlayer* p)
 
 int getPlayerLifeMax(DreamPlayer* p)
 {
-	return p->mConstants.mHeader.mLife;
+	return p->mHeader->mFiles.mConstants.mHeader.mLife;
 }
 
 int getPlayerPower(DreamPlayer* p)
@@ -3051,14 +3053,14 @@ int getPlayerPower(DreamPlayer* p)
 
 int getPlayerPowerMax(DreamPlayer* p)
 {
-	return p->mConstants.mHeader.mPower;
+	return p->mHeader->mFiles.mConstants.mHeader.mPower;
 }
 
 void setPlayerPower(DreamPlayer * p, int tPower)
 {
 	p->mPower = max(0, min(getPlayerPowerMax(p), tPower));
 
-	double perc = p->mPower / (double)p->mConstants.mHeader.mPower;
+	double perc = p->mPower / (double)p->mHeader->mFiles.mConstants.mHeader.mPower;
 	setDreamPowerBarPercentage(p, perc, p->mPower);
 }
 
@@ -3123,7 +3125,7 @@ int isPlayerInGuardDistance(DreamPlayer* p)
 
 int getDefaultPlayerAttackDistance(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mAttackDistance;
+	return p->mHeader->mFiles.mConstants.mSizeData.mAttackDistance;
 }
 
 Position getPlayerHeadPosition(DreamPlayer * p)
@@ -3133,17 +3135,17 @@ Position getPlayerHeadPosition(DreamPlayer * p)
 
 double getPlayerHeadPositionX(DreamPlayer* p)
 {
-	return p->mConstants.mSizeData.mHeadPosition.x;
+	return p->mHeader->mFiles.mConstants.mSizeData.mHeadPosition.x;
 }
 
 double getPlayerHeadPositionY(DreamPlayer* p)
 {
-	return p->mConstants.mSizeData.mHeadPosition.y;
+	return p->mHeader->mFiles.mConstants.mSizeData.mHeadPosition.y;
 }
 
 void setPlayerHeadPosition(DreamPlayer * p, double tX, double tY)
 {
-	p->mConstants.mSizeData.mHeadPosition = makePosition(tX, tY, 0);
+	p->mHeader->mFiles.mConstants.mSizeData.mHeadPosition = makePosition(tX, tY, 0);
 }
 
 Position getPlayerMiddlePosition(DreamPlayer * p)
@@ -3153,27 +3155,27 @@ Position getPlayerMiddlePosition(DreamPlayer * p)
 
 double getPlayerMiddlePositionX(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mMidPosition.x;
+	return p->mHeader->mFiles.mConstants.mSizeData.mMidPosition.x;
 }
 
 double getPlayerMiddlePositionY(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mMidPosition.y;
+	return p->mHeader->mFiles.mConstants.mSizeData.mMidPosition.y;
 }
 
 void setPlayerMiddlePosition(DreamPlayer* p, double tX, double tY)
 {
-	p->mConstants.mSizeData.mMidPosition = makePosition(tX, tY, 0);
+	p->mHeader->mFiles.mConstants.mSizeData.mMidPosition = makePosition(tX, tY, 0);
 }
 
 int getPlayerShadowOffset(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mShadowOffset;
+	return p->mHeader->mFiles.mConstants.mSizeData.mShadowOffset;
 }
 
 void setPlayerShadowOffset(DreamPlayer * p, int tOffset)
 {
-	p->mConstants.mSizeData.mShadowOffset = tOffset;
+	p->mHeader->mFiles.mConstants.mSizeData.mShadowOffset = tOffset;
 }
 
 int isPlayerHelper(DreamPlayer* p)
@@ -3202,22 +3204,22 @@ DreamPlayer* getPlayerOtherPlayer(DreamPlayer* p) {
 
 double getPlayerScaleX(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mScale.x;
+	return p->mHeader->mFiles.mConstants.mSizeData.mScale.x;
 }
 
 void setPlayerScaleX(DreamPlayer * p, double tScaleX)
 {
-	p->mConstants.mSizeData.mScale.x = tScaleX;
+	p->mHeader->mFiles.mConstants.mSizeData.mScale.x = tScaleX;
 }
 
 double getPlayerScaleY(DreamPlayer * p)
 {
-	return p->mConstants.mSizeData.mScale.y;
+	return p->mHeader->mFiles.mConstants.mSizeData.mScale.y;
 }
 
 void setPlayerScaleY(DreamPlayer * p, double tScaleY)
 {
-	p->mConstants.mSizeData.mScale.y = tScaleY;
+	p->mHeader->mFiles.mConstants.mSizeData.mScale.y = tScaleY;
 }
 
 DreamPlayer * clonePlayerAsHelper(DreamPlayer * p)
@@ -3708,22 +3710,22 @@ void setPlayerNotHitByTime(DreamPlayer * p, int tSlot, int tTime)
 
 int getDefaultPlayerSparkNumberIsInPlayerFile(DreamPlayer * p)
 {
-	return p->mConstants.mHeader.mIsSparkNoInPlayerFile;
+	return p->mHeader->mFiles.mConstants.mHeader.mIsSparkNoInPlayerFile;
 }
 
 int getDefaultPlayerSparkNumber(DreamPlayer * p)
 {
-	return p->mConstants.mHeader.mSparkNo;
+	return p->mHeader->mFiles.mConstants.mHeader.mSparkNo;
 }
 
 int getDefaultPlayerGuardSparkNumberIsInPlayerFile(DreamPlayer * p)
 {
-	return p->mConstants.mHeader.mIsGuardSparkNoInPlayerFile;
+	return p->mHeader->mFiles.mConstants.mHeader.mIsGuardSparkNoInPlayerFile;
 }
 
 int getDefaultPlayerGuardSparkNumber(DreamPlayer * p)
 {
-	return p->mConstants.mHeader.mGuardSparkNo;
+	return p->mHeader->mFiles.mConstants.mHeader.mGuardSparkNo;
 }
 
 int isPlayerProjectile(DreamPlayer * p)
@@ -3740,7 +3742,7 @@ void setPlayerDrawOffsetX(DreamPlayer* p, double tValue, int tCoordinateP) {
 	tValue = transformDreamCoordinates(tValue, tCoordinateP, getPlayerCoordinateP(p));
 	Position pos = getMugenAnimationPosition(p->mAnimationID);
 	Position basePos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
-	Position newPos = vecAdd(basePos, makePosition(p->mConstants.mSizeData.mDrawOffset.x, p->mConstants.mSizeData.mDrawOffset.y, 0));
+	Position newPos = vecAdd(basePos, makePosition(p->mHeader->mFiles.mConstants.mSizeData.mDrawOffset.x, p->mHeader->mFiles.mConstants.mSizeData.mDrawOffset.y, 0));
 	newPos.x += tValue;
 	newPos.y = pos.y;
 	newPos.z = pos.z;
@@ -3752,7 +3754,7 @@ void setPlayerDrawOffsetY(DreamPlayer* p, double tValue, int tCoordinateP) {
 	tValue = transformDreamCoordinates(tValue, tCoordinateP, getPlayerCoordinateP(p));
 	Position pos = getMugenAnimationPosition(p->mAnimationID);
 	Position basePos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
-	Position newPos = vecAdd(basePos, makePosition(p->mConstants.mSizeData.mDrawOffset.x, p->mConstants.mSizeData.mDrawOffset.y, 0));
+	Position newPos = vecAdd(basePos, makePosition(p->mHeader->mFiles.mConstants.mSizeData.mDrawOffset.x, p->mHeader->mFiles.mConstants.mSizeData.mDrawOffset.y, 0));
 	newPos.x = pos.x;
 	newPos.y += tValue;
 	newPos.z = pos.z;
@@ -3859,4 +3861,30 @@ void turnPlayerTowardsOtherPlayer(DreamPlayer* p) {
 
 	if (x1 > x2) setPlayerFaceDirection(p, FACE_DIRECTION_LEFT);
 	else if (x1 < x2) setPlayerFaceDirection(p, FACE_DIRECTION_RIGHT);
+}
+
+static void removeProjectilesAndHelpersSingleProjectileCB(void* tCaller, void* tData) {
+	DreamPlayer* p = tData;
+	if (p->mIsDestroyed) return;
+
+	removeProjectile(p);
+}
+
+static void removeProjectilesAndHelpersSingleHelperCB(void* tCaller, void* tData) {
+	DreamPlayer* p = tData;
+	if (p->mIsDestroyed) return;
+
+	list_map(&p->mHelpers, removeProjectilesAndHelpersSingleHelperCB, NULL);
+	int_map_map(&p->mProjectiles, removeProjectilesAndHelpersSingleProjectileCB, NULL);
+
+	destroyPlayer(p);
+}
+
+void removeAllProjectilesAndHelpers()
+{
+	int i;
+	for (i = 0; i < 2; i++) {
+		list_map(&gData.mPlayers[i].mHelpers, removeProjectilesAndHelpersSingleHelperCB, NULL);
+		int_map_map(&gData.mPlayers[i].mProjectiles, removeProjectilesAndHelpersSingleProjectileCB, NULL);
+	}
 }

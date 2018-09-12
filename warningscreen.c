@@ -7,6 +7,7 @@
 #include <prism/input.h>
 
 #include "titlescreen.h"
+#include "intro.h"
 
 static struct {
 	double mWarningTrans;
@@ -24,7 +25,8 @@ static struct {
 
 static void fadeOutFinished(void* tCaller) {
 	(void)tCaller;
-	setNewScreen(&DreamTitleScreen);
+
+	startIntroFirstTime();
 }
 
 static void fadeOut(void* tCaller) {

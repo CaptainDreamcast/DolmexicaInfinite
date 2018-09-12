@@ -16,6 +16,15 @@
 #include "fightscreen.h"
 #include "fightresultdisplay.h"
 
+typedef enum {
+	ROUND_STATE_FADE_IN = 0,
+	ROUND_STATE_INTRO = 1,
+	ROUND_STATE_FIGHT = 2,
+	ROUND_STATE_OVER = 3,
+	ROUND_STATE_WIN_POSE = 4,
+
+} RoundState;
+
 typedef struct {
 	int mEndTime;
 	int mIsDisplayingBars;
@@ -25,7 +34,7 @@ typedef struct {
 static struct {
 	int mGameTime;
 	int mRoundNumber;
-	int mRoundStateNumber;
+	RoundState mRoundStateNumber;
 	int mRoundsToWin;
 	int mStartRound;
 
@@ -47,7 +56,7 @@ static struct {
 } gData;
 
 static void fightAnimationFinishedCB() {
-	gData.mRoundStateNumber = 2;
+	gData.mRoundStateNumber = ROUND_STATE_FIGHT;
 	enableDreamTimer();
 }
 
@@ -61,7 +70,7 @@ static void introFinished() {
 }
 
 static void startIntro() {
-	gData.mRoundStateNumber = 1;
+	gData.mRoundStateNumber = ROUND_STATE_INTRO;
 	gData.mIsDisplayingIntro = 2;
 	changePlayerState(getRootPlayer(0), 5900);
 	changePlayerState(getRootPlayer(1), 5900);
@@ -70,19 +79,12 @@ static void startIntro() {
 static void fadeInFinished(void* tData) {
 	(void)tData;
 
-	/*
-	setPlayerControl(getRootPlayer(0), 1);
-	setPlayerControl(getRootPlayer(1), 1);
-	fightAnimationFinishedCB();
-	return;
-	*/
-
 	startIntro();
 }
 
 static void startRound() {
 	disableDreamTimer();
-	gData.mRoundStateNumber = 0;
+	gData.mRoundStateNumber = ROUND_STATE_FADE_IN;
 	gData.mIsDisplayingIntro = 0;
 	gData.mIsDisplayingWinPose = 0;
 	setPlayerControl(getRootPlayer(0), 0);
@@ -135,7 +137,7 @@ static void setRoundWinner() {
 	}
 
 	setWinIcon();
-	gData.mRoundStateNumber = 3;
+	gData.mRoundStateNumber = ROUND_STATE_OVER;
 	setPlayerControl(getRootPlayer(0), 0);
 	setPlayerControl(getRootPlayer(1), 0);
 }
@@ -238,7 +240,7 @@ static void startWinPose() {
 
 	}
 
-	gData.mRoundStateNumber = 4;
+	gData.mRoundStateNumber = ROUND_STATE_WIN_POSE;
 	gData.mIsDisplayingWinPose = 1;
 }
 
@@ -327,6 +329,33 @@ static void updateExhibitMode() {
 	}
 }
 
+
+static void skipIntroFinishedCB(void* tCaller) {
+	(void)tCaller;
+
+	fightAnimationFinishedCB();
+}
+
+static void skipIntroCB(void* tCaller) {
+	(void)tCaller;
+	enableDrawing();
+	stopFightAndRoundAnimation();
+	gData.mIsDisplayingIntro = 0;
+	removeAllProjectilesAndHelpers();
+	changePlayerState(getRootPlayer(0), 0);
+	changePlayerState(getRootPlayer(1), 0);
+
+	addFadeIn(10, skipIntroFinishedCB, NULL);
+}
+
+static void updateIntroSkip() {
+	if (gData.mRoundStateNumber != ROUND_STATE_INTRO) return;
+
+	if (hasPressedStartFlankSingle(0) || hasPressedStartFlankSingle(1)) {
+		addFadeOut(10, skipIntroCB, NULL);
+	}
+}
+
 static void updateGameLogic(void* tData) {
 	(void)tData;
 	gData.mGameTime++;
@@ -336,6 +365,7 @@ static void updateGameLogic(void* tData) {
 	updateNoControl();
 	updateWinPose();
 	updateExhibitMode();
+	updateIntroSkip();
 }
 
 ActorBlueprint DreamGameLogic = {

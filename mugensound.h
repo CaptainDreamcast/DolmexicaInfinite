@@ -6,3 +6,6 @@ typedef struct {
 } DreamMugenSound;
 
 DreamMugenSound makeDreamMugenSound(int tGroup, int tItem);
+
+int isMugenBGMMusicPath(char* tPath);
+void playMugenBGMMusicPath(char* tPath, int tIsLooping);

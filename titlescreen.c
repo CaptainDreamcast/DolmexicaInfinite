@@ -18,6 +18,7 @@
 
 #include <prism/log.h>
 
+#include "mugensound.h"
 #include "menubackground.h"
 #include "characterselectscreen.h"
 #include "arcademode.h"
@@ -31,6 +32,7 @@
 #include "survivalmode.h"
 #include "watchmode.h"
 #include "exhibitmode.h"
+#include "intro.h"
 
 typedef struct {
 	void(*mCB)();
@@ -167,7 +169,13 @@ static void watchCB() {
 
 static void gotoExhibitMode(void* tCaller) {
 	(void)tCaller;
-	startExhibitMode();
+	if (hasIntroStoryboard() && hasFinishedIntroWaitCycle()) {
+		playIntroStoryboard();
+	}
+	else {
+		increaseIntroWaitCycle();
+		startExhibitMode();
+	}	
 }
 
 static void exhibitCB(void* tCaller) {
@@ -285,6 +293,17 @@ static void loadBoxCursor() {
 	}
 }
 
+static void loadTitleMusic() {
+	char* path = getAllocatedMugenDefStringOrDefault(&gData.mScript, "Music", "title.bgm", " ");
+	int isLooping = getMugenDefIntegerOrDefault(&gData.mScript, "Music", "title.bgm.loop", 1);
+
+	if (isMugenBGMMusicPath(path)) {
+		playMugenBGMMusicPath(path, isLooping);
+	}
+
+	freeMemory(path);
+}
+
 static void loadTitleScreen() {
 	setWrapperTitleScreen(&DreamTitleScreen);
 	
@@ -335,6 +354,7 @@ static void loadTitleScreen() {
 	loadCredits();
 
 	setWorkingDirectory("/");
+	loadTitleMusic();
 
 	addFadeIn(gData.mHeader.mFadeInTime, NULL, NULL);
 

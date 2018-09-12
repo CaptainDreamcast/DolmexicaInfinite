@@ -1001,16 +1001,19 @@ static void updateRoundSound() {
 	}
 }
 
+static void removeRoundDisplay() {
+	if (gData.mRound.mHasActiveAnimation) {
+		removeDisplayedAnimation(gData.mRound.mAnimationID);
+	}
+	else {
+		removeDisplayedText(gData.mRound.mTextID);
+	}
+}
+
 static void updateRoundFinish() {
 	if (gData.mRound.mDisplayNow >= gData.mRound.mDisplayTime) {
 
-		if (gData.mRound.mHasActiveAnimation) {
-			removeDisplayedAnimation(gData.mRound.mAnimationID);
-		}
-		else {
-			removeDisplayedText(gData.mRound.mTextID);
-		}
-
+		removeRoundDisplay();
 		gData.mRound.mCB();
 		gData.mRound.mIsDisplayingRound = 0;
 	}
@@ -1616,6 +1619,21 @@ void removeAllWinIcons()
 		removeSinglePlayerWinIcons(i);
 	}
 
+}
+
+void stopFightAndRoundAnimation()
+{
+	if (gData.mRound.mIsDisplayingRound) {
+		removeRoundDisplay();
+		gData.mRound.mIsDisplayingRound = 0;
+	}
+
+	if (gData.mFight.mIsDisplayingFight) {
+		removeDisplayedAnimation(gData.mFight.mAnimationID);
+		gData.mFight.mIsDisplayingFight = 0;
+	}
+
+	startControlCountdown();	
 }
 
 void setUIFaces() {

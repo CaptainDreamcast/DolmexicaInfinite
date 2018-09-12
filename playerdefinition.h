@@ -44,6 +44,19 @@ typedef struct {
 } DreamHitDefAttributeSlot;
 
 typedef struct {
+	char mDefinitionPath[1024];
+	int mHasPalettePath;
+	char* mPalettePath;
+	char* mSpritePath;
+	DreamMugenCommands mCommands;
+	MugenAnimations mAnimations;
+	MugenSpriteFile mSprites;
+	MugenSounds mSounds;
+	DreamMugenConstants mConstants;
+} DreamPlayerFiles;
+
+
+typedef struct {
 	char mName[100];
 	char mDisplayName[100];
 	char mVersion[100];
@@ -52,6 +65,12 @@ typedef struct {
 
 	char mPaletteDefaults[100];
 	Vector3DI mLocalCoordinates;
+
+} DreamPlayerHeaderConstants;
+
+typedef struct {
+	DreamPlayerHeaderConstants mConstants;
+	DreamPlayerFiles mFiles;
 } DreamPlayerHeader;
 
 typedef struct {
@@ -79,6 +98,8 @@ typedef struct {
 } DreamPlayerDebugData;
 
 typedef struct Player_t{
+	DreamPlayerHeader* mHeader;
+
 	struct Player_t* mRoot;
 	struct Player_t* mOtherPlayer;
 	int mPreferredPalette;
@@ -98,17 +119,6 @@ typedef struct Player_t{
 	IntMap mProjectiles; // contains DreamPlayer
 
 	int mAILevel;
-
-	char mDefinitionPath[1024];
-	int mHasPalettePath;
-	char* mPalettePath;
-	char* mSpritePath;
-	DreamPlayerHeader mHeader;
-	DreamMugenCommands mCommands;
-	DreamMugenConstants mConstants;
-	MugenAnimations mAnimations;
-	MugenSpriteFile mSprites;
-	MugenSounds mSounds;
 
 	int mVars[100];
 	int mSystemVars[100];
@@ -646,3 +656,5 @@ int isPlayerCollisionDebugActive();
 void setPlayerCollisionDebug(int tIsActive);
 
 void turnPlayerTowardsOtherPlayer(DreamPlayer* p);
+
+void removeAllProjectilesAndHelpers();

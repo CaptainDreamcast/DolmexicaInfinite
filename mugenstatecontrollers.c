@@ -4037,7 +4037,7 @@ static void handleHelperFacing(DreamMugenAssignment** tAssignment, DreamPlayer* 
 }
 
 static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	if (!isOnWindows()) return 0;
+	// return 0; // TODO
 
 	HelperController* e = tController->mData;
 	DreamPlayer* helper = clonePlayerAsHelper(tPlayer);
@@ -4430,7 +4430,7 @@ static int handleReversalDefinition(DreamMugenStateController* tController, Drea
 }
 
 static int handleProjectile(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	if (!isOnWindows()) return 0;
+	//return 0; // TODO
 
 	ProjectileController* e = tController->mData;
 

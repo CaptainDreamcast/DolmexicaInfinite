@@ -147,6 +147,9 @@
     <ClCompile Include="..\exhibitmode.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\intro.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ai.h">
@@ -279,6 +282,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\exhibitmode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\intro.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

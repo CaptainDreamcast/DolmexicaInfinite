@@ -17,6 +17,7 @@
 #include "playerdefinition.h"
 #include "mugenstagehandler.h"
 #include "mugenbackgroundstatehandler.h"
+#include "mugensound.h"
 
 typedef struct {
 	char mName[1024];
@@ -499,47 +500,6 @@ void setDreamStageMugenDefinition(char * tPath, char* tCustomMusicPath)
 	strcpy(gData.mCustomMusicPath, tCustomMusicPath);
 }
 
-static int isStageMusicPath(char* tPath) {
-	if (!strchr(tPath, '.')) return 0;
-	char* fileExtension = getFileExtension(tPath);
-	if (!strcmp("da", fileExtension)) return 1;
-
-	char inFolderPath[1024];
-	sprintf(inFolderPath, "assets/music/%s", tPath);
-	if (isFile(inFolderPath)) return 1;
-
-	return isFile(tPath);
-}
-
-static void playStageTrack(char* tPath) {
-	char modPath[1024];
-	strcpy(modPath, tPath);
-	*strrchr(modPath, '.') = '\0';
-	playTrack(atoi(modPath));
-}
-
-static void playStageMusicCompletePath(char* tPath) {
-	streamMusicFile(tPath);
-}
-
-
-static void playStageMusicPath(char* tPath) {
-	char* fileExtension = getFileExtension(tPath);
-	if (!strcmp("da", fileExtension)) {
-		playStageTrack(tPath);
-		return;
-	}
-
-	char inFolderPath[1024];
-	sprintf(inFolderPath, "assets/music/%s", tPath);
-	if (isFile(inFolderPath)) {
-		playStageMusicCompletePath(inFolderPath);
-		return;
-	}
-
-	playStageMusicCompletePath(tPath);
-}
-
 MugenAnimations * getStageAnimations()
 {
 	return &gData.mAnimations;
@@ -547,11 +507,11 @@ MugenAnimations * getStageAnimations()
 
 void playDreamStageMusic()
 {
-	if (isStageMusicPath(gData.mCustomMusicPath)) {
-		playStageMusicPath(gData.mCustomMusicPath);
+	if (isMugenBGMMusicPath(gData.mCustomMusicPath)) {
+		playMugenBGMMusicPath(gData.mCustomMusicPath, 1);
 	}
-	else if (isStageMusicPath(gData.mMusic.mBGMusic)) {
-		playStageMusicPath(gData.mMusic.mBGMusic);
+	else if (isMugenBGMMusicPath(gData.mMusic.mBGMusic)) {
+		playMugenBGMMusicPath(gData.mMusic.mBGMusic, 1);
 	}
 }
 

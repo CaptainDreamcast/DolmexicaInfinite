@@ -128,7 +128,7 @@ void setDreamAIActive(DreamPlayer * p)
 	e->mIsGuardingLogicActive = 0;
 	e->mCommandNames = new_vector();
 
-	DreamMugenCommands* commands = &p->mCommands;
+	DreamMugenCommands* commands = &p->mHeader->mFiles.mCommands;
 	string_map_map(&commands->mCommands, insertSingleCommandName, &e->mCommandNames);
 
 	list_push_back_owned(&gData.mHandledPlayers, e);

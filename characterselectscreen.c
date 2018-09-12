@@ -13,6 +13,7 @@
 #include <prism/log.h>
 #include <prism/math.h>
 
+#include "mugensound.h"
 #include "menubackground.h"
 #include "titlescreen.h"
 #include "storyscreen.h"
@@ -747,6 +748,17 @@ static void loadCredits() {
 	setMugenTextAlignment(gData.mCredits.mVersionDateID, getMugenTextAlignmentFromMugenAlignmentIndex(gData.mCredits.mVersionDateFont.z));
 }
 
+static void loadSelectMusic() {
+	char* path = getAllocatedMugenDefStringOrDefault(&gData.mScript, "Music", "select.bgm", " ");
+	int isLooping = getMugenDefIntegerOrDefault(&gData.mScript, "Music", "select.bgm.loop", 1);
+
+	if (isMugenBGMMusicPath(path)) {
+		playMugenBGMMusicPath(path, isLooping);
+	}
+
+	freeMemory(path);
+}
+
 static void loadCharacterSelectScreen() {
 
 	gData.mCharacterScript = loadMugenDefScript("assets/data/select.def");
@@ -779,6 +791,7 @@ static void loadCharacterSelectScreen() {
 	loadSelectors();
 	loadModeText();
 	loadStageSelect();
+	loadSelectMusic();
 
 	gData.mWhiteTexture = createWhiteTexture();
 

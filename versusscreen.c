@@ -10,6 +10,7 @@
 #include <prism/mugentexthandler.h>
 #include <prism/clipboardhandler.h>
 
+#include "mugensound.h"
 #include "menubackground.h"
 #include "titlescreen.h"
 #include "playerdefinition.h"
@@ -130,6 +131,17 @@ static void loadVersusHeader() {
 	}
 }
 
+static void loadVersusMusic() {
+	char* path = getAllocatedMugenDefStringOrDefault(&gData.mScript, "Music", "vs.bgm", " ");
+	int isLooping = getMugenDefIntegerOrDefault(&gData.mScript, "Music", "vs.bgm.loop", 1);
+
+	if (isMugenBGMMusicPath(path)) {
+		playMugenBGMMusicPath(path, isLooping);
+	}
+
+	freeMemory(path);
+}
+
 static void screenTimeFinishedCB(void* tCaller);
 
 static void loadVersusScreen() {
@@ -149,6 +161,7 @@ static void loadVersusScreen() {
 
 	loadVersusHeader();
 	loadMenuBackground(&gData.mScript, &gData.mSprites, &gData.mAnimations, "VersusBGdef", "VersusBG");
+	loadVersusMusic();
 
 	addFadeIn(gData.mHeader.mFadeInTime, NULL, NULL);
 	addTimerCB(gData.mHeader.mTime, screenTimeFinishedCB, NULL);
