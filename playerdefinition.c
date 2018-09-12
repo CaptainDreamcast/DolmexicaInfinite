@@ -462,7 +462,6 @@ static void resetSinglePlayer(DreamPlayer* p) {
 
 void resetPlayers()
 {
-	removeAllProjectilesAndHelpers();
 	resetSinglePlayer(&gData.mPlayers[0]);
 	resetSinglePlayer(&gData.mPlayers[1]);
 }
@@ -3861,30 +3860,4 @@ void turnPlayerTowardsOtherPlayer(DreamPlayer* p) {
 
 	if (x1 > x2) setPlayerFaceDirection(p, FACE_DIRECTION_LEFT);
 	else if (x1 < x2) setPlayerFaceDirection(p, FACE_DIRECTION_RIGHT);
-}
-
-static void removeProjectilesAndHelpersSingleProjectileCB(void* tCaller, void* tData) {
-	DreamPlayer* p = tData;
-	if (p->mIsDestroyed) return;
-
-	removeProjectile(p);
-}
-
-static void removeProjectilesAndHelpersSingleHelperCB(void* tCaller, void* tData) {
-	DreamPlayer* p = tData;
-	if (p->mIsDestroyed) return;
-
-	list_map(&p->mHelpers, removeProjectilesAndHelpersSingleHelperCB, NULL);
-	int_map_map(&p->mProjectiles, removeProjectilesAndHelpersSingleProjectileCB, NULL);
-
-	destroyPlayer(p);
-}
-
-void removeAllProjectilesAndHelpers()
-{
-	int i;
-	for (i = 0; i < 2; i++) {
-		list_map(&gData.mPlayers[i].mHelpers, removeProjectilesAndHelpersSingleHelperCB, NULL);
-		int_map_map(&gData.mPlayers[i].mProjectiles, removeProjectilesAndHelpersSingleProjectileCB, NULL);
-	}
 }

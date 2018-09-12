@@ -341,7 +341,6 @@ static void skipIntroCB(void* tCaller) {
 	enableDrawing();
 	stopFightAndRoundAnimation();
 	gData.mIsDisplayingIntro = 0;
-	removeAllProjectilesAndHelpers();
 	changePlayerState(getRootPlayer(0), 0);
 	changePlayerState(getRootPlayer(1), 0);
 
