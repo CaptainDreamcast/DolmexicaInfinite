@@ -31,6 +31,7 @@
 #include "collision.h"
 #include "mugensound.h"
 #include "mugenanimationutilities.h"
+#include "mugenexplod.h"
 
 
 #define SHADOW_Z 33
@@ -464,6 +465,7 @@ void resetPlayers()
 {
 	resetSinglePlayer(&gData.mPlayers[0]);
 	resetSinglePlayer(&gData.mPlayers[1]);
+	removeAllExplods();
 }
 
 static void resetSinglePlayerEntirely(DreamPlayer* p) {

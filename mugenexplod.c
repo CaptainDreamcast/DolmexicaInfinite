@@ -304,11 +304,23 @@ static int removeSingleExplod(void* tCaller, void* tData) {
 	return 0;
 }
 
-void removeAllExplods(DreamPlayer * tPlayer)
+void removeAllExplodsForPlayer(DreamPlayer * tPlayer)
 {
 	RemoveExplodsCaller caller;
 	caller.mPlayer = tPlayer;
 	int_map_remove_predicate(&gData.mExplods, removeSingleExplod, &caller);
+}
+
+static int removeSingleExplodAlways(void* tCaller, void* tData) {
+	Explod* e = tData;
+
+	unloadExplod(e);
+	return 1;
+}
+
+void removeAllExplods()
+{
+	int_map_remove_predicate(&gData.mExplods, removeSingleExplodAlways, NULL);
 }
 
 typedef struct {

@@ -3952,12 +3952,22 @@ static void handleSuperPauseSound(DreamMugenAssignment** tAssignment, DreamPlaye
 		if (!strcmp("isinotherfilef", firstW)) {
 			isInPlayerFile = 0;
 			int items = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
-			assert(items == 4);
+			if (items < 2) { // TODO: check if default works
+				group = 0;
+			}
+			if (items < 4) {
+				item = 0;
+			}
 		}
 		else if (!strcmp("isinotherfiles", firstW)) {
 			isInPlayerFile = 1;
 			int items = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
-			assert(items == 4);
+			if (items < 2) { // TODO: check if default works
+				group = 0;
+			}
+			if (items < 4) {
+				item = 0;
+			}
 		}
 		else {
 			isInPlayerFile = 0;
@@ -4233,7 +4243,7 @@ static int handleRemovingExplod(DreamMugenStateController* tController, DreamPla
 		removeExplodsWithID(tPlayer, id);
 	}
 	else {
-		removeAllExplods(tPlayer);
+		removeAllExplodsForPlayer(tPlayer);
 	}
 
 	return 0;

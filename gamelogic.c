@@ -15,6 +15,7 @@
 #include "titlescreen.h"
 #include "fightscreen.h"
 #include "fightresultdisplay.h"
+#include "mugenexplod.h"
 
 typedef enum {
 	ROUND_STATE_FADE_IN = 0,
@@ -343,7 +344,7 @@ static void skipIntroCB(void* tCaller) {
 	gData.mIsDisplayingIntro = 0;
 	changePlayerState(getRootPlayer(0), 0);
 	changePlayerState(getRootPlayer(1), 0);
-
+	removeAllExplods();
 	addFadeIn(10, skipIntroFinishedCB, NULL);
 }
 

@@ -45,7 +45,8 @@ void setExplodIgnoreHitPause(int tID, int tIgnoreHitPause);
 void setExplodTransparencyType(int tID, int tHasTransparencyType, DreamExplodTransparencyType tTransparencyType);
 void finalizeExplod(int tID);
 void removeExplodsWithID(DreamPlayer* tPlayer, int tExplodID);
-void removeAllExplods(DreamPlayer* tPlayer);
+void removeAllExplodsForPlayer(DreamPlayer* tPlayer);
+void removeAllExplods();
 int getExplodIndexFromExplodID(DreamPlayer* tPlayer, int tExplodID);
 
 int getExplodAmount(DreamPlayer* tPlayer);
