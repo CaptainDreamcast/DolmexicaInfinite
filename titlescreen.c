@@ -15,6 +15,7 @@
 #include <prism/clipboardhandler.h>
 #include <prism/screeneffect.h>
 #include <prism/timer.h>
+#include <prism/sound.h>
 
 #include <prism/log.h>
 
@@ -371,6 +372,8 @@ static void loadTitleScreen() {
 
 	logTextureMemoryState();
 	logMemoryState();
+
+	streamMusicFile("assets/music/test5.wav");
 }
 
 static void unloadTitleScreen() {
