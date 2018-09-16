@@ -179,6 +179,7 @@
     <ClCompile Include="..\mugenstatehandler.c" />
     <ClCompile Include="..\mugenstatereader.c" />
     <ClCompile Include="..\optionsscreen.c" />
+    <ClCompile Include="..\osufilereader.c" />
     <ClCompile Include="..\pausecontrollers.c" />
     <ClCompile Include="..\playerdefinition.c" />
     <ClCompile Include="..\playerhitdata.c" />
@@ -227,6 +228,7 @@
     <ClInclude Include="..\mugenstatehandler.h" />
     <ClInclude Include="..\mugenstatereader.h" />
     <ClInclude Include="..\optionsscreen.h" />
+    <ClInclude Include="..\osufilereader.h" />
     <ClInclude Include="..\pausecontrollers.h" />
     <ClInclude Include="..\playerdefinition.h" />
     <ClInclude Include="..\playerhitdata.h" />

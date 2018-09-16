@@ -38,6 +38,8 @@
 #include "fightdebug.h"
 #include "fightresultdisplay.h"
 
+#include "osufilereader.h"
+
 static struct {
 	void(*mWinCB)();
 	void(*mLoseCB)();
@@ -113,6 +115,8 @@ static void loadFightScreen() {
 
 	playDreamStageMusic();
 	
+	OsuFile f = loadOsuFile("assets/osu/1.osu");
+
 	malloc_stats();
 	
 	printf("assignments: %d\n", gDebugAssignmentAmount);
