@@ -372,8 +372,6 @@ static void loadTitleScreen() {
 
 	logTextureMemoryState();
 	logMemoryState();
-
-	streamMusicFile("assets/music/test5.wav");
 }
 
 static void unloadTitleScreen() {

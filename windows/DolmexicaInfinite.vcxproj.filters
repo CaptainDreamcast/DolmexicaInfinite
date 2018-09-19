@@ -157,6 +157,9 @@
 >>>>>>> [Feature] add osu file reader
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\osuhandler.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ai.h">
@@ -298,6 +301,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\osufilereader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\osuhandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

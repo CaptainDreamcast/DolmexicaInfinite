@@ -38,7 +38,7 @@
 #include "fightdebug.h"
 #include "fightresultdisplay.h"
 
-#include "osufilereader.h"
+#include "osuhandler.h"
 
 static struct {
 	void(*mWinCB)();
@@ -113,9 +113,10 @@ static void loadFightScreen() {
 	loadPlayerSprites();
 	setUIFaces();
 
-	playDreamStageMusic();
-	
-	OsuFile f = loadOsuFile("assets/osu/1.osu");
+	setOsuFile("assets/osu/1.osu");
+	instantiateActor(OsuHandler);
+	playOsuMusicFile();
+
 
 	malloc_stats();
 	

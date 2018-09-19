@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include <prism/datastructures.h>
+#include <prism/geometry.h>
 
 typedef int OsuMilliSecond;
 
@@ -40,7 +41,7 @@ typedef struct {
 
 typedef struct {
 	OsuMilliSecond mOffset;
-	OsuMilliSecond mMillisecondsPerBeat;
+	double mMillisecondsPerBeat;
 	int mMeter;
 	int mSampleIndex;
 	int mVolume;
@@ -50,20 +51,53 @@ typedef struct {
 } OsuTimingPoint;
 
 typedef struct {
+	double mR;
+	double mG;
+	double mB;
+} OsuColor;
+
+
+#define OSU_TYPE_MASK_NEW_COMBO		(1 << 2)
+#define OSU_TYPE_MASK_HIT_OBJECT	(1 << 3)
+#define OSU_TYPE_MASK_SLIDER		(1 << 4)
+#define OSU_TYPE_MASK_SPINNER		(1 << 5)
+
+typedef struct {
+	int mX;
+	int mY;
+	OsuMilliSecond mTime;
+	uint8_t mType;
+	uint8_t mHitSound;
+} OsuHitObject;
+
+typedef struct {
+	int mX;
+	int mY;
+	OsuMilliSecond mTime;
+	uint8_t mType;
+	uint8_t mHitSound;
+	Vector3DI mEndPosition;
+	int mRepeat;
+	double mPixelLength;
+} OsuSliderObject;
+
+typedef struct {
 	int mX;
 	int mY;
 	OsuMilliSecond mTime;
 	uint8_t mType;
 	uint8_t mHitSound;
 
-} OsuHitObject;
+	OsuMilliSecond mEndTime;
+} OsuSpinnerObject;
 
 typedef struct {
 	OsuFileGeneral mGeneral;
 	OsuFileDifficulty mDifficulty;
 	OsuEvents mEvents;
 	List mOsuTimingPoints; // contains OsuTimingPoint
-	List mOsuHitObjects; // contains OsuHitObject
+	List mOsuColors; // contains OsuColor
+	List mOsuHitObjects; // contains OsuHitObject/OsuSpinnerObject/OsuSliderObject
 } OsuFile;
 
 OsuFile loadOsuFile(char* tPath);
