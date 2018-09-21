@@ -4003,7 +4003,7 @@ static int handleSuperPause(DreamMugenStateController* tController, DreamPlayer*
 	getSingleIntegerValueOrDefaultFunctionCall(&e->mSetPlayerUnhittable, tPlayer, setDreamSuperPausePlayerUnhittability, 1);
 
 	setDreamSuperPauseActive();
-
+	
 	return 0;
 }
 

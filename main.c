@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
 	}
 	
 #ifdef DEVELOP
-	setVolume(0.2);
+	setVolume(0.05);
 	setDisplayedScreenSize(320, 240);
 	disableWrapperErrorRecovery();
 #endif

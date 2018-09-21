@@ -85,23 +85,12 @@ static void updateAIGuarding(PlayerAI* e) {
 	}
 }
 
-static void updateAICommands(PlayerAI* e) {
-	e->mRandomInputNow++;
-	if (e->mRandomInputNow >= e->mRandomInputDuration) {
-		e->mRandomInputNow = 0;
-		e->mRandomInputDuration = randfromInteger(30, 45);
-
-		setRandomPlayerCommandActive(e);
-	}
-}
-
 static void updateSingleAI(void* tCaller, void* tData) {
 	(void)tCaller;
 	PlayerAI* e = tData;
 
 	updateAIMovement(e);
 	updateAIGuarding(e);
-	updateAICommands(e);
 }
 
 static void updateAIHandler(void* tData) {
@@ -133,6 +122,34 @@ void setDreamAIActive(DreamPlayer * p)
 
 	list_push_back_owned(&gData.mHandledPlayers, e);
 }
+
+typedef struct {
+	int i;
+
+} FindAICaller;
+
+static int hasSameID(void* tCaller, void* tData) {
+	FindAICaller* caller = tCaller;
+	PlayerAI* e = tData;
+	
+	return e->mPlayer->mRootID == caller->i;
+}
+
+static PlayerAI* getAIFromPlayerID(int i) {
+	FindAICaller caller;
+	caller.i = i;
+
+	ListIterator it = list_find_first_predicate(&gData.mHandledPlayers, hasSameID, &caller);
+	if (!it) return NULL;
+	else return list_iterator_get(it);
+}
+
+void activateRandomAICommand(int i) {
+	PlayerAI* e = getAIFromPlayerID(i);
+	if (!e) return;
+	setRandomPlayerCommandActive(e);
+}
+
 
 ActorBlueprint DreamAIHandler = {
 	.mLoad = loadAIHandler,

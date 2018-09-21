@@ -47,11 +47,18 @@ static struct {
 
 	uint32_t mHeldMask[2];
 	uint32_t mPreviousHeldMask[2];
+
+	int mInputAllowedFlag[2];
 } gData;
 
 static void loadMugenCommandHandler(void* tData) {
 	(void)tData;
 	gData.mRegisteredCommands = new_vector();
+
+	int i;
+	for (i = 0; i < 2; i++) {
+		gData.mInputAllowedFlag[i] = 0;
+	}
 }
 
 
@@ -131,6 +138,11 @@ void setDreamMugenCommandFaceDirection(int tID, FaceDirection tDirection)
 {
 	RegisteredMugenCommand* e = vector_get(&gData.mRegisteredCommands, tID);
 	e->mIsFacingRight = tDirection == FACE_DIRECTION_RIGHT;
+}
+
+void allowPlayerCommandInputOneFrame(int tRootIndex)
+{	
+	gData.mInputAllowedFlag[tRootIndex] = 1;
 }
 
 static int handleSingleCommandInputStepAndReturnIfActive(DreamMugenCommandInputStep* tStep, int* oIsStepOver, DreamPlayer* tPlayer, int tIsFacingRight);
@@ -462,21 +474,22 @@ static void updateInputMask(int i) {
 	gData.mPreviousHeldMask[i] = gData.mHeldMask[i];
 	gData.mHeldMask[i] = 0;
 
-	updateSingleInputMaskEntry(i, MASK_A, hasPressedASingle(i));
-	updateSingleInputMaskEntry(i, MASK_B, hasPressedBSingle(i));
-	updateSingleInputMaskEntry(i, MASK_C, hasPressedRSingle(i));
-	updateSingleInputMaskEntry(i, MASK_X, hasPressedXSingle(i));
-	updateSingleInputMaskEntry(i, MASK_Y, hasPressedYSingle(i));
-	updateSingleInputMaskEntry(i, MASK_Z, hasPressedLSingle(i));
 
-	updateSingleInputMaskEntry(i, MASK_START, hasPressedStartSingle(i));
+	updateSingleInputMaskEntry(i, MASK_A, gData.mInputAllowedFlag[i] && hasPressedASingle(i));
+	updateSingleInputMaskEntry(i, MASK_B, gData.mInputAllowedFlag[i] && hasPressedBSingle(i));
+	updateSingleInputMaskEntry(i, MASK_C, gData.mInputAllowedFlag[i] && hasPressedRSingle(i));
+	updateSingleInputMaskEntry(i, MASK_X, gData.mInputAllowedFlag[i] && hasPressedXSingle(i));
+	updateSingleInputMaskEntry(i, MASK_Y, gData.mInputAllowedFlag[i] && hasPressedYSingle(i));
+	updateSingleInputMaskEntry(i, MASK_Z, gData.mInputAllowedFlag[i] && hasPressedLSingle(i));
+
+	updateSingleInputMaskEntry(i, MASK_START, gData.mInputAllowedFlag[i] && hasPressedStartSingle(i));
 
 	updateSingleInputMaskEntry(i, MASK_LEFT, hasPressedLeftSingle(i));
 	updateSingleInputMaskEntry(i, MASK_RIGHT, hasPressedRightSingle(i));
 	updateSingleInputMaskEntry(i, MASK_UP, hasPressedUpSingle(i));
 	updateSingleInputMaskEntry(i, MASK_DOWN, hasPressedDownSingle(i));
 
-	
+	gData.mInputAllowedFlag[i] = 0;
 }
 
 static void updateInputMasks() {

@@ -16,6 +16,7 @@
 #include "fightscreen.h"
 #include "fightresultdisplay.h"
 #include "mugenexplod.h"
+#include "osuhandler.h"
 
 typedef enum {
 	ROUND_STATE_FADE_IN = 0,
@@ -67,6 +68,7 @@ static void roundAnimationFinishedCB() {
 
 static void introFinished() {
 	gData.mIsDisplayingIntro = 0;
+	if (!shouldPlayOsuMusicInTheBeginning()) startPlayingOsuSong();
 	playDreamRoundAnimation(gData.mRoundNumber, roundAnimationFinishedCB);
 }
 
@@ -202,6 +204,7 @@ static void resetGameLogic(void* tCaller) {
 	gotoNextRound(NULL);
 	removeAllWinIcons();
 	resetPlayersEntirely();
+	resetOsuHandler();
 
 	gData.mGameTime = 0;
 	gData.mRoundNumber = gData.mStartRound;
@@ -251,6 +254,7 @@ static void koAnimationFinishedCB() {
 
 static void startKO() {
 	disableDreamTimer();
+	stopOsuHandler();
 	setRoundWinner();
 	playDreamKOAnimation(koAnimationFinishedCB);
 }
@@ -341,6 +345,7 @@ static void skipIntroCB(void* tCaller) {
 	(void)tCaller;
 	enableDrawing();
 	stopFightAndRoundAnimation();
+	if (!shouldPlayOsuMusicInTheBeginning() && !isOsuHandlerActive()) startPlayingOsuSong();
 	gData.mIsDisplayingIntro = 0;
 	changePlayerState(getRootPlayer(0), 0);
 	changePlayerState(getRootPlayer(1), 0);
@@ -454,11 +459,11 @@ void setFightContinueInactive()
 }
 
 void setGameModeArcade() {
-	gData.mRoundsToWin = 2;
+	gData.mRoundsToWin = 1;
 	gData.mStartRound = 1;
 
 	setFightContinueActive();
-	setTimerFinite();
+	setTimerInfinite();
 	setPlayersToRealFightMode();
 	setPlayerHuman(0);
 	setPlayerArtificial(1);
@@ -489,12 +494,12 @@ void setGameModeFreePlay()
 }
 
 void setGameModeVersus() {
-	gData.mRoundsToWin = 2;
+	gData.mRoundsToWin = 1;
 	gData.mStartRound = 1;
 
 	setFightResultActive(0);
 	setFightContinueInactive();
-	setTimerFinite();
+	setTimerInfinite();
 	setPlayersToRealFightMode();
 	setPlayerHuman(0);
 	setPlayerHuman(1);
@@ -512,7 +517,7 @@ void setGameModeSurvival(double tLifePercentage, int tRound) {
 
 	setFightResultActive(0);
 	setFightContinueInactive();
-	setTimerFinite();
+	setTimerInfinite();
 	setPlayersToRealFightMode();
 	setPlayerHuman(0);
 	setPlayerArtificial(1);
@@ -525,7 +530,7 @@ void setGameModeSurvival(double tLifePercentage, int tRound) {
 }
 
 void setGameModeTraining() {
-	gData.mRoundsToWin = 2;
+	gData.mRoundsToWin = 1;
 	gData.mStartRound = 1;
 
 	setFightResultActive(0);
@@ -544,12 +549,12 @@ void setGameModeTraining() {
 
 void setGameModeWatch()
 {
-	gData.mRoundsToWin = 2;
+	gData.mRoundsToWin = 1;
 	gData.mStartRound = 1;
 
 	setFightResultActive(0);
 	setFightContinueInactive();
-	setTimerFinite();
+	setTimerInfinite();
 	setPlayersToRealFightMode();
 	setPlayerArtificial(0);
 	setPlayerArtificial(1);
@@ -585,11 +590,11 @@ void setGameModeExhibit(int tEndTime, int tIsDisplayingBars)
 }
 
 void setGameModeStory() {
-	gData.mRoundsToWin = 2;
+	gData.mRoundsToWin = 1;
 	gData.mStartRound = 1;
 
 	setFightResultActive(0);
-	setTimerFinite();
+	setTimerInfinite();
 	setPlayersToRealFightMode();
 	setPlayerHuman(0);
 	setPlayerArtificial(1);

@@ -57,10 +57,10 @@ typedef struct {
 } OsuColor;
 
 
+#define OSU_TYPE_MASK_HIT_OBJECT	(1 << 0)
+#define OSU_TYPE_MASK_SLIDER		(1 << 1)
 #define OSU_TYPE_MASK_NEW_COMBO		(1 << 2)
-#define OSU_TYPE_MASK_HIT_OBJECT	(1 << 3)
-#define OSU_TYPE_MASK_SLIDER		(1 << 4)
-#define OSU_TYPE_MASK_SPINNER		(1 << 5)
+#define OSU_TYPE_MASK_SPINNER		(1 << 3)
 
 typedef struct {
 	int mX;

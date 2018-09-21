@@ -12,5 +12,6 @@ int isDreamCommandActive(int tID, char* tCommandName);
 void setDreamPlayerCommandActiveForAI(int tID, char* tCommandName, Duration tBufferTime);
 
 void setDreamMugenCommandFaceDirection(int tID, FaceDirection tDirection);
+void allowPlayerCommandInputOneFrame(int tRootIndex); // TODO: fix if you add proper Osu mode
 
 extern ActorBlueprint DreamMugenCommandHandler;

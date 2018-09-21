@@ -113,9 +113,8 @@ static void loadFightScreen() {
 	loadPlayerSprites();
 	setUIFaces();
 
-	setOsuFile("assets/osu/1.osu");
+	setOsuFile("assets/osu/4.osu");
 	instantiateActor(OsuHandler);
-	playOsuMusicFile();
 
 
 	malloc_stats();

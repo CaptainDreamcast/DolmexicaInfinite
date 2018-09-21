@@ -5,5 +5,9 @@
 
 extern ActorBlueprint OsuHandler;
 
+int isOsuHandlerActive();
+int shouldPlayOsuMusicInTheBeginning();
+void startPlayingOsuSong();
+void resetOsuHandler();
 void setOsuFile(char* tPath);
-void playOsuMusicFile();
+void stopOsuHandler();

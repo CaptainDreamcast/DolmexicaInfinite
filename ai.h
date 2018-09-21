@@ -5,5 +5,6 @@
 #include "playerdefinition.h"
 
 void setDreamAIActive(DreamPlayer* p);
+void activateRandomAICommand(int i);
 
 extern ActorBlueprint DreamAIHandler;

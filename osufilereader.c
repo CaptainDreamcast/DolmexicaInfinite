@@ -114,16 +114,16 @@ static void loadSingleOsuFileTimingPoint(void* tCaller, void* tData) {
 
 	if (element->mType != MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) return;
 	MugenDefScriptVectorElement* vectorElement = element->mData;
-	if (vectorElement->mVector.mSize != 8) return;
+	if (vectorElement->mVector.mSize < 5) return;
 
 	OsuTimingPoint* e = allocMemory(sizeof(OsuTimingPoint));
 	e->mOffset = atoi(vectorElement->mVector.mElement[0]);
 	e->mMillisecondsPerBeat = atof(vectorElement->mVector.mElement[1]);
 	e->mMeter = atoi(vectorElement->mVector.mElement[2]);
 	e->mSampleIndex = atoi(vectorElement->mVector.mElement[4]);
-	e->mVolume = atoi(vectorElement->mVector.mElement[5]);
-	e->mInherited = atoi(vectorElement->mVector.mElement[6]);
-	e->mKiaiMode = atoi(vectorElement->mVector.mElement[7]);
+	e->mVolume = (vectorElement->mVector.mSize >= 6) ? atoi(vectorElement->mVector.mElement[5]) : 100;
+	e->mInherited = (vectorElement->mVector.mSize >= 7) ? atoi(vectorElement->mVector.mElement[6]) : 1;
+	e->mKiaiMode = (vectorElement->mVector.mSize >= 8) ? atoi(vectorElement->mVector.mElement[7]) : 0;
 
 	list_push_back_owned(&caller->mDst->mOsuTimingPoints, e);
 }
@@ -140,6 +140,14 @@ typedef struct {
 	OsuFile* mDst;
 } OsuFileColorLoadCaller;
 
+static void createAndAddOsuColor(OsuFile* tFile, double r, double g, double b) {
+	OsuColor* e = allocMemory(sizeof(OsuColor));
+	e->mR = r;
+	e->mG = g;
+	e->mB = b;
+	list_push_back_owned(&tFile->mOsuColors, e);
+}
+
 static void loadSingleOsuFileColor(void* tCaller, void* tData) {
 	OsuFileColorLoadCaller* caller = tCaller;
 	MugenDefScriptGroupElement* element = tData;
@@ -148,15 +156,17 @@ static void loadSingleOsuFileColor(void* tCaller, void* tData) {
 	MugenDefScriptVectorElement* vectorElement = element->mData;
 	if (vectorElement->mVector.mSize != 3) return;
 
-	OsuColor* e = allocMemory(sizeof(OsuColor));
-	e->mR = atoi(vectorElement->mVector.mElement[0]) / 255.0;
-	e->mG = atoi(vectorElement->mVector.mElement[1]) / 255.0;
-	e->mB = atoi(vectorElement->mVector.mElement[2]) / 255.0;
-
-	list_push_back_owned(&caller->mDst->mOsuColors, e);
+	double r = atoi(vectorElement->mVector.mElement[0]) / 255.0;
+	double g = atoi(vectorElement->mVector.mElement[1]) / 255.0;
+	double b = atoi(vectorElement->mVector.mElement[2]) / 255.0;
+	createAndAddOsuColor(caller->mDst, r, g, b);
 }
 
 static void loadOsuFileColors(OsuFile* tDst, MugenDefScript* tScript) {
+	if (!string_map_contains(&tScript->mGroups, "Colours")) {
+		createAndAddOsuColor(tDst, 1, 1, 1);
+		return;
+	}
 	MugenDefScriptGroup* group = string_map_get(&tScript->mGroups, "Colours");
 
 	OsuFileColorLoadCaller caller;

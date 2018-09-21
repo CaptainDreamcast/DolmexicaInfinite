@@ -8,18 +8,27 @@
 #include <prism/input.h>
 #include <prism/system.h>
 #include <prism/log.h>
+#include <prism/math.h>
 
+#include "ai.h"
 #include "osufilereader.h"
+#include "mugencommandhandler.h"
+#include "fightui.h"
 
 typedef struct {
 	int mHasResponded;
 	int mResponseAnimationID;
+
+	int mHasAIDecided;
+	int mAIDecidedLevel;
 
 } ActiveHitObjectPlayerResponse;
 
 typedef struct {
 	OsuHitObject* mObject;
 	int mIsObjectOwned;
+
+	OsuColor* mColor;
 
 	int mBodyAnimationID;
 	int mCircleAnimationID;
@@ -66,6 +75,7 @@ static struct {
 
 	double mGlobalZCounter;
 
+	int mIsActive;
 } gData;
 
 static void loadTimingPointData() {
@@ -73,6 +83,64 @@ static void loadTimingPointData() {
 	gData.mTimingPoint.mPreviousTimingPointWithPositiveBeat = list_iterator_begin(&gData.mOsu.mOsuTimingPoints);
 	OsuTimingPoint* e = list_iterator_get(gData.mTimingPoint.mCurrentTimingPoint);
 	gData.mTimingPoint.mCurrentMillisecondsPerBeat = e->mMillisecondsPerBeat;
+}
+
+static void playOsuMusicFile()
+{
+	char path[1024];
+	char folder[1024];
+
+	getPathToFile(folder, gData.mPath);
+	sprintf(path, "%s%s", folder, gData.mOsu.mGeneral.mAudioFileName);
+
+	streamMusicFileOnce(path);
+	gData.mIsActive = 1;
+}
+
+
+static int getPreempt();
+
+int isOsuHandlerActive()
+{
+	return gData.mIsActive;
+}
+
+int shouldPlayOsuMusicInTheBeginning() {
+	ListIterator it = list_iterator_begin(&gData.mOsu.mOsuHitObjects);
+	OsuHitObject* e = list_iterator_get(it);
+
+	int delta = 10000 - (e->mTime - getPreempt()); // TODO: improve
+	return (delta <= 0);
+}
+
+void startPlayingOsuSong() {
+	if (isPlayingStreamingMusic()) stopStreamingMusicFile();
+	playOsuMusicFile();
+}
+
+static void resetOsuHandlerData() {
+	gData.mCurrentHitObjectListPosition = list_iterator_begin(&gData.mOsu.mOsuHitObjects);
+	gData.mCurrentColor = list_iterator_begin(&gData.mOsu.mOsuColors);
+	if (!gData.mCurrentColor) {
+		logError("No Osu colors defined.");
+		recoverFromError();
+	}
+	loadTimingPointData();
+
+	gData.mGlobalZCounter = 80;
+
+	gData.mIsActive = 0;
+
+	if (shouldPlayOsuMusicInTheBeginning()) {
+		startPlayingOsuSong();
+	}
+}
+
+static void emptyOsuHandler();
+
+void resetOsuHandler() {
+	emptyOsuHandler();
+	resetOsuHandlerData();
 }
 
 static void loadOsuHandler(void* tData) {
@@ -84,15 +152,7 @@ static void loadOsuHandler(void* tData) {
 	gData.mActiveSliderObjects = new_list();
 	gData.mActiveSpinnerObjects = new_list();
 
-	gData.mCurrentHitObjectListPosition = list_iterator_begin(&gData.mOsu.mOsuHitObjects);
-	gData.mCurrentColor = list_iterator_begin(&gData.mOsu.mOsuColors);
-	if (!gData.mCurrentColor) {
-		logError("No Osu colors defined.");
-		recoverFromError();
-	}
-	loadTimingPointData();
-
-	gData.mGlobalZCounter = 70;
+	resetOsuHandlerData();
 }
 
 static int getPreempt() {
@@ -155,21 +215,22 @@ static void addActiveHitObject(OsuHitObject* tObject, int tIsOwned) {
 	if (e->mObject->mType & OSU_TYPE_MASK_NEW_COMBO) {
 		increaseOsuColor();
 	}
-	OsuColor* color = list_iterator_get(gData.mCurrentColor);
+	e->mColor = list_iterator_get(gData.mCurrentColor);
 
 	e->mCircleAnimationID = addMugenAnimation(getMugenAnimation(&gData.mAnimations, 1001), &gData.mSprites, makePosition(parsePositionX(tObject->mX), parsePositionY(tObject->mY), gData.mGlobalZCounter));
 	setMugenAnimationTransparency(e->mCircleAnimationID, 0);
 	setMugenAnimationBaseDrawScale(e->mCircleAnimationID, getCircleSizeScale());
-	setMugenAnimationColor(e->mCircleAnimationID, color->mR, color->mG, color->mB);
+	setMugenAnimationColor(e->mCircleAnimationID, e->mColor->mR, e->mColor->mG, e->mColor->mB);
 	e->mBodyAnimationID = addMugenAnimation(getMugenAnimation(&gData.mAnimations, 1000), &gData.mSprites, makePosition(parsePositionX(tObject->mX), parsePositionY(tObject->mY), gData.mGlobalZCounter + 0.001));
 	setMugenAnimationTransparency(e->mBodyAnimationID, 0);
 	setMugenAnimationBaseDrawScale(e->mBodyAnimationID, getCircleSizeScale());
-	setMugenAnimationColor(e->mBodyAnimationID, color->mR, color->mG, color->mB);
-	gData.mGlobalZCounter += 0.003;
+	setMugenAnimationColor(e->mBodyAnimationID, e->mColor->mR*0.8, e->mColor->mG*0.8, e->mColor->mB*0.8);
+	gData.mGlobalZCounter -= 0.003;
 
 	int i;
 	for (i = 0; i < 2; i++) {
 		e->mPlayerResponse[i].mHasResponded = 0;
+		e->mPlayerResponse[i].mHasAIDecided = 0;
 	}
 
 	list_push_back_owned(&gData.mActiveHitObjects, e);
@@ -204,7 +265,7 @@ static void unloadActiveSliderObject(ActiveSliderObject* e) {}
 static void addActiveSpinnerObject(OsuSpinnerObject* tObject) {
 	ActiveSpinnerObject* e = allocMemory(sizeof(ActiveSpinnerObject));
 	e->mObject = tObject;
-	e->mEncouragementAnimationID = addMugenAnimation(getMugenAnimation(&gData.mAnimations, 2000), &gData.mSprites, makePosition(160, 40, 90));
+	e->mEncouragementAnimationID = addMugenAnimation(getMugenAnimation(&gData.mAnimations, 2000), &gData.mSprites, makePosition(160, 52, 90));
 
 	list_push_back_owned(&gData.mActiveSpinnerObjects, e);
 }
@@ -213,6 +274,32 @@ static void unloadActiveSpinnerObject(ActiveSpinnerObject* e) {
 	removeMugenAnimation(e->mEncouragementAnimationID);
 }
 
+static int removeSingleActiveHitObject(void* tCaller, void* tData) {
+	(void)tCaller;
+	ActiveHitObject* e = tData;
+	unloadActiveHitObject(e);
+	return 1;
+}
+
+static int removeSingleActiveSliderObject(void* tCaller, void* tData) {
+	(void)tCaller;
+	ActiveSliderObject* e = tData;
+	unloadActiveSliderObject(e);
+	return 1;
+}
+
+static int removeSingleActiveSpinnerObject(void* tCaller, void* tData) {
+	(void)tCaller;
+	ActiveSpinnerObject* e = tData;
+	unloadActiveSpinnerObject(e);
+	return 1;
+}
+
+static void emptyOsuHandler() {
+	list_remove_predicate(&gData.mActiveHitObjects, removeSingleActiveHitObject, NULL);
+	list_remove_predicate(&gData.mActiveSliderObjects, removeSingleActiveSliderObject, NULL);
+	list_remove_predicate(&gData.mActiveSpinnerObjects, removeSingleActiveSpinnerObject, NULL);
+}
 
 static void increaseCurrentHitObject() {
 	if (list_has_next(gData.mCurrentHitObjectListPosition)) {
@@ -317,6 +404,18 @@ static void updateActiveHitObjectTransparency(ActiveHitObject* e) {
 
 }
 
+static void updateActiveHitObjectBrightness(ActiveHitObject* e) {
+	int time = (int)getStreamingSoundTimeElapsedInMilliseconds();
+	int preempt = getPreempt();
+	int start = e->mObject->mTime - preempt;
+	int end = e->mObject->mTime;
+
+	double t = (time - start) / (double)(end - start);
+	double scale = 4 - (4 - 1)*t;
+	scale *= getCircleSizeScale();
+	setMugenAnimationBaseDrawScale(e->mCircleAnimationID, scale);
+}
+
 static void updateActiveHitObjectRingScale(ActiveHitObject* e) {
 	int time = (int)getStreamingSoundTimeElapsedInMilliseconds();
 	int preempt = getPreempt();
@@ -335,14 +434,20 @@ static int hasPressedOsuButtonFlank(int i){
 }
 
 static void addResponse(int i, ActiveHitObject* e, int tLevel) {
+	
 	Position pos = getMugenAnimationPosition(e->mBodyAnimationID);
 
 	pos.x += 20 * (i ? 1 : -1);
 	pos.z += 0.001;
 
 	e->mPlayerResponse[i].mResponseAnimationID = addMugenAnimation(getMugenAnimation(&gData.mAnimations, 1500 + tLevel), &gData.mSprites, pos);
+
+	if (tLevel > 0) allowPlayerCommandInputOneFrame(i);
+	if (tLevel > 0 && getPlayerAILevel(getRootPlayer(i))) activateRandomAICommand(i);
+
 	e->mPlayerResponse[i].mHasResponded = 1;
 }
+
 
 static void updateSinglePlayerActiveHitObjectHit(int i, ActiveHitObject* e, UpdateActiveHitObjectCaller* tCaller, int tTime) {
 	if (e->mPlayerResponse[i].mHasResponded) return;
@@ -365,19 +470,24 @@ static void updateSinglePlayerActiveHitObjectHit(int i, ActiveHitObject* e, Upda
 	int endWindow300 = e->mObject->mTime + hitWindow300;
 	if (tTime >= startWindow300 && tTime <= endWindow300) level = 3;
 
-	// TODO: set control active
-
 	addResponse(i, e, level);
 }
+
+static void setActiveHitObjectBright(ActiveHitObject* e) {
+	setMugenAnimationColor(e->mBodyAnimationID, e->mColor->mR, e->mColor->mG, e->mColor->mB);
+}
+
+#define HIT_OBJECT_HIT_BEGIN 500
 
 static void updateActiveHitObjectHit(ActiveHitObject* e, UpdateActiveHitObjectCaller* tCaller) {
 	int time = (int)getStreamingSoundTimeElapsedInMilliseconds();
 
-	int overallStart = e->mObject->mTime - 500;
+	int overallStart = e->mObject->mTime - HIT_OBJECT_HIT_BEGIN;
 
 	int hitWindow50 = getHitWindow50();
 	int endWindow50 = e->mObject->mTime + hitWindow50;
 	if (time < overallStart || time > endWindow50) return;
+	setActiveHitObjectBright(e);
 
 	int i;
 	for (i = 0; i < 2; i++) {
@@ -414,6 +524,7 @@ static int updateSingleActiveHitObject(void* tCaller, void* tData) {
 	ActiveHitObject* e = tData;
 
 	updateActiveHitObjectTransparency(e);
+	updateActiveHitObjectBrightness(e);
 	updateActiveHitObjectRingScale(e);
 	updateActiveHitObjectHit(e, caller);
 	updateActiveHitObjectMiss(e, caller);
@@ -482,8 +593,8 @@ static void updateActiveSpinnerControl(ActiveSpinnerObject* e) {
 	int time = (int)getStreamingSoundTimeElapsedInMilliseconds();
 	if (time < e->mObject->mTime || time > e->mObject->mEndTime) return;
 
-	// TODO: allow controls
-
+	allowPlayerCommandInputOneFrame(0);
+	allowPlayerCommandInputOneFrame(1);
 }
 
 
@@ -549,14 +660,95 @@ static void updateActiveSpinners() {
 	list_remove_predicate(&gData.mActiveSpinnerObjects, updateSingleActiveSpinnerObject, NULL);
 }
 
+typedef struct {
+	int mTime;
+	int i;
+} FindHitObjectCaller;
+
+static int isRelevantAIHitObjectCB(void* tCaller, void* tData) {
+	FindHitObjectCaller* caller = tCaller;
+	ActiveHitObject* e = tData;
+
+	if (e->mPlayerResponse[caller->i].mHasResponded) return 0;
+
+	int hitWindow50 = getHitWindow50();
+	int startWindow50 = e->mObject->mTime - hitWindow50;
+	int endWindow50 = e->mObject->mTime + hitWindow50;
+	return (caller->mTime >= startWindow50 && caller->mTime <= endWindow50);
+}
+
+static ActiveHitObject* findAIRelevantActiveHitObject(int i, int tTime) {
+	FindHitObjectCaller caller;
+	caller.mTime = tTime;
+	caller.i = i;
+
+	ListIterator iterator = list_find_first_predicate(&gData.mActiveHitObjects, isRelevantAIHitObjectCB, &caller);
+	if (!iterator) return NULL;
+
+	return list_iterator_get(iterator);
+}
+
+static void decideAIResponse(int i, ActiveHitObject* e) {
+
+	e->mPlayerResponse[i].mAIDecidedLevel = randfromInteger(0, 3);
+	e->mPlayerResponse[i].mHasAIDecided = 1;
+}
+
+static void updateSingleArtificialIntelligence(int i) {
+	if (!getPlayerAILevel(getRootPlayer(i))) return;
+
+	int time = (int)getStreamingSoundTimeElapsedInMilliseconds();
+	ActiveHitObject* e = findAIRelevantActiveHitObject(i, time);
+	if (!e) return;
+
+	if (!e->mPlayerResponse[i].mHasAIDecided) {
+		decideAIResponse(i, e);
+	}
+
+	if (e->mPlayerResponse[i].mAIDecidedLevel == 1) {
+		addResponse(i, e, e->mPlayerResponse[i].mAIDecidedLevel);
+	}
+	else if (e->mPlayerResponse[i].mAIDecidedLevel == 2) {
+		int hitWindow100 = getHitWindow100();
+		int startWindow100 = e->mObject->mTime - hitWindow100;
+		int endWindow100 = e->mObject->mTime + hitWindow100;
+		if (time >= startWindow100 && time <= endWindow100) {
+			addResponse(i, e, e->mPlayerResponse[i].mAIDecidedLevel);
+		}
+	} else if (e->mPlayerResponse[i].mAIDecidedLevel == 3) {
+		int hitWindow300 = getHitWindow300();
+		int startWindow300 = e->mObject->mTime - hitWindow300;
+		int endWindow300 = e->mObject->mTime + hitWindow300;
+		if (time >= startWindow300 && time <= endWindow300) {
+			addResponse(i, e, e->mPlayerResponse[i].mAIDecidedLevel);
+		}
+	}
+}
+
+static void updateArtificialIntelligence() {
+	int i;
+	for (i = 0; i < 2; i++) {
+		updateSingleArtificialIntelligence(i);
+	}
+}
+
+static void updateFightEnd() {
+	if (isPlayingStreamingMusic()) return;
+
+	setTimerFinished();
+}
 
 static void updateOsuHandler(void* tData) {
 	(void)tData;
-	updateTimingPoint();
-	updateNewObjects();
+	if (gData.mIsActive) {
+		updateTimingPoint();
+		updateNewObjects();
+		updateFightEnd();
+	}
 	updateActiveSliders();
 	updateActiveHitObjects();
 	updateActiveSpinners();
+	updateArtificialIntelligence();
 }
 
 ActorBlueprint OsuHandler = {
@@ -569,13 +761,8 @@ void setOsuFile(char * tPath)
 	strcpy(gData.mPath, tPath);
 }
 
-void playOsuMusicFile()
+void stopOsuHandler()
 {
-	char path[1024];
-	char folder[1024];
-
-	getPathToFile(folder, gData.mPath);
-	sprintf(path, "%s%s", folder, gData.mOsu.mGeneral.mAudioFileName);
-
-	streamMusicFileOnce(path);
+	emptyOsuHandler();
+	gData.mIsActive = 0;
 }
