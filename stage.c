@@ -261,7 +261,7 @@ static MugenDefScriptGroup* loadStageBackgroundDefinitionAndReturnGroup(MugenDef
 }
 
 static int isBackgroundElementGroup(MugenDefScriptGroup* tGroup) {
-	return tGroup->mName[0] == 'B' && tGroup->mName[1] == 'G';
+	return tGroup->mName[0] == 'B' && tGroup->mName[1] == 'G' && tGroup->mName[2] != 'C'; // TODO
 }
 
 static int isActionGroup(MugenDefScriptGroup* tGroup) {
@@ -275,13 +275,11 @@ static int isActionGroup(MugenDefScriptGroup* tGroup) {
 }
 
 static void addBackgroundElementToStageHandler(StageBackgroundElement* e, MugenAnimation* tAnimation, int tOwnsAnimation) {
-	e->mStart.z = e->mListPosition + e->mLayerNo * BACKGROUND_UPPER_BASE_Z;
+	e->mStart.z = e->mListPosition*0.01 + e->mLayerNo * BACKGROUND_UPPER_BASE_Z;
 	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, tOwnsAnimation, &gData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), e->mVelocity, e->mStartScaleY, e->mScaleDeltaY, e->mLayerNo, e->mID, gData.mStageInfo.mLocalCoordinates);
 }
 
-static BlendType getBackgroundBlendType(MugenDefScript* tScript, char* tGroupName) {
-	MugenDefScriptGroup* tGroup = string_map_get(&tScript->mGroups, tGroupName);
-
+static BlendType getBackgroundBlendType(MugenDefScriptGroup* tGroup) {
 	if (!isMugenDefStringVariableAsGroup(tGroup, "trans")) return BLEND_TYPE_NORMAL;
 
 	BlendType ret;
@@ -307,32 +305,31 @@ static BlendType getBackgroundBlendType(MugenDefScript* tScript, char* tGroupNam
 	return ret;
 }
 
-static void loadBackgroundElement(MugenDefScript* s, char* tName, int i) {
+static void loadBackgroundElement(MugenDefScriptGroup* tGroup, int i) {
 	StageBackgroundElement* e = allocMemory(sizeof(StageBackgroundElement));
 
 	debugLog("Load background element.");
  	debugString(tName);
 
-	char type[100];
-	getMugenDefStringOrDefault(type, s, tName, "type", "unknown");
+	char* type = getAllocatedMugenDefStringOrDefaultAsGroup(tGroup, "type", "unknown");
 	turnStringLowercase(type);
 
-	e->mSpriteNo = getMugenDefVectorIOrDefault(s, tName, "spriteno", makeVector3DI(0, 0, 0));
-	e->mLayerNo = getMugenDefIntegerOrDefault(s, tName, "layerno", 0);
-	e->mStart = getMugenDefVectorOrDefault(s, tName, "start", makePosition(0, 0, 0));
-	e->mDelta = getMugenDefVectorOrDefault(s, tName, "delta", makePosition(1, 1, 1));
-	e->mMask = getMugenDefIntegerOrDefault(s, tName, "mask", 0);
-	e->mTile = getMugenDefVectorIOrDefault(s, tName, "tile", makeVector3DI(0, 0, 0));
-	e->mTileSpacing = getMugenDefVectorIOrDefault(s, tName, "tilespacing", makeVector3DI(0, 0, 0));
-	e->mVelocity = getMugenDefVectorOrDefault(s, tName, "velocity", makePosition(0, 0, 0));
+	e->mSpriteNo = getMugenDefVectorIOrDefaultAsGroup(tGroup, "spriteno", makeVector3DI(0, 0, 0));
+	e->mLayerNo = getMugenDefIntegerOrDefaultAsGroup(tGroup, "layerno", 0);
+	e->mStart = getMugenDefVectorOrDefaultAsGroup(tGroup, "start", makePosition(0, 0, 0));
+	e->mDelta = getMugenDefVectorOrDefaultAsGroup(tGroup, "delta", makePosition(1, 1, 1));
+	e->mMask = getMugenDefIntegerOrDefaultAsGroup(tGroup, "mask", 0);
+	e->mTile = getMugenDefVectorIOrDefaultAsGroup(tGroup, "tile", makeVector3DI(0, 0, 0));
+	e->mTileSpacing = getMugenDefVectorIOrDefaultAsGroup(tGroup, "tilespacing", makeVector3DI(0, 0, 0));
+	e->mVelocity = getMugenDefVectorOrDefaultAsGroup(tGroup, "velocity", makePosition(0, 0, 0));
 	
-	e->mBlendType = getBackgroundBlendType(s, tName);
+	e->mBlendType = getBackgroundBlendType(tGroup);
 	e->mListPosition = i;
 
-	e->mStartScaleY = getMugenDefFloatOrDefault(s, tName, "yscalestart", 100) / 100.0;
-	e->mScaleDeltaY = getMugenDefFloatOrDefault(s, tName, "yscaledelta", 0) / 100.0;
+	e->mStartScaleY = getMugenDefFloatOrDefaultAsGroup(tGroup, "yscalestart", 100) / 100.0;
+	e->mScaleDeltaY = getMugenDefFloatOrDefaultAsGroup(tGroup, "yscaledelta", 0) / 100.0;
 
-	e->mID = getMugenDefIntegerOrDefault(s, tName, "id", -1);
+	e->mID = getMugenDefIntegerOrDefaultAsGroup(tGroup, "id", -1);
 
 	if (!strcmp("normal", type) || !strcmp("parallax", type)) { // TODO: parallax
 		e->mType = STAGE_BACKGROUND_STATIC;
@@ -340,27 +337,29 @@ static void loadBackgroundElement(MugenDefScript* s, char* tName, int i) {
 	}
 	else if (!strcmp("anim", type)) {
 		e->mType = STAGE_BACKGROUND_ANIMATED;
-		e->mActionNumber = getMugenDefIntegerOrDefault(s, tName, "actionno", -1);
+		e->mActionNumber = getMugenDefIntegerOrDefaultAsGroup(tGroup, "actionno", -1);
 		addBackgroundElementToStageHandler(e, getMugenAnimation(&gData.mAnimations, e->mActionNumber), 0);
 	}
 	else {
 		logWarningFormat("Unknown type %s. Ignore.", type);
 		freeMemory(e);
+		freeMemory(type);
 		return;
 	}
 
+	freeMemory(type);
 	list_push_back_owned(&gData.mBackgroundElements, e);
 }
 
 static void loadBackgroundDefinitionGroup(MugenDefScript* s, MugenDefScriptGroup* tGroup, int i) {
 	if (isBackgroundElementGroup(tGroup)) {
-		loadBackgroundElement(s, tGroup->mName, i);
+		loadBackgroundElement(tGroup, i);
 	}
 	else if (isActionGroup(tGroup)) {
 		// TODO: ignore properly
 	}
 	else {
-		logWarningFormat("Unknown background definition group %s. Ignoring.", tGroup->mName);
+		//logWarningFormat("Unknown background definition group %s. Ignoring.", tGroup->mName); // TODO
 	}
 }
 

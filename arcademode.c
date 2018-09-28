@@ -106,7 +106,12 @@ static void addSingleEnemyToSelection(void* tCaller, void* tData) {
 		freeMemory(e);
 		return;
 	}
-	sprintf(e->mStagePath, "assets/%s", stringVector.mElement[1]); 
+	if (!strcmp("random", stringVector.mElement[1])) { // TODO: fix when assets removed
+		strcpy(e->mStagePath, stringVector.mElement[1]);
+	}
+	else {
+		sprintf(e->mStagePath, "assets/%s", stringVector.mElement[1]);
+	}
 	*e->mMusicPath = '\0';
 
 	parseOptionalCharacterSelectParameters(stringVector, &e->mOrder, NULL, e->mMusicPath);
@@ -236,7 +241,14 @@ static void fightFinishedCB() {
 	}
 		
 	setPlayerDefinitionPath(1, gData.mEnemies[gData.mCurrentEnemy].mDefinitionPath);
-	setDreamStageMugenDefinition(gData.mEnemies[gData.mCurrentEnemy].mStagePath, gData.mEnemies[gData.mCurrentEnemy].mMusicPath);
+
+	if (!strcmp("random", gData.mEnemies[gData.mCurrentEnemy].mStagePath)) {
+		MugenDefScript script = loadMugenDefScript("assets/data/select.def");
+		setStageRandom(&script);
+	}
+	else {
+		setDreamStageMugenDefinition(gData.mEnemies[gData.mCurrentEnemy].mStagePath, gData.mEnemies[gData.mCurrentEnemy].mMusicPath);
+	}
 	setVersusScreenFinishedCB(versusScreenFinishedCB);
 	setNewScreen(&VersusScreen);
 }
