@@ -113,7 +113,7 @@ static void loadFightScreen() {
 	loadPlayerSprites();
 	setUIFaces();
 
-	setOsuFile("assets/osu/4.osu");
+	playDreamStageMusic();
 	instantiateActor(OsuHandler);
 
 

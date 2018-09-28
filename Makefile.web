@@ -5,5 +5,5 @@ all: complete
 clean_user:
 	
 PRISM_PATH = ..\addons\prism
-ADDITIONAL_PRELOADS = --preload-file assets
+ADDITIONAL_PRELOADS = --preload-file assets_web@assets
 include ../addons/prism/Makefile.commonweb
