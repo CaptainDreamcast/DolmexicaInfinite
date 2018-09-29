@@ -348,6 +348,7 @@ static void loadSingleSparkNumber(int* oIsSparkInPlayerFile, int* oSparkNumber, 
 
 static void loadMugenConstantsHeader(DreamMugenConstantsHeader* tHeader, MugenDefScript* tScript) {
 	tHeader->mLife = getMugenDefIntegerOrDefault(tScript, "Data", "life", 1000);
+	tHeader->mLife *= 2;
 	tHeader->mPower = getMugenDefIntegerOrDefault(tScript, "Data", "power", 3000);
 	tHeader->mAttack = getMugenDefIntegerOrDefault(tScript, "Data", "attack", 100);
 	tHeader->mDefense = getMugenDefIntegerOrDefault(tScript, "Data", "defence", 100);

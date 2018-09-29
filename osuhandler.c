@@ -9,6 +9,7 @@
 #include <prism/system.h>
 #include <prism/log.h>
 #include <prism/math.h>
+#include <prism/mugensoundfilereader.h>
 
 #include "ai.h"
 #include "osufilereader.h"
@@ -62,6 +63,7 @@ static struct {
 
 	MugenSpriteFile mSprites;
 	MugenAnimations mAnimations;
+	MugenSounds mSounds;
 
 	OsuFile mOsu;
 	List mActiveHitObjects; // contains ActiveHitObject 
@@ -146,6 +148,7 @@ void resetOsuHandler() {
 static void loadOsuHandler(void* tData) {
 	gData.mSprites = loadMugenSpriteFileWithoutPalette("assets/osu/OSU.sff");
 	gData.mAnimations = loadMugenAnimationFile("assets/osu/OSU.air");
+	gData.mSounds = loadMugenSoundFile("assets/osu/OSU.snd");
 
 	gData.mOsu = loadOsuFile(gData.mPath);
 	gData.mActiveHitObjects = new_list();
@@ -441,6 +444,10 @@ static void addResponse(int i, ActiveHitObject* e, int tLevel) {
 	pos.z += 0.001;
 
 	e->mPlayerResponse[i].mResponseAnimationID = addMugenAnimation(getMugenAnimation(&gData.mAnimations, 1500 + tLevel), &gData.mSprites, pos);
+
+	if (tLevel) {
+		tryPlayMugenSound(&gData.mSounds, 1, 0);
+	}
 
 	if (tLevel > 0) allowPlayerCommandInputOneFrame(i);
 	if (tLevel > 0 && getPlayerAILevel(getRootPlayer(i))) activateRandomAICommand(i);

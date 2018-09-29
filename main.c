@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
 	(void)argc;
 	(void)argv;
 
-	setGameName("DOLMEXICA INFINITE");
+	setGameName("Project O");
 	setScreenSize(320, 240);
 	
 	initPrismWrapperWithMugenFlags();

@@ -84,7 +84,7 @@ static void loadFightScreen() {
 	instantiateActor(DreamMugenCommandHandler);
 	instantiateActor(DreamMugenStateHandler);
 	instantiateActor(DreamExplodHandler);
-
+	
 	malloc_stats();
 	printf("init stage\n");
 	
