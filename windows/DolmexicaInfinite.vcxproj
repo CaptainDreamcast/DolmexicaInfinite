@@ -161,6 +161,7 @@
     <ClCompile Include="..\fightresultdisplay.c" />
     <ClCompile Include="..\fightscreen.c" />
     <ClCompile Include="..\fightui.c" />
+    <ClCompile Include="..\freeplaymode.c" />
     <ClCompile Include="..\gamelogic.c" />
     <ClCompile Include="..\intro.c" />
     <ClCompile Include="..\menubackground.c" />
@@ -208,6 +209,7 @@
     <ClInclude Include="..\fightresultdisplay.h" />
     <ClInclude Include="..\fightscreen.h" />
     <ClInclude Include="..\fightui.h" />
+    <ClInclude Include="..\freeplaymode.h" />
     <ClInclude Include="..\gamelogic.h" />
     <ClInclude Include="..\intro.h" />
     <ClInclude Include="..\menubackground.h" />

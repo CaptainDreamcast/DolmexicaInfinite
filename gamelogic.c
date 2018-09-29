@@ -470,6 +470,24 @@ void setGameModeArcade() {
 	gData.mMode = GAME_MODE_ARCADE;
 }
 
+void setGameModeFreePlay()
+{
+	gData.mRoundsToWin = 2;
+	gData.mStartRound = 1;
+
+	setFightContinueActive();
+	setTimerFinite();
+	setPlayersToRealFightMode();
+	setPlayerHuman(0);
+	setPlayerArtificial(1);
+	setPlayerPreferredPalette(0, 1);
+	setPlayerPreferredPalette(1, 2);
+	setPlayerStartLifePercentage(0, 1);
+	setPlayerStartLifePercentage(1, 1);
+
+	gData.mMode = GAME_MODE_FREE_PLAY;
+}
+
 void setGameModeVersus() {
 	gData.mRoundsToWin = 2;
 	gData.mStartRound = 1;

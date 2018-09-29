@@ -150,6 +150,9 @@
     <ClCompile Include="..\intro.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\freeplaymode.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ai.h">
@@ -285,6 +288,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\intro.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\freeplaymode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

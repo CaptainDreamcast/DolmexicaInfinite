@@ -5,6 +5,7 @@
 
 typedef enum {
 	GAME_MODE_ARCADE,
+	GAME_MODE_FREE_PLAY,
 	GAME_MODE_STORY,
 	GAME_MODE_VERSUS,
 	GAME_MODE_SURVIVAL,
@@ -39,6 +40,7 @@ void setFightContinueActive();
 void setFightContinueInactive();
 
 void setGameModeArcade();
+void setGameModeFreePlay();
 void setGameModeVersus();
 void setGameModeSurvival(double tLifePercentage, int tRound);
 void setGameModeTraining(); 

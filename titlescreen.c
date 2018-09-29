@@ -32,6 +32,7 @@
 #include "survivalmode.h"
 #include "watchmode.h"
 #include "exhibitmode.h"
+#include "freeplaymode.h"
 #include "intro.h"
 
 typedef struct {
@@ -165,6 +166,15 @@ static void gotoWatchMode(void* tCaller) {
 
 static void watchCB() {
 	addFadeOut(gData.mHeader.mFadeOutTime, gotoWatchMode, NULL);
+}
+
+static void gotoFreePlayMode(void* tCaller) {
+	(void)tCaller;
+	startFreePlayMode();
+}
+
+static void freePlayCB() {
+	addFadeOut(gData.mHeader.mFadeOutTime, gotoFreePlayMode, NULL);
 }
 
 static void gotoExhibitMode(void* tCaller) {
@@ -332,6 +342,7 @@ static void loadTitleScreen() {
 	gData.mMenus = new_vector();
 	addMenuPoint("menu.itemname.story", storyCB);
 	addMenuPoint("menu.itemname.arcade", arcadeCB);
+	addMenuPoint("menu.itemname.freeplay", freePlayCB);
 	addMenuPoint("menu.itemname.versus", versusCB);
 	addMenuPoint("menu.itemname.teamarcade", arcadeCB);
 	addMenuPoint("menu.itemname.teamversus", arcadeCB);
