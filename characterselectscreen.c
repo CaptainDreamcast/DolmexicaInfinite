@@ -1518,7 +1518,9 @@ typedef struct {
 } RandomStageCaller;
 
 static void addPossibleRandomStage(RandomStageCaller* tCaller, char* tPath) {
+	if (!strcmp("random", tPath)) return;
 	if (string_map_contains(&tCaller->mAllElements, tPath)) return;
+
 
 	PossibleRandomStageElement* e = allocMemory(sizeof(PossibleRandomStageElement));
 	getStagePath(e->mPath, tPath);

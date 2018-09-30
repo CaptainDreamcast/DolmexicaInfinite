@@ -334,7 +334,6 @@ OsuFile loadOsuFile(char * tPath)
 	OsuFile ret = createEmptyOsuFile();
 	Buffer b = fileToBuffer(tPath);
 	b = removeOsuComments(b);
-	bufferToFile("1.txt", b);
 	MugenDefScript script = loadMugenDefScriptFromBufferAndFreeBuffer(b);
 	loadOsuFileFromScript(&ret, &script);
 	unloadMugenDefScript(script);

@@ -477,11 +477,11 @@ void setGameModeArcade() {
 
 void setGameModeFreePlay()
 {
-	gData.mRoundsToWin = 2;
+	gData.mRoundsToWin = 1;
 	gData.mStartRound = 1;
 
 	setFightContinueActive();
-	setTimerFinite();
+	setTimerInfinite();
 	setPlayersToRealFightMode();
 	setPlayerHuman(0);
 	setPlayerArtificial(1);

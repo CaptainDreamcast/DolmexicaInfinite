@@ -40,12 +40,15 @@ typedef struct {
 
 typedef struct {
 	OsuSliderObject* mObject;
+
 	int mRepeatNow;
 
 } ActiveSliderObject;
 
 typedef struct {
 	OsuSpinnerObject* mObject;
+	int mIsObjectOwned;
+	
 	int mEncouragementAnimationID;
 
 } ActiveSpinnerObject;
@@ -57,6 +60,12 @@ typedef struct {
 	double mCurrentMillisecondsPerBeat;
 
 } TimingPointData;
+
+typedef struct {
+	OsuMilliSecond mNow;
+	OsuMilliSecond mTime;
+
+} OsuPlayerAI;
 
 static struct {
 	char mPath[200];
@@ -76,6 +85,8 @@ static struct {
 	TimingPointData mTimingPoint;
 
 	double mGlobalZCounter;
+
+	OsuPlayerAI mPlayerAI[2];
 
 	int mIsActive;
 } gData;
@@ -120,6 +131,12 @@ void startPlayingOsuSong() {
 	playOsuMusicFile();
 }
 
+static void resetSinglePlayerAI(int i) {
+	gData.mPlayerAI[i].mNow = 0;
+	gData.mPlayerAI[i].mTime= 0;
+
+}
+
 static void resetOsuHandlerData() {
 	gData.mCurrentHitObjectListPosition = list_iterator_begin(&gData.mOsu.mOsuHitObjects);
 	gData.mCurrentColor = list_iterator_begin(&gData.mOsu.mOsuColors);
@@ -130,6 +147,9 @@ static void resetOsuHandlerData() {
 	loadTimingPointData();
 
 	gData.mGlobalZCounter = 80;
+
+	resetSinglePlayerAI(0);
+	resetSinglePlayerAI(1);
 
 	gData.mIsActive = 0;
 
@@ -263,11 +283,12 @@ static void addActiveSliderObject(OsuSliderObject* tObject) {
 	list_push_back_owned(&gData.mActiveSliderObjects, e);
 }
 
-static void unloadActiveSliderObject(ActiveSliderObject* e) {}
+static void unloadActiveSliderObject(ActiveSliderObject* e) { }
 
-static void addActiveSpinnerObject(OsuSpinnerObject* tObject) {
+static void addActiveSpinnerObject(OsuSpinnerObject* tObject, int tIsObjectOwned) {
 	ActiveSpinnerObject* e = allocMemory(sizeof(ActiveSpinnerObject));
 	e->mObject = tObject;
+	e->mIsObjectOwned = tIsObjectOwned;
 	e->mEncouragementAnimationID = addMugenAnimation(getMugenAnimation(&gData.mAnimations, 2000), &gData.mSprites, makePosition(160, 52, 90));
 
 	list_push_back_owned(&gData.mActiveSpinnerObjects, e);
@@ -275,6 +296,10 @@ static void addActiveSpinnerObject(OsuSpinnerObject* tObject) {
 
 static void unloadActiveSpinnerObject(ActiveSpinnerObject* e) {
 	removeMugenAnimation(e->mEncouragementAnimationID);
+
+	if (e->mIsObjectOwned) {
+		freeMemory(e->mObject);
+	}
 }
 
 static int removeSingleActiveHitObject(void* tCaller, void* tData) {
@@ -339,25 +364,53 @@ static void updateTimingPoint() {
 
 }
 
-static void updateNewObjects() {
-
+static void updateAddingBeatmapSounds() {
 	while (gData.mCurrentHitObjectListPosition) {
 		OsuHitObject* testObject = list_iterator_get(gData.mCurrentHitObjectListPosition);
 		int startTime = testObject->mTime - getPreempt();
 		if (startTime > (int)getStreamingSoundTimeElapsedInMilliseconds()) break;
-		
+
 		if (testObject->mType & OSU_TYPE_MASK_HIT_OBJECT) {
 			addActiveHitObject(testObject, 0);
 		}
-		else if(testObject->mType & OSU_TYPE_MASK_SLIDER){
+		else if (testObject->mType & OSU_TYPE_MASK_SLIDER) {
 			addActiveSliderObject((OsuSliderObject*)testObject);
 		}
 		else if (testObject->mType & OSU_TYPE_MASK_SPINNER) {
-			addActiveSpinnerObject((OsuSpinnerObject*)testObject);
+			addActiveSpinnerObject((OsuSpinnerObject*)testObject, 0);
 		}
 
 		increaseCurrentHitObject();
 	}
+}
+
+static void updateAddingFinalSpinner() {
+	if (list_size(&gData.mActiveHitObjects)) return;
+	if (list_size(&gData.mActiveSliderObjects)) return;
+	if (list_size(&gData.mActiveSpinnerObjects)) return;
+
+
+	int time = (int)getStreamingSoundTimeElapsedInMilliseconds();
+	OsuSpinnerObject* e = allocMemory(sizeof(OsuSpinnerObject));
+	e->mX = 0;
+	e->mY = 0;
+	e->mTime = time + getPreempt();
+	e->mType = OSU_TYPE_MASK_SPINNER;
+	e->mHitSound = 0;
+	e->mEndTime = time + 10000000;
+
+	addActiveSpinnerObject(e, 1);
+}
+
+
+static void updateNewObjects() {
+	if (gData.mCurrentHitObjectListPosition) {
+		updateAddingBeatmapSounds();
+	}
+	else {
+		updateAddingFinalSpinner();
+	}
+
 }
 
 typedef struct {
@@ -596,12 +649,27 @@ static void updateActiveSliders() {
 
 #define ACTIVE_SPINNER_POST_TIME 500
 
+static void updateSpinnerAICommand(int i) {
+	if (!getPlayerAILevel(getRootPlayer(i))) return;
+
+	gData.mPlayerAI[i].mNow++;
+	if (gData.mPlayerAI[i].mNow >= gData.mPlayerAI[i].mTime) {
+		gData.mPlayerAI[i].mNow = 0;
+		gData.mPlayerAI[i].mTime = randfromInteger(30, 45);
+
+		activateRandomAICommand(i);
+	}
+}
+
 static void updateActiveSpinnerControl(ActiveSpinnerObject* e) {
 	int time = (int)getStreamingSoundTimeElapsedInMilliseconds();
 	if (time < e->mObject->mTime || time > e->mObject->mEndTime) return;
 
-	allowPlayerCommandInputOneFrame(0);
-	allowPlayerCommandInputOneFrame(1);
+	int i;
+	for (i = 0; i < 2; i++) {
+		allowPlayerCommandInputOneFrame(i);
+		updateSpinnerAICommand(i);
+	}
 }
 
 
@@ -636,11 +704,41 @@ static void updateActiveSpinnerTextFadeOut(ActiveSpinnerObject* e, int tTime) {
 	setMugenAnimationTransparency(e->mEncouragementAnimationID, transparency);
 }
 
+static double pulseTween(double t) {
+	double duration = 0.1;
+	double change = 0.2;
+
+	if (t < 1 - duration) return 1;
+	if (t < 1 - (duration / 2)) {
+		t -= 1 - duration;
+		t /= duration / 2;
+		return 1 - t*change;
+	}
+	else {
+		t -= 1 - (duration / 2);
+		t /= duration / 2;
+		return (1 - change) + t*change;
+	}
+
+
+}
+
+static void updateActiveSpinnerPulse(ActiveSpinnerObject* e, int tTime) {
+	int timeDelta = abs(e->mObject->mTime - tTime);
+	double milliSecondsPerBeat = gData.mTimingPoint.mCurrentMillisecondsPerBeat;
+	int cycleLength = (int)(milliSecondsPerBeat * 1);
+	double cyclePosition = (timeDelta % cycleLength) / (double)cycleLength;
+	double t = pulseTween(cyclePosition);
+
+	setMugenAnimationBaseDrawScale(e->mEncouragementAnimationID, t);
+}
+
 static void updateActiveSpinnerText(ActiveSpinnerObject* e) {
 	int time = (int)getStreamingSoundTimeElapsedInMilliseconds();
 	updateActiveSpinnerTextDisplay(e, time);
 	updateActiveSpinnerTextFadeIn(e, time);
 	updateActiveSpinnerTextFadeOut(e, time);
+	updateActiveSpinnerPulse(e, time);
 }
 
 static int isActiveSpinnerOver(ActiveSpinnerObject* e) {
@@ -743,6 +841,8 @@ static void updateFightEnd() {
 	if (isPlayingStreamingMusic()) return;
 
 	setTimerFinished();
+	emptyOsuHandler();
+	gData.mIsActive = 0;
 }
 
 static void updateOsuHandler(void* tData) {

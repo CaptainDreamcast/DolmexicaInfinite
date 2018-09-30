@@ -72,6 +72,8 @@ static void unloadWarningScreen() {
 
 
 static void updateWarningScreen() {
+	startIntroFirstTime();
+
 	setAnimationTransparency(gData.mWarningID, gData.mWarningTrans);
 	setAnimationTransparency(gData.mThisIsID, gData.mThisIsTrans);
 	setAnimationTransparency(gData.mExplanationID, gData.mExplanationTrans);

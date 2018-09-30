@@ -54,9 +54,10 @@ static void updateSurvivalResultIsShowingWinPose() {
 	setFightResultIsShowingWinPose(gData.mCurrentEnemy >= gData.mRoundsToWin);
 }
 
-static void updateSurvivalEnemy() {
+static void updateSurvivalEnemyAndStage() {
 	MugenDefScript script = loadMugenDefScript("assets/data/select.def");
 	setCharacterRandom(&script, 1);
+	setStageRandom(&script);
 }
 
 
@@ -66,7 +67,7 @@ static void fightFinishedCB() {
 		gData.mLifePercentage = getPlayerLifePercentage(getRootPlayer(0));
 	}
 
-	updateSurvivalEnemy();
+	updateSurvivalEnemyAndStage();
 	updateSurvivalResultMessage();
 	updateSurvivalResultIsShowingWinPose();
 	setGameModeSurvival(gData.mLifePercentage, gData.mCurrentEnemy+1);
@@ -113,7 +114,7 @@ void startSurvivalMode()
 	loadSurvivalModeHeaderFromScript();
 	setCharacterSelectScreenModeName("Survival");
 	setCharacterSelectOnePlayer();
-	setCharacterSelectStageActive();
+	setCharacterSelectStageInactive();
 	setCharacterSelectFinishedCB(fightFinishedCB);
 	setNewScreen(&CharacterSelectScreen);
 }

@@ -150,11 +150,10 @@
     <ClCompile Include="..\intro.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-<<<<<<< HEAD
     <ClCompile Include="..\freeplaymode.c">
-=======
+	  <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\osufilereader.c">
->>>>>>> [Feature] add osu file reader
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\osuhandler.c">
