@@ -2684,7 +2684,7 @@ double getPlayerBackAxisDistanceToScreen(DreamPlayer* p)
 double getPlayerFrontBodyDistanceToScreen(DreamPlayer* p)
 {
 	double x = getPlayerFrontX(p);
-	double screenX = getPlayerScreenEdgeInBackX(p);
+	double screenX = getPlayerScreenEdgeInFrontX(p);
 
 	return fabs(screenX - x);
 }

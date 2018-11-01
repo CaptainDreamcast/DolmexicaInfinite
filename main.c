@@ -11,6 +11,7 @@
 #include <prism/mugentexthandler.h>
 #include <prism/clipboardhandler.h>
 #include <prism/sound.h>
+#include <prism/screeneffect.h>
 
 #include "titlescreen.h"
 #include "fightscreen.h"
@@ -23,7 +24,7 @@
 char romdisk_buffer[1];
 int romdisk_buffer_length;
 
-#define DEVELOP
+// #define DEVELOP
 
 #ifdef DREAMCAST
 KOS_INIT_FLAGS(INIT_DEFAULT);
@@ -85,6 +86,7 @@ int main(int argc, char** argv) {
 	setMemoryHandlerCompressionActive();
 	initClipboardForGame();
 	setMinimumLogType(LOG_TYPE_NORMAL);
+	setScreenEffectZ(99);
 	loadMugenConfig();
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
 	startScreenHandling(&DreamWarningScreen);
