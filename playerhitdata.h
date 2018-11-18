@@ -171,12 +171,17 @@ double getHitDataAirVelocityY(DreamPlayer* tPlayer);
 void setHitDataAirVelocity(DreamPlayer* tPlayer, double tX, double tY);
 void setHitDataAirGuardVelocity(DreamPlayer* tPlayer, double tX, double tY);
 
+double getActiveGroundCornerPushVelocityOffset(DreamPlayer* tPlayer);
 double getGroundCornerPushVelocityOffset(DreamPlayer* tPlayer);
 void setGroundCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX);
+double getActiveAirCornerPushVelocityOffset(DreamPlayer* tPlayer);
 void setAirCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX);
+double getActiveDownCornerPushVelocityOffset(DreamPlayer* tPlayer);
 void setDownCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX);
+double getActiveGuardCornerPushVelocityOffset(DreamPlayer* tPlayer);
 double getGuardCornerPushVelocityOffset(DreamPlayer* tPlayer);
 void setGuardCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX);
+double getActiveAirGuardCornerPushVelocityOffset(DreamPlayer* tPlayer);
 void setAirGuardCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX);
 
 int getActiveHitDataAirGuardControlTime(DreamPlayer* tPlayer);

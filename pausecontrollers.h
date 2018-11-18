@@ -5,18 +5,19 @@
 
 #include "playerdefinition.h"
 
-extern ActorBlueprint DreamPauseHandler;
+int initPlayerPauseData(DreamPlayer* tPlayer);
+void updatePlayerPause(DreamPlayer* tPlayer);
 
-void setDreamSuperPausePlayer(DreamPlayer* tPlayer);
-void setDreamSuperPauseTime(int tTime);
-void setDreamSuperPauseBufferTimeForCommandsDuringPauseEnd(int tBufferTime);
-void setDreamSuperPauseMoveTime(int tMoveTime);
-void setDreamSuperPauseIsPausingBG(int tIsPausingBG);
-void setDreamSuperPauseAnimation(int tIsInPlayerFile, int tAnimationNumber);
-void setDreamSuperPauseSound(int tIsInPlayerFile, int tSoundGroup, int tSoundItem);
-void setDreamSuperPausePosition(Position tPosition);
-void setDreamSuperPauseDarkening(int tIsDarkening);
-void setDreamSuperPausePlayer2DefenseMultiplier(double tMultiplier);
-void setDreamSuperPausePowerToAdd(int tPowerToAdd);
-void setDreamSuperPausePlayerUnhittability(int tIsUnhittable);
-void setDreamSuperPauseActive();
+void setDreamSuperPauseTime(DreamPlayer* tPlayer, int tTime);
+void setDreamSuperPauseBufferTimeForCommandsDuringPauseEnd(DreamPlayer* tPlayer, int tBufferTime);
+void setDreamSuperPauseMoveTime(DreamPlayer* tPlayer, int tMoveTime);
+void setDreamSuperPauseIsPausingBG(DreamPlayer* tPlayer, int tIsPausingBG);
+void setDreamSuperPauseAnimation(DreamPlayer* tPlayer, int tIsInPlayerFile, int tAnimationNumber);
+void setDreamSuperPauseSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tSoundGroup, int tSoundItem);
+void setDreamSuperPausePosition(DreamPlayer* tPlayer, double tX, double tY);
+void setDreamSuperPauseDarkening(DreamPlayer* tPlayer, int tIsDarkening);
+void setDreamSuperPausePlayer2DefenseMultiplier(DreamPlayer* tPlayer, double tMultiplier);
+void setDreamSuperPausePowerToAdd(DreamPlayer* tPlayer, int tPowerToAdd);
+void setDreamSuperPausePlayerUnhittability(DreamPlayer* tPlayer, int tIsUnhittable);
+void setDreamSuperPauseActive(DreamPlayer* tPlayer);
+

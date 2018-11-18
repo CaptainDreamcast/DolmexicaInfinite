@@ -53,11 +53,11 @@ static void loadSystemFonts(void* tCaller);
 
 static void loadFightScreen() {
 	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
-
+	
 	malloc_stats();
 	printf("create mem stack\n");
-	gData.mMemoryStack = createMemoryStack(1024 * 1024 * 3);
-
+	gData.mMemoryStack = createMemoryStack(1024 * 1024 * 5); // should be 3
+	
 	malloc_stats();
 	printf("init evaluators\n");
 
@@ -79,21 +79,21 @@ static void loadFightScreen() {
 	instantiateActor(HitDataHandler);
 	instantiateActor(ProjectileHandler);
 	
+	instantiateActor(PreStateMachinePlayersBlueprint);
 	instantiateActor(DreamMugenCommandHandler);
 	instantiateActor(DreamMugenStateHandler);
 	instantiateActor(DreamExplodHandler);
-
+	
 	malloc_stats();
 	printf("init stage\n");
 	
 	instantiateActor(DreamStageBP);
-
 	
 	malloc_stats();
 	printf("init players\n");
-
+	
 	loadPlayers(&gData.mMemoryStack);
-
+	
 	instantiateActor(DreamFightUIBP);
 	instantiateActor(DreamGameLogic);
 
@@ -107,7 +107,7 @@ static void loadFightScreen() {
 	printf("shrinking memory stack\n");
 	resizeMemoryStackToCurrentSize(&gData.mMemoryStack); // TODO: test extensively
 	malloc_stats();
-
+	
 	loadPlayerSprites();
 	setUIFaces();
 

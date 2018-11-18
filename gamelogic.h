@@ -11,6 +11,7 @@ typedef enum {
 	GAME_MODE_SURVIVAL,
 	GAME_MODE_TRAINING,
 	GAME_MODE_WATCH,
+	GAME_MODE_SUPER_WATCH,
 	GAME_MODE_EXHIBIT
 } GameMode;
 
@@ -45,6 +46,7 @@ void setGameModeVersus();
 void setGameModeSurvival(double tLifePercentage, int tRound);
 void setGameModeTraining(); 
 void setGameModeWatch();
+void setGameModeSuperWatch();
 void setGameModeExhibit(int tEndTime, int tIsDisplayingBars);
 void setGameModeStory();
 

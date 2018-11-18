@@ -965,6 +965,13 @@ void setHitDataAirGuardVelocity(DreamPlayer* tPlayer, double tX, double tY)
 	e->mAirGuardVelocity = makePosition(tX, tY, 0);
 }
 
+double getActiveGroundCornerPushVelocityOffset(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	return e->mGroundCornerPushVelocityOffset;
+}
+
 double getGroundCornerPushVelocityOffset(DreamPlayer* tPlayer)
 {
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
@@ -979,6 +986,13 @@ void setGroundCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX)
 	e->mGroundCornerPushVelocityOffset = tX;
 }
 
+double getActiveAirCornerPushVelocityOffset(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	return e->mAirCornerPushVelocityOffset;
+}
+
 void setAirCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX)
 {
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
@@ -986,11 +1000,25 @@ void setAirCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX)
 	e->mAirCornerPushVelocityOffset = tX;
 }
 
+double getActiveDownCornerPushVelocityOffset(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	return e->mDownCornerPushVelocityOffset;
+}
+
 void setDownCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX)
 {
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = int_map_get(&gData.mPassiveHitDataMap, tPlayer->mHitDataID);
 	e->mDownCornerPushVelocityOffset = tX;
+}
+
+double getActiveGuardCornerPushVelocityOffset(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	return e->mGuardCornerPushVelocityOffset;
 }
 
 double getGuardCornerPushVelocityOffset(DreamPlayer* tPlayer)
@@ -1005,6 +1033,13 @@ void setGuardCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX)
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = int_map_get(&gData.mPassiveHitDataMap, tPlayer->mHitDataID);
 	e->mGuardCornerPushVelocityOffset = tX;
+}
+
+double getActiveAirGuardCornerPushVelocityOffset(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	return e->mAirGuardCornerPushVelocityOffset;
 }
 
 void setAirGuardCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX)

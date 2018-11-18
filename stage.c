@@ -618,6 +618,12 @@ double getDreamStageTopOfScreenBasedOnPlayer(int tCoordinateP)
 	return getDreamCameraPositionY(tCoordinateP);
 }
 
+double getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(int tCoordinateP)
+{
+	Position stageOffset = getDreamStageCoordinateSystemOffset(tCoordinateP);
+	return getDreamStageTopOfScreenBasedOnPlayer(tCoordinateP) - stageOffset.y;
+}
+
 double getDreamStageLeftOfScreenBasedOnPlayer(int tCoordinateP)
 {
 	Position p = *getDreamMugenStageHandlerCameraPositionReference();

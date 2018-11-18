@@ -78,6 +78,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2-2.0.7\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_image-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_mixer-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_ttf-2.0.14;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\glew-2.1.0\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\zstd\lib;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\LIBTARIPORT\addons\prism\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\LIBTARIPORT\addons\prism\windows\vs17\LIB;$(LibraryPath)</LibraryPath>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -183,9 +184,11 @@
     <ClCompile Include="..\playerdefinition.c" />
     <ClCompile Include="..\playerhitdata.c" />
     <ClCompile Include="..\projectile.c" />
+    <ClCompile Include="..\randomwatchmode.c" />
     <ClCompile Include="..\stage.c" />
     <ClCompile Include="..\storymode.c" />
     <ClCompile Include="..\storyscreen.c" />
+    <ClCompile Include="..\superwatchmode.c" />
     <ClCompile Include="..\survivalmode.c" />
     <ClCompile Include="..\titlescreen.c" />
     <ClCompile Include="..\trainingmode.c" />
@@ -231,9 +234,11 @@
     <ClInclude Include="..\playerdefinition.h" />
     <ClInclude Include="..\playerhitdata.h" />
     <ClInclude Include="..\projectile.h" />
+    <ClInclude Include="..\randomwatchmode.h" />
     <ClInclude Include="..\stage.h" />
     <ClInclude Include="..\storymode.h" />
     <ClInclude Include="..\storyscreen.h" />
+    <ClInclude Include="..\superwatchmode.h" />
     <ClInclude Include="..\survivalmode.h" />
     <ClInclude Include="..\titlescreen.h" />
     <ClInclude Include="..\trainingmode.h" />

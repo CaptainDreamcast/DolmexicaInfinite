@@ -145,6 +145,28 @@ typedef struct {
 } TimeCounter;
 
 typedef struct {
+	int mIsActive;
+
+	Position mPosition;
+	double mStartX;
+
+	Vector3DI mCounterFont;
+	int mCounterShake;
+
+	char mText[1024];
+	Vector3DI mFont;
+	Position mTextOffset;
+
+	int mTextID;
+	int mNumberTextID;
+
+	double mCurrentX;
+
+	int mDisplayNow;
+	int mDisplayTime;
+} Combo;
+
+typedef struct {
 	int mRoundTime;
 	Position mPosition;
 	int mOwnsDefaultAnimation;
@@ -318,6 +340,7 @@ static struct {
 	Face mFaces[2];
 	DisplayName mDisplayName[2];
 	TimeCounter mTime;
+	Combo mCombos[2];
 	Round mRound;
 	FightDisplay mFight;
 	KO mKO;
@@ -596,6 +619,70 @@ static void loadSingleWinIcon(int i, MugenDefScript* tScript) {
 	winIcon->mIconAmount = 0;
 }
 
+static void setComboPosition(int i) {
+	Combo* combo = &gData.mCombos[i];
+
+	if (i == 0) {
+		Position startPosition = makePosition(combo->mCurrentX, combo->mPosition.y, combo->mPosition.z);
+		setMugenTextPosition(combo->mNumberTextID, startPosition);
+		startPosition = vecAdd(startPosition, makePosition(getMugenTextSizeX(combo->mNumberTextID), 0, 0));
+		startPosition = vecAdd(startPosition, combo->mTextOffset);
+		setMugenTextPosition(combo->mTextID, startPosition);
+	}
+	else {
+		Position startPosition = makePosition(combo->mCurrentX, combo->mPosition.y, combo->mPosition.z);
+		setMugenTextPosition(combo->mTextID, startPosition);
+		startPosition = vecSub(startPosition, makePosition(getMugenTextSizeX(combo->mTextID), 0, 0));
+		startPosition = vecSub(startPosition, combo->mTextOffset);
+		setMugenTextPosition(combo->mNumberTextID, startPosition);
+	}
+}
+
+static void loadSingleCombo(int i, MugenDefScript* tScript) {
+	char name[1024];
+
+	Combo* combo = &gData.mCombos[i];
+
+
+	sprintf(name, "team%d.pos", i + 1);
+	combo->mPosition = getMugenDefVectorOrDefault(tScript, "Combo", name, makePosition(0, 0, 0));
+	combo->mPosition.z = UI_BASE_Z;
+
+	int coordP = COORD_P; // TODO
+	sprintf(name, "team%d.start.x", i + 1);
+	combo->mStartX = getMugenDefFloatOrDefault(tScript, "Combo", name, 0);
+
+	sprintf(name, "team%d.counter.font", i + 1);
+	combo->mCounterFont = getMugenDefVectorIOrDefault(tScript, "Combo", name, makeVector3DI(1, 0, 1));
+	sprintf(name, "team%d.counter.shake", i + 1);
+	combo->mCounterShake = getMugenDefIntegerOrDefault(tScript, "Combo", name, 0);
+
+	sprintf(name, "team%d.text.text", i + 1);
+	getMugenDefStringOrDefault(combo->mText, tScript, "Combo", name, "COMBO");
+	sprintf(name, "team%d.text.font", i + 1);
+	combo->mFont = getMugenDefVectorIOrDefault(tScript, "Combo", name, makeVector3DI(1, 0, 1));
+	sprintf(name, "team%d.text.offset", i + 1);
+	combo->mTextOffset = getMugenDefVectorOrDefault(tScript, "Combo", name, makePosition(0, 0, 0));
+	combo->mTextOffset.z = 0;
+
+	sprintf(name, "team%d.displaytime", i + 1);
+	combo->mDisplayTime = getMugenDefIntegerOrDefault(tScript, "Combo", name, 0);
+
+	Position startPosition = makePosition(combo->mPosition.x, combo->mPosition.y, combo->mPosition.z);
+	combo->mNumberTextID = addMugenTextMugenStyle("111", startPosition, combo->mCounterFont);
+	combo->mTextID = addMugenTextMugenStyle(combo->mText, startPosition, combo->mFont);
+	
+	if (i == 0) {
+		combo->mCurrentX = combo->mStartX - getMugenTextSizeX(combo->mNumberTextID);
+	}
+	else {
+		combo->mCurrentX = combo->mStartX + getMugenTextSizeX(combo->mTextID);
+	}
+	setComboPosition(i);
+
+	combo->mIsActive = 0;
+}
+
 static void setBarToPercentage(int tAnimationID, Vector3D tRange, double tPercentage);
 
 static void setDreamLifeBarPercentageStart(DreamPlayer* tPlayer, double tPercentage) {
@@ -609,6 +696,7 @@ static void setDreamLifeBarPercentageStart(DreamPlayer* tPlayer, double tPercent
 static void loadPlayerUIs(MugenDefScript* tScript) {
 	int i;
 	for (i = 0; i < 2; i++) {
+		loadSingleCombo(i, tScript);
 		loadSingleHealthBar(i, tScript);
 		loadSinglePowerBar(i, tScript);
 		loadSingleFace(i, tScript);
@@ -961,10 +1049,53 @@ static void updateSingleHealthBar(int i) {
 	setBarToPercentage(bar->mMidAnimationID, bar->mHealthRangeX, bar->mDisplayedPercentage);
 }
 
-static void updateHealthBars() {
+#define COMBO_MOVEMENT_SPEED 4
+
+static void updateSingleComboMovement(int i) {
+	Combo* combo = &gData.mCombos[i];
+
+	double left, right;
+	if (i == 0) {
+		left = combo->mStartX - getMugenTextSizeX(combo->mNumberTextID);
+		right = combo->mPosition.x;
+	}
+	else {
+		left = combo->mPosition.x;
+		right = combo->mStartX + getMugenTextSizeX(combo->mTextID);
+	}
+
+	int isMovingRight = (i == 0 && combo->mIsActive) || (i == 1 && !combo->mIsActive);
+	if (isMovingRight) {
+		combo->mCurrentX += COMBO_MOVEMENT_SPEED;
+		combo->mCurrentX = min(combo->mCurrentX, right);
+	}
+	else {
+		combo->mCurrentX -= COMBO_MOVEMENT_SPEED;
+		combo->mCurrentX = max(combo->mCurrentX, left);
+	}
+	setComboPosition(i);
+}
+
+static void updateSingleComboActivity(int i) {
+	Combo* combo = &gData.mCombos[i];
+	if (!combo->mIsActive) return;
+
+	combo->mDisplayNow++;
+	if (combo->mDisplayNow >= combo->mDisplayTime) {
+		combo->mIsActive = 0;
+	}
+}
+
+static void updateSingleCombo(int i) {
+	updateSingleComboMovement(i);
+	updateSingleComboActivity(i);
+}
+
+static void updateUISide() {
 	int i;
 	for (i = 0; i < 2; i++) {
 		updateSingleHealthBar(i);
+		updateSingleCombo(i);
 	}
 }
 
@@ -1194,7 +1325,7 @@ static void updateEnvironmentColor() {
 static void updateFightUI(void* tData) {
 	(void)tData;
 	updateHitSparks();
-	updateHealthBars();
+	updateUISide();
 	updateRoundDisplay();
 	updateFightDisplay();
 	updateKODisplay();
@@ -1639,4 +1770,17 @@ void stopFightAndRoundAnimation()
 void setUIFaces() {
 	setMugenAnimationSprites(gData.mFaces[0].mFaceAnimationID, getPlayerSprites(getRootPlayer(0)));
 	setMugenAnimationSprites(gData.mFaces[1].mFaceAnimationID, getPlayerSprites(getRootPlayer(1)));
+}
+
+void setComboUIDisplay(int i, int tAmount)
+{
+	if (tAmount < 2) return;
+
+	Combo* combo = &gData.mCombos[i];
+	char number[20];
+	sprintf(number, "%d", tAmount);
+
+	changeMugenText(combo->mNumberTextID, number);
+	combo->mDisplayNow = 0;
+	combo->mIsActive = 1;
 }

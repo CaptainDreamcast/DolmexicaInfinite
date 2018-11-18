@@ -153,6 +153,12 @@
     <ClCompile Include="..\freeplaymode.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\randomwatchmode.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\superwatchmode.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ai.h">
@@ -291,6 +297,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\freeplaymode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\randomwatchmode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\superwatchmode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

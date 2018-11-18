@@ -154,7 +154,8 @@ static int convertAssignmentReturnToBool(AssignmentReturnValue tAssignmentReturn
 	switch (tAssignmentReturn.mType) {
 	case ASSIGNMENT_RETURN_TYPE_STRING:
 		string = getStringAssignmentReturnValue(&tAssignmentReturn);
-		ret = strcmp("", string); // TODO: catch float and integer overlap
+		ret = strcmp("", string);
+		ret &= strcmp("0", string);
 		break;
 	case ASSIGNMENT_RETURN_TYPE_NUMBER:
 		valueI = getNumberAssignmentReturnValue(tAssignmentReturn);

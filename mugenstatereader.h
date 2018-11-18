@@ -171,6 +171,9 @@ typedef struct {
 	int mShadowOffset;
 	Vector3DI mDrawOffset;
 
+	int mHasAttackWidth;
+	Vector3DI mAttackWidth;
+
 } DreamMugenConstantsSizeData;
 
 typedef struct {

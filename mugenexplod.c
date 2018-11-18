@@ -112,7 +112,8 @@ void setExplodPositionType(int tID, DreamExplodPositionType tType)
 void setExplodHorizontalFacing(int tID, int tFacing)
 {
 	Explod* e = int_map_get(&gData.mExplods, tID);
-	if(e->mPosition.x >= 0) e->mIsFlippedHorizontally = tFacing == -1;
+	int isPositionIndependentType = e->mPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT || e->mPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT; // TODO: check???
+	if(isPositionIndependentType || e->mPosition.x >= 0) e->mIsFlippedHorizontally = tFacing == -1;
 	else e->mIsFlippedHorizontally = tFacing == 1;
 }
 
@@ -237,8 +238,17 @@ void finalizeExplod(int tID)
 		animation = getPlayerAnimation(e->mPlayer, e->mAnimationNumber);
 	}
 
-	e->mIsFacingRight = getPlayerIsFacingRight(e->mPlayer);
-	e->mPhysicsID = addToPhysicsHandler(getFinalPositionFromPositionType(e->mPositionType, e->mPosition, e->mPlayer));
+	if (e->mPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P1) {
+		e->mIsFacingRight = getPlayerIsFacingRight(e->mPlayer);
+	}
+	else if (e->mPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P2) {
+		e->mIsFacingRight = getPlayerIsFacingRight(getPlayerOtherPlayer(e->mPlayer));
+	}
+	else {
+		e->mIsFacingRight = 1;
+	}
+
+	e->mPhysicsID = addToPhysicsHandler(getFinalExplodPositionFromPositionType(e->mPositionType, e->mPosition, e->mPlayer));
 
 	if (!e->mIsFacingRight) {
 		e->mVelocity.x = -e->mVelocity.x;
@@ -255,6 +265,7 @@ void finalizeExplod(int tID)
 	setMugenAnimationCallback(e->mAnimationID, explodAnimationFinishedCB, e);
 	setMugenAnimationFaceDirection(e->mAnimationID, !e->mIsFlippedHorizontally);
 	setMugenAnimationVerticalFaceDirection(e->mAnimationID, !e->mIsFlippedVertically);
+	setMugenAnimationDrawScale(e->mAnimationID, e->mScale);
 
 	e->mNow = 0;
 }
@@ -399,6 +410,19 @@ static void explodAnimationFinishedCB(void* tCaller) {
 	e->mRemoveTime = 0; // TODO
 }
 
+static void updateExplodBindTime(Explod* e) {
+	if (e->mBindTime <= 0) return;
+
+	if (!isPlayer(e->mPlayer)) {
+		return;
+	}
+	Position* pos = getHandledPhysicsPositionReference(e->mPhysicsID);
+	*pos = getFinalExplodPositionFromPositionType(e->mPositionType, e->mPosition, e->mPlayer);
+
+	e->mBindTime--;
+}
+
+
 static int updateExplodRemoveTime(Explod* e) {
 	if (e->mRemoveTime < 0) return 0;
 
@@ -413,7 +437,9 @@ static void updateExplodPhysics(Explod* e) {
 static int updateSingleExplod(void* tCaller, void* tData) {
 	(void)tCaller;
 	Explod* e = tData;
+	if (isPlayerPaused(e->mPlayer)) return 0;
 
+	updateExplodBindTime(e);
 	if (updateExplodRemoveTime(e)) {
 		unloadExplod(e);
 		return 1;
@@ -435,7 +461,7 @@ ActorBlueprint DreamExplodHandler = {
 };
 
 
-Position getFinalPositionFromPositionType(DreamExplodPositionType tPositionType, Position mOffset, DreamPlayer* tPlayer) {
+Position getFinalExplodPositionFromPositionType(DreamExplodPositionType tPositionType, Position mOffset, DreamPlayer* tPlayer) {
 	if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P1) {
 		DreamPlayer* target = tPlayer;
 		Position p = getPlayerPosition(target, getPlayerCoordinateP(tPlayer));
@@ -452,25 +478,25 @@ Position getFinalPositionFromPositionType(DreamExplodPositionType tPositionType,
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_FRONT) {
 		DreamPlayer* target = tPlayer;
-		Position p = makePosition(getPlayerScreenEdgeInFrontX(target), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(target)), 0);
+		Position p = makePosition(getPlayerScreenEdgeInFrontX(target), getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(getPlayerCoordinateP(target)), 0);
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
 		return vecAdd(p, mOffset);
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_BACK) {
 		DreamPlayer* target = tPlayer;
-		Position p = makePosition(getPlayerScreenEdgeInBackX(target), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(target)), 0);
+		Position p = makePosition(getPlayerScreenEdgeInBackX(target), getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(getPlayerCoordinateP(target)), 0);
 		int isReversed = getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
 		return vecAdd(p, mOffset);
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT) {
 		if (getPlayerIsFacingRight(tPlayer)) {
-			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), 0);
+			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(getPlayerCoordinateP(tPlayer)), 0);
 			return vecAdd(p, mOffset);
 		}
 		else {
-			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), 0);
+			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(getPlayerCoordinateP(tPlayer)), 0);
 			p.x -= mOffset.x;
 			p.y += mOffset.y;
 			return p;
@@ -478,11 +504,11 @@ Position getFinalPositionFromPositionType(DreamExplodPositionType tPositionType,
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT) {
 		if (getPlayerIsFacingRight(tPlayer)) {
-			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), 0);
+			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(getPlayerCoordinateP(tPlayer)), 0);
 			return vecAdd(p, mOffset);
 		}
 		else {
-			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), 0);
+			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(getPlayerCoordinateP(tPlayer)), 0);
 			p.x -= mOffset.x;
 			p.y += mOffset.y;
 			return p;

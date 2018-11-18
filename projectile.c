@@ -4,14 +4,9 @@
 
 #include <prism/datastructures.h>
 #include <prism/math.h>
+#include <prism/log.h>
 
 #include "stage.h"
-
-typedef enum {
-	PROJECTILE_STATE_IDLE,
-	PROJECTILE_STATE_HIT,
-	PROJECTILE_STATE_REMOVE,
-} ProjectileState;
 
 typedef struct {
 	DreamPlayer* mPlayer;
@@ -50,7 +45,6 @@ typedef struct {
 	int mAfterImage;
 
 	int mNow;
-	ProjectileState mState;
 } Projectile;
 
 static struct {
@@ -126,15 +120,24 @@ ActorBlueprint ProjectileHandler = {
 void addAdditionalProjectileData(DreamPlayer* tProjectile) {
 	Projectile* e = allocMemory(sizeof(Projectile));
 	e->mNow = 0;
-	e->mState = PROJECTILE_STATE_IDLE;
 	e->mPlayer = tProjectile;
 	tProjectile->mProjectileDataID = int_map_push_back_owned(&gData.mProjectileList, e);
 }
 
 void removeAdditionalProjectileData(DreamPlayer* tProjectile) {
-	assert(int_map_contains(&gData.mProjectileList, tProjectile->mProjectileDataID));
+	if (!int_map_contains(&gData.mProjectileList, tProjectile->mProjectileDataID)) {
+		logWarningFormat("Error trying to remove projectile data for player %d %d who has no projectile data.", tProjectile->mRootID, tProjectile->mID);
+		return;
+	}
 	int_map_remove(&gData.mProjectileList, tProjectile->mProjectileDataID);
 }
+
+static void projectileHitAnimationFinishedCB(void* tCaller) {
+	Projectile* e = tCaller;
+	e->mNow = 0;
+	e->mRemoveTime = 0;
+}
+
 
 void handleProjectileHit(DreamPlayer * tProjectile)
 {
@@ -144,9 +147,11 @@ void handleProjectileHit(DreamPlayer * tProjectile)
 
 	if (e->mHitAnimation != -1) {
 		changePlayerAnimation(tProjectile, e->mHitAnimation);
-	}
-
-	if (e->mRemoveAfterHit) {
+		if (e->mRemoveAfterHit) {
+			setPlayerAnimationFinishedCallback(tProjectile, projectileHitAnimationFinishedCB, e);
+			setProjectileVelocity(tProjectile, 0, 0);
+		}
+	} else if (e->mRemoveAfterHit) {
 		removeProjectile(tProjectile);
 	}
 }

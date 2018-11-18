@@ -31,6 +31,8 @@
 #include "boxcursorhandler.h"
 #include "survivalmode.h"
 #include "watchmode.h"
+#include "superwatchmode.h"
+#include "randomwatchmode.h"
 #include "exhibitmode.h"
 #include "freeplaymode.h"
 #include "intro.h"
@@ -166,6 +168,24 @@ static void gotoWatchMode(void* tCaller) {
 
 static void watchCB() {
 	addFadeOut(gData.mHeader.mFadeOutTime, gotoWatchMode, NULL);
+}
+
+static void gotoSuperWatchMode(void* tCaller) {
+	(void)tCaller;
+	startSuperWatchMode();
+}
+
+static void superWatchCB() {
+	addFadeOut(gData.mHeader.mFadeOutTime, gotoSuperWatchMode, NULL);
+}
+
+static void gotoRandomWatchMode(void* tCaller) {
+	(void)tCaller;
+	startRandomWatchMode();
+}
+
+static void randomWatchCB() {
+	addFadeOut(gData.mHeader.mFadeOutTime, gotoRandomWatchMode, NULL);
 }
 
 static void gotoFreePlayMode(void* tCaller) {
@@ -351,6 +371,8 @@ static void loadTitleScreen() {
 	addMenuPoint("menu.itemname.survivalcoop", arcadeCB);
 	addMenuPoint("menu.itemname.training", trainingCB);
 	addMenuPoint("menu.itemname.watch", watchCB);
+	addMenuPoint("menu.itemname.superwatch", superWatchCB);
+	addMenuPoint("menu.itemname.randomwatch", randomWatchCB);
 	addMenuPoint("menu.itemname.options", arcadeCB); // TODO: readd
 	addMenuPoint("menu.itemname.credits", creditsCB);
 	addMenuPoint("menu.itemname.exit", exitCB);

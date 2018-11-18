@@ -38,6 +38,7 @@ double transformDreamCoordinates(double tVal, int tSrcP, int tDstP);
 Vector3D transformDreamCoordinatesVector(Vector3D tVal, int tSrcP, int tDstP);
 
 double getDreamStageTopOfScreenBasedOnPlayer(int tCoordinateP);
+double getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(int tCoordinateP);
 double getDreamStageLeftOfScreenBasedOnPlayer(int tCoordinateP);
 double getDreamStageRightOfScreenBasedOnPlayer(int tCoordinateP);
 Position getDreamStageCenterOfScreenBasedOnPlayer(int tCoordinateP);

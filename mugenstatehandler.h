@@ -15,6 +15,7 @@ int getDreamRegisteredStatePreviousState(int tID);
 void pauseDreamRegisteredStateMachine(int tID);
 void unpauseDreamRegisteredStateMachine(int tID);
 void disableDreamRegisteredStateMachine(int tID);
+int getDreamRegisteredStateJugglePoints(int tID);
 
 int getDreamRegisteredStateTimeInState(int tID);
 void setDreamRegisteredStateTimeInState(int tID, int tTime);

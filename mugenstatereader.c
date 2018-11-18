@@ -364,6 +364,12 @@ static void loadMugenConstantsHeader(DreamMugenConstantsHeader* tHeader, MugenDe
 	tHeader->mFloatPersistIndex = getMugenDefIntegerOrDefault(tScript, "Data", "FloatPersistIndex", 40);
 }
 
+static int getMugenDefVectorIAndReturnWhetherItExists(MugenDefScript* tScript, char* tGroupName, char* tVariableName, Vector3DI* oVector) {
+	if (!isMugenDefVectorIVariable(tScript, tGroupName, tVariableName)) return 0;
+	*oVector = getMugenDefVectorIVariable(tScript, tGroupName, tVariableName);
+	return 1;
+}
+
 static void loadMugenConstantsSizeData(DreamMugenConstantsSizeData* tSizeData, MugenDefScript* tScript) {
 	tSizeData->mScale = makePosition(1, 1, 1);
 	tSizeData->mScale.x = getMugenDefFloatOrDefault(tScript, "Size", "xscale", 1);
@@ -380,6 +386,9 @@ static void loadMugenConstantsSizeData(DreamMugenConstantsSizeData* tSizeData, M
 	tSizeData->mMidPosition = getMugenDefVectorOrDefault(tScript, "Size", "mid.pos", makePosition(-5, -60, 0));
 	tSizeData->mShadowOffset = getMugenDefIntegerOrDefault(tScript, "Size", "shadowoffset", 0);
 	tSizeData->mDrawOffset = getMugenDefVectorIOrDefault(tScript, "Size", "draw.offset", makeVector3DI(0, 0, 0));
+
+	tSizeData->mHasAttackWidth = getMugenDefVectorIAndReturnWhetherItExists(tScript, "Size", "attack.width", &tSizeData->mAttackWidth);
+	
 }
 
 

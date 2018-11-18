@@ -8,6 +8,7 @@
 #include <prism/wrapper.h>
 #include <prism/input.h>
 #include <prism/log.h>
+#include <prism/math.h>
 
 #include "playerdefinition.h"
 #include "fightui.h"
@@ -302,7 +303,10 @@ static void updateWinPose() {
 	if (!gData.mIsDisplayingWinPose) return;
 
 	int hasSkipped = hasPressedStartFlankSingle(0) || hasPressedStartFlankSingle(1);
-	if (!getRemainingPlayerAnimationTime(gData.mRoundWinner) || hasSkipped) {
+	int isTimeOver = !getRemainingPlayerAnimationTime(gData.mRoundWinner);
+	int isStepInfinite = isMugenAnimationStepDurationInfinite(getPlayerAnimationStepDuration(gData.mRoundWinner)); 
+	int isOver = isTimeOver || isStepInfinite;
+	if (isOver || hasSkipped) {
 		increasePlayerRoundsWon(gData.mRoundWinner);
 		if (hasPlayerWon(gData.mRoundWinner)) {
 			restoreSurvivalHealth();
@@ -559,6 +563,25 @@ void setGameModeWatch()
 	setPlayerStartLifePercentage(1, 1);
 
 	gData.mMode = GAME_MODE_WATCH;
+}
+
+void setGameModeSuperWatch()
+{
+	gData.mRoundsToWin = 2;
+	gData.mStartRound = 1;
+
+	setFightResultActive(0);
+	setFightContinueInactive();
+	setTimerInfinite();
+	setPlayersToTrainingMode();
+	setPlayerArtificial(0);
+	setPlayerArtificial(1);
+	setPlayerPreferredPalette(0, 1);
+	setPlayerPreferredPalette(1, 2);
+	setPlayerStartLifePercentage(0, 1);
+	setPlayerStartLifePercentage(1, 1);
+
+	gData.mMode = GAME_MODE_SUPER_WATCH;
 }
 
 void setGameModeExhibit(int tEndTime, int tIsDisplayingBars)

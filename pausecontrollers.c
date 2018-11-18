@@ -11,27 +11,12 @@
 
 #define SUPERPAUSE_Z 52
 
+
+
 typedef struct {
-	int mIsActive;
-	DreamPlayer* mPlayer;
+	
 
-	int mNow;
-	int mDuration;
-
-	int mBufferTimeForCommandsDuringPauseEnd;
-	int mMoveTime;
-	int mIsPausingBG;
-
-	int mHasAnimation;
-	int mMugenAnimationID;
-	// TODO: sound
-
-	Position mAnimationReferencePosition;
-
-	int mIsDarkening;
-	double mPlayer2DefenseMultiplier;
-
-	int mIsSettingPlayerUnhittable;
+	IntMap mPauseData;
 
 } SuperPauseHandler;
 
@@ -40,111 +25,103 @@ static struct {
 
 } gData;
 
-static void loadSuperPauseHandler() {
-	gData.mSuperPause.mIsActive = 0;
-}
-
-static void loadPauseHandler(void* tData) {
-	(void)tData;
-	loadSuperPauseHandler();
-}
-
-void setDreamSuperPauseActive()
+void setDreamSuperPauseActive(DreamPlayer * tPlayer)
 {
 	// TODO: check multiple
+	PlayerPauseData* e = &tPlayer->mPause;
 
-	setPlayerSuperPaused(gData.mSuperPause.mPlayer);
+	setPlayerSuperPaused(tPlayer);
 	// TODO: stuff
 
-	gData.mSuperPause.mIsActive = 1;
+	e->mIsActive = 1;
 }
 
+int initPlayerPauseData(DreamPlayer * tPlayer)
+{
+	PlayerPauseData* e = &tPlayer->mPause;
+	return e->mIsActive = 0;
+}
 
-static void setSuperPauseInactive() {
-	if (gData.mSuperPause.mHasAnimation) {
-		removeMugenAnimation(gData.mSuperPause.mMugenAnimationID);
+static void setSuperPauseInactive(DreamPlayer* tPlayer) {
+	PlayerPauseData* e = &tPlayer->mPause;
+
+	if (e->mHasAnimation) {
+		removeMugenAnimation(e->mMugenAnimationID);
 	}
 
-	setPlayerUnSuperPaused(gData.mSuperPause.mPlayer);
+	setPlayerUnSuperPaused(tPlayer);
 
-	gData.mSuperPause.mIsActive = 0;
+	e->mIsActive = 0;
 }
 
-static void updateSuperPause() {
-	if (!gData.mSuperPause.mIsActive) return;
+void updatePlayerPause(DreamPlayer* tPlayer) {
+	PlayerPauseData* e = &tPlayer->mPause;
+	if (!e->mIsActive) return;
 
-	gData.mSuperPause.mNow++;
-	if (gData.mSuperPause.mNow >= gData.mSuperPause.mDuration)  // TODO: fix
+	e->mNow++;
+	if (e->mNow >= e->mDuration)  // TODO: fix
 	{
-		setSuperPauseInactive();
+		setSuperPauseInactive(tPlayer);
 	}
 }
 
-static void updatePauseHandler(void* tData) {
-	(void)tData;
-	updateSuperPause();
+void setDreamSuperPauseTime(DreamPlayer* tPlayer, int tTime)
+{
+	PlayerPauseData* e = &tPlayer->mPause;
+
+	e->mNow = 0;
+	e->mDuration = tTime;
 }
 
-ActorBlueprint DreamPauseHandler = {
-	.mLoad = loadPauseHandler,
-	.mUpdate = updatePauseHandler,
-};
-
-void setDreamSuperPausePlayer(DreamPlayer* tPlayer)
+void setDreamSuperPauseBufferTimeForCommandsDuringPauseEnd(DreamPlayer* tPlayer, int tBufferTime)
 {
-	gData.mSuperPause.mPlayer = tPlayer;
+	PlayerPauseData* e = &tPlayer->mPause;
+	e->mBufferTimeForCommandsDuringPauseEnd = tBufferTime;
 }
 
-void setDreamSuperPauseTime(int tTime)
+void setDreamSuperPauseMoveTime(DreamPlayer* tPlayer, int tMoveTime)
 {
-	gData.mSuperPause.mNow = 0;
-	gData.mSuperPause.mDuration = tTime;
+	PlayerPauseData* e = &tPlayer->mPause;
+	e->mMoveTime = tMoveTime; // TODO: do something with this
 }
 
-void setDreamSuperPauseBufferTimeForCommandsDuringPauseEnd(int tBufferTime)
+void setDreamSuperPauseIsPausingBG(DreamPlayer* tPlayer, int tIsPausingBG)
 {
-	gData.mSuperPause.mBufferTimeForCommandsDuringPauseEnd = tBufferTime;
+	PlayerPauseData* e = &tPlayer->mPause;
+	e->mIsPausingBG = tIsPausingBG;
 }
 
-void setDreamSuperPauseMoveTime(int tMoveTime)
+void setDreamSuperPauseAnimation(DreamPlayer* tPlayer, int tIsInPlayerFile, int tAnimationNumber)
 {
-	gData.mSuperPause.mMoveTime = tMoveTime; // TODO: do something with this
-}
+	PlayerPauseData* e = &tPlayer->mPause;
 
-void setDreamSuperPauseIsPausingBG(int tIsPausingBG)
-{
-	gData.mSuperPause.mIsPausingBG = tIsPausingBG;
-}
-
-void setDreamSuperPauseAnimation(int tIsInPlayerFile, int tAnimationNumber)
-{
 	if (tAnimationNumber == -1) {
-		gData.mSuperPause.mHasAnimation = 0;
+		e->mHasAnimation = 0;
 		return;
 	}
 
 	MugenAnimation* animation;
 	MugenSpriteFile* sprites;
 	if (tIsInPlayerFile) {
-		if (!doesPlayerHaveAnimationHimself(gData.mSuperPause.mPlayer, tAnimationNumber)) {
-			gData.mSuperPause.mHasAnimation = 0;
+		if (!doesPlayerHaveAnimationHimself(tPlayer, tAnimationNumber)) {
+			e->mHasAnimation = 0;
 			return;
 		}
-		animation = getPlayerAnimation(gData.mSuperPause.mPlayer, tAnimationNumber);
-		sprites = getPlayerSprites(gData.mSuperPause.mPlayer);
+		animation = getPlayerAnimation(tPlayer, tAnimationNumber);
+		sprites = getPlayerSprites(tPlayer);
 	}
 	else {
 		animation = getDreamFightEffectAnimation(tAnimationNumber);
 		sprites = getDreamFightEffectSprites();
 	}
 
-	gData.mSuperPause.mHasAnimation = 1;
-	gData.mSuperPause.mMugenAnimationID = addMugenAnimation(animation, sprites, makePosition(0, 0, 0));
-	setMugenAnimationBasePosition(gData.mSuperPause.mMugenAnimationID, &gData.mSuperPause.mAnimationReferencePosition);
-	setMugenAnimationCameraPositionReference(gData.mSuperPause.mMugenAnimationID, getDreamMugenStageHandlerCameraPositionReference());
+	e->mHasAnimation = 1;
+	e->mMugenAnimationID = addMugenAnimation(animation, sprites, makePosition(0, 0, 0));
+	setMugenAnimationBasePosition(e->mMugenAnimationID, &e->mAnimationReferencePosition);
+	setMugenAnimationCameraPositionReference(e->mMugenAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 }
 
-void setDreamSuperPauseSound(int tIsInPlayerFile, int tSoundGroup, int tSoundItem)
+void setDreamSuperPauseSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tSoundGroup, int tSoundItem)
 {
 	(void)tIsInPlayerFile;
 	(void)tSoundGroup;
@@ -152,32 +129,37 @@ void setDreamSuperPauseSound(int tIsInPlayerFile, int tSoundGroup, int tSoundIte
 	// TODO
 }
 
-void setDreamSuperPausePosition(Position tPosition)
+void setDreamSuperPausePosition(DreamPlayer* tPlayer, double tX, double tY)
 {
-	int isPlayerFacingRight = getPlayerIsFacingRight(gData.mSuperPause.mPlayer);
-	if (!isPlayerFacingRight) tPosition.x *= -1;
+	PlayerPauseData* e = &tPlayer->mPause;
 
-	Position mPlayerPosition = getPlayerPosition(gData.mSuperPause.mPlayer, getPlayerCoordinateP(gData.mSuperPause.mPlayer));
-	gData.mSuperPause.mAnimationReferencePosition = vecAdd(tPosition, mPlayerPosition);
-	gData.mSuperPause.mAnimationReferencePosition.z = SUPERPAUSE_Z; // TODO: better
+	int isPlayerFacingRight = getPlayerIsFacingRight(tPlayer);
+	if (!isPlayerFacingRight) tX *= -1;
+
+	Position mPlayerPosition = getPlayerPosition(tPlayer, getPlayerCoordinateP(tPlayer));
+	e->mAnimationReferencePosition = vecAdd(makePosition(tX, tY, 0), mPlayerPosition);
+	e->mAnimationReferencePosition.z = SUPERPAUSE_Z; // TODO: better
 }
 
-void setDreamSuperPauseDarkening(int tIsDarkening)
+void setDreamSuperPauseDarkening(DreamPlayer* tPlayer, int tIsDarkening)
 {
-	gData.mSuperPause.mIsDarkening = tIsDarkening;
+	PlayerPauseData* e = &tPlayer->mPause;
+	e->mIsDarkening = tIsDarkening;
 }
 
-void setDreamSuperPausePlayer2DefenseMultiplier(double tMultiplier)
+void setDreamSuperPausePlayer2DefenseMultiplier(DreamPlayer* tPlayer, double tMultiplier)
 {
-	gData.mSuperPause.mPlayer2DefenseMultiplier = tMultiplier;
+	PlayerPauseData* e = &tPlayer->mPause;
+	e->mPlayer2DefenseMultiplier = tMultiplier;
 }
 
-void setDreamSuperPausePowerToAdd(int tPowerToAdd)
+void setDreamSuperPausePowerToAdd(DreamPlayer* tPlayer, int tPowerToAdd)
 {
-	addPlayerPower(gData.mSuperPause.mPlayer, tPowerToAdd);
+	addPlayerPower(tPlayer, tPowerToAdd);
 }
 
-void setDreamSuperPausePlayerUnhittability(int tIsUnhittable)
+void setDreamSuperPausePlayerUnhittability(DreamPlayer* tPlayer, int tIsUnhittable)
 {
-	gData.mSuperPause.mIsSettingPlayerUnhittable = tIsUnhittable;
+	PlayerPauseData* e = &tPlayer->mPause;
+	e->mIsSettingPlayerUnhittable = tIsUnhittable;
 }

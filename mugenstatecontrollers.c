@@ -916,7 +916,7 @@ static void parseVarSetController(DreamMugenStateController* tController, MugenD
 		logWarning("Unable to parse VarSetController. Missing elements. Defaulting to Null controller.");
 		vector_map(&e->mVarSets, unloadSingleVarSetEntry, NULL);
 		delete_vector(&e->mVarSets);
-		freeMemory(e);
+		//freeMemory(e); // TOOD: free _maybe_?
 		parseNullController(tController, MUGEN_STATE_CONTROLLER_TYPE_NULL);
 		return;
 	}
@@ -3284,9 +3284,19 @@ static int handleControlSetting(DreamMugenStateController* tController, DreamPla
 static int handleWidth(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	WidthController* e = tController->mData;
 
-	// TODO: work out how width works
-	(void)e;
-	(void)tPlayer;
+	Vector3DI stage;
+	Vector3DI player;
+
+	if (e->mHasValue) {
+		stage = player = evaluateDreamAssignmentAndReturnAsVector3DI(&e->mValue, tPlayer);	
+	}
+	else {
+		stage = player = makeVector3DI(0, 0, 0);
+		getTwoIntegerValuesWithDefaultValues(&e->mEdge, tPlayer, &stage.x, &stage.y, 0, 0);
+		getTwoIntegerValuesWithDefaultValues(&e->mPlayer, tPlayer, &player.x, &player.y, 0, 0);
+	}
+
+	setPlayerWidthOneFrame(tPlayer, stage, player);
 
 	return 0;
 }
@@ -3400,6 +3410,7 @@ static int handleMakeDust(DreamMugenStateController* tController, DreamPlayer* t
 
 typedef struct {
 	DreamPlayer* mPlayer;
+	DreamPlayer* mTarget;
 
 } VarSetHandlingCaller;
 
@@ -3409,31 +3420,32 @@ static void handleSettingSingleVariable(void* tCaller, void* tData) {
 
 	if (e->mType == VAR_SET_TYPE_SYSTEM) {
 		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, caller->mPlayer);
-		setPlayerSystemVariable(caller->mPlayer, e->mID, val);
+		setPlayerSystemVariable(caller->mTarget, e->mID, val);
 	}
 	else if (e->mType == VAR_SET_TYPE_INTEGER) {
 		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, caller->mPlayer);
-		setPlayerVariable(caller->mPlayer, e->mID, val);
+		setPlayerVariable(caller->mTarget, e->mID, val);
 	}
 	else if (e->mType == VAR_SET_TYPE_SYSTEM_FLOAT) {
 		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mAssignment, caller->mPlayer);
-		setPlayerSystemFloatVariable(caller->mPlayer, e->mID, val);
+		setPlayerSystemFloatVariable(caller->mTarget, e->mID, val);
 	}
 	else if (e->mType == VAR_SET_TYPE_FLOAT) {
 		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mAssignment, caller->mPlayer);
-		setPlayerFloatVariable(caller->mPlayer, e->mID, val);
+		setPlayerFloatVariable(caller->mTarget, e->mID, val);
 	}
 	else {
 		logWarningFormat("Unrecognized variable type %d. Ignoring.", e->mType);
 	}
 }
 
-static int handleSettingVariable(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleSettingVariable(DreamMugenStateController* tController, DreamPlayer* tPlayer, DreamPlayer* tTarget) {
 	if (!tPlayer) return 0;
 
 	VarSetController* e = tController->mData;
 	VarSetHandlingCaller caller;
 	caller.mPlayer = tPlayer;
+	caller.mTarget = tTarget;
 
 	vector_map(&e->mVarSets, handleSettingSingleVariable, &caller);
 
@@ -3446,31 +3458,32 @@ static void handleAddingSingleVariable(void* tCaller, void* tData) {
 
 	if (e->mType == VAR_SET_TYPE_SYSTEM) {
 		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, caller->mPlayer);
-		addPlayerSystemVariable(caller->mPlayer, e->mID, val);
+		addPlayerSystemVariable(caller->mTarget, e->mID, val);
 	}
 	else if (e->mType == VAR_SET_TYPE_INTEGER) {
 		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, caller->mPlayer);
-		addPlayerVariable(caller->mPlayer, e->mID, val);
+		addPlayerVariable(caller->mTarget, e->mID, val);
 	}
 	else if (e->mType == VAR_SET_TYPE_SYSTEM_FLOAT) {
 		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mAssignment, caller->mPlayer);
-		addPlayerSystemFloatVariable(caller->mPlayer, e->mID, val);
+		addPlayerSystemFloatVariable(caller->mTarget, e->mID, val);
 	}
 	else if (e->mType == VAR_SET_TYPE_FLOAT) {
 		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mAssignment, caller->mPlayer);
-		addPlayerFloatVariable(caller->mPlayer, e->mID, val);
+		addPlayerFloatVariable(caller->mTarget, e->mID, val);
 	}
 	else {
 		logWarningFormat("Unrecognized variable type %d. Ignoring.", e->mType);
 	}
 }
 
-static int handleAddingVariable(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+static int handleAddingVariable(DreamMugenStateController* tController, DreamPlayer* tPlayer, DreamPlayer* tTarget) {
 	if (!tPlayer) return 0;
 	
 	VarSetController* e = tController->mData;
 	VarSetHandlingCaller caller;
 	caller.mPlayer = tPlayer;
+	caller.mTarget = tTarget;
 
 	vector_map(&e->mVarSets, handleAddingSingleVariable, &caller);
 
@@ -3693,7 +3706,7 @@ static int handleExplod(DreamMugenStateController* tController, DreamPlayer* tPl
 	handleExplodPositionType(&e->mPositionType, tPlayer, id);
 	handleExplodOneIntegerElement(&e->mHorizontalFacing, tPlayer, id, setExplodHorizontalFacing, 1);
 	handleExplodOneIntegerElement(&e->mVerticalFacing, tPlayer, id, setExplodVerticalFacing, 1);
-	handleExplodOneIntegerElement(&e->mBindTime, tPlayer, id, setExplodBindTime, -1);
+	handleExplodOneIntegerElement(&e->mBindTime, tPlayer, id, setExplodBindTime, 0);
 	handleExplodTwoFloatElements(&e->mVelocity, tPlayer, id, setExplodVelocity, 0, 0);
 	handleExplodTwoFloatElements(&e->mAcceleration, tPlayer, id, setExplodAcceleration, 0, 0);
 	handleExplodTwoIntegerElements(&e->mRandomOffset, tPlayer, id, setExplodRandomOffset, 0, 0);
@@ -3927,7 +3940,7 @@ static void handleSuperPauseAnimation(DreamMugenAssignment** tAssignment, DreamP
 		id = atoi(flag);
 	}
 
-	setDreamSuperPauseAnimation(isInPlayerFile, id);
+	setDreamSuperPauseAnimation(tPlayer, isInPlayerFile, id);
 
 	freeMemory(flag);
 }
@@ -3980,7 +3993,7 @@ static void handleSuperPauseSound(DreamMugenAssignment** tAssignment, DreamPlaye
 		}
 	}
 
-	setDreamSuperPauseSound(isInPlayerFile, group, item);
+	setDreamSuperPauseSound(tPlayer, isInPlayerFile, group, item);
 
 	freeMemory(flag);
 }
@@ -3988,21 +4001,21 @@ static void handleSuperPauseSound(DreamMugenAssignment** tAssignment, DreamPlaye
 static int handleSuperPause(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	SuperPauseController* e = tController->mData;
 
-	setDreamSuperPausePlayer(tPlayer);
-	getSingleIntegerValueOrDefaultFunctionCall(&e->mTime, tPlayer, setDreamSuperPauseTime, 30);
-	getSingleIntegerValueOrDefaultFunctionCall(&e->mBufferTimeForCommandsDuringPauseEnd, tPlayer, setDreamSuperPauseBufferTimeForCommandsDuringPauseEnd, 0);
-	getSingleIntegerValueOrDefaultFunctionCall(&e->mMoveTime, tPlayer, setDreamSuperPauseMoveTime, 0);
-	getSingleIntegerValueOrDefaultFunctionCall(&e->mDoesPauseBackground, tPlayer, setDreamSuperPauseIsPausingBG, 1);
+	handleHitDefinitionOneIntegerElement(&e->mTime, tPlayer, setDreamSuperPauseTime, 30);
+	handleHitDefinitionOneIntegerElement(&e->mBufferTimeForCommandsDuringPauseEnd, tPlayer, setDreamSuperPauseBufferTimeForCommandsDuringPauseEnd, 0);
+	handleHitDefinitionOneIntegerElement(&e->mMoveTime, tPlayer, setDreamSuperPauseMoveTime, 0);
+	handleHitDefinitionOneIntegerElement(&e->mDoesPauseBackground, tPlayer, setDreamSuperPauseIsPausingBG, 1);
 
 	handleSuperPauseAnimation(&e->mAnim, tPlayer);
 	handleSuperPauseSound(&e->mSound, tPlayer);
-	getSingleVector3DValueOrDefaultFunctionCall(&e->mPosition, tPlayer, setDreamSuperPausePosition, makePosition(0, 0, 0));
-	getSingleIntegerValueOrDefaultFunctionCall(&e->mIsDarkening, tPlayer, setDreamSuperPauseDarkening, 1);
-	getSingleFloatValueOrDefaultFunctionCall(&e->mPlayer2DefenseMultiplier, tPlayer, setDreamSuperPausePlayer2DefenseMultiplier, 0);
-	getSingleIntegerValueOrDefaultFunctionCall(&e->mPowerToAdd, tPlayer, setDreamSuperPausePowerToAdd, 0);
-	getSingleIntegerValueOrDefaultFunctionCall(&e->mSetPlayerUnhittable, tPlayer, setDreamSuperPausePlayerUnhittability, 1);
 
-	setDreamSuperPauseActive();
+	handleHitDefinitionTwoFloatElements(&e->mPosition, tPlayer, setDreamSuperPausePosition, 0, 0);
+	handleHitDefinitionOneIntegerElement(&e->mIsDarkening, tPlayer, setDreamSuperPauseDarkening, 1);
+	handleHitDefinitionOneFloatElement(&e->mPlayer2DefenseMultiplier, tPlayer, setDreamSuperPausePlayer2DefenseMultiplier, 0);
+	handleHitDefinitionOneIntegerElement(&e->mPowerToAdd, tPlayer, setDreamSuperPausePowerToAdd, 0);
+	handleHitDefinitionOneIntegerElement(&e->mSetPlayerUnhittable, tPlayer, setDreamSuperPausePlayerUnhittability, 1);
+
+	setDreamSuperPauseActive(tPlayer);
 
 	return 0;
 }
@@ -4046,6 +4059,75 @@ static void handleHelperFacing(DreamMugenAssignment** tAssignment, DreamPlayer* 
 
 }
 
+static Position getFinalHelperPositionFromPositionType(DreamExplodPositionType tPositionType, Position mOffset, DreamPlayer* tPlayer) {
+	Position p1 = getPlayerPosition(tPlayer, getPlayerCoordinateP(tPlayer));
+
+
+	if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P1) {
+		DreamPlayer* target = tPlayer;
+		int isReversed = !getPlayerIsFacingRight(target);
+		if (isReversed) mOffset.x *= -1;
+		return vecAdd(p1, mOffset);
+	}
+	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P2) {
+		DreamPlayer* target = getPlayerOtherPlayer(tPlayer);
+		Position p2 = getPlayerPosition(target, getPlayerCoordinateP(tPlayer));
+		int isReversed = !getPlayerIsFacingRight(target);
+		if (isReversed) mOffset.x *= -1;
+		return vecAdd(p2, mOffset);
+	}
+	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_FRONT) {
+		DreamPlayer* target = tPlayer;
+		Position p = makePosition(getPlayerScreenEdgeInFrontX(target), p1.y, 0);
+		int isReversed = getPlayerIsFacingRight(target);
+		if (isReversed) mOffset.x *= -1;
+		return vecAdd(p, mOffset);
+	}
+	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_BACK) {
+		DreamPlayer* target = tPlayer;
+		Position p = makePosition(getPlayerScreenEdgeInBackX(target), p1.y, 0);
+		int isReversed = !getPlayerIsFacingRight(target);
+		if (isReversed) mOffset.x *= -1;
+		return vecAdd(p, mOffset);
+	}
+	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT) {
+		if (getPlayerIsFacingRight(tPlayer)) {
+			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			return vecAdd(p, mOffset);
+		}
+		else {
+			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			p.x -= mOffset.x;
+			p.y += mOffset.y;
+			return p;
+		}
+	}
+	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT) {
+		if (getPlayerIsFacingRight(tPlayer)) {
+			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			return vecAdd(p, mOffset);
+		}
+		else {
+			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			p.x -= mOffset.x;
+			p.y += mOffset.y;
+			return p;
+		}
+	}
+	else if (tPositionType == EXPLOD_POSITION_TYPE_NONE) {
+		Position p = makePosition(getDreamGameWidth(getPlayerCoordinateP(tPlayer)) / 2, p1.y, 0);
+		return vecAdd(p, mOffset);
+	}
+	else {
+		logWarningFormat("Unrecognized position type %d. Defaulting to EXPLOD_POSITION_TYPE_RELATIVE_TO_P1.", tPositionType);
+		DreamPlayer* target = tPlayer;
+		int isReversed = !getPlayerIsFacingRight(target);
+		if (isReversed) mOffset.x *= -1;
+		return vecAdd(p1, mOffset);
+	}
+
+}
+
 static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	// return 0; // TODO
 
@@ -4057,7 +4139,7 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 	Vector3DI mOffset = makeVector3DI(0, 0, 0);
 	getTwoIntegerValuesWithDefaultValues(&e->mPosition, tPlayer, &mOffset.x, &mOffset.y, 0, 0);
 	DreamExplodPositionType positionType = getPositionTypeFromAssignment(&e->mPositionType, tPlayer);
-	Position position = getFinalPositionFromPositionType(positionType, makePosition(mOffset.x, mOffset.y, mOffset.z), tPlayer);
+	Position position = getFinalHelperPositionFromPositionType(positionType, makePosition(mOffset.x, mOffset.y, mOffset.z), tPlayer);
 
 	handleHelperFacing(&e->mFacing, tPlayer, helper);
 
@@ -4439,6 +4521,75 @@ static int handleReversalDefinition(DreamMugenStateController* tController, Drea
 	return 0;
 }
 
+static Position getFinalProjectilePositionFromPositionType(DreamExplodPositionType tPositionType, Position mOffset, DreamPlayer* tPlayer) {
+	Position p1 = getPlayerPosition(tPlayer, getPlayerCoordinateP(tPlayer));
+
+
+	if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P1) {
+		DreamPlayer* target = tPlayer;
+		int isReversed = !getPlayerIsFacingRight(target);
+		if (isReversed) mOffset.x *= -1;
+		return vecAdd(p1, mOffset);
+	}
+	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P2) {
+		DreamPlayer* target = getPlayerOtherPlayer(tPlayer);
+		Position p2 = getPlayerPosition(target, getPlayerCoordinateP(tPlayer));
+		int isReversed = !getPlayerIsFacingRight(target);
+		if (isReversed) mOffset.x *= -1;
+		return vecAdd(p2, mOffset);
+	}
+	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_FRONT) {
+		DreamPlayer* target = tPlayer;
+		Position p = makePosition(getPlayerScreenEdgeInFrontX(target), p1.y, 0);
+		int isReversed = getPlayerIsFacingRight(target);
+		if (isReversed) mOffset.x *= -1;
+		return vecAdd(p, mOffset);
+	}
+	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_BACK) {
+		DreamPlayer* target = tPlayer;
+		Position p = makePosition(getPlayerScreenEdgeInBackX(target), p1.y, 0);
+		int isReversed = !getPlayerIsFacingRight(target);
+		if (isReversed) mOffset.x *= -1;
+		return vecAdd(p, mOffset);
+	}
+	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT) {
+		if (getPlayerIsFacingRight(tPlayer)) {
+			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			return vecAdd(p, mOffset);
+		}
+		else {
+			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			p.x -= mOffset.x;
+			p.y += mOffset.y;
+			return p;
+		}
+	}
+	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT) {
+		if (getPlayerIsFacingRight(tPlayer)) {
+			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			return vecAdd(p, mOffset);
+		}
+		else {
+			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			p.x -= mOffset.x;
+			p.y += mOffset.y;
+			return p;
+		}
+	}
+	else if (tPositionType == EXPLOD_POSITION_TYPE_NONE) {
+		Position p = makePosition(getDreamGameWidth(getPlayerCoordinateP(tPlayer)) / 2, p1.y, 0);
+		return vecAdd(p, mOffset);
+	}
+	else {
+		logWarningFormat("Unrecognized position type %d. Defaulting to EXPLOD_POSITION_TYPE_RELATIVE_TO_P1.", tPositionType);
+		DreamPlayer* target = tPlayer;
+		int isReversed = !getPlayerIsFacingRight(target);
+		if (isReversed) mOffset.x *= -1;
+		return vecAdd(p1, mOffset);
+	}
+
+}
+
 static int handleProjectile(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	//return 0; // TODO
 
@@ -4474,7 +4625,7 @@ static int handleProjectile(DreamMugenStateController* tController, DreamPlayer*
 	offset.z = 0;
 	int positionType;
 	getSingleIntegerValueOrDefault(&e->mPositionType, p, &positionType, EXPLOD_POSITION_TYPE_RELATIVE_TO_P1);
-	Position pos = getFinalPositionFromPositionType(positionType, offset, tPlayer);
+	Position pos = getFinalProjectilePositionFromPositionType(positionType, offset, tPlayer);
 	setProjectilePosition(p, pos);
 
 	handleHitDefinitionOneIntegerElement(&e->mShadow, p, setProjectileShadow, 0);
@@ -4887,8 +5038,8 @@ int notHitByHandleFunction(DreamMugenStateController* tController, DreamPlayer* 
 int nullHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleNull(); }
 int offsetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleDrawOffsetController(tController, tPlayer); }
 int palFXHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handlePalFXController(tController, tPlayer); }
-int parentVarAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAddingVariable(tController, getPlayerParent(tPlayer)); }
-int parentVarSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSettingVariable(tController, getPlayerParent(tPlayer)); }
+int parentVarAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAddingVariable(tController, tPlayer, getPlayerParent(tPlayer)); }
+int parentVarSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSettingVariable(tController, tPlayer, getPlayerParent(tPlayer)); }
 int pauseHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handlePauseController(tController, tPlayer); }
 int playerPushHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handlePushPlayerController(tController, tPlayer); }
 int playSndHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handlePlaySound(tController, tPlayer); }
@@ -4918,10 +5069,10 @@ int targetVelAddHandleFunction(DreamMugenStateController* tController, DreamPlay
 int targetVelSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleTargetVelocitySetController(tController, tPlayer); }
 int transHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleTransparencyController(tController, tPlayer); }
 int turnHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleTurnController(tPlayer); }
-int varAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAddingVariable(tController, tPlayer); }
+int varAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAddingVariable(tController, tPlayer, tPlayer); }
 int varRandomHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleRandomVariableController(tController, tPlayer); }
 int varRangeSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSettingVariableRange(tController, tPlayer); }
-int varSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSettingVariable(tController, tPlayer); }
+int varSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSettingVariable(tController, tPlayer, tPlayer); }
 int velAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleVelocityAddition(tController, tPlayer); }
 int velMulHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleVelocityMultiplication(tController, tPlayer); }
 int velSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleVelocitySetting(tController, tPlayer); }

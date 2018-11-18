@@ -16,28 +16,28 @@ static struct {
 
 } gCommandReader;
 
-static int isCommand(char* tName) {
-	return !strcmp("Command", tName);
+static int isCommand(char* tLowercaseName) {
+	return !strcmp("command", tLowercaseName);
 }
 
-static int isStateDef(char* tName) {
+static int isStateDef(char* tLowercaseName) {
 	char name[100];
-	sscanf(tName, "%s", name);
+	sscanf(tLowercaseName, "%s", name);
 	
 
-	return !strcmp("Statedef", name);
+	return !strcmp("statedef", name);
 }
 
-static int isRemap(char* tName) {
-	return !strcmp("Remap", tName);
+static int isRemap(char* tLowercaseName) {
+	return !strcmp("remap", tLowercaseName);
 }
 
 static void handleRemap() {
 
 }
 
-static int isDefaults(char* tName) {
-	return !strcmp("Defaults", tName);
+static int isDefaults(char* tLowercaseName) {
+	return !strcmp("defaults", tLowercaseName);
 }
 
 static void setDefaultInteger(int* tDst, MugenDefScriptGroupElement* tElement) {
@@ -364,15 +364,17 @@ static void loadMugenCommandsFromDefScript(DreamMugenCommands* tCommands, MugenD
 	MugenDefScriptGroup* current = tScript->mFirstGroup;
 
 	while (current != NULL) {
+		char lowercase[200];
+		copyStringLowercase(lowercase, current->mName);
 
-		if (isCommand(current->mName)) {
+		if (isCommand(lowercase)) {
 			handleCommand(tCommands, current);
-		} else if (isStateDef(current->mName)) {
+		} else if (isStateDef(lowercase)) {
 			handleStateDef(&current);
-		} else if (isRemap(current->mName)) {
+		} else if (isRemap(lowercase)) {
 			handleRemap();
 		}
-		else if (isDefaults(current->mName)) {
+		else if (isDefaults(lowercase)) {
 			handleDefaults(current);
 		}
 		else {

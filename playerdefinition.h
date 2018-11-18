@@ -5,6 +5,7 @@
 #include <prism/mugenspritefilereader.h>
 #include <prism/mugenanimationreader.h>
 #include <prism/mugensoundfilereader.h>
+#include <prism/actorhandler.h>
 
 #include "mugenstatereader.h"
 #include "mugencommandreader.h"
@@ -97,6 +98,28 @@ typedef struct {
 
 } DreamPlayerDebugData;
 
+typedef struct {
+	int mIsActive;
+
+	int mNow;
+	int mDuration;
+
+	int mBufferTimeForCommandsDuringPauseEnd;
+	int mMoveTime;
+	int mIsPausingBG;
+
+	int mHasAnimation;
+	int mMugenAnimationID;
+	// TODO: sound
+
+	Position mAnimationReferencePosition;
+
+	int mIsDarkening;
+	double mPlayer2DefenseMultiplier;
+
+	int mIsSettingPlayerUnhittable;
+} PlayerPauseData;
+
 typedef struct Player_t{
 	DreamPlayerHeader* mHeader;
 
@@ -156,6 +179,11 @@ typedef struct Player_t{
 	int mUnguardableFlag;
 	int mTransparencyFlag;
 
+	int mWidthFlag;
+	int mInvisibilityFlag;
+	Vector3DI mOneTickStageWidth;
+	Vector3DI mOneTickPlayerWidth;
+
 	int mJumpFlank;
 	int mAirJumpCounter;
 
@@ -201,12 +229,17 @@ typedef struct Player_t{
 
 	int mRoundsExisted;
 	int mComboCounter;
+	int mDisplayedComboCounter;
 
 	int mRoundsWon;
 
 	int mIsBoundToScreen;
 
 	double mStartLifePercentage;
+
+	int mIsGuardingInternally;
+	int mIsBeingJuggled;
+	int mAirJugglePoints;
 
 	DreamPlayerDust mDustClouds[2];
 
@@ -215,6 +248,7 @@ typedef struct Player_t{
 	DreamPlayerShadow mShadow;
 	DreamPlayerReflection mReflection;
 	DreamPlayerDebugData mDebug;
+	PlayerPauseData mPause;
 
 	int mIsDestroyed;
 } DreamPlayer;
@@ -226,6 +260,8 @@ void resetPlayers();
 void resetPlayersEntirely();
 void updatePlayers();
 void drawPlayers();
+
+extern ActorBlueprint PreStateMachinePlayersBlueprint;
 
 void playerHitCB(void* tData, void* tHitData);
 
@@ -239,12 +275,13 @@ DreamPlayer* getPlayerParent(DreamPlayer* p);
 
 int getPlayerState(DreamPlayer* p); 
 int getPlayerPreviousState(DreamPlayer* p);
-
+int getPlayerStateJugglePoints(DreamPlayer* p);
 
 DreamMugenStateType getPlayerStateType(DreamPlayer* p);
 void setPlayerStateType(DreamPlayer* p, DreamMugenStateType tType);
 DreamMugenStateMoveType getPlayerStateMoveType(DreamPlayer* p);
 void setPlayerStateMoveType(DreamPlayer* p, DreamMugenStateMoveType tType);
+
 
 int getPlayerControl(DreamPlayer* p);
 void setPlayerControl(DreamPlayer* p, int tNewControl);
@@ -273,6 +310,7 @@ int getPlayerTimeInState(DreamPlayer* p);
 int getPlayerAnimationNumber(DreamPlayer* p);
 int getPlayerAnimationStep(DreamPlayer* p);
 int getPlayerAnimationStepAmount(DreamPlayer* p);
+int getPlayerAnimationStepDuration(DreamPlayer* p);
 int getRemainingPlayerAnimationTime(DreamPlayer* p);
 int getPlayerAnimationDuration(DreamPlayer* p);
 int getPlayerAnimationTime(DreamPlayer* p);
@@ -388,6 +426,7 @@ void changePlayerStateToSelfBeforeImmediatelyEvaluatingIt(DreamPlayer* p, int tN
 void changePlayerAnimation(DreamPlayer* p, int tNewAnimation);
 void changePlayerAnimationWithStartStep(DreamPlayer* p, int tNewAnimation, int tStartStep);
 void changePlayerAnimationToPlayer2AnimationWithStartStep(DreamPlayer* p, int tNewAnimation, int tStartStep);
+void setPlayerAnimationFinishedCallback(DreamPlayer* p, void(*tFunc)(void*), void* tCaller);
 
 int isPlayerStartingAnimationElementWithID(DreamPlayer* p, int tStepID);
 int getPlayerTimeFromAnimationElement(DreamPlayer* p, int tStep);
@@ -478,8 +517,18 @@ double getPlayerBackAxisDistanceToScreen(DreamPlayer* p);
 double getPlayerFrontBodyDistanceToScreen(DreamPlayer* p);
 double getPlayerBackBodyDistanceToScreen(DreamPlayer* p);
 
-double getPlayerFrontX(DreamPlayer* p);
-double getPlayerBackX(DreamPlayer* p);
+double getPlayerFrontWidth(DreamPlayer* p);
+double getPlayerFrontWidthPlayer(DreamPlayer* p);
+double getPlayerFrontWidthStage(DreamPlayer* p);
+double getPlayerBackWidth(DreamPlayer* p);
+double getPlayerBackWidthPlayer(DreamPlayer* p);
+double getPlayerBackWidthStage(DreamPlayer* p);
+double getPlayerFrontX(DreamPlayer* p, int tCoordinateP);
+double getPlayerFrontXPlayer(DreamPlayer* p, int tCoordinateP);
+double getPlayerFrontXStage(DreamPlayer* p, int tCoordinateP);
+double getPlayerBackX(DreamPlayer* p, int tCoordinateP);
+double getPlayerBackXPlayer(DreamPlayer* p, int tCoordinateP);
+double getPlayerBackXStage(DreamPlayer* p, int tCoordinateP);
 
 double getPlayerScreenEdgeInFrontX(DreamPlayer* p);
 double getPlayerScreenEdgeInBackX(DreamPlayer* p);
@@ -641,6 +690,7 @@ void setPlayerDrawOffsetX(DreamPlayer* p, double tValue, int tCoordinateP);
 void setPlayerDrawOffsetY(DreamPlayer* p, double tValue, int tCoordinateP);
 
 void setPlayerOneFrameTransparency(DreamPlayer* p, BlendType tType, int tAlphaSource, int tAlphaDest);
+void setPlayerWidthOneFrame(DreamPlayer* p, Vector3DI tEdgeWidth, Vector3DI tPlayerWidth);
 
 void addPlayerDust(DreamPlayer* p, int tDustIndex, Position tPos, int tSpacing);
 VictoryType getPlayerVictoryType(DreamPlayer* p);

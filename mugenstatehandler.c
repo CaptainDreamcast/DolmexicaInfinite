@@ -25,18 +25,17 @@ typedef struct {
 	int mIsInHelperMode;
 	int mIsInputControlDisabled;
 	int mIsDisabled;
+
+	int mCurrentJugglePoints;
 } RegisteredState;
 
 static struct {
-	int mPauseHandler;
 	IntMap mRegisteredStates;
 
 } gData;
 
 static void loadStateHandler(void* tData) {
 	(void)tData;
-
-	gData.mPauseHandler = instantiateActor(DreamPauseHandler);
 	
 	gData.mRegisteredStates = new_int_map();
 }
@@ -87,11 +86,14 @@ static DreamMugenStates* getCurrentStateMachineStates(RegisteredState* tRegister
 }
 
 static void updateSingleState(RegisteredState* tRegisteredState, int tState, DreamMugenStates* tStates) {
-	if (tRegisteredState->mPlayer && isPlayerDestroyed(tRegisteredState->mPlayer)) return;
-
+	if (!isPlayer(tRegisteredState->mPlayer) || isPlayerDestroyed(tRegisteredState->mPlayer)) return;
+	
+	IntMap visitedStates = new_int_map();
+	
 	int isEvaluating = 1;
 	while (isEvaluating) {
-		if (!int_map_contains(&tStates->mStates, tState)) return;
+		if (!int_map_contains(&tStates->mStates, tState)) break;
+		int_map_push(&visitedStates, tState, NULL);
 		DreamMugenState* state = int_map_get(&tStates->mStates, tState);
 		MugenStateControllerCaller caller;
 		caller.mRegisteredState = tRegisteredState;
@@ -101,10 +103,12 @@ static void updateSingleState(RegisteredState* tRegisteredState, int tState, Dre
 		
 		if (!caller.mHasChangedState) break;
 		else {
-			if (tState < 0 || tState == tRegisteredState->mState) break;
+			if (tState < 0 || int_map_contains(&visitedStates, tRegisteredState->mState)) break;
 			tState = tRegisteredState->mState;
 		}
 	}
+
+	delete_int_map(&visitedStates);
 }
 
 static int updateSingleStateMachineByReference(RegisteredState* tRegisteredState) {
@@ -158,6 +162,7 @@ int registerDreamMugenStateMachine(DreamMugenStates * tStates, DreamPlayer* tPla
 	e->mIsInHelperMode = 0;
 	e->mIsInputControlDisabled = 0;
 	e->mIsDisabled = 0;
+	e->mCurrentJugglePoints = 0;
 
 	return int_map_push_back_owned(&gData.mRegisteredStates, e);
 }
@@ -214,6 +219,14 @@ void disableDreamRegisteredStateMachine(int tID)
 	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
 	e->mIsDisabled = 1;
 	pauseDreamRegisteredStateMachine(tID);
+}
+
+int getDreamRegisteredStateJugglePoints(int tID)
+{
+	assert(int_map_contains(&gData.mRegisteredStates, tID));
+	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+
+	return e->mCurrentJugglePoints;
 }
 
 int getDreamRegisteredStateTimeInState(int tID)
@@ -285,6 +298,8 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
 	e->mTimeInState = 0;
 
+	printf("%d %d %d->%d\n", e->mPlayer->mRootID, e->mPlayer->mID, e->mState, tNewState);
+
 	e->mPreviousState = e->mState;
 	e->mState = tNewState;
 
@@ -332,6 +347,15 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 	if (newState->mIsAddingPower) {
 		int power = evaluateDreamAssignmentAndReturnAsInteger(&newState->mPowerAdd, e->mPlayer);
 		addPlayerPower(e->mPlayer, power);
+	}
+
+	if (newState->mDoesRequireJuggle) {
+		e->mCurrentJugglePoints = evaluateDreamAssignmentAndReturnAsInteger(&newState->mJuggleRequired, e->mPlayer);
+	}
+
+	if (newState->mIsChangingSpritePriority) {
+		int spritePriority = evaluateDreamAssignmentAndReturnAsInteger(&newState->mSpritePriority, e->mPlayer);
+		setPlayerSpritePriority(e->mPlayer, spritePriority);
 	}
 
 	setPlayerPositionUnfrozen(e->mPlayer); // TODO: check if correct

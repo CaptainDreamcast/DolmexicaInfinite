@@ -24,7 +24,7 @@
 char romdisk_buffer[1];
 int romdisk_buffer_length;
 
-// #define DEVELOP
+#define DEVELOP
 
 #ifdef DREAMCAST
 KOS_INIT_FLAGS(INIT_DEFAULT);
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
 	
 #ifdef DEVELOP
 	setVolume(0);
-	setDisplayedScreenSize(320, 240);
+	//setDisplayedScreenSize(320, 240);
 	disableWrapperErrorRecovery();
 #endif
 
