@@ -5,6 +5,7 @@ fightresultdisplay.o fightscreen.o fightui.o freeplaymode.o \
 gamelogic.o intro.o menubackground.o mugenanimationutilities.o mugenassignment.o \
 mugenassignmentevaluator.o mugenbackgroundstatehandler.o mugencommandhandler.o mugencommandreader.o mugenexplod.o \
 mugensound.o mugenstagehandler.o mugenstatecontrollers.o mugenstatehandler.o mugenstatereader.o \
-optionsscreen.o pausecontrollers.o playerdefinition.o playerhitdata.o projectile.o stage.o storymode.o storyscreen.o survivalmode.o \
+optionsscreen.o pausecontrollers.o playerdefinition.o playerhitdata.o projectile.o \
+randomwatchmode.o stage.o storymode.o storyscreen.o superwatchmode.o survivalmode.o \
 titlescreen.o trainingmode.o versusmode.o versusscreen.o warningscreen.o watchmode.o \
 
