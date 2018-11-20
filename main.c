@@ -12,6 +12,7 @@
 #include <prism/clipboardhandler.h>
 #include <prism/sound.h>
 #include <prism/screeneffect.h>
+#include <prism/profiling.h>
 
 #include "titlescreen.h"
 #include "fightscreen.h"
@@ -89,6 +90,17 @@ int main(int argc, char** argv) {
 	setScreenEffectZ(99);
 	loadMugenConfig();
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
+
+
+	printf("%d\n", getAllocatedMemoryBlockAmount());
+	MugenSpriteFile s1, s2;
+	timeAction(s1 = loadMugenSpriteFileWithoutPalette("assets/data/system.sff"));
+	timeAction(s2 = loadMugenSpriteFileWithoutPalette("assets/data/system2.sff"));
+	unloadMugenSpriteFile(&s1);
+	unloadMugenSpriteFile(&s2);
+	printf("%d\n", getAllocatedMemoryBlockAmount());
+
+
 	startScreenHandling(&DreamWarningScreen);
 	
 	exitGame();
