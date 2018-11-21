@@ -2,6 +2,7 @@
 
 #include <assert.h>
 
+#include <prism/profiling.h>
 #include <prism/datastructures.h>
 #include <prism/log.h>
 #include <prism/system.h>

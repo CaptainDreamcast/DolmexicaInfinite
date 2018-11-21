@@ -92,13 +92,11 @@ int main(int argc, char** argv) {
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
 
 
-	printf("%d\n", getAllocatedMemoryBlockAmount());
 	MugenSpriteFile s1, s2;
 	timeAction(s1 = loadMugenSpriteFileWithoutPalette("assets/data/system.sff"));
 	timeAction(s2 = loadMugenSpriteFileWithoutPalette("assets/data/system2.sff"));
 	unloadMugenSpriteFile(&s1);
 	unloadMugenSpriteFile(&s2);
-	printf("%d\n", getAllocatedMemoryBlockAmount());
 
 
 	startScreenHandling(&DreamWarningScreen);
