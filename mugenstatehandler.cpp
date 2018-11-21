@@ -88,6 +88,7 @@ static DreamMugenStates* getCurrentStateMachineStates(RegisteredState* tRegister
 static void updateSingleState(RegisteredState* tRegisteredState, int tState, DreamMugenStates* tStates) {
 	if (!isPlayer(tRegisteredState->mPlayer) || isPlayerDestroyed(tRegisteredState->mPlayer)) return;
 	
+    if(tState == -1) return;
 	IntMap visitedStates = new_int_map();
 	
 	int isEvaluating = 1;

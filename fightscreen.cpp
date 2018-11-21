@@ -138,9 +138,9 @@ static void drawFightScreen() {
 
 static Screen DreamFightScreen = {
 	.mLoad = loadFightScreen,
-	.mUnload = unloadFightScreen,
 	.mUpdate = updateFightScreen,
 	.mDraw = drawFightScreen,
+	.mUnload = unloadFightScreen,
 };
 
 static void loadFightFonts(void* tCaller) {

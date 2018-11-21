@@ -85,7 +85,10 @@ static void updateFightResultDisplay(void* tData) {
 
 ActorBlueprint FightResultDisplay = {
 	.mLoad = loadFightResultDisplay,
-	.mUpdate = updateFightResultDisplay
+    .mUnload = NULL,
+	.mUpdate = updateFightResultDisplay,
+    .mDraw = NULL,
+    .mIsActive = NULL
 };
 
 void setFightResultActive(int tIsActive) {

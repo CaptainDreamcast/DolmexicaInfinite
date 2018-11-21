@@ -223,7 +223,10 @@ static void updateBackgroundStateHandler(void* tData) {
 
 ActorBlueprint BackgroundStateHandler = {
 	.mLoad = loadBackgroundStateHandler,
+    .mUnload = NULL,
 	.mUpdate = updateBackgroundStateHandler,
+    .mDraw = NULL,
+    .mIsActive = NULL,
 };
 
 

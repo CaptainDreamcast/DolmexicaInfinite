@@ -196,8 +196,9 @@ static void updateVersusScreen() {
 
 Screen VersusScreen = {
 	.mLoad = loadVersusScreen,
-	.mUnload = unloadVersusScreen,
 	.mUpdate = updateVersusScreen,
+    .mDraw = NULL,
+	.mUnload = unloadVersusScreen,
 };
 
 void setVersusScreenFinishedCB(void(*tCB)())

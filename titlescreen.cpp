@@ -485,6 +485,7 @@ static void updateTitleScreen() {
 
 Screen DreamTitleScreen = {
 	.mLoad = loadTitleScreen,
-	.mUnload = unloadTitleScreen,
 	.mUpdate = updateTitleScreen,
+    .mDraw = NULL,
+	.mUnload = unloadTitleScreen,
 };

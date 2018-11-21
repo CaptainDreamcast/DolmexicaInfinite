@@ -87,6 +87,7 @@ static void updateWarningScreen() {
 
 Screen DreamWarningScreen = {
 	.mLoad = loadWarningScreen,
-	.mUnload = unloadWarningScreen,
 	.mUpdate = updateWarningScreen,
+    .mDraw = NULL,
+	.mUnload = unloadWarningScreen,
 };

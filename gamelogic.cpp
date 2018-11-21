@@ -374,7 +374,10 @@ static void updateGameLogic(void* tData) {
 
 ActorBlueprint DreamGameLogic = {
 	.mLoad = loadGameLogic,
+    .mUnload = NULL,
 	.mUpdate = updateGameLogic,
+    .mDraw = NULL,
+    .mIsActive = NULL,
 };
 
 

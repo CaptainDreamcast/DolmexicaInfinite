@@ -91,14 +91,6 @@ int main(int argc, char** argv) {
 	loadMugenConfig();
 	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
 
-
-	MugenSpriteFile s1, s2;
-	timeAction(s1 = loadMugenSpriteFileWithoutPalette("assets/data/system.sff"));
-	timeAction(s2 = loadMugenSpriteFileWithoutPalette("assets/data/system2.sff"));
-	unloadMugenSpriteFile(&s1);
-	unloadMugenSpriteFile(&s2);
-
-
 	startScreenHandling(&DreamWarningScreen);
 	
 	exitGame();

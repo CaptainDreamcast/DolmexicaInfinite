@@ -1139,7 +1139,11 @@ void drawPlayers() {
 }
 
 ActorBlueprint PreStateMachinePlayersBlueprint = {
+    .mLoad = NULL,
+    .mUnload = NULL,
 	.mUpdate = updatePlayersPreStateMachine,
+    .mDraw = NULL,
+    .mIsActive = NULL,
 };
 
 
@@ -2706,7 +2710,7 @@ int isPlayerPaused(DreamPlayer* p)
 static void pausePlayer(DreamPlayer* p) {
 	if (isPlayerPaused(p)) return;
 
-	pausePhysics(p->mPhysicsID);
+	pausePhysics(); // TODO: fix
 	pauseMugenAnimation(p->mAnimationID);
 	pauseMugenAnimation(p->mShadow.mAnimationID);
 	pauseMugenAnimation(p->mReflection.mAnimationID);
@@ -2716,7 +2720,7 @@ static void pausePlayer(DreamPlayer* p) {
 static void unpausePlayer(DreamPlayer* p) {
 	if (isPlayerPaused(p)) return;
 
-	resumePhysics(p->mPhysicsID);
+	resumePhysics(); // TODO: fix
 	unpauseMugenAnimation(p->mAnimationID);
 	unpauseMugenAnimation(p->mShadow.mAnimationID);
 	unpauseMugenAnimation(p->mReflection.mAnimationID);

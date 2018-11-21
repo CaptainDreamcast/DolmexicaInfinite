@@ -32,7 +32,10 @@ static void updateBoxCursorHandler(void* tData) {
 
 ActorBlueprint BoxCursorHandler = {
 	.mLoad = loadBoxCursorHandler,
+    .mUnload = NULL,
 	.mUpdate = updateBoxCursorHandler,
+    .mDraw = NULL,
+    .mIsActive = NULL
 };
 
 

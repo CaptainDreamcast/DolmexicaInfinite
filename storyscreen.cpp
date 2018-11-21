@@ -278,8 +278,9 @@ static void updateStoryScreen() {
 
 Screen StoryScreen = {
 	.mLoad = loadStoryScreen,
-	.mUnload = unloadStoryScreen,
 	.mUpdate = updateStoryScreen,
+    .mDraw = NULL,
+	.mUnload = unloadStoryScreen,
 };
 
 void setStoryDefinitionFile(char* tPath) {

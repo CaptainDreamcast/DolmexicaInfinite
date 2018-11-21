@@ -1349,8 +1349,9 @@ static void updateCharacterSelectScreen() {
 
 Screen CharacterSelectScreen = {
 	.mLoad = loadCharacterSelectScreen,
-	.mUnload = unloadCharacterSelectScreen,
 	.mUpdate = updateCharacterSelectScreen,
+    .mDraw = NULL,
+	.mUnload = unloadCharacterSelectScreen,
 };
 
 void setCharacterSelectScreenModeName(char * tModeName)

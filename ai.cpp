@@ -138,4 +138,6 @@ ActorBlueprint DreamAIHandler = {
 	.mLoad = loadAIHandler,
 	.mUnload = unloadAIHandler,
 	.mUpdate = updateAIHandler,
+    .mDraw = NULL,
+    .mIsActive = NULL
 };
