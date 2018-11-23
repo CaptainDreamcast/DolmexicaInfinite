@@ -15,7 +15,7 @@ typedef enum {
 	GAME_MODE_EXHIBIT
 } GameMode;
 
-extern ActorBlueprint DreamGameLogic;
+ActorBlueprint getDreamGameLogic();
 
 int getDreamGameTime();
 

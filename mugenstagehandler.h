@@ -61,4 +61,4 @@ void setStageElementAnimation(StaticStageHandlerElement* tElement, int tAnimatio
 
 Vector* getStageHandlerElementsWithID(int tID);
 
-extern ActorBlueprint DreamMugenStageHandler;
+ActorBlueprint getDreamMugenStageHandler();

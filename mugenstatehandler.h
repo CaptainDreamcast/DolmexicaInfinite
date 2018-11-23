@@ -5,7 +5,7 @@
 #include "mugenstatereader.h"
 #include "playerdefinition.h"
 
-extern ActorBlueprint DreamMugenStateHandler;
+ActorBlueprint getDreamMugenStateHandler();
 
 int registerDreamMugenStateMachine(DreamMugenStates* tStates, DreamPlayer* tPlayer);
 int registerDreamMugenStoryStateMachine(DreamMugenStates* tStates);

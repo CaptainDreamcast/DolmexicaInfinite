@@ -33,7 +33,7 @@ static void versusScreenFinishedCB() {
 }
 
 static void fightFinishedCB() {
-	setNewScreen(&DreamTitleScreen);
+	setNewScreen(getDreamTitleScreen());
 }
 
 static void loadExhibitHeader(MugenDefScript* tScript) {
@@ -67,7 +67,7 @@ void startExhibitMode()
 	loadRandomCharacters();
 	if (gData.mIsVersusEnabled) {
 		setVersusScreenFinishedCB(versusScreenFinishedCB);
-		setNewScreen(&VersusScreen);
+		setNewScreen(getVersusScreen());
 	}
 	else {
 		versusScreenFinishedCB();

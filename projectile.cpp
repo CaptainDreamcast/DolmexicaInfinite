@@ -1,12 +1,15 @@
 #include "projectile.h"
 
 #include <assert.h>
+#include <algorithm>
 
 #include <prism/datastructures.h>
 #include <prism/math.h>
 #include <prism/log.h>
 
 #include "stage.h"
+
+using namespace std;
 
 typedef struct {
 	DreamPlayer* mPlayer;
@@ -99,7 +102,7 @@ static void updateProjectilePhysics(Projectile* e) {
 
 static void updateSingleProjectile(void* tCaller, void* tData) {
 	(void)tCaller;
-	Projectile* e = tData;
+	Projectile* e = (Projectile*)tData;
 
 	updateProjectilePhysics(e);
 	if (updateProjectileDurationAndReturnIfOver(e)) return;
@@ -111,14 +114,12 @@ static void updateProjectileHandler(void* tData) {
 	int_map_map(&gData.mProjectileList, updateSingleProjectile, NULL);
 }
 
-ActorBlueprint ProjectileHandler = {
-	.mLoad = loadProjectileHandler,
-	.mUnload = unloadProjectileHandler,
-	.mUpdate = updateProjectileHandler,
+ActorBlueprint getProjectileHandler() {
+	return makeActorBlueprint(loadProjectileHandler, unloadProjectileHandler, updateProjectileHandler);
 };
 
 void addAdditionalProjectileData(DreamPlayer* tProjectile) {
-	Projectile* e = allocMemory(sizeof(Projectile));
+	Projectile* e = (Projectile*)allocMemory(sizeof(Projectile));
 	e->mNow = 0;
 	e->mPlayer = tProjectile;
 	tProjectile->mProjectileDataID = int_map_push_back_owned(&gData.mProjectileList, e);
@@ -133,7 +134,7 @@ void removeAdditionalProjectileData(DreamPlayer* tProjectile) {
 }
 
 static void projectileHitAnimationFinishedCB(void* tCaller) {
-	Projectile* e = tCaller;
+	Projectile* e = (Projectile*)tCaller;
 	e->mNow = 0;
 	e->mRemoveTime = 0;
 }
@@ -142,7 +143,7 @@ static void projectileHitAnimationFinishedCB(void* tCaller) {
 void handleProjectileHit(DreamPlayer * tProjectile)
 {
 	assert(int_map_contains(&gData.mProjectileList, tProjectile->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, tProjectile->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, tProjectile->mProjectileDataID);
 
 
 	if (e->mHitAnimation != -1) {
@@ -159,7 +160,7 @@ void handleProjectileHit(DreamPlayer * tProjectile)
 void setProjectileID(DreamPlayer * tProjectile, int tID)
 {
 	assert(int_map_contains(&gData.mProjectileList, tProjectile->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, tProjectile->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, tProjectile->mProjectileDataID);
 	e->mID = tID;
 }
 
@@ -171,56 +172,56 @@ void setProjectileAnimation(DreamPlayer * p, int tAnimation)
 int getProjectileHitAnimation(DreamPlayer * p)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	return e->mHitAnimation;
 }
 
 void setProjectileHitAnimation(DreamPlayer * p, int tAnimation)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mHitAnimation = tAnimation;
 }
 
 int getProjectileRemoveAnimation(DreamPlayer * p)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	return e->mRemoveAnimation;
 }
 
 void setProjectileRemoveAnimation(DreamPlayer * p, int tAnimation)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mRemoveAnimation = tAnimation;
 }
 
 void setProjectileCancelAnimation(DreamPlayer * p, int tAnimation)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mCancelAnimation = tAnimation;
 }
 
 void setProjectileScale(DreamPlayer * p, double tX, double tY)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mScale = makePosition(tX, tY, 1);
 }
 
 void setProjectileRemoveAfterHit(DreamPlayer * p, int tValue)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mRemoveAfterHit = tValue;
 }
 
 void setProjectileRemoveTime(DreamPlayer * p, int tTime)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mRemoveTime = tTime;
 }
 
@@ -233,70 +234,70 @@ void setProjectileVelocity(DreamPlayer * p, double tX, double tY)
 void setProjectileRemoveVelocity(DreamPlayer * p, double tX, double tY)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mRemoveVelocity = makePosition(tX, tY, 0);
 }
 
 void setProjectileAcceleration(DreamPlayer * p, double tX, double tY)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mAcceleration = makePosition(tX, tY, 0);
 }
 
 void setProjectileVelocityMultipliers(DreamPlayer * p, double tX, double tY)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mVelocityMultipliers = makePosition(tX, tY, 1);
 }
 
 void setProjectileHitAmountBeforeVanishing(DreamPlayer * p, int tHitAmount)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mHitAmountBeforeVanishing = tHitAmount;
 }
 
 void setProjectilMisstime(DreamPlayer * p, int tMissTime)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mMissTime = tMissTime;
 }
 
 void setProjectilePriority(DreamPlayer * p, int tPriority)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mPriority = tPriority;
 }
 
 void setProjectileSpritePriority(DreamPlayer * p, int tSpritePriority)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mSpritePriority = tSpritePriority;
 }
 
 void setProjectileEdgeBound(DreamPlayer * p, int tEdgeBound)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mEdgeBound = tEdgeBound;
 }
 
 void setProjectileStageBound(DreamPlayer * p, int tStageBound)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mStageBound = tStageBound;
 }
 
 void setProjectileHeightBoundValues(DreamPlayer * p, int tLowerBound, int tUpperBound)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mLowerBound = tLowerBound;
 	e->mUpperBound = tUpperBound;
 }
@@ -309,35 +310,35 @@ void setProjectilePosition(DreamPlayer * p, Position tPosition)
 void setProjectileShadow(DreamPlayer * p, int tShadow)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mShadow = tShadow;
 }
 
 void setProjectileSuperMoveTime(DreamPlayer * p, int tSuperMoveTime)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mSuperMoveTime = tSuperMoveTime;
 }
 
 void setProjectilePauseMoveTime(DreamPlayer * p, int tPauseMoveTime)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mPauseMoveTime = tPauseMoveTime;
 }
 
 void setProjectileHasOwnPalette(DreamPlayer * p, int tValue)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mHasOwnPalette = tValue;
 }
 
 void setProjectileRemapPalette(DreamPlayer * p, int tGroup, int tItem)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mRemapPaletteGroup = tGroup;
 	e->mRemapPaletteItem = tItem;
 }
@@ -345,20 +346,20 @@ void setProjectileRemapPalette(DreamPlayer * p, int tGroup, int tItem)
 void setProjectileAfterImageTime(DreamPlayer * p, int tAfterImageTime)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mAfterImageTime = tAfterImageTime;
 }
 
 void setProjectileAfterImageLength(DreamPlayer * p, int tAfterImageLength)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mAfterImageLength = tAfterImageLength;
 }
 
 void setProjectileAfterImage(DreamPlayer * p, int tAfterImage)
 {
 	assert(int_map_contains(&gData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = int_map_get(&gData.mProjectileList, p->mProjectileDataID);
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, p->mProjectileDataID);
 	e->mAfterImage = tAfterImage;
 }

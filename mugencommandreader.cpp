@@ -48,7 +48,7 @@ static void setDefaultInteger(int* tDst, MugenDefScriptGroupElement* tElement) {
 static void handleSingleDefault(void* tCaller, void* tData) {
 	(void)tCaller;
 
-	MugenDefScriptGroupElement* element = tData;
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)tData;
 
 	if (!strcmp("command.time", element->mName)) {
 		setDefaultInteger(&gCommandReader.mDefaultTime, element);
@@ -77,12 +77,12 @@ static int isInputStepWithMultipleSubsteps(char* tInputStep) {
 static void parseSingleInputStepAndAddItToInput(Vector* tVector, char* tInputStep, int tDoesNotAllowOtherInputBetween);
 
 static void handleInputStepWithMultipleSubsteps(Vector* tVector, char* tInputStep, int tDoesNotAllowOtherInputBetween) {
-	DreamMugenCommandInputStep* multipleStep = allocMemory(sizeof(DreamMugenCommandInputStep));
+	DreamMugenCommandInputStep* multipleStep = (DreamMugenCommandInputStep*)allocMemory(sizeof(DreamMugenCommandInputStep));
 	multipleStep->mTarget = MUGEN_COMMAND_INPUT_STEP_TARGET_MULTIPLE;
 	multipleStep->mType = MUGEN_COMMAND_INPUT_STEP_TYPE_MULTIPLE;
 	multipleStep->mDoesNotAllowOtherInputBetween = tDoesNotAllowOtherInputBetween;
 
-	DreamMugenCommandInputStepMultipleTargetData* data = allocMemory(sizeof(DreamMugenCommandInputStepMultipleTargetData));
+	DreamMugenCommandInputStepMultipleTargetData* data = (DreamMugenCommandInputStepMultipleTargetData*)allocMemory(sizeof(DreamMugenCommandInputStepMultipleTargetData));
 	multipleStep->mData = data;
 	data->mSubSteps = new_vector();
 
@@ -162,14 +162,14 @@ static DreamMugenCommandInputStepTarget extractTargetFromInputStep(char* tInputS
 	else if (mask == ((1 << 3) | (1 << 11))) ret = MUGEN_COMMAND_INPUT_STEP_TARGET_MULTI_BACKWARD;
 	else {
 		logWarningFormat("Unable to determine target %s. Defaulting to invalid input.", tInputStep);
-		ret = -1;
+		ret = (DreamMugenCommandInputStepTarget)-1;
 	}
 
 	return ret;
 }
 
 static void handleHoldingInputStep(Vector* tVector, char* tInputStep, int tDoesNotAllowOtherInputBetween) {
-	DreamMugenCommandInputStep* e = allocMemory(sizeof(DreamMugenCommandInputStep));
+	DreamMugenCommandInputStep* e = (DreamMugenCommandInputStep*)allocMemory(sizeof(DreamMugenCommandInputStep));
 	e->mTarget = extractTargetFromInputStep(tInputStep);
 	e->mType = MUGEN_COMMAND_INPUT_STEP_TYPE_HOLDING;
 	e->mDoesNotAllowOtherInputBetween = tDoesNotAllowOtherInputBetween;
@@ -205,10 +205,10 @@ static Duration extractDurationFromReleaseInputStep(char* tInputStep) {
 }
 
 static void handleReleaseStep(Vector* tVector, char* tInputStep, int tDoesNotAllowOtherInputBetween) {
-	DreamMugenCommandInputStepReleaseData* data = allocMemory(sizeof(DreamMugenCommandInputStepReleaseData));
+	DreamMugenCommandInputStepReleaseData* data = (DreamMugenCommandInputStepReleaseData*)allocMemory(sizeof(DreamMugenCommandInputStepReleaseData));
 	data->mDuration = extractDurationFromReleaseInputStep(tInputStep);
 
-	DreamMugenCommandInputStep* e = allocMemory(sizeof(DreamMugenCommandInputStep));
+	DreamMugenCommandInputStep* e = (DreamMugenCommandInputStep*)allocMemory(sizeof(DreamMugenCommandInputStep));
 	e->mTarget = extractTargetFromInputStep(tInputStep);
 	e->mType = MUGEN_COMMAND_INPUT_STEP_TYPE_RELEASE;
 	e->mData = data;
@@ -218,7 +218,7 @@ static void handleReleaseStep(Vector* tVector, char* tInputStep, int tDoesNotAll
 }
 
 static void handlePressStep(Vector* tVector, char* tInputStep, int tDoesNotAllowOtherInputBetween) {
-	DreamMugenCommandInputStep* e = allocMemory(sizeof(DreamMugenCommandInputStep));
+	DreamMugenCommandInputStep* e = (DreamMugenCommandInputStep*)allocMemory(sizeof(DreamMugenCommandInputStep));
 	e->mTarget = extractTargetFromInputStep(tInputStep);
 	e->mType = MUGEN_COMMAND_INPUT_STEP_TYPE_PRESS;
 	e->mDoesNotAllowOtherInputBetween = tDoesNotAllowOtherInputBetween;
@@ -293,8 +293,8 @@ static void handleCommandTimeEntry(Duration* tDst, MugenDefScriptGroupElement* t
 
 
 static void handleSingleCommandEntry(void* tCaller, void* tData) {
-	CommandCaller* command = tCaller;
-	MugenDefScriptGroupElement* element = tData;
+	CommandCaller* command = (CommandCaller*)tCaller;
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)tData;
 
 	if (!strcmp("name", element->mName)) {
 		handleCommandNameEntry(command, element);
@@ -312,14 +312,14 @@ static void handleSingleCommandEntry(void* tCaller, void* tData) {
 }
 
 static void addCallerToExistingCommand(DreamMugenCommand* tCommand, CommandCaller* tCaller) {
-	DreamMugenCommandInput* input = allocMemory(sizeof(DreamMugenCommandInput));
+	DreamMugenCommandInput* input = (DreamMugenCommandInput*)allocMemory(sizeof(DreamMugenCommandInput));
 	*input = tCaller->mInput;
 
 	vector_push_back_owned(&tCommand->mInputs, input);
 }
 
 static void addEmptyCommandToCommands(DreamMugenCommands* tCommands, char* tName) {
-	DreamMugenCommand* e = allocMemory(sizeof(DreamMugenCommand));
+	DreamMugenCommand* e = (DreamMugenCommand*)allocMemory(sizeof(DreamMugenCommand));
 	e->mInputs = new_vector();
 
 	assert(!string_map_contains(&tCommands->mCommands, tName));
@@ -333,7 +333,7 @@ static void addCallerToCommands(DreamMugenCommands* tCommands, CommandCaller* tC
 
 	assert(string_map_contains(&tCommands->mCommands, tCaller->mName));
 
-	DreamMugenCommand* command = string_map_get(&tCommands->mCommands, tCaller->mName);
+	DreamMugenCommand* command = (DreamMugenCommand*)string_map_get(&tCommands->mCommands, tCaller->mName);
 	addCallerToExistingCommand(command, tCaller);
 
 }
@@ -407,7 +407,7 @@ DreamMugenCommands loadDreamMugenCommandFile(char * tPath)
 static void unloadSingleInputStep(void* tCaller, void* tData);
 
 static void unloadInputStepMultiple(DreamMugenCommandInputStep* e) {
-	DreamMugenCommandInputStepMultipleTargetData* data = e->mData;
+	DreamMugenCommandInputStepMultipleTargetData* data = (DreamMugenCommandInputStepMultipleTargetData*)e->mData;
 
 	vector_map(&data->mSubSteps, unloadSingleInputStep, NULL);
 	delete_vector(&data->mSubSteps);
@@ -416,13 +416,13 @@ static void unloadInputStepMultiple(DreamMugenCommandInputStep* e) {
 }
 
 static void unloadInputStepRelease(DreamMugenCommandInputStep* e) {
-	DreamMugenCommandInputStepReleaseData* data = e->mData;
+	DreamMugenCommandInputStepReleaseData* data = (DreamMugenCommandInputStepReleaseData*)e->mData;
 	freeMemory(data);
 }
 
 static void unloadSingleInputStep(void* tCaller, void* tData) {
 	(void)tCaller;
-	DreamMugenCommandInputStep* e = tData;
+	DreamMugenCommandInputStep* e = (DreamMugenCommandInputStep*)tData;
 	
 	if (e->mType == MUGEN_COMMAND_INPUT_STEP_TYPE_MULTIPLE) {
 		unloadInputStepMultiple(e);
@@ -434,7 +434,7 @@ static void unloadSingleInputStep(void* tCaller, void* tData) {
 
 static void unloadSingleInput(void* tCaller, void* tData) {
 	(void)tCaller;
-	DreamMugenCommandInput* e = tData;
+	DreamMugenCommandInput* e = (DreamMugenCommandInput*)tData;
 	vector_map(&e->mInputSteps, unloadSingleInputStep, NULL);
 	delete_vector(&e->mInputSteps);
 }
@@ -442,7 +442,7 @@ static void unloadSingleInput(void* tCaller, void* tData) {
 static void unloadSingleCommand(void* tCaller, char* tKey, void* tData) {
 	(void)tCaller;
 	(void)tKey;
-	DreamMugenCommand* e = tData;
+	DreamMugenCommand* e = (DreamMugenCommand*)tData;
 	vector_map(&e->mInputs, unloadSingleInput, NULL);
 	delete_vector(&e->mInputs);
 }

@@ -159,7 +159,7 @@ static void loadGeneralOptionsScreen() {
 }
 
 static void loadOptionsScreen() {
-	instantiateActor(BoxCursorHandler);
+	instantiateActor(getBoxCursorHandler());
 
 	gData.mWhiteTexture = getEmptyWhiteTexture();
 
@@ -188,7 +188,7 @@ static void loadOptionsScreen() {
 static void updateOptionScreenSelect() {
 	if (gData.mGeneral.mSelected == GENERAL_SETTING_RETURN) {
 		tryPlayMugenSound(&gData.mSounds, gData.mHeader.mCancelSound.x, gData.mHeader.mCancelSound.y);
-		setNewScreen(&DreamTitleScreen);
+		setNewScreen(getDreamTitleScreen());
 	}
 }
 
@@ -214,16 +214,18 @@ static void updateOptionsScreen() {
 	updateOptionScreenSelection();
 
 	if(hasPressedBFlank()) {
-		setNewScreen(&DreamTitleScreen);
+		setNewScreen(getDreamTitleScreen());
 	}
 }
 
-static Screen OptionsScreen = {
-	.mLoad = loadOptionsScreen,
-	.mUpdate = updateOptionsScreen,
+static Screen gOptionsScreen;
+
+static Screen* getOptionsScreen() {
+	gOptionsScreen = makeScreen(loadOptionsScreen, updateOptionsScreen);
+	return &gOptionsScreen;
 };
 
 void startOptionsScreen()
 {
-	setNewScreen(&OptionsScreen);
+	setNewScreen(getOptionsScreen());
 }

@@ -48,7 +48,7 @@ static void loadMugenStageHandler(void* tData) {
 
 static void unloadSingleStaticElement(void* tCaller, void* tData) {
 	(void)tCaller;
-	StaticStageHandlerElement* e = tData;
+	StaticStageHandlerElement* e = (StaticStageHandlerElement*)tData;
 
 	if (e->mOwnsAnimation) {
 		destroyMugenAnimation(e->mAnimation);
@@ -156,8 +156,8 @@ static void updateSingleStaticStageElementTile(StaticStageHandlerElement* e, Sta
 }
 
 static void updateSingleStaticStageElementTileCB(void* tCaller, void* tData) {
-	updateStageTileCaller* caller = tCaller;
-	StageElementAnimationReference* singleAnimation = tData;
+	updateStageTileCaller* caller = (updateStageTileCaller*)tCaller;
+	StageElementAnimationReference* singleAnimation = (StageElementAnimationReference*)tData;
 
 	updateSingleStaticStageElementTile(caller->e, singleAnimation);
 }
@@ -175,7 +175,7 @@ static void updateSingleStaticStageElement(StaticStageHandlerElement* e) {
 
 static void updateSingleStaticStageElementCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	StaticStageHandlerElement* e = tData;
+	StaticStageHandlerElement* e = (StaticStageHandlerElement*)tData;
 
 	updateSingleStaticStageElement(e);
 }
@@ -196,11 +196,9 @@ static void updateMugenStageHandler(void* tData) {
 	vector_map(&gData.mStaticElements, updateSingleStaticStageElementCB, NULL);
 }
 
-ActorBlueprint DreamMugenStageHandler = {
-	.mLoad = loadMugenStageHandler,
-	.mUnload = unloadMugenStageHandler,
-	.mUpdate = updateMugenStageHandler,
-};
+ActorBlueprint getDreamMugenStageHandler() {
+	return makeActorBlueprint(loadMugenStageHandler, unloadMugenStageHandler, updateMugenStageHandler);
+}
 
 
 void setDreamMugenStageHandlerCameraCoordinates(Vector3DI tCoordinates)
@@ -270,7 +268,7 @@ static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, in
 }
 
 static void addSingleMugenStageHandlerBackgroundElementTile(StaticStageHandlerElement* e, MugenSpriteFile* tSprites, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tOffset) {
-	StageElementAnimationReference* newAnimation = allocMemory(sizeof(StageElementAnimationReference));
+	StageElementAnimationReference* newAnimation = (StageElementAnimationReference*)allocMemory(sizeof(StageElementAnimationReference));
 	newAnimation->mID = addMugenAnimation(e->mAnimation, tSprites, makePosition(0, 0, 0));
 	setMugenAnimationBasePosition(newAnimation->mID, &newAnimation->mReferencePosition);
 	newAnimation->mOffset = tOffset;
@@ -313,12 +311,12 @@ static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement
 static void addStaticElementToIDList(StaticStageHandlerElement* e, int tID) {
 	StageElementIDList* elementList;
 	if (!int_map_contains(&gData.mStageElementsFromID, tID)) {
-		elementList = allocMemory(sizeof(StageElementIDList));
+		elementList = (StageElementIDList*)allocMemory(sizeof(StageElementIDList));
 		elementList->mVector = new_vector();
 		int_map_push_owned(&gData.mStageElementsFromID, tID, elementList);
 	}
 	else {
-		elementList = int_map_get(&gData.mStageElementsFromID, tID);
+		elementList = (StageElementIDList*)int_map_get(&gData.mStageElementsFromID, tID);
 	}
 
 	vector_push_back(&elementList->mVector, e);
@@ -326,7 +324,7 @@ static void addStaticElementToIDList(StaticStageHandlerElement* e, int tID) {
 
 void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, double tStartScaleY, double tScaleDeltaY, int tLayerNo, int tID, Vector3DI tCoordinates)
 {
-	StaticStageHandlerElement* e = allocMemory(sizeof(StaticStageHandlerElement));
+	StaticStageHandlerElement* e = (StaticStageHandlerElement*)allocMemory(sizeof(StaticStageHandlerElement));
 	e->mStart = tStart;
 	e->mDelta = tDelta;
 	e->mCoordinates = tCoordinates;
@@ -366,8 +364,8 @@ typedef struct {
 } SetBackgroundFlagCaller;
 
 static void setSingleStaticElementInvisibleForOneFrame(void* tCaller, void* tData) {
-	StaticStageHandlerElement* e = tData;
-	SetBackgroundFlagCaller* caller = tCaller;
+	StaticStageHandlerElement* e = (StaticStageHandlerElement*)tData;
+	SetBackgroundFlagCaller* caller = (SetBackgroundFlagCaller*)tCaller;
 
 	if (e->mLayerNo == caller->mIgnoredLayer) return;
 
@@ -394,13 +392,13 @@ void setStageElementInvisible(StaticStageHandlerElement* tElement, int tIsInvisi
 
 static void pauseSingleMugenAnimationReference(void* tCaller, void* tData) {
 	(void)tCaller;
-	StageElementAnimationReference* e = tData;
+	StageElementAnimationReference* e = (StageElementAnimationReference*)tData;
 	pauseMugenAnimation(e->mID);
 }
 
 static void unpauseSingleMugenAnimationReference(void* tCaller, void* tData) {
 	(void)tCaller;
-	StageElementAnimationReference* e = tData;
+	StageElementAnimationReference* e = (StageElementAnimationReference*)tData;
 	unpauseMugenAnimation(e->mID);
 }
 
@@ -457,8 +455,8 @@ void addStageElementPositionY(StaticStageHandlerElement * tElement, double tPosi
 }
 
 static void changeSingleMugenAnimationReference(void* tCaller, void* tData) {
-	int* value = tCaller;
-	StageElementAnimationReference* e = tData;
+	int* value = (int*)tCaller;
+	StageElementAnimationReference* e = (StageElementAnimationReference*)tData;
 	changeMugenAnimation(e->mID, getMugenAnimation(getStageAnimations(), *value));
 }
 
@@ -469,6 +467,6 @@ void setStageElementAnimation(StaticStageHandlerElement * tElement, int tAnimati
 
 Vector * getStageHandlerElementsWithID(int tID)
 {
-	StageElementIDList* elementList = int_map_get(&gData.mStageElementsFromID, tID);
+	StageElementIDList* elementList = (StageElementIDList*)int_map_get(&gData.mStageElementsFromID, tID);
 	return &elementList->mVector;
 }

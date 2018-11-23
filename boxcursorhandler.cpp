@@ -30,30 +30,26 @@ static void updateBoxCursorHandler(void* tData) {
 }
 
 
-ActorBlueprint BoxCursorHandler = {
-	.mLoad = loadBoxCursorHandler,
-    .mUnload = NULL,
-	.mUpdate = updateBoxCursorHandler,
-    .mDraw = NULL,
-    .mIsActive = NULL
-};
+ActorBlueprint getBoxCursorHandler() {
+	return makeActorBlueprint(loadBoxCursorHandler, NULL, updateBoxCursorHandler);
+}
 
 
 static void boxCursorCB1(void* tCaller);
 
 static void boxCursorCB2(void* tCaller) {
-	BoxCursor* e = tCaller;
+	BoxCursor* e = (BoxCursor*)tCaller;
 	e->mTweenID = tweenDouble(getAnimationTransparencyReference(e->mAnimationID), 0.2, 0.1, linearTweeningFunction, 20, boxCursorCB1, e);
 }
 
 static void boxCursorCB1(void* tCaller) {
-	BoxCursor* e = tCaller;
+	BoxCursor* e = (BoxCursor*)tCaller;
 	e->mTweenID = tweenDouble(getAnimationTransparencyReference(e->mAnimationID), 0.1, 0.2, linearTweeningFunction, 20, boxCursorCB2, e);
 }
 
 int addBoxCursor(Position tStartPosition, Position tOffset, GeoRectangle tRectangle)
 {
-	BoxCursor* e = allocMemory(sizeof(BoxCursor));
+	BoxCursor* e = (BoxCursor*)allocMemory(sizeof(BoxCursor));
 	tRectangle.mTopLeft.z = 0;
 	tOffset = vecAdd(tOffset, tRectangle.mTopLeft);
 	e->mAnimationID = playOneFrameAnimationLoop(tOffset, &gData.mWhiteTexture); 
@@ -75,7 +71,7 @@ void removeBoxCursor(int tID)
 		logWarningFormat("Attempting to remove non-existant box cursor %d. Abort.", tID);
 		return;
 	}
-	BoxCursor* e = int_map_get(&gData.mBoxCursors, tID);
+	BoxCursor* e = (BoxCursor*)int_map_get(&gData.mBoxCursors, tID);
 	removeTween(e->mTweenID);
 	removeHandledAnimation(e->mAnimationID);
 
@@ -89,6 +85,6 @@ void setBoxCursorPosition(int tID, Position tPosition)
 		return;
 	}
 
-	BoxCursor* e = int_map_get(&gData.mBoxCursors, tID);
+	BoxCursor* e = (BoxCursor*)int_map_get(&gData.mBoxCursors, tID);
 	e->mBasePosition = tPosition;
 }

@@ -146,8 +146,8 @@ static void handleSinYController(BackgroundState* e, StaticStageHandlerElement* 
 
 
 static void handleSingleBackgroundControllerForOneElement(void* tCaller, void* tData) {
-	BackgroundState* e = tCaller;
-	StaticStageHandlerElement* element = tData;
+	BackgroundState* e = (BackgroundState*)tCaller;
+	StaticStageHandlerElement* element = (StaticStageHandlerElement*)tData;
 
 	switch (e->mType) {
 	case BACKGROUND_STATE_CONTROLLER_NULL:
@@ -189,8 +189,8 @@ static void handleSingleBackgroundControllerForOneElement(void* tCaller, void* t
 
 static void updateSingleBackgroundController(void* tCaller, void* tData) {
 	(void)tCaller;
-	BackgroundStateGroup* group = tCaller;
-	BackgroundState* e = tData;
+	BackgroundStateGroup* group = (BackgroundStateGroup*)tCaller;
+	BackgroundState* e = (BackgroundState*)tData;
 
 	if (group->mLoopTime != -1 && group->mTime == group->mLoopTime) e->mTime = 0;
 	if (e->mLoopTime != -1 && e->mTime == e->mLoopTime) e->mTime = 0;
@@ -209,7 +209,7 @@ static void updateSingleBackgroundController(void* tCaller, void* tData) {
 
 static void updateSingleBackgroundGroup(void* tCaller, void* tData) {
 	(void)tCaller;
-	BackgroundStateGroup* group = tData;
+	BackgroundStateGroup* group = (BackgroundStateGroup*)tData;
 	vector_map(&group->mStates, updateSingleBackgroundController, group);
 
 	if (group->mLoopTime != -1 && group->mTime == group->mLoopTime) group->mTime = 0;
@@ -221,13 +221,9 @@ static void updateBackgroundStateHandler(void* tData) {
 	vector_map(&gData.mStates.mBackgroundStateGroups, updateSingleBackgroundGroup, NULL);
 }
 
-ActorBlueprint BackgroundStateHandler = {
-	.mLoad = loadBackgroundStateHandler,
-    .mUnload = NULL,
-	.mUpdate = updateBackgroundStateHandler,
-    .mDraw = NULL,
-    .mIsActive = NULL,
-};
+ActorBlueprint getBackgroundStateHandler() {
+	return makeActorBlueprint(loadBackgroundStateHandler, NULL, updateBackgroundStateHandler);
+}
 
 
 static void loadBackgroundStateControllerElements(MugenDefScriptGroup* tGroup, Vector* oElements) {
@@ -242,7 +238,7 @@ static void loadBackgroundStateControllerElements(MugenDefScriptGroup* tGroup, V
 			Vector* elementList = getStageHandlerElementsWithID(id);
 			int j;
 			for (j = 0; j < elementList->mSize; j++) {
-				StaticStageHandlerElement* element = vector_get(elementList, j);
+				StaticStageHandlerElement* element = (StaticStageHandlerElement*)vector_get(elementList, j);
 				vector_push_back(oElements, element);
 			}
 		}
@@ -252,7 +248,7 @@ static void loadBackgroundStateControllerElements(MugenDefScriptGroup* tGroup, V
 		Vector* elementList = getStageHandlerElementsWithID(id);
 		int j;
 		for (j = 0; j < elementList->mSize; j++) {
-			StaticStageHandlerElement* element = vector_get(elementList, j);
+			StaticStageHandlerElement* element = (StaticStageHandlerElement*)vector_get(elementList, j);
 			vector_push_back(oElements, element);
 		}
 	}
@@ -350,8 +346,8 @@ static void loadBackgroundStateController(MugenDefScriptGroup* tGroup) {
 		logErrorFormat("Unable to add background state %s, no state group defined. Ignoring.", tGroup->mName);
 		return;
 	}
-	BackgroundStateGroup* group = vector_get_back(&gData.mStates.mBackgroundStateGroups);
-	BackgroundState* e = allocMemory(sizeof(BackgroundState));
+	BackgroundStateGroup* group = (BackgroundStateGroup*)vector_get_back(&gData.mStates.mBackgroundStateGroups);
+	BackgroundState* e = (BackgroundState*)allocMemory(sizeof(BackgroundState));
 
 	loadBackgroundStateControllerElements(tGroup, &e->mElements);
 	Vector3DI timeVector = getTimeFromControllerGroup(tGroup);
@@ -366,7 +362,7 @@ static void loadBackgroundStateController(MugenDefScriptGroup* tGroup) {
 }
 
 static void loadBackgroundStateControllerDef(MugenDefScriptGroup* tGroup) {
-	BackgroundStateGroup* group = allocMemory(sizeof(BackgroundStateGroup));
+	BackgroundStateGroup* group = (BackgroundStateGroup*)allocMemory(sizeof(BackgroundStateGroup));
 	loadBackgroundStateControllerElements(tGroup, &group->mElements);
 	group->mLoopTime = getMugenDefIntegerOrDefaultAsGroup(tGroup, "looptime", -1);
 	group->mStates = new_vector();

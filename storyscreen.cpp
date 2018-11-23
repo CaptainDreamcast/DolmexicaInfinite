@@ -99,7 +99,7 @@ static void loadSingleLayer(MugenDefScriptGroup* tGroup, Scene* tScene, int i) {
 }
 
 static void loadSingleScene(MugenDefScriptGroup* tGroup) {
-	Scene* e = allocMemory(sizeof(Scene));
+	Scene* e = (Scene*)allocMemory(sizeof(Scene));
 
 	e->mEndTime = getMugenDefIntegerOrDefaultAsGroup(tGroup, "end.time", INF);
 	e->mFadeInTime = getMugenDefIntegerOrDefaultAsGroup(tGroup, "fadein.time", 0);
@@ -109,7 +109,7 @@ static void loadSingleScene(MugenDefScriptGroup* tGroup) {
 	e->mFadeOutColor = getMugenDefVectorIOrDefaultAsGroup(tGroup, "fadeout.col", makeVector3DI(0, 0, 0));
 
 	if (vector_size(&gData.mScenes)) {
-		Scene* previousScene = vector_get(&gData.mScenes, vector_size(&gData.mScenes) - 1);
+		Scene* previousScene = (Scene*)vector_get(&gData.mScenes, vector_size(&gData.mScenes) - 1);
 		e->mClearColor = getMugenDefVectorIOrDefaultAsGroup(tGroup, "clearcolor", previousScene->mClearColor);
 		e->mLayerAllPosition = getMugenDefVectorOrDefaultAsGroup(tGroup, "layerall.pos", previousScene->mLayerAllPosition);
 	}
@@ -167,7 +167,7 @@ static void unloadStoryScreen() {
 
 static void startScene() {
 	assert(gData.mCurrentScene < vector_size(&gData.mScenes));
-	Scene* scene = vector_get(&gData.mScenes, gData.mCurrentScene);
+	Scene* scene = (Scene*)vector_get(&gData.mScenes, gData.mCurrentScene);
 
 	gData.mNow = 0;
 	gData.mIsFadingOut = 0;
@@ -192,7 +192,7 @@ static void updateLayerActivation(Scene* tScene, Layer* tLayer, int i) {
 }
 
 static void updateSingleLayer(int i) {
-	Scene* scene = vector_get(&gData.mScenes, gData.mCurrentScene);
+	Scene* scene = (Scene*)vector_get(&gData.mScenes, gData.mCurrentScene);
 	Layer* layer = &scene->mLayers[i];
 
 	if (!layer->mIsActive) return;
@@ -210,7 +210,7 @@ static void updateLayers() {
 }
 
 static void unloadLayer(int i) {
-	Scene* scene = vector_get(&gData.mScenes, gData.mCurrentScene);
+	Scene* scene = (Scene*)vector_get(&gData.mScenes, gData.mCurrentScene);
 	Layer* layer = &scene->mLayers[i];
 
 	if (!layer->mIsActive) return;
@@ -247,7 +247,7 @@ static void fadeOutSceneOver(void* tCaller) {
 }
 
 static void fadeOutScene() {
-	Scene* scene = vector_get(&gData.mScenes, gData.mCurrentScene);
+	Scene* scene = (Scene*)vector_get(&gData.mScenes, gData.mCurrentScene);
 
 	setFadeColorRGB(scene->mFadeOutColor.x / 255.0, scene->mFadeOutColor.y / 255.0, scene->mFadeOutColor.z / 255.0);
 	addFadeOut(scene->mFadeOutTime, fadeOutSceneOver, NULL);
@@ -258,7 +258,7 @@ static void fadeOutScene() {
 static void updateScene() {
 	if (gData.mIsFadingOut) return;
 
-	Scene* scene = vector_get(&gData.mScenes, gData.mCurrentScene);
+	Scene* scene = (Scene*)vector_get(&gData.mScenes, gData.mCurrentScene);
 	if (isDurationOver(gData.mNow, scene->mEndTime)) {
 		fadeOutScene();
 	}
@@ -276,11 +276,11 @@ static void updateStoryScreen() {
 
 }
 
-Screen StoryScreen = {
-	.mLoad = loadStoryScreen,
-	.mUpdate = updateStoryScreen,
-    .mDraw = NULL,
-	.mUnload = unloadStoryScreen,
+static Screen gStoryScreen;
+
+Screen* getStoryScreen() {
+	gStoryScreen = makeScreen(loadStoryScreen, updateStoryScreen, NULL, unloadStoryScreen);
+	return &gStoryScreen;
 };
 
 void setStoryDefinitionFile(char* tPath) {

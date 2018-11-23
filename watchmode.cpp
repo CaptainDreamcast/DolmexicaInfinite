@@ -20,7 +20,7 @@ static void versusScreenFinishedCB() {
 
 static void characterSelectFinishedCB() {
 	setVersusScreenFinishedCB(versusScreenFinishedCB);
-	setNewScreen(&VersusScreen);
+	setNewScreen(getVersusScreen());
 }
 
 static void fightFinishedCB() {
@@ -28,7 +28,7 @@ static void fightFinishedCB() {
 	setCharacterSelectOnePlayerSelectAll();
 	setCharacterSelectStageActive();
 	setCharacterSelectFinishedCB(characterSelectFinishedCB);
-	setNewScreen(&CharacterSelectScreen);
+	setNewScreen(getCharacterSelectScreen());
 }
 
 void startWatchMode()

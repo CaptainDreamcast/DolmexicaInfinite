@@ -26,7 +26,7 @@ static void fightFinishedCB() {
 	setStageRandom(&script);
 
 	setVersusScreenFinishedCB(versusScreenFinishedCB);
-	setNewScreen(&VersusScreen);
+	setNewScreen(getVersusScreen());
 }
 
 void startRandomWatchMode()

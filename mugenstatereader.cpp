@@ -169,11 +169,11 @@ typedef struct {
 
 static void handleSingleMugenStateDefElement(void* tCaller, char* tKey, void* tData) {
 	(void)tKey;
-	MugenStateDefCaller* caller = tCaller;
+	MugenStateDefCaller* caller = (MugenStateDefCaller*)tCaller;
 	DreamMugenState* state = caller->mState;
 	MugenDefScriptGroup* group = caller->mGroup;
 
-	MugenDefScriptGroupElement* e = tData;
+	MugenDefScriptGroupElement* e = (MugenDefScriptGroupElement*)tData;
 
 	if (!strcmp("type", e->mName)) {
 		handleMugenStateDefType(state, e);
@@ -225,14 +225,14 @@ static void handleSingleMugenStateDefElement(void* tCaller, char* tKey, void* tD
 static void unloadSingleState(DreamMugenState* e);
 
 static void removeState(DreamMugenStates* tStates, int tState) {
-	DreamMugenState* e = int_map_get(&tStates->mStates, tState);
+	DreamMugenState* e = (DreamMugenState*)int_map_get(&tStates->mStates, tState);
 	// unloadSingleState(e); // TODO: reinsert
 	int_map_remove(&tStates->mStates, tState);
 }
 
 static void handleMugenStateDef(DreamMugenStates* tStates, MugenDefScriptGroup* tGroup) {
 
-	DreamMugenState* state = allocMemory(sizeof(DreamMugenState));
+	DreamMugenState* state = (DreamMugenState*)allocMemory(sizeof(DreamMugenState));
 
 	char dummy[100];
 	sscanf(tGroup->mName, "%s %d", dummy, &state->mID);
@@ -275,7 +275,7 @@ static int isMugenStateController(char* tName) {
 static void handleMugenStateControllerInDefGroup(DreamMugenStates* tStates, MugenDefScriptGroup* tGroup) {
 	
 	assert(int_map_contains(&tStates->mStates, gMugenStateDefParseState.mCurrentGroup));
-	DreamMugenState* state = int_map_get(&tStates->mStates, gMugenStateDefParseState.mCurrentGroup);
+	DreamMugenState* state = (DreamMugenState*)int_map_get(&tStates->mStates, gMugenStateDefParseState.mCurrentGroup);
 
 	DreamMugenStateController* controller = parseDreamMugenStateControllerFromGroup(tGroup);
 
@@ -462,7 +462,7 @@ DreamMugenConstants loadDreamMugenConstantsFile(char * tPath)
 
 static void unloadSingleController(void* tCaller, void* tData) {
 	(void)tCaller;
-	DreamMugenStateController* e = tData;
+	DreamMugenStateController* e = (DreamMugenStateController*)tData;
 	unloadDreamMugenStateController(e);
 }
 
@@ -498,7 +498,7 @@ static void unloadSingleState(DreamMugenState* e) {
 
 static int unloadSingleStateCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	DreamMugenState* e = tData;
+	DreamMugenState* e = (DreamMugenState*)tData;
 
 	unloadSingleState(e);
 

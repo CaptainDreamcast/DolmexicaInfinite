@@ -103,14 +103,14 @@ static void loadMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, MugenSpr
 
 void loadMenuBackground(MugenDefScript * tScript, MugenSpriteFile * tSprites, MugenAnimations * tAnimations, char * tDefinitionGroupName, char * tBackgroundGroupName)
 {
-	instantiateActor(DreamMugenStageHandler);
+	instantiateActor(getDreamMugenStageHandler());
 	gData.mLocalCoordinates = makeVector3DI(320, 240, 0); // TODO: move outside
 	setDreamStageCoordinates(gData.mLocalCoordinates);
 	setDreamMugenStageHandlerCameraCoordinates(gData.mLocalCoordinates);
 	setDreamMugenStageHandlerCameraRange(makeGeoRectangle(0, 0, gData.mLocalCoordinates.x, gData.mLocalCoordinates.y));
 	setDreamMugenStageHandlerCameraPosition(makePosition(0, 0, 0));
 
-	MugenDefScriptGroup* current = string_map_get(&tScript->mGroups, tDefinitionGroupName);
+	MugenDefScriptGroup* current = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, tDefinitionGroupName);
 	current = current->mNext;
 
 	int i = 1;

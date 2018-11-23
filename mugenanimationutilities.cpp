@@ -40,7 +40,7 @@ static void loadUtilityHandler(void* tData) {
 
 static int unloadSingleActiveElement(void* tCaller, void* tData) {
 	(void)tCaller;
-	ActiveElement* e = tData;
+	ActiveElement* e = (ActiveElement*)tData;
 	freeMemory(e->mData);
 	return 1;
 }
@@ -65,7 +65,7 @@ static void updateSingleActiveText(ActiveText* e) {
 
 static int updateSingleActiveElement(void* tCaller, void* tData) {
 	(void)tCaller;
-	ActiveElement* e = tData;
+	ActiveElement* e = (ActiveElement*)tData;
 	if (e->mType == ACTIVE_ELEMENT_TYPE_ANIMATION) {
 		updateSingleActiveAnimation((ActiveAnimation*)e->mData);
 	}
@@ -85,21 +85,19 @@ static void updateUtilityHandler(void* tData) {
 	int_map_remove_predicate(&gData.mActiveElements, updateSingleActiveElement, NULL);
 }
 
-ActorBlueprint MugenAnimationUtilityHandler = {
-	.mLoad = loadUtilityHandler,
-	.mUnload = unloadUtilityHandler,
-	.mUpdate = updateUtilityHandler,
+ActorBlueprint getMugenAnimationUtilityHandler() {
+	return makeActorBlueprint(loadUtilityHandler, unloadUtilityHandler, updateUtilityHandler);
 };
 
 static void addActiveElement(ActiveElementType tType, void* tData) {
-	ActiveElement* e = allocMemory(sizeof(ActiveElement));
+	ActiveElement* e = (ActiveElement*)allocMemory(sizeof(ActiveElement));
 	e->mType = tType;
 	e->mData = tData;
 	int_map_push_back_owned(&gData.mActiveElements, e);
 }
 
 static void addActiveAnimation(int tID, int tIsInvisible) {
-	ActiveAnimation* e = allocMemory(sizeof(ActiveAnimation));
+	ActiveAnimation* e = (ActiveAnimation*)allocMemory(sizeof(ActiveAnimation));
 	e->mID = tID;
 	e->mIsInvisible = 1;
 
@@ -107,7 +105,7 @@ static void addActiveAnimation(int tID, int tIsInvisible) {
 }
 
 static void addActiveText(int tID, int tIsInvisible) {
-	ActiveText* e = allocMemory(sizeof(ActiveText));
+	ActiveText* e = (ActiveText*)allocMemory(sizeof(ActiveText));
 	e->mID = tID;
 	e->mIsInvisible = 1;
 

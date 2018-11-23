@@ -74,33 +74,33 @@ static void loadFightScreen() {
 	malloc_stats();
 	printf("init custom handlers\n");
 	
-	instantiateActor(MugenAnimationUtilityHandler);
-	instantiateActor(DreamAIHandler);
-	instantiateActor(HitDataHandler);
-	instantiateActor(ProjectileHandler);
+	instantiateActor(getMugenAnimationUtilityHandler());
+	instantiateActor(getDreamAIHandler());
+	instantiateActor(getHitDataHandler());
+	instantiateActor(getProjectileHandler());
 	
-	instantiateActor(PreStateMachinePlayersBlueprint);
-	instantiateActor(DreamMugenCommandHandler);
-	instantiateActor(DreamMugenStateHandler);
-	instantiateActor(DreamExplodHandler);
+	instantiateActor(getPreStateMachinePlayersBlueprint());
+	instantiateActor(getDreamMugenCommandHandler());
+	instantiateActor(getDreamMugenStateHandler());
+	instantiateActor(getDreamExplodHandler());
 	
 	malloc_stats();
 	printf("init stage\n");
 	
-	instantiateActor(DreamStageBP);
+	instantiateActor(getDreamStageBP());
 	
 	malloc_stats();
 	printf("init players\n");
 	
 	loadPlayers(&gData.mMemoryStack);
 	
-	instantiateActor(DreamFightUIBP);
-	instantiateActor(DreamGameLogic);
+	instantiateActor(getDreamFightUIBP());
+	instantiateActor(getDreamGameLogic());
 
-	instantiateActor(FightResultDisplay);
+	instantiateActor(getFightResultDisplay());
 
 	if (isMugenDebugActive()) {
-		instantiateActor(FightDebug);
+		instantiateActor(getFightDebug());
 	}
 	
 	malloc_stats();
@@ -136,12 +136,12 @@ static void drawFightScreen() {
 	drawPlayers();
 }
 
-static Screen DreamFightScreen = {
-	.mLoad = loadFightScreen,
-	.mUpdate = updateFightScreen,
-	.mDraw = drawFightScreen,
-	.mUnload = unloadFightScreen,
-};
+static Screen gDreamFightScreen;
+
+static Screen* getDreamFightScreen() {
+	gDreamFightScreen = makeScreen(loadFightScreen, updateFightScreen, drawFightScreen, unloadFightScreen);
+	return &gDreamFightScreen;
+}
 
 static void loadFightFonts(void* tCaller) {
 	(void)tCaller;
@@ -156,7 +156,7 @@ static void loadSystemFonts(void* tCaller) {
 
 void startFightScreen() {
 	setWrapperBetweenScreensCB(loadFightFonts, NULL);
-	setNewScreen(&DreamFightScreen);
+	setNewScreen(getDreamFightScreen());
 }
 
 void stopFightScreenWin() {
@@ -170,7 +170,7 @@ void stopFightScreenLose()
 {
 	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
 	if (!gData.mLoseCB) {
-		setNewScreen(&DreamTitleScreen);
+		setNewScreen(getDreamTitleScreen());
 		return;
 	}
 

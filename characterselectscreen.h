@@ -3,7 +3,7 @@
 #include <prism/wrapper.h>
 #include <prism/mugendefreader.h>
 
-extern Screen CharacterSelectScreen;
+Screen* getCharacterSelectScreen();
 
 void setCharacterSelectScreenModeName(char* tModeName);
 void setCharacterSelectFinishedCB(void(*tCB)());

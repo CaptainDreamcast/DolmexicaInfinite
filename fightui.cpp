@@ -1,6 +1,7 @@
 #include "fightui.h"
 
 #include <assert.h>
+#include <algorithm>
 
 #include <prism/file.h>
 #include <prism/math.h>
@@ -15,6 +16,8 @@
 #include "playerdefinition.h"
 #include "mugenstagehandler.h"
 #include "mugenanimationutilities.h"
+
+using namespace std;
 
 #define ENVIRONMENT_COLOR_LOWER_Z 29
 #define HITSPARK_BASE_Z 51
@@ -611,11 +614,11 @@ static void loadSingleWinIcon(int i, MugenDefScript* tScript) {
 	
 	winIcon->mIconUpToAmount = getMugenDefIntegerOrDefault(tScript, "WinIcon", "useiconupto", 4);
 
-	winIcon->mIconAnimationIDs = allocMemory(sizeof(int) * winIcon->mIconUpToAmount);
-	winIcon->mIconAnimations = allocMemory(sizeof(MugenAnimation*) * winIcon->mIconUpToAmount);
-	winIcon->mHasIsPerfectIcon = allocMemory(sizeof(int*) * winIcon->mIconUpToAmount);
-	winIcon->mPerfectIconAnimations = allocMemory(sizeof(MugenAnimation*) * winIcon->mIconUpToAmount);
-	winIcon->mPerfectIconAnimationIDs = allocMemory(sizeof(int*) * winIcon->mIconUpToAmount);
+	winIcon->mIconAnimationIDs = (int*)allocMemory(sizeof(int) * winIcon->mIconUpToAmount);
+	winIcon->mIconAnimations = (MugenAnimation**)allocMemory(sizeof(MugenAnimation*) * winIcon->mIconUpToAmount);
+	winIcon->mHasIsPerfectIcon = (int*)allocMemory(sizeof(int*) * winIcon->mIconUpToAmount);
+	winIcon->mPerfectIconAnimations = (MugenAnimation**)allocMemory(sizeof(MugenAnimation*) * winIcon->mIconUpToAmount);
+	winIcon->mPerfectIconAnimationIDs = (int*)allocMemory(sizeof(int*) * winIcon->mIconUpToAmount);
 	winIcon->mIconAmount = 0;
 }
 
@@ -1011,7 +1014,7 @@ typedef struct {
 static int updateSingleHitSpark(void* tCaller, void* tData) {
 	(void)tCaller;
 
-	HitSpark* e = tData;
+	HitSpark* e = (HitSpark*)tData;
 
 	if (!getMugenAnimationRemainingAnimationTime(e->mAnimationID)) {
 		removeMugenAnimation(e->mAnimationID);
@@ -1339,10 +1342,8 @@ static void updateFightUI(void* tData) {
 
 
 
-ActorBlueprint DreamFightUIBP = {
-	.mLoad = loadFightUI,
-	.mUnload = unloadFightUI,
-	.mUpdate = updateFightUI,
+ActorBlueprint getDreamFightUIBP() {
+	return makeActorBlueprint(loadFightUI, unloadFightUI, updateFightUI);
 };
 
 void playDreamHitSpark(Position tPosition, DreamPlayer* tPlayer, int tIsInPlayerFile, int tNumber, int tIsFacingRight, int tPositionCoordinateP, int tScaleCoordinateP)
@@ -1361,7 +1362,7 @@ void playDreamHitSpark(Position tPosition, DreamPlayer* tPlayer, int tIsInPlayer
 		anim = getMugenAnimation(&gData.mFightFXAnimations, tNumber);
 	}
 
-	HitSpark* e = allocMemory(sizeof(HitSpark));
+	HitSpark* e = (HitSpark*)allocMemory(sizeof(HitSpark));
 	
 	e->mPosition = tPosition;
 	e->mPosition.z = HITSPARK_BASE_Z;

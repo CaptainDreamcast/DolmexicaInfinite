@@ -292,7 +292,7 @@ static void loadSelectStageCredits(SelectStage* e, MugenDefScript* tScript) {
 static int isSelectStageLoadedAlready(char* tPath) {
 	int i;
 	for (i = 0; i < vector_size(&gData.mSelectStages); i++) {
-		SelectStage* e = vector_get(&gData.mSelectStages, i);
+		SelectStage* e = (SelectStage*)vector_get(&gData.mSelectStages, i);
 		if (!strcmp(tPath, e->mPath)) return 1;
 	}
 
@@ -314,7 +314,7 @@ static void addSingleSelectStage(char* tPath) {
 
 	if (isSelectStageLoadedAlready(path)) return;
 
-	SelectStage* e = allocMemory(sizeof(SelectStage));
+	SelectStage* e = (SelectStage*)allocMemory(sizeof(SelectStage));
 	strcpy(e->mPath, path);
 	
 	MugenDefScript script = loadMugenDefScript(path);
@@ -328,13 +328,13 @@ static void addSingleSelectStage(char* tPath) {
 static void loadExtraStages() {
 	if (!gData.mStageSelect.mIsUsing) return;
 
-	MugenDefScriptGroup* group = string_map_get(&gData.mCharacterScript.mGroups, "ExtraStages");
+	MugenDefScriptGroup* group = (MugenDefScriptGroup*)string_map_get(&gData.mCharacterScript.mGroups, "ExtraStages");
 	ListIterator iterator = list_iterator_begin(&group->mOrderedElementList);
 	int hasElements = 1;
 	while (hasElements) {
-		MugenDefScriptGroupElement* element = list_iterator_get(iterator);
+		MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)list_iterator_get(iterator);
 		if (element->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
-			MugenDefScriptStringElement* stringElement = element->mData;
+			MugenDefScriptStringElement* stringElement = (MugenDefScriptStringElement*)element->mData;
 			addSingleSelectStage(stringElement->mString);
 		}
 
@@ -491,7 +491,7 @@ static void loadSingleRealMenuCharacter(MenuCharacterLoadCaller* tCaller, MugenD
 	int row = tCaller->i / gData.mHeader.mColumns;
 	int column = tCaller->i % gData.mHeader.mColumns;
 
-	SelectCharacter* e = vector_get(vector_get(&gData.mSelectCharacters, row), column);
+	SelectCharacter* e = (SelectCharacter*)vector_get((Vector*)vector_get(&gData.mSelectCharacters, row), column);
 	strcpy(e->mStageName, stageName);
 	if (!loadMenuCharacterSpritesAndNameAndReturnWhetherExists(e, characterName)) {
 		return;
@@ -513,7 +513,7 @@ static void loadSingleRandomMenuCharacter(MenuCharacterLoadCaller* tCaller) {
 	int row = tCaller->i / gData.mHeader.mColumns;
 	int column = tCaller->i % gData.mHeader.mColumns;
 
-	SelectCharacter* e = vector_get(vector_get(&gData.mSelectCharacters, row), column);
+	SelectCharacter* e = (SelectCharacter*)vector_get((Vector*)vector_get(&gData.mSelectCharacters, row), column);
 
 	e->mType = SELECT_CHARACTER_TYPE_RANDOM;
 
@@ -536,13 +536,13 @@ static void loadSingleSpecialMenuCharacter(MenuCharacterLoadCaller* tCaller, Mug
 
 static void loadSingleMenuCharacter(void* tCaller, void* tData) {
 
-	MenuCharacterLoadCaller* caller = tCaller;
-	MugenDefScriptGroupElement* element = tData;	
+	MenuCharacterLoadCaller* caller = (MenuCharacterLoadCaller*)tCaller;
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)tData;
 	if (element->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
-		MugenDefScriptVectorElement* vectorElement = element->mData;
+		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)element->mData;
 		loadSingleRealMenuCharacter(caller, vectorElement);
 	} else if (element->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
-		MugenDefScriptStringElement* stringElement = element->mData;
+		MugenDefScriptStringElement* stringElement = (MugenDefScriptStringElement*)element->mData;
 		loadSingleSpecialMenuCharacter(caller, stringElement);
 	}
 	
@@ -550,7 +550,7 @@ static void loadSingleMenuCharacter(void* tCaller, void* tData) {
 }
 
 static void loadMenuCharacters() {
-	MugenDefScriptGroup* e = string_map_get(&gData.mCharacterScript.mGroups, "Characters");
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&gData.mCharacterScript.mGroups, "Characters");
 
 	MenuCharacterLoadCaller caller;
 	caller.i = 0;
@@ -598,7 +598,7 @@ static void loadSingleStory(MenuCharacterLoadCaller* tCaller, char* tPath) {
 
 	int row = tCaller->i / gData.mHeader.mColumns;
 	int column = tCaller->i % gData.mHeader.mColumns;
-	SelectCharacter* e = vector_get(vector_get(&gData.mSelectCharacters, row), column);
+	SelectCharacter* e = (SelectCharacter*)vector_get((Vector*)vector_get(&gData.mSelectCharacters, row), column);
 	strcpy(e->mStageName, "");
 	if (!loadSingleStoryFileAndReturnWhetherItExists(e, tPath)) {
 		return;
@@ -609,11 +609,11 @@ static void loadSingleStory(MenuCharacterLoadCaller* tCaller, char* tPath) {
 
 static void loadSingleMenuStory(void* tCaller, void* tData) {
 	
-	MenuCharacterLoadCaller* caller = tCaller;
-	MugenDefScriptGroupElement* element = tData;
+	MenuCharacterLoadCaller* caller = (MenuCharacterLoadCaller*)tCaller;
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)tData;
 
 	if (element->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
-		MugenDefScriptStringElement* stringElement = element->mData;
+		MugenDefScriptStringElement* stringElement = (MugenDefScriptStringElement*)element->mData;
 		loadSingleStory(caller, stringElement->mString);
 	}
 
@@ -621,7 +621,7 @@ static void loadSingleMenuStory(void* tCaller, void* tData) {
 }
 
 static void loadMenuStories() {
-	MugenDefScriptGroup* e = string_map_get(&gData.mCharacterScript.mGroups, "Stories"); 
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&gData.mCharacterScript.mGroups, "Stories");
 
 	MenuCharacterLoadCaller caller;
 	caller.i = 0;
@@ -641,7 +641,7 @@ static void loadMenuSelectables() {
 }
 
 static void loadSingleMenuCell(Vector3DI tCellPosition) {
-	SelectCharacter* e = allocMemory(sizeof(SelectCharacter));
+	SelectCharacter* e = (SelectCharacter*)allocMemory(sizeof(SelectCharacter));
 	e->mType = SELECT_CHARACTER_TYPE_EMPTY;
 	e->mCellPosition = tCellPosition;
 
@@ -651,7 +651,7 @@ static void loadSingleMenuCell(Vector3DI tCellPosition) {
 		e->mBackgroundAnimationID = addMugenAnimation(gData.mHeader.mCellBackgroundAnimation, &gData.mSprites, pos);
 	}
 
-	vector_push_back_owned(vector_get(&gData.mSelectCharacters, tCellPosition.y), e);
+	vector_push_back_owned((Vector*)vector_get(&gData.mSelectCharacters, tCellPosition.y), e);
 }
 
 static void loadMenuCells() {
@@ -660,7 +660,7 @@ static void loadMenuCells() {
 	
 	int y, x;
 	for (y = 0; y < gData.mHeader.mRows; y++) {
-		Vector* v = allocMemory(sizeof(Vector));
+		Vector* v = (Vector*)allocMemory(sizeof(Vector));
 		*v = new_vector();
 		vector_push_back_owned(&gData.mSelectCharacters, v);
 
@@ -671,7 +671,7 @@ static void loadMenuCells() {
 }
 
 static SelectCharacter* getCellCharacter(Vector3DI tCellPosition) {
-	SelectCharacter* ret = vector_get(vector_get(&gData.mSelectCharacters, tCellPosition.y), tCellPosition.x);
+	SelectCharacter* ret = (SelectCharacter*)vector_get((Vector*)vector_get(&gData.mSelectCharacters, tCellPosition.y), tCellPosition.x);
 	return ret;
 }
 
@@ -809,7 +809,7 @@ static void unloadSelectStageCredits(SelectStage* e) {
 
 static void unloadSingleSelectStage(void* tCaller, void* tData) {
 	(void)tCaller;
-	SelectStage* e = tData;
+	SelectStage* e = (SelectStage*)tData;
 	freeMemory(e->mName);
 	unloadSelectStageCredits(e);
 }
@@ -831,7 +831,7 @@ static void unloadMenuCharacterCredits(SelectCharacter* e) {
 
 static void unloadSingleSelectCharacter(void* tCaller, void* tData) {
 	(void)tCaller;
-	SelectCharacter* e = tData;
+	SelectCharacter* e = (SelectCharacter*)tData;
 	if (e->mType == SELECT_CHARACTER_TYPE_CHARACTER) {
 		unloadMugenSpriteFile(&e->mSprites);
 		freeMemory(e->mDisplayCharacterName);
@@ -841,7 +841,7 @@ static void unloadSingleSelectCharacter(void* tCaller, void* tData) {
 
 static void unloadSingleSelectCharacterRow(void* tCaller, void* tData) {
 	(void)tCaller;
-	Vector* e = tData;
+	Vector* e = (Vector*)tData;
 	vector_map(e, unloadSingleSelectCharacter, NULL);
 	delete_vector(e);
 }
@@ -1026,7 +1026,7 @@ static void showNewRandomSelectCharacter(int i) {
 	}
 
 	gData.mSelectors[i].mRandom.mCurrentCharacter = newIndex;
-	SelectCharacter* e = vector_get(&gData.mRealSelectCharacters, gData.mSelectors[i].mRandom.mCurrentCharacter);
+	SelectCharacter* e = (SelectCharacter*)vector_get(&gData.mRealSelectCharacters, gData.mSelectors[i].mRandom.mCurrentCharacter);
 	showSelectCharacterForSelector(i, e);
 	gData.mSelectors[i].mRandom.mNow = 0;
 }
@@ -1101,7 +1101,7 @@ static void updateSelections() {
 
 static void gotoTitleScreenCB(void* tCaller) {
 	(void)tCaller;
-	setNewScreen(&DreamTitleScreen);
+	setNewScreen(getDreamTitleScreen());
 }
 
 static void fadeToTitleScreen() {
@@ -1157,7 +1157,7 @@ static void updateStageCredit(SelectStage* tStage) {
 }
 
 static void updateStageSelection(int i, int tNewStage, int tDoesPlaySound) {
-	SelectStage* stage = vector_get(&gData.mSelectStages, tNewStage);
+	SelectStage* stage = (SelectStage*)vector_get(&gData.mSelectStages, tNewStage);
 
 	char newText[200];
 	sprintf(newText, "Stage %d: %s", tNewStage + 1, stage->mName);
@@ -1239,7 +1239,7 @@ static void setCharacterSelectionFinished(int i) {
 	tryPlayMugenSound(&gData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y);
 
 	if (character->mType == SELECT_CHARACTER_TYPE_RANDOM) {
-		character = vector_get(&gData.mRealSelectCharacters, gData.mSelectors[i].mRandom.mCurrentCharacter);
+		character = (SelectCharacter*)vector_get(&gData.mRealSelectCharacters, gData.mSelectors[i].mRandom.mCurrentCharacter);
 	}
 
 	if (gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_STORY) {
@@ -1266,7 +1266,7 @@ static void setStageSelectionFinished(int i) {
 
 	tryPlayMugenSound(&gData.mSounds, gData.mHeader.mPlayers[i].mCursorDoneSound.x, gData.mHeader.mPlayers[i].mCursorDoneSound.y);
 
-	SelectStage* stage = vector_get(&gData.mSelectStages, gData.mStageSelect.mSelectedStage);
+	SelectStage* stage = (SelectStage*)vector_get(&gData.mSelectStages, gData.mStageSelect.mSelectedStage);
 	char dummyMusicPath[2];
 	*dummyMusicPath = '\0';
 	setDreamStageMugenDefinition(stage->mPath, dummyMusicPath);
@@ -1347,11 +1347,11 @@ static void updateCharacterSelectScreen() {
 	updateStageSelect();
 }
 
-Screen CharacterSelectScreen = {
-	.mLoad = loadCharacterSelectScreen,
-	.mUpdate = updateCharacterSelectScreen,
-    .mDraw = NULL,
-	.mUnload = unloadCharacterSelectScreen,
+static Screen gCharacterSelectScreen;
+
+Screen* getCharacterSelectScreen() {
+	gCharacterSelectScreen = makeScreen(loadCharacterSelectScreen, updateCharacterSelectScreen, NULL, unloadCharacterSelectScreen);
+	return &gCharacterSelectScreen;
 };
 
 void setCharacterSelectScreenModeName(char * tModeName)
@@ -1476,7 +1476,7 @@ typedef struct {
 } RandomCharacterCaller;
 
 static void loadRandomCharacter(RandomCharacterCaller* tCaller, MugenDefScriptVectorElement* tVectorElement) {
-	PossibleRandomCharacterElement* e = allocMemory(sizeof(PossibleRandomCharacterElement));
+	PossibleRandomCharacterElement* e = (PossibleRandomCharacterElement*)allocMemory(sizeof(PossibleRandomCharacterElement));
 	getCharacterSelectNamePath(tVectorElement->mVector.mElement[0], e->mPath);
 
 	vector_push_back_owned(&tCaller->mElements, e);
@@ -1484,17 +1484,17 @@ static void loadRandomCharacter(RandomCharacterCaller* tCaller, MugenDefScriptVe
 
 static void loadSingleRandomCharacter(void* tCaller, void* tData) {
 
-	RandomCharacterCaller* caller = tCaller;
-	MugenDefScriptGroupElement* element = tData;
+	RandomCharacterCaller* caller = (RandomCharacterCaller*)tCaller;
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)tData;
 	if (element->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
-		MugenDefScriptVectorElement* vectorElement = element->mData;
+		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)element->mData;
 		loadRandomCharacter(caller, vectorElement);
 	}
 }
 
 void setCharacterRandom(MugenDefScript * tScript, int i)
 {
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, "Characters");
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, "Characters");
 
 	RandomCharacterCaller caller;
 	caller.mElements = new_vector();
@@ -1502,7 +1502,7 @@ void setCharacterRandom(MugenDefScript * tScript, int i)
 	list_map(&e->mOrderedElementList, loadSingleRandomCharacter, &caller);
 
 	int index = randfromInteger(0, vector_size(&caller.mElements) - 1);
-	PossibleRandomCharacterElement* newChar = vector_get(&caller.mElements, index);
+	PossibleRandomCharacterElement* newChar = (PossibleRandomCharacterElement*)vector_get(&caller.mElements, index);
 	setPlayerDefinitionPath(i, newChar->mPath);
 
 	delete_vector(&caller.mElements);
@@ -1521,7 +1521,7 @@ typedef struct {
 static void addPossibleRandomStage(RandomStageCaller* tCaller, char* tPath) {
 	if (string_map_contains(&tCaller->mAllElements, tPath)) return;
 
-	PossibleRandomStageElement* e = allocMemory(sizeof(PossibleRandomStageElement));
+	PossibleRandomStageElement* e = (PossibleRandomStageElement*)allocMemory(sizeof(PossibleRandomStageElement));
 	getStagePath(e->mPath, tPath);
 
 	string_map_push(&tCaller->mAllElements, tPath, NULL);
@@ -1536,21 +1536,21 @@ static void loadRandomCharacterStage(RandomStageCaller* tCaller, MugenDefScriptV
 
 static void loadSingleRandomCharacterStage(void* tCaller, void* tData) {
 
-	RandomStageCaller* caller = tCaller;
-	MugenDefScriptGroupElement* element = tData;
+	RandomStageCaller* caller = (RandomStageCaller*)tCaller;
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)tData;
 	if (element->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
-		MugenDefScriptVectorElement* vectorElement = element->mData;
+		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)element->mData;
 		loadRandomCharacterStage(caller, vectorElement);
 	}
 }
 
 static void loadSingleRandomStageStage(void* tCaller, void* tData) {
 
-	RandomStageCaller* caller = tCaller;
-	MugenDefScriptGroupElement* element = tData;
+	RandomStageCaller* caller = (RandomStageCaller*)tCaller;
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)tData;
 	if (element->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
-		MugenDefScriptStringElement* stringElement = element->mData;
-		addPossibleRandomStage(tCaller, stringElement->mString);
+		MugenDefScriptStringElement* stringElement = (MugenDefScriptStringElement*)element->mData;
+		addPossibleRandomStage(caller, stringElement->mString);
 	}
 }
 
@@ -1561,15 +1561,15 @@ void setStageRandom(MugenDefScript * tScript)
 	caller.mElements = new_vector();
 	caller.mAllElements = new_string_map();
 
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, "Characters");
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, "Characters");
 	list_map(&e->mOrderedElementList, loadSingleRandomCharacterStage, &caller);
 
-	e = string_map_get(&tScript->mGroups, "ExtraStages");
+	e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, "ExtraStages");
 	list_map(&e->mOrderedElementList, loadSingleRandomStageStage, &caller);
 
 
 	int index = randfromInteger(0, vector_size(&caller.mElements) - 1);
-	PossibleRandomStageElement* newStage = vector_get(&caller.mElements, index);
+	PossibleRandomStageElement* newStage = (PossibleRandomStageElement*)vector_get(&caller.mElements, index);
 	char dummyMusicPath[2];
 	*dummyMusicPath = '\0'; // TODO
 	setDreamStageMugenDefinition(newStage->mPath, dummyMusicPath);

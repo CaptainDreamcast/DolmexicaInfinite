@@ -11,7 +11,7 @@
 
 
 void setDreamStageMugenDefinition(char* tPath, char* tCustomMusicPath);
-extern ActorBlueprint DreamStageBP;
+ActorBlueprint getDreamStageBP();
 
 MugenAnimations* getStageAnimations();
 void playDreamStageMusic();

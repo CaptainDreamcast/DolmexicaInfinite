@@ -3,7 +3,7 @@
 #include <prism/wrapper.h>
 #include <prism/geometry.h>
 
-extern Screen DolmexicaStoryScreen;
+Screen* getDolmexicaStoryScreen();
 
 void setDolmexicaStoryScreenFile(char* tPath);
 

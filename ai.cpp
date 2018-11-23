@@ -33,7 +33,7 @@ static void loadAIHandler(void* tData) {
 
 static int unloadSingleHandledPlayer(void* tCaller, void* tData) {
 	(void)tCaller;
-	PlayerAI* e = tData;
+	PlayerAI* e = (PlayerAI*)tData;
 	delete_vector(&e->mCommandNames);
 	return 1;
 }
@@ -47,7 +47,7 @@ static void unloadAIHandler(void* tData) {
 static void setRandomPlayerCommandActive(PlayerAI* e) {
 	int i = randfromInteger(0, vector_size(&e->mCommandNames) - 1);
 
-	char* name = vector_get(&e->mCommandNames, i);
+	char* name = (char*)vector_get(&e->mCommandNames, i);
 
 	setDreamPlayerCommandActiveForAI(e->mPlayer->mCommandID, name, 2);
 }
@@ -97,7 +97,7 @@ static void updateAICommands(PlayerAI* e) {
 
 static void updateSingleAI(void* tCaller, void* tData) {
 	(void)tCaller;
-	PlayerAI* e = tData;
+	PlayerAI* e = (PlayerAI*)tData;
 
 	updateAIMovement(e);
 	updateAIGuarding(e);
@@ -112,7 +112,7 @@ static void updateAIHandler(void* tData) {
 
 static void insertSingleCommandName(void* tCaller, char* tKey, void* tData) {
 	(void)tData;
-	Vector* names = tCaller;
+	Vector* names = (Vector*)tCaller;
 	vector_push_back(names, tKey);
 }
 
@@ -120,7 +120,7 @@ void setDreamAIActive(DreamPlayer * p)
 {
 	assert(getPlayerAILevel(p));
 
-	PlayerAI* e = allocMemory(sizeof(PlayerAI));
+	PlayerAI* e = (PlayerAI*)allocMemory(sizeof(PlayerAI));
 	e->mPlayer = p;
 	e->mRandomInputNow = 0;
 	e->mRandomInputDuration = 20;
@@ -134,10 +134,6 @@ void setDreamAIActive(DreamPlayer * p)
 	list_push_back_owned(&gData.mHandledPlayers, e);
 }
 
-ActorBlueprint DreamAIHandler = {
-	.mLoad = loadAIHandler,
-	.mUnload = unloadAIHandler,
-	.mUpdate = updateAIHandler,
-    .mDraw = NULL,
-    .mIsActive = NULL
-};
+ActorBlueprint getDreamAIHandler() {
+	return makeActorBlueprint(loadAIHandler, unloadAIHandler, updateAIHandler);
+}

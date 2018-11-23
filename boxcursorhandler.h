@@ -3,7 +3,7 @@
 #include <prism/actorhandler.h>
 #include <prism/geometry.h>
 
-extern ActorBlueprint BoxCursorHandler;
+ActorBlueprint getBoxCursorHandler();
 
 int addBoxCursor(Position tStartPosition, Position tOffset, GeoRectangle tRectangle);
 void removeBoxCursor(int tID);

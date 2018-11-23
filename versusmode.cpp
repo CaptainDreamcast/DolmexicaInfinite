@@ -21,7 +21,7 @@ static void versusScreenFinishedCB() {
 
 static void characterSelectFinishedCB() {
 	setVersusScreenFinishedCB(versusScreenFinishedCB);
-	setNewScreen(&VersusScreen);
+	setNewScreen(getVersusScreen());
 }
 
 static void fightFinishedCB() {
@@ -29,7 +29,7 @@ static void fightFinishedCB() {
 	setCharacterSelectTwoPlayers();
 	setCharacterSelectStageActive();
 	setCharacterSelectFinishedCB(characterSelectFinishedCB);
-	setNewScreen(&CharacterSelectScreen);
+	setNewScreen(getCharacterSelectScreen());
 }
 
 void startVersusMode()

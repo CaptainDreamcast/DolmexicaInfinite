@@ -15,153 +15,167 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\main.c">
+    <ResourceCompile Include="DolmexicaInfinite.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\ai.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\warningscreen.c">
+    <ClCompile Include="..\arcademode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\titlescreen.c">
+    <ClCompile Include="..\boxcursorhandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\storyscreen.c">
+    <ClCompile Include="..\characterselectscreen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\stage.c">
+    <ClCompile Include="..\collision.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\projectile.c">
+    <ClCompile Include="..\config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\playerhitdata.c">
+    <ClCompile Include="..\creditsmode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\playerdefinition.c">
+    <ClCompile Include="..\dolmexicastoryscreen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\pausecontrollers.c">
+    <ClCompile Include="..\exhibitmode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugenstatereader.c">
+    <ClCompile Include="..\fightdebug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugenstatehandler.c">
+    <ClCompile Include="..\fightresultdisplay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugenstatecontrollers.c">
+    <ClCompile Include="..\fightscreen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugenstagehandler.c">
+    <ClCompile Include="..\fightui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugensound.c">
+    <ClCompile Include="..\freeplaymode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugenexplod.c">
+    <ClCompile Include="..\gamelogic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugencommandreader.c">
+    <ClCompile Include="..\intro.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugencommandhandler.c">
+    <ClCompile Include="..\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugenassignmentevaluator.c">
+    <ClCompile Include="..\menubackground.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugenassignment.c">
+    <ClCompile Include="..\mugenanimationutilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\gamelogic.c">
+    <ClCompile Include="..\mugenassignment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\fightui.c">
+    <ClCompile Include="..\mugenassignmentevaluator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\fightscreen.c">
+    <ClCompile Include="..\mugenbackgroundstatehandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\config.c">
+    <ClCompile Include="..\mugencommandhandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\collision.c">
+    <ClCompile Include="..\mugencommandreader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\ai.c">
+    <ClCompile Include="..\mugenexplod.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\menubackground.c">
+    <ClCompile Include="..\mugenlog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\characterselectscreen.c">
+    <ClCompile Include="..\mugensound.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\versusscreen.c">
+    <ClCompile Include="..\mugenstagehandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\arcademode.c">
+    <ClCompile Include="..\mugenstatecontrollers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugenlog.c">
+    <ClCompile Include="..\mugenstatehandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\versusmode.c">
+    <ClCompile Include="..\mugenstatereader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\trainingmode.c">
+    <ClCompile Include="..\optionsscreen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugenanimationutilities.c">
+    <ClCompile Include="..\pausecontrollers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\dolmexicastoryscreen.c">
+    <ClCompile Include="..\playerdefinition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\storymode.c">
+    <ClCompile Include="..\playerhitdata.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\fightdebug.c">
+    <ClCompile Include="..\projectile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\creditsmode.c">
+    <ClCompile Include="..\randomwatchmode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\optionsscreen.c">
+    <ClCompile Include="..\stage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\boxcursorhandler.c">
+    <ClCompile Include="..\storymode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mugenbackgroundstatehandler.c">
+    <ClCompile Include="..\storyscreen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\fightresultdisplay.c">
+    <ClCompile Include="..\superwatchmode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\survivalmode.c">
+    <ClCompile Include="..\survivalmode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\watchmode.c">
+    <ClCompile Include="..\titlescreen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\exhibitmode.c">
+    <ClCompile Include="..\trainingmode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\intro.c">
+    <ClCompile Include="..\versusmode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\freeplaymode.c">
+    <ClCompile Include="..\versusscreen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\randomwatchmode.c">
+    <ClCompile Include="..\warningscreen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\superwatchmode.c">
+    <ClCompile Include="..\watchmode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ai.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\arcademode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\boxcursorhandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\characterselectscreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\collision.h">
@@ -170,19 +184,49 @@
     <ClInclude Include="..\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\creditsmode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dolmexicastoryscreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\exhibitmode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fightdebug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fightresultdisplay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\fightscreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\fightui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\freeplaymode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\gamelogic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\intro.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\menubackground.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mugenanimationutilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\mugenassignment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\mugenassignmentevaluator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mugenbackgroundstatehandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\mugencommandhandler.h">
@@ -192,6 +236,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\mugenexplod.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mugenlog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\mugensound.h">
@@ -209,6 +256,9 @@
     <ClInclude Include="..\mugenstatereader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\optionsscreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\pausecontrollers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -221,94 +271,41 @@
     <ClInclude Include="..\projectile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\randomwatchmode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\stage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\storyscreen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\titlescreen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\warningscreen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\menubackground.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\characterselectscreen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\versusscreen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\arcademode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\mugenlog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\versusmode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\trainingmode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\mugenanimationutilities.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\dolmexicastoryscreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\storymode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\fightdebug.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\creditsmode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\optionsscreen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\boxcursorhandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\mugenbackgroundstatehandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\fightresultdisplay.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\survivalmode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\watchmode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\exhibitmode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\intro.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\freeplaymode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\randomwatchmode.h">
+    <ClInclude Include="..\storyscreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\superwatchmode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="DolmexicaInfinite.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <ClInclude Include="..\survivalmode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\titlescreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\trainingmode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\versusmode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\versusscreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\warningscreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\watchmode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

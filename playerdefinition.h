@@ -261,7 +261,7 @@ void resetPlayersEntirely();
 void updatePlayers();
 void drawPlayers();
 
-extern ActorBlueprint PreStateMachinePlayersBlueprint;
+ActorBlueprint getPreStateMachinePlayersBlueprint();
 
 void playerHitCB(void* tData, void* tHitData);
 

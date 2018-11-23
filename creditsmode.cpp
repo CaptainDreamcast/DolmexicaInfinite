@@ -6,7 +6,7 @@
 #include "titlescreen.h"
 
 static void characterSelectFinishedCB() {
-	setNewScreen(&DreamTitleScreen);
+	setNewScreen(getDreamTitleScreen());
 }
 
 void startCreditsMode()
@@ -15,5 +15,5 @@ void startCreditsMode()
 	setCharacterSelectCredits();
 	setCharacterSelectStageActive();
 	setCharacterSelectFinishedCB(characterSelectFinishedCB);
-	setNewScreen(&CharacterSelectScreen);
+	setNewScreen(getCharacterSelectScreen());
 }

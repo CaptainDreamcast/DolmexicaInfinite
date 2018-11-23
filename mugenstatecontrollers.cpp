@@ -46,8 +46,8 @@ typedef struct {
 } TriggerParseCaller;
 
 static void checkSingleElementForTrigger(void* tCaller, void* tData) {
-	TriggerParseCaller* caller = tCaller;
-	MugenDefScriptGroupElement* e = tData;
+	TriggerParseCaller* caller = (TriggerParseCaller*)tCaller;
+	MugenDefScriptGroupElement* e = (MugenDefScriptGroupElement*)tData;
 
 	if (strcmp(e->mName, caller->mName)) return;
 
@@ -110,7 +110,7 @@ typedef struct {
 
 
 static void parse2DPhysicsController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
-	Set2DPhysicsController* e = allocMemoryOnMemoryStackOrMemory(sizeof(Set2DPhysicsController));
+	Set2DPhysicsController* e = (Set2DPhysicsController*)allocMemoryOnMemoryStackOrMemory(sizeof(Set2DPhysicsController));
 	
 	e->mIsSettingX = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("x", tGroup, &e->x);
 	e->mIsSettingY = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("y", tGroup, &e->y);
@@ -120,7 +120,7 @@ static void parse2DPhysicsController(DreamMugenStateController* tController, Mug
 }
 
 static void unload2DPhysicsController(DreamMugenStateController* tController) {
-	Set2DPhysicsController* e = tController->mData;
+	Set2DPhysicsController* e = (Set2DPhysicsController*)tController->mData;
 	if (e->mIsSettingX) {
 		destroyDreamMugenAssignment(e->x);
 	}
@@ -139,7 +139,7 @@ typedef struct {
 
 
 static void parseChangeStateController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
-	ChangeStateController* e = allocMemoryOnMemoryStackOrMemory(sizeof(ChangeStateController));
+	ChangeStateController* e = (ChangeStateController*)allocMemoryOnMemoryStackOrMemory(sizeof(ChangeStateController));
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mState));
 
 	e->mIsChangingControl = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("ctrl", tGroup, &e->mControl);
@@ -149,7 +149,7 @@ static void parseChangeStateController(DreamMugenStateController* tController, M
 }
 
 static void unloadChangeStateController(DreamMugenStateController* tController) {
-	ChangeStateController* e = tController->mData;
+	ChangeStateController* e = (ChangeStateController*)tController->mData;
 	destroyDreamMugenAssignment(e->mState);
 
 	if (e->mIsChangingControl) {
@@ -174,7 +174,7 @@ typedef struct {
 } TargetChangeStateController;
 
 static void parseTargetChangeStateController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	TargetChangeStateController* e = allocMemoryOnMemoryStackOrMemory(sizeof(TargetChangeStateController));
+	TargetChangeStateController* e = (TargetChangeStateController*)allocMemoryOnMemoryStackOrMemory(sizeof(TargetChangeStateController));
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mState));
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 
@@ -185,7 +185,7 @@ static void parseTargetChangeStateController(DreamMugenStateController* tControl
 }
 
 static void unloadTargetChangeStateController(DreamMugenStateController* tController) {
-	TargetChangeStateController* e = tController->mData;
+	TargetChangeStateController* e = (TargetChangeStateController*)tController->mData;
 	destroyDreamMugenAssignment(e->mState);
 	destroyDreamMugenAssignment(e->mID);
 
@@ -443,7 +443,7 @@ static void readHitDefinitionFromGroup(HitDefinitionController* e, MugenDefScrip
 }
 
 static void parseHitDefinitionController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	HitDefinitionController* e = allocMemoryOnMemoryStackOrMemory(sizeof(HitDefinitionController));
+	HitDefinitionController* e = (HitDefinitionController*)allocMemoryOnMemoryStackOrMemory(sizeof(HitDefinitionController));
 	readHitDefinitionFromGroup(e, tGroup);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_HIT_DEFINITION;
@@ -555,7 +555,7 @@ static void unloadHitDefinitionData(HitDefinitionController* e) {
 }
 
 static void unloadHitDefinitionController(DreamMugenStateController* tController) {
-	HitDefinitionController* e = tController->mData;
+	HitDefinitionController* e = (HitDefinitionController*)tController->mData;
 
 	unloadHitDefinitionData(e);
 
@@ -577,7 +577,7 @@ typedef struct {
 
 
 static void parsePlaySoundController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	PlaySoundController* e = allocMemoryOnMemoryStackOrMemory(sizeof(PlaySoundController));
+	PlaySoundController* e = (PlaySoundController*)allocMemoryOnMemoryStackOrMemory(sizeof(PlaySoundController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
 
@@ -594,7 +594,7 @@ static void parsePlaySoundController(DreamMugenStateController* tController, Mug
 }
 
 static void unloadPlaySoundController(DreamMugenStateController* tController) {
-	PlaySoundController* e = tController->mData;
+	PlaySoundController* e = (PlaySoundController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mValue);
 
@@ -620,7 +620,7 @@ typedef struct {
 
 
 static void parseWidthController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	WidthController* e = allocMemoryOnMemoryStackOrMemory(sizeof(WidthController));
+	WidthController* e = (WidthController*)allocMemoryOnMemoryStackOrMemory(sizeof(WidthController));
 	
 	e->mHasValue = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("edge", tGroup, &e->mEdge, "");
@@ -631,7 +631,7 @@ static void parseWidthController(DreamMugenStateController* tController, MugenDe
 }
 
 static void unloadWidthController(DreamMugenStateController* tController) {
-	WidthController* e = tController->mData;
+	WidthController* e = (WidthController*)tController->mData;
 
 	if (e->mHasValue) {
 		destroyDreamMugenAssignment(e->mValue);
@@ -651,7 +651,7 @@ typedef struct {
 
 
 static void parseChangeAnimationController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
-	ChangeAnimationController* e = allocMemoryOnMemoryStackOrMemory(sizeof(ChangeAnimationController));
+	ChangeAnimationController* e = (ChangeAnimationController*)allocMemoryOnMemoryStackOrMemory(sizeof(ChangeAnimationController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->tNewAnimation));
 
@@ -665,7 +665,7 @@ static void parseChangeAnimationController(DreamMugenStateController* tControlle
 }
 
 static void unloadChangeAnimationController(DreamMugenStateController* tController) {
-	ChangeAnimationController* e = tController->mData;
+	ChangeAnimationController* e = (ChangeAnimationController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->tNewAnimation);
 	destroyDreamMugenAssignment(e->tStep);
@@ -679,7 +679,7 @@ typedef struct {
 
 
 static void parseControlSettingController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	ControlSettingController* e = allocMemoryOnMemoryStackOrMemory(sizeof(ControlSettingController));
+	ControlSettingController* e = (ControlSettingController*)allocMemoryOnMemoryStackOrMemory(sizeof(ControlSettingController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->tValue));
 
@@ -688,7 +688,7 @@ static void parseControlSettingController(DreamMugenStateController* tController
 }
 
 static void unloadControlSettingController(DreamMugenStateController* tController) {
-	ControlSettingController* e = tController->mData;
+	ControlSettingController* e = (ControlSettingController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->tValue);
 
@@ -701,7 +701,7 @@ typedef struct {
 
 
 static void parseSpritePriorityController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	SpritePriorityController* e = allocMemoryOnMemoryStackOrMemory(sizeof(SpritePriorityController));
+	SpritePriorityController* e = (SpritePriorityController*)allocMemoryOnMemoryStackOrMemory(sizeof(SpritePriorityController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->tValue));
 
@@ -710,7 +710,7 @@ static void parseSpritePriorityController(DreamMugenStateController* tController
 }
 
 static void unloadSpritePriorityController(DreamMugenStateController* tController) {
-	SpritePriorityController* e = tController->mData;
+	SpritePriorityController* e = (SpritePriorityController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->tValue);
 
@@ -728,7 +728,7 @@ typedef struct {
 
 
 static void parseSpecialAssertController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	SpecialAssertController* e = allocMemoryOnMemoryStackOrMemory(sizeof(SpecialAssertController));
+	SpecialAssertController* e = (SpecialAssertController*)allocMemoryOnMemoryStackOrMemory(sizeof(SpecialAssertController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("flag", tGroup, &e->mFlag));
 	e->mHasFlag2 = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("flag2", tGroup, &e->mFlag2);
@@ -739,7 +739,7 @@ static void parseSpecialAssertController(DreamMugenStateController* tController,
 }
 
 static void unloadSpecialAssertController(DreamMugenStateController* tController) {
-	SpecialAssertController* e = tController->mData;
+	SpecialAssertController* e = (SpecialAssertController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mFlag);
 	if (e->mHasFlag2) {
@@ -762,7 +762,7 @@ typedef struct {
 
 
 static void parseMakeDustController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	MakeDustController* e = allocMemoryOnMemoryStackOrMemory(sizeof(MakeDustController));
+	MakeDustController* e = (MakeDustController*)allocMemoryOnMemoryStackOrMemory(sizeof(MakeDustController));
 
 	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("pos", tGroup, &e->mPositionOffset)) {
 		e->mPositionOffset = makeDream2DVectorMugenAssignment(makePosition(0, 0, 0));
@@ -779,7 +779,7 @@ static void parseMakeDustController(DreamMugenStateController* tController, Muge
 }
 
 static void unloadMakeDustController(DreamMugenStateController* tController) {
-	MakeDustController* e = tController->mData;
+	MakeDustController* e = (MakeDustController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mPositionOffset);
 	if (e->mHasSecondDustCloud) {
@@ -796,7 +796,7 @@ typedef struct {
 
 
 static void parseNullController(DreamMugenStateController* tController, DreamMugenStateControllerType tType) {
-	NullController* e = allocMemoryOnMemoryStackOrMemory(sizeof(NullController));
+	NullController* e = (NullController*)allocMemoryOnMemoryStackOrMemory(sizeof(NullController));
 	e->mDummy = 0;
 
 	tController->mType = tType;
@@ -831,13 +831,13 @@ typedef struct {
 } VarSetControllerCaller;
 
 static void parseSingleVarSetControllerEntry(void* tCaller, char* tName, void* tData) {
-	VarSetControllerCaller* caller = tCaller;
+	VarSetControllerCaller* caller = (VarSetControllerCaller*)tCaller;
 	(void)tData;
 
 	int isEntry = strchr(tName, '(') != NULL;
 	if (!isEntry) return;
 
-	VarSetControllerEntry* e = allocMemoryOnMemoryStackOrMemory(sizeof(VarSetControllerEntry));
+	VarSetControllerEntry* e = (VarSetControllerEntry*)allocMemoryOnMemoryStackOrMemory(sizeof(VarSetControllerEntry));
 
 	char name[100];
 	strcpy(name, tName);
@@ -877,7 +877,7 @@ static void parseSingleVarSetControllerEntry(void* tCaller, char* tName, void* t
 }
 
 static void loadSingleOriginalVarSetController(Vector* tDst, MugenDefScriptGroup* tGroup, MugenDefScriptGroupElement* tIDElement, VarSetType tType) {
-	VarSetControllerEntry* e = allocMemoryOnMemoryStackOrMemory(sizeof(VarSetControllerEntry));
+	VarSetControllerEntry* e = (VarSetControllerEntry*)allocMemoryOnMemoryStackOrMemory(sizeof(VarSetControllerEntry));
 	e->mType = tType;
 	e->mID = getMugenDefNumberVariableAsElement(tIDElement);
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mAssignment));
@@ -887,7 +887,7 @@ static void loadSingleOriginalVarSetController(Vector* tDst, MugenDefScriptGroup
 
 static void unloadSingleVarSetEntry(void* tCaller, void* tData) {
 	(void)tCaller;
-	VarSetControllerEntry* e = tData;
+	VarSetControllerEntry* e = (VarSetControllerEntry*)tData;
 	destroyDreamMugenAssignment(e->mAssignment);
 }
 
@@ -895,14 +895,14 @@ static void parseVarSetController(DreamMugenStateController* tController, MugenD
 	int isIntegerVersion = string_map_contains(&tGroup->mElements, "v");
 	int isFloatVersion = string_map_contains(&tGroup->mElements, "fv");
 
-	VarSetController* e = allocMemoryOnMemoryStackOrMemory(sizeof(VarSetController));
+	VarSetController* e = (VarSetController*)allocMemoryOnMemoryStackOrMemory(sizeof(VarSetController));
 	e->mVarSets = new_vector();
 
 	if (isIntegerVersion) {
-		loadSingleOriginalVarSetController(&e->mVarSets, tGroup, string_map_get(&tGroup->mElements, "v"), VAR_SET_TYPE_INTEGER);
+		loadSingleOriginalVarSetController(&e->mVarSets, tGroup, (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, "v"), VAR_SET_TYPE_INTEGER);
 	}
 	else if (isFloatVersion) {
-		loadSingleOriginalVarSetController(&e->mVarSets, tGroup, string_map_get(&tGroup->mElements, "fv"), VAR_SET_TYPE_FLOAT);
+		loadSingleOriginalVarSetController(&e->mVarSets, tGroup, (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, "fv"), VAR_SET_TYPE_FLOAT);
 	}
 	else {
 		VarSetControllerCaller caller;
@@ -928,7 +928,7 @@ static void parseVarSetController(DreamMugenStateController* tController, MugenD
 
 
 static void unloadVarSetController(DreamMugenStateController* tController) {
-	VarSetController* e = tController->mData;
+	VarSetController* e = (VarSetController*)tController->mData;
 	vector_map(&e->mVarSets, unloadSingleVarSetEntry, NULL);
 	delete_vector(&e->mVarSets);
 	freeMemory(e);
@@ -943,7 +943,7 @@ typedef struct {
 } VarRangeSetController;
 
 static void parseVarRangeSetController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	VarRangeSetController* e = allocMemoryOnMemoryStackOrMemory(sizeof(VarRangeSetController));
+	VarRangeSetController* e = (VarRangeSetController*)allocMemoryOnMemoryStackOrMemory(sizeof(VarRangeSetController));
 
 	int isIntegerVersion = string_map_contains(&tGroup->mElements, "value");
 
@@ -964,7 +964,7 @@ static void parseVarRangeSetController(DreamMugenStateController* tController, M
 }
 
 static void unloadVarRangeSetController(DreamMugenStateController* tController) {
-	VarRangeSetController* e = tController->mData;
+	VarRangeSetController* e = (VarRangeSetController*)tController->mData;
 	destroyDreamMugenAssignment(e->mValue);
 	destroyDreamMugenAssignment(e->mFirst);
 	destroyDreamMugenAssignment(e->mLast);
@@ -983,7 +983,7 @@ typedef struct {
 
 
 static void parseStateTypeSetController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	StateTypeSetController* e = allocMemoryOnMemoryStackOrMemory(sizeof(StateTypeSetController));
+	StateTypeSetController* e = (StateTypeSetController*)allocMemoryOnMemoryStackOrMemory(sizeof(StateTypeSetController));
 
 	e->mHasStateType = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("statetype", tGroup, &e->mStateType);
 	e->mHasMoveType = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("movetype", tGroup, &e->mMoveType);
@@ -994,7 +994,7 @@ static void parseStateTypeSetController(DreamMugenStateController* tController, 
 }
 
 static void unloadStateTypeSetController(DreamMugenStateController* tController) {
-	StateTypeSetController* e = tController->mData;
+	StateTypeSetController* e = (StateTypeSetController*)tController->mData;
 
 	if (e->mHasStateType) {
 		destroyDreamMugenAssignment(e->mStateType);
@@ -1019,7 +1019,7 @@ typedef struct {
 } ForceFeedbackController;
 
 static void parseForceFeedbackController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	ForceFeedbackController*e = allocMemoryOnMemoryStackOrMemory(sizeof(ForceFeedbackController));
+	ForceFeedbackController*e = (ForceFeedbackController*)allocMemoryOnMemoryStackOrMemory(sizeof(ForceFeedbackController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("waveform", tGroup, &e->mWaveform, "sine");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "sine");
@@ -1032,7 +1032,7 @@ static void parseForceFeedbackController(DreamMugenStateController* tController,
 }
 
 static void unloadForceFeedbackController(DreamMugenStateController* tController) {
-	ForceFeedbackController*e = tController->mData;
+	ForceFeedbackController*e = (ForceFeedbackController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mWaveform);
 	destroyDreamMugenAssignment(e->mTime);
@@ -1048,7 +1048,7 @@ typedef struct {
 } DefenseMultiplierController;
 
 static void parseDefenseMultiplierController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	DefenseMultiplierController* e = allocMemoryOnMemoryStackOrMemory(sizeof(DefenseMultiplierController));
+	DefenseMultiplierController* e = (DefenseMultiplierController*)allocMemoryOnMemoryStackOrMemory(sizeof(DefenseMultiplierController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
 
@@ -1057,7 +1057,7 @@ static void parseDefenseMultiplierController(DreamMugenStateController* tControl
 }
 
 static void unloadDefenseMultiplierController(DreamMugenStateController* tController) {
-	DefenseMultiplierController* e = tController->mData;
+	DefenseMultiplierController* e = (DefenseMultiplierController*)tController->mData;
 	destroyDreamMugenAssignment(e->mValue);
 	freeMemory(e);
 }
@@ -1092,7 +1092,7 @@ typedef struct {
 } ExplodController;
 
 static void parseExplodController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	ExplodController* e = allocMemoryOnMemoryStackOrMemory(sizeof(ExplodController));
+	ExplodController* e = (ExplodController*)allocMemoryOnMemoryStackOrMemory(sizeof(ExplodController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("anim", tGroup, &e->mAnim));
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
@@ -1127,7 +1127,7 @@ static void parseExplodController(DreamMugenStateController* tController, MugenD
 }
 
 static void unloadExplodController(DreamMugenStateController* tController) {
-	ExplodController* e = tController->mData;
+	ExplodController* e = (ExplodController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mAnim);
 
@@ -1160,7 +1160,7 @@ static void unloadExplodController(DreamMugenStateController* tController) {
 }
 
 static void parseModifyExplodController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	ExplodController* e = allocMemoryOnMemoryStackOrMemory(sizeof(ExplodController));
+	ExplodController* e = (ExplodController*)allocMemoryOnMemoryStackOrMemory(sizeof(ExplodController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mAnim, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
@@ -1198,7 +1198,7 @@ typedef struct {
 } PositionFreezeController;
 
 static void parsePositionFreezeController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	PositionFreezeController* e = allocMemoryOnMemoryStackOrMemory(sizeof(PositionFreezeController));
+	PositionFreezeController* e = (PositionFreezeController*)allocMemoryOnMemoryStackOrMemory(sizeof(PositionFreezeController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue, "1");
 
@@ -1207,7 +1207,7 @@ static void parsePositionFreezeController(DreamMugenStateController* tController
 }
 
 static void unloadPositionFreezeController(DreamMugenStateController* tController) {
-	PositionFreezeController* e = tController->mData;
+	PositionFreezeController* e = (PositionFreezeController*)tController->mData;
 	destroyDreamMugenAssignment(e->mValue);
 	freeMemory(e);
 }
@@ -1223,7 +1223,7 @@ typedef struct {
 
 static void readMugenDefStringVector(MugenStringVector* tDst, MugenDefScriptGroup* tGroup, char* tName, uint8_t* oHasValue) {
 	if (string_map_contains(&tGroup->mElements, tName)) {
-		MugenDefScriptGroupElement* elem = string_map_get(&tGroup->mElements, tName);
+		MugenDefScriptGroupElement* elem = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tName);
 		*oHasValue = 1;
 		if (isMugenDefStringVectorVariableAsElement(elem)) {
 			*tDst = copyMugenDefStringVectorVariableAsElement(elem);
@@ -1231,8 +1231,8 @@ static void readMugenDefStringVector(MugenStringVector* tDst, MugenDefScriptGrou
 		else {
 			char* text = getAllocatedMugenDefStringVariableAsElement(elem);
 			tDst->mSize = 1;
-			tDst->mElement = allocMemoryOnMemoryStackOrMemory(sizeof(char*));
-			tDst->mElement[0] = allocMemoryOnMemoryStackOrMemory(strlen(text) + 10);
+			tDst->mElement = (char**)allocMemoryOnMemoryStackOrMemory(sizeof(char*));
+			tDst->mElement[0] = (char*)allocMemoryOnMemoryStackOrMemory(strlen(text) + 10);
 			strcpy(tDst->mElement[0], text);
 			freeMemory(text);
 		}
@@ -1244,7 +1244,7 @@ static void readMugenDefStringVector(MugenStringVector* tDst, MugenDefScriptGrou
 }
 
 static void parseNotHitByController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
-	NotHitByController* e = allocMemoryOnMemoryStackOrMemory(sizeof(NotHitByController));
+	NotHitByController* e = (NotHitByController*)allocMemoryOnMemoryStackOrMemory(sizeof(NotHitByController));
 
 	readMugenDefStringVector(&e->mValue, tGroup, "value", &e->mHasValue);
 	readMugenDefStringVector(&e->mValue2, tGroup, "value2", &e->mHasValue2);
@@ -1266,7 +1266,7 @@ static void unloadMugenDefStringVector(MugenStringVector tVector) {
 }
 
 static void unloadNotHitByController(DreamMugenStateController* tController) {
-	NotHitByController* e = tController->mData;
+	NotHitByController* e = (NotHitByController*)tController->mData;
 
 	if (e->mHasValue) {
 		unloadMugenDefStringVector(e->mValue);
@@ -1289,7 +1289,7 @@ typedef struct {
 } HitFallSetController;
 
 static void parseHitFallSetController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	HitFallSetController* e = allocMemoryOnMemoryStackOrMemory(sizeof(HitFallSetController));
+	HitFallSetController* e = (HitFallSetController*)allocMemoryOnMemoryStackOrMemory(sizeof(HitFallSetController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue, "-1");
 	e->mHasXVelocity = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("xvel", tGroup, &e->mXVelocity);
@@ -1300,7 +1300,7 @@ static void parseHitFallSetController(DreamMugenStateController* tController, Mu
 }
 
 static void unloadHitFallSetController(DreamMugenStateController* tController) {
-	HitFallSetController* e = tController->mData;
+	HitFallSetController* e = (HitFallSetController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mValue);
 	if (e->mHasXVelocity) {
@@ -1318,7 +1318,7 @@ typedef struct {
 } SingleRequiredValueController;
 
 static void parseSingleRequiredValueController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
-	SingleRequiredValueController* e = allocMemoryOnMemoryStackOrMemory(sizeof(SingleRequiredValueController));
+	SingleRequiredValueController* e = (SingleRequiredValueController*)allocMemoryOnMemoryStackOrMemory(sizeof(SingleRequiredValueController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
 
@@ -1327,7 +1327,7 @@ static void parseSingleRequiredValueController(DreamMugenStateController* tContr
 }
 
 static void unloadSingleRequiredValueController(DreamMugenStateController* tController) {
-	SingleRequiredValueController* e = tController->mData;
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 	destroyDreamMugenAssignment(e->mValue);
 	freeMemory(e);
 }
@@ -1341,7 +1341,7 @@ typedef struct {
 } EnvironmentShakeController;
 
 static void parseEnvironmentShakeController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	EnvironmentShakeController* e = allocMemoryOnMemoryStackOrMemory(sizeof(EnvironmentShakeController));
+	EnvironmentShakeController* e = (EnvironmentShakeController*)allocMemoryOnMemoryStackOrMemory(sizeof(EnvironmentShakeController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("time", tGroup, &e->mTime));
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("freq", tGroup, &e->mFrequency, "");
@@ -1353,7 +1353,7 @@ static void parseEnvironmentShakeController(DreamMugenStateController* tControll
 }
 
 static void unloadEnvironmentShakeController(DreamMugenStateController* tController) {
-	EnvironmentShakeController* e = tController->mData;
+	EnvironmentShakeController* e = (EnvironmentShakeController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mTime);
 	destroyDreamMugenAssignment(e->mFrequency);
@@ -1380,7 +1380,7 @@ typedef struct {
 } SuperPauseController;
 
 static void parseSuperPauseController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	SuperPauseController* e = allocMemoryOnMemoryStackOrMemory(sizeof(SuperPauseController));
+	SuperPauseController* e = (SuperPauseController*)allocMemoryOnMemoryStackOrMemory(sizeof(SuperPauseController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("endcmdbuftime", tGroup, &e->mBufferTimeForCommandsDuringPauseEnd, "");
@@ -1400,7 +1400,7 @@ static void parseSuperPauseController(DreamMugenStateController* tController, Mu
 }
 
 static void unloadSuperPauseController(DreamMugenStateController* tController) {
-	SuperPauseController* e = tController->mData;
+	SuperPauseController* e = (SuperPauseController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mTime);
 	destroyDreamMugenAssignment(e->mBufferTimeForCommandsDuringPauseEnd);
@@ -1450,25 +1450,25 @@ typedef struct {
 
 static void parseHelpeControllerName(HelperController* e, MugenDefScriptGroup* tGroup) {
 	if (!string_map_contains(&tGroup->mElements, "name")) {
-		e->mName = allocMemoryOnMemoryStackOrMemory(2);
+		e->mName = (char*)allocMemoryOnMemoryStackOrMemory(2);
 		e->mName[0] = '\0';
 		return;
 	}
-	MugenDefScriptGroupElement* elem = string_map_get(&tGroup->mElements, "name");
+	MugenDefScriptGroupElement* elem = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, "name");
 	if (!isMugenDefStringVariableAsElement(elem)) {
-		e->mName = allocMemoryOnMemoryStackOrMemory(2);
+		e->mName = (char*)allocMemoryOnMemoryStackOrMemory(2);
 		e->mName[0] = '\0';
 		return;
 	}
 
 	char* text = getAllocatedMugenDefStringVariableAsElement(elem);
-	e->mName = allocMemoryOnMemoryStackOrMemory(strlen(text)+2);
+	e->mName = (char*)allocMemoryOnMemoryStackOrMemory(strlen(text)+2);
 	strcpy(e->mName, text);
 	freeMemory(text);
 }
 
 static void parseHelperController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	HelperController* e = allocMemoryOnMemoryStackOrMemory(sizeof(HelperController));
+	HelperController* e = (HelperController*)allocMemoryOnMemoryStackOrMemory(sizeof(HelperController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("helpertype", tGroup, &e->mType, "normal");
 	parseHelpeControllerName(e, tGroup);
@@ -1498,7 +1498,7 @@ static void parseHelperController(DreamMugenStateController* tController, MugenD
 }
 
 static void unloadHelperController(DreamMugenStateController* tController) {
-	HelperController* e = tController->mData;
+	HelperController* e = (HelperController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mType);
 	freeMemory(&e->mName);
@@ -1538,7 +1538,7 @@ typedef struct {
 } LifeAddController;
 
 static void parseLifeAddController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	LifeAddController* e = allocMemoryOnMemoryStackOrMemory(sizeof(LifeAddController));
+	LifeAddController* e = (LifeAddController*)allocMemoryOnMemoryStackOrMemory(sizeof(LifeAddController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("kill", tGroup, &e->mCanKill, "");
@@ -1549,7 +1549,7 @@ static void parseLifeAddController(DreamMugenStateController* tController, Mugen
 }
 
 static void unloadLifeAddController(DreamMugenStateController* tController) {
-	LifeAddController* e = tController->mData;
+	LifeAddController* e = (LifeAddController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mValue);
 	destroyDreamMugenAssignment(e->mCanKill);
@@ -1567,7 +1567,7 @@ typedef struct {
 } TargetLifeAddController;
 
 static void parseTargetLifeAddController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	TargetLifeAddController* e = allocMemoryOnMemoryStackOrMemory(sizeof(TargetLifeAddController));
+	TargetLifeAddController* e = (TargetLifeAddController*)allocMemoryOnMemoryStackOrMemory(sizeof(TargetLifeAddController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
@@ -1579,7 +1579,7 @@ static void parseTargetLifeAddController(DreamMugenStateController* tController,
 }
 
 static void unloadTargetLifeAddController(DreamMugenStateController* tController) {
-	TargetLifeAddController* e = tController->mData;
+	TargetLifeAddController* e = (TargetLifeAddController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mValue);
 	destroyDreamMugenAssignment(e->mID);
@@ -1597,7 +1597,7 @@ typedef struct {
 } RemoveExplodController;
 
 static void parseRemoveExplodController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	RemoveExplodController* e = allocMemoryOnMemoryStackOrMemory(sizeof(RemoveExplodController));
+	RemoveExplodController* e = (RemoveExplodController*)allocMemoryOnMemoryStackOrMemory(sizeof(RemoveExplodController));
 
 	e->mHasID = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("id", tGroup, &e->mID);
 
@@ -1606,7 +1606,7 @@ static void parseRemoveExplodController(DreamMugenStateController* tController, 
 }
 
 static void unloadRemoveExplodController(DreamMugenStateController* tController) {
-	RemoveExplodController* e = tController->mData;
+	RemoveExplodController* e = (RemoveExplodController*)tController->mData;
 
 	if (e->mHasID) {
 		destroyDreamMugenAssignment(e->mID);
@@ -1624,7 +1624,7 @@ typedef struct {
 } AngleDrawController;
 
 static void parseAngleDrawController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	AngleDrawController* e = allocMemoryOnMemoryStackOrMemory(sizeof(AngleDrawController));
+	AngleDrawController* e = (AngleDrawController*)allocMemoryOnMemoryStackOrMemory(sizeof(AngleDrawController));
 
 	e->mHasValue = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue);
 	e->mHasScale = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("scale", tGroup, &e->mScale);
@@ -1634,7 +1634,7 @@ static void parseAngleDrawController(DreamMugenStateController* tController, Mug
 }
 
 static void unloadAngleDrawController(DreamMugenStateController* tController) {
-	AngleDrawController* e = tController->mData;
+	AngleDrawController* e = (AngleDrawController*)tController->mData;
 
 	if (e->mHasValue) {
 		destroyDreamMugenAssignment(e->mValue);
@@ -1655,7 +1655,7 @@ typedef struct {
 } BindController;
 
 static void parseBindController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
-	BindController* e = allocMemoryOnMemoryStackOrMemory(sizeof(BindController));
+	BindController* e = (BindController*)allocMemoryOnMemoryStackOrMemory(sizeof(BindController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mFacing, "");
@@ -1667,7 +1667,7 @@ static void parseBindController(DreamMugenStateController* tController, MugenDef
 }
 
 static void unloadBindController(DreamMugenStateController* tController) {
-	BindController* e = tController->mData;
+	BindController* e = (BindController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mTime);
 	destroyDreamMugenAssignment(e->mFacing);
@@ -1684,7 +1684,7 @@ typedef struct {
 } ScreenBoundController;
 
 static void parseScreenBoundController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	ScreenBoundController* e = allocMemoryOnMemoryStackOrMemory(sizeof(ScreenBoundController));
+	ScreenBoundController* e = (ScreenBoundController*)allocMemoryOnMemoryStackOrMemory(sizeof(ScreenBoundController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("movecamera", tGroup, &e->mMoveCameraFlags, "");
@@ -1694,7 +1694,7 @@ static void parseScreenBoundController(DreamMugenStateController* tController, M
 }
 
 static void unloadScreenBoundController(DreamMugenStateController* tController) {
-	ScreenBoundController* e = tController->mData;
+	ScreenBoundController* e = (ScreenBoundController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mValue);
 	destroyDreamMugenAssignment(e->mMoveCameraFlags);
@@ -1709,7 +1709,7 @@ typedef struct {
 } SetTargetFacingController;
 
 static void parseSetTargetFacingController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	SetTargetFacingController* e = allocMemoryOnMemoryStackOrMemory(sizeof(SetTargetFacingController));
+	SetTargetFacingController* e = (SetTargetFacingController*)allocMemoryOnMemoryStackOrMemory(sizeof(SetTargetFacingController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
@@ -1719,7 +1719,7 @@ static void parseSetTargetFacingController(DreamMugenStateController* tControlle
 }
 
 static void unloadSetTargetFacingController(DreamMugenStateController* tController) {
-	SetTargetFacingController* e = tController->mData;
+	SetTargetFacingController* e = (SetTargetFacingController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mValue);
 	destroyDreamMugenAssignment(e->mID);
@@ -1732,7 +1732,7 @@ typedef struct {
 } ReversalDefinitionController;
 
 static void parseReversalDefinitionController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	ReversalDefinitionController* e = allocMemoryOnMemoryStackOrMemory(sizeof(ReversalDefinitionController));
+	ReversalDefinitionController* e = (ReversalDefinitionController*)allocMemoryOnMemoryStackOrMemory(sizeof(ReversalDefinitionController));
 
 	uint8_t hasString;
 	readMugenDefStringVector(&e->mAttributes, tGroup, "reversal.attr", &hasString);
@@ -1743,7 +1743,7 @@ static void parseReversalDefinitionController(DreamMugenStateController* tContro
 }
 
 static void unloadReversalDefinitionController(DreamMugenStateController* tController) {
-	ReversalDefinitionController* e = tController->mData;
+	ReversalDefinitionController* e = (ReversalDefinitionController*)tController->mData;
 
 	unloadMugenDefStringVector(e->mAttributes);
 
@@ -1790,7 +1790,7 @@ typedef struct {
 } ProjectileController;
 
 static void parseProjectileController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	ProjectileController* e = allocMemoryOnMemoryStackOrMemory(sizeof(ProjectileController));
+	ProjectileController* e = (ProjectileController*)allocMemoryOnMemoryStackOrMemory(sizeof(ProjectileController));
 	readHitDefinitionFromGroup(&e->mHitDef, tGroup);
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projid", tGroup, &e->mID, "");
@@ -1833,7 +1833,7 @@ static void parseProjectileController(DreamMugenStateController* tController, Mu
 }
 
 static void unloadProjectileController(DreamMugenStateController* tController) {
-	ProjectileController* e = tController->mData;
+	ProjectileController* e = (ProjectileController*)tController->mData;
 	unloadHitDefinitionData(&e->mHitDef);
 
 	destroyDreamMugenAssignment(e->mID);
@@ -1892,7 +1892,7 @@ typedef struct {
 } AfterImageController;
 
 static void parseAfterImageController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	AfterImageController* e = allocMemoryOnMemoryStackOrMemory(sizeof(AfterImageController));
+	AfterImageController* e = (AfterImageController*)allocMemoryOnMemoryStackOrMemory(sizeof(AfterImageController));
 	
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("length", tGroup, &e->mLength, "");
@@ -1911,7 +1911,7 @@ static void parseAfterImageController(DreamMugenStateController* tController, Mu
 }
 
 static void unloadAfterImageController(DreamMugenStateController* tController) {
-	AfterImageController* e = tController->mData;
+	AfterImageController* e = (AfterImageController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mTime);
 	destroyDreamMugenAssignment(e->mLength);
@@ -1934,7 +1934,7 @@ typedef struct {
 } AfterImageTimeController;
 
 static void parseAfterImageTimeController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	AfterImageTimeController* e = allocMemoryOnMemoryStackOrMemory(sizeof(AfterImageTimeController));
+	AfterImageTimeController* e = (AfterImageTimeController*)allocMemoryOnMemoryStackOrMemory(sizeof(AfterImageTimeController));
 
 	if (isMugenDefNumberVariableAsGroup(tGroup, "time")) {
 		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
@@ -1948,7 +1948,7 @@ static void parseAfterImageTimeController(DreamMugenStateController* tController
 }
 
 static void unloadAfterImageTimeController(DreamMugenStateController* tController) {
-	AfterImageTimeController* e = tController->mData;
+	AfterImageTimeController* e = (AfterImageTimeController*)tController->mData;
 	destroyDreamMugenAssignment(e->mTime);
 	freeMemory(e);
 }
@@ -1965,7 +1965,7 @@ typedef struct {
 } PalFXController;
 
 static void parsePalFXController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
-	PalFXController* e = allocMemoryOnMemoryStackOrMemory(sizeof(PalFXController));
+	PalFXController* e = (PalFXController*)allocMemoryOnMemoryStackOrMemory(sizeof(PalFXController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("add", tGroup, &e->mAdd, "");
@@ -1979,7 +1979,7 @@ static void parsePalFXController(DreamMugenStateController* tController, MugenDe
 }
 
 static void unloadPalFXController(DreamMugenStateController* tController) {
-	PalFXController* e = tController->mData;
+	PalFXController* e = (PalFXController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mTime);
 	destroyDreamMugenAssignment(e->mAdd);
@@ -1998,7 +1998,7 @@ typedef struct {
 } ClipboardController;
 
 static void parseClipboardController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
-	ClipboardController* e = allocMemoryOnMemoryStackOrMemory(sizeof(ClipboardController));
+	ClipboardController* e = (ClipboardController*)allocMemoryOnMemoryStackOrMemory(sizeof(ClipboardController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("text", tGroup, &e->mText, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("params", tGroup, &e->mParams, "");
@@ -2008,7 +2008,7 @@ static void parseClipboardController(DreamMugenStateController* tController, Mug
 }
 
 static void unloadClipboardController(DreamMugenStateController* tController) {
-	ClipboardController* e = tController->mData;
+	ClipboardController* e = (ClipboardController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mText);
 	destroyDreamMugenAssignment(e->mParams);
@@ -2023,7 +2023,7 @@ typedef struct {
 } DestroySelfController;
 
 static void parseDestroySelfController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	DestroySelfController* e = allocMemoryOnMemoryStackOrMemory(sizeof(DestroySelfController));
+	DestroySelfController* e = (DestroySelfController*)allocMemoryOnMemoryStackOrMemory(sizeof(DestroySelfController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("recursive", tGroup, &e->mRecursive, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("removeexplods", tGroup, &e->mRemoveExplods, "");
@@ -2033,7 +2033,7 @@ static void parseDestroySelfController(DreamMugenStateController* tController, M
 }
 
 static void unloadDestroySelfController(DreamMugenStateController* tController) {
-	DestroySelfController* e = tController->mData;
+	DestroySelfController* e = (DestroySelfController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mRecursive);
 	destroyDreamMugenAssignment(e->mRemoveExplods);
@@ -2049,7 +2049,7 @@ typedef struct {
 } EnvironmentColorController;
 
 static void parseEnvColorController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	EnvironmentColorController* e = allocMemoryOnMemoryStackOrMemory(sizeof(EnvironmentColorController));
+	EnvironmentColorController* e = (EnvironmentColorController*)allocMemoryOnMemoryStackOrMemory(sizeof(EnvironmentColorController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue, "255 , 255 , 255");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
@@ -2061,7 +2061,7 @@ static void parseEnvColorController(DreamMugenStateController* tController, Muge
 }
 
 static void unloadEnvColorController(DreamMugenStateController* tController) {
-	EnvironmentColorController* e = tController->mData;
+	EnvironmentColorController* e = (EnvironmentColorController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mValue);
 	destroyDreamMugenAssignment(e->mTime);
@@ -2078,7 +2078,7 @@ typedef struct {
 } ExplodBindTimeController;
 
 static void parseExplodBindTimeController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	ExplodBindTimeController* e = allocMemoryOnMemoryStackOrMemory(sizeof(ExplodBindTimeController));
+	ExplodBindTimeController* e = (ExplodBindTimeController*)allocMemoryOnMemoryStackOrMemory(sizeof(ExplodBindTimeController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 
@@ -2094,7 +2094,7 @@ static void parseExplodBindTimeController(DreamMugenStateController* tController
 }
 
 static void unloadExplodBindTimeController(DreamMugenStateController* tController) {
-	ExplodBindTimeController* e = tController->mData;
+	ExplodBindTimeController* e = (ExplodBindTimeController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mID);
 	destroyDreamMugenAssignment(e->mTime);
@@ -2111,7 +2111,7 @@ typedef struct {
 } GameMakeAnimController;
 
 static void parseGameMakeAnimController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	GameMakeAnimController* e = allocMemoryOnMemoryStackOrMemory(sizeof(GameMakeAnimController));
+	GameMakeAnimController* e = (GameMakeAnimController*)allocMemoryOnMemoryStackOrMemory(sizeof(GameMakeAnimController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("under", tGroup, &e->mIsUnderPlayer, "");
@@ -2123,7 +2123,7 @@ static void parseGameMakeAnimController(DreamMugenStateController* tController, 
 }
 
 static void unloadGameMakeAnimController(DreamMugenStateController* tController) {
-	GameMakeAnimController* e = tController->mData;
+	GameMakeAnimController* e = (GameMakeAnimController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mValue);
 	destroyDreamMugenAssignment(e->mIsUnderPlayer);
@@ -2143,7 +2143,7 @@ typedef struct {
 } HitOverrideController;
 
 static void parseHitOverrideController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	HitOverrideController* e = allocMemoryOnMemoryStackOrMemory(sizeof(HitOverrideController));
+	HitOverrideController* e = (HitOverrideController*)allocMemoryOnMemoryStackOrMemory(sizeof(HitOverrideController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("attr", tGroup, &e->mAttributeString, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("stateno", tGroup, &e->mStateNo, "");
@@ -2157,7 +2157,7 @@ static void parseHitOverrideController(DreamMugenStateController* tController, M
 }
 
 static void unloadHitOverrideController(DreamMugenStateController* tController) {
-	HitOverrideController* e = tController->mData;
+	HitOverrideController* e = (HitOverrideController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mAttributeString);
 	destroyDreamMugenAssignment(e->mStateNo);
@@ -2178,7 +2178,7 @@ typedef struct {
 } PauseController;
 
 static void parsePauseController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	PauseController* e = allocMemoryOnMemoryStackOrMemory(sizeof(PauseController));
+	PauseController* e = (PauseController*)allocMemoryOnMemoryStackOrMemory(sizeof(PauseController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
 
@@ -2191,7 +2191,7 @@ static void parsePauseController(DreamMugenStateController* tController, MugenDe
 }
 
 static void unloadPauseController(DreamMugenStateController* tController) {
-	PauseController* e = tController->mData;
+	PauseController* e = (PauseController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mTime);
 
@@ -2208,7 +2208,7 @@ typedef struct {
 } RemapPaletteController;
 
 static void parseRemapPaletteController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	RemapPaletteController* e = allocMemoryOnMemoryStackOrMemory(sizeof(RemapPaletteController));
+	RemapPaletteController* e = (RemapPaletteController*)allocMemoryOnMemoryStackOrMemory(sizeof(RemapPaletteController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("source", tGroup, &e->mSource, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("dest", tGroup, &e->mDestination, "");
@@ -2218,7 +2218,7 @@ static void parseRemapPaletteController(DreamMugenStateController* tController, 
 }
 
 static void unloadRemapPaletteController(DreamMugenStateController* tController) {
-	RemapPaletteController* e = tController->mData;
+	RemapPaletteController* e = (RemapPaletteController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mSource);
 	destroyDreamMugenAssignment(e->mDestination);
@@ -2232,7 +2232,7 @@ typedef struct {
 } SoundPanController;
 
 static void parseSoundPanController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	SoundPanController* e = allocMemoryOnMemoryStackOrMemory(sizeof(SoundPanController));
+	SoundPanController* e = (SoundPanController*)allocMemoryOnMemoryStackOrMemory(sizeof(SoundPanController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("channel", tGroup, &e->mChannel, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pan", tGroup, &e->mPan, "");
@@ -2242,7 +2242,7 @@ static void parseSoundPanController(DreamMugenStateController* tController, Muge
 }
 
 static void unloadSoundPanController(DreamMugenStateController* tController) {
-	SoundPanController* e = tController->mData;
+	SoundPanController* e = (SoundPanController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mChannel);
 	destroyDreamMugenAssignment(e->mPan);
@@ -2255,7 +2255,7 @@ typedef struct {
 } SoundStopController;
 
 static void parseStopSoundController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	SoundStopController* e = allocMemoryOnMemoryStackOrMemory(sizeof(SoundStopController));
+	SoundStopController* e = (SoundStopController*)allocMemoryOnMemoryStackOrMemory(sizeof(SoundStopController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("channel", tGroup, &e->mChannel, "");
 
@@ -2264,7 +2264,7 @@ static void parseStopSoundController(DreamMugenStateController* tController, Mug
 }
 
 static void unloadStopSoundController(DreamMugenStateController* tController) {
-	SoundStopController* e = tController->mData;
+	SoundStopController* e = (SoundStopController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mChannel);
 
@@ -2278,7 +2278,7 @@ typedef struct {
 } TargetDropController;
 
 static void parseTargetDropController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	TargetDropController* e = allocMemoryOnMemoryStackOrMemory(sizeof(TargetDropController));
+	TargetDropController* e = (TargetDropController*)allocMemoryOnMemoryStackOrMemory(sizeof(TargetDropController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("excludeid", tGroup, &e->mExcludeID, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("keepone", tGroup, &e->mKeepOne, "");
@@ -2288,7 +2288,7 @@ static void parseTargetDropController(DreamMugenStateController* tController, Mu
 }
 
 static void unloadTargetDropController(DreamMugenStateController* tController) {
-	TargetDropController* e = tController->mData;
+	TargetDropController* e = (TargetDropController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mExcludeID);
 	destroyDreamMugenAssignment(e->mKeepOne);
@@ -2303,7 +2303,7 @@ typedef struct {
 } TargetPowerAddController;
 
 static void parseTargetPowerAddController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	TargetPowerAddController* e = allocMemoryOnMemoryStackOrMemory(sizeof(TargetPowerAddController));
+	TargetPowerAddController* e = (TargetPowerAddController*)allocMemoryOnMemoryStackOrMemory(sizeof(TargetPowerAddController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
@@ -2313,7 +2313,7 @@ static void parseTargetPowerAddController(DreamMugenStateController* tController
 }
 
 static void unloadTargetPowerAddController(DreamMugenStateController* tController) {
-	TargetPowerAddController* e = tController->mData;
+	TargetPowerAddController* e = (TargetPowerAddController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mValue);
 	destroyDreamMugenAssignment(e->mID);
@@ -2331,7 +2331,7 @@ typedef struct {
 } Target2DPhysicsController;
 
 static void parseTarget2DPhysicsController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
-	Target2DPhysicsController* e = allocMemoryOnMemoryStackOrMemory(sizeof(Target2DPhysicsController));
+	Target2DPhysicsController* e = (Target2DPhysicsController*)allocMemoryOnMemoryStackOrMemory(sizeof(Target2DPhysicsController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 	e->mIsSettingX = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("x", tGroup, &e->x);
@@ -2342,7 +2342,7 @@ static void parseTarget2DPhysicsController(DreamMugenStateController* tControlle
 }
 
 static void unloadTarget2DPhysicsController(DreamMugenStateController* tController) {
-	Target2DPhysicsController* e = tController->mData;
+	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mID);
 	if (e->mIsSettingX) {
@@ -2361,7 +2361,7 @@ typedef struct {
 } TransparencyController;
 
 static void parseTransparencyController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	TransparencyController* e = allocMemoryOnMemoryStackOrMemory(sizeof(TransparencyController));
+	TransparencyController* e = (TransparencyController*)allocMemoryOnMemoryStackOrMemory(sizeof(TransparencyController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("trans", tGroup, &e->mTransparency, "default");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("alpha", tGroup, &e->mAlpha, "");
@@ -2371,7 +2371,7 @@ static void parseTransparencyController(DreamMugenStateController* tController, 
 }
 
 static void unloadTransparencyController(DreamMugenStateController* tController) {
-	TransparencyController* e = tController->mData;
+	TransparencyController* e = (TransparencyController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mTransparency);
 	destroyDreamMugenAssignment(e->mAlpha);
@@ -2385,7 +2385,7 @@ typedef struct {
 } VarRandomController;
 
 static void parseVarRandomController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	VarRandomController* e = allocMemoryOnMemoryStackOrMemory(sizeof(VarRandomController));
+	VarRandomController* e = (VarRandomController*)allocMemoryOnMemoryStackOrMemory(sizeof(VarRandomController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("v", tGroup, &e->mValue, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("range", tGroup, &e->mRange, "0 , 1000");
@@ -2395,7 +2395,7 @@ static void parseVarRandomController(DreamMugenStateController* tController, Mug
 }
 
 static void unloadVarRandomController(DreamMugenStateController* tController) {
-	VarRandomController* e = tController->mData;
+	VarRandomController* e = (VarRandomController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mValue);
 	destroyDreamMugenAssignment(e->mRange);
@@ -2408,7 +2408,7 @@ typedef struct {
 } VictoryQuoteController;
 
 static void parseVictoryQuoteController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	VictoryQuoteController* e = allocMemoryOnMemoryStackOrMemory(sizeof(VictoryQuoteController));
+	VictoryQuoteController* e = (VictoryQuoteController*)allocMemoryOnMemoryStackOrMemory(sizeof(VictoryQuoteController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue, "");
 
@@ -2417,14 +2417,14 @@ static void parseVictoryQuoteController(DreamMugenStateController* tController, 
 }
 
 static void unloadVictoryQuoteController(DreamMugenStateController* tController) {
-	VictoryQuoteController* e = tController->mData;
+	VictoryQuoteController* e = (VictoryQuoteController*)tController->mData;
 	destroyDreamMugenAssignment(e->mValue);
 	freeMemory(e);
 }
 
 static void parseStateControllerType(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	assert(string_map_contains(&tGroup->mElements, "type"));
-	MugenDefScriptGroupElement* e = string_map_get(&tGroup->mElements, "type");
+	MugenDefScriptGroupElement* e = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, "type");
 	tController->mData = NULL;
 
 	char* type = getAllocatedMugenDefStringVariableAsElement(e);
@@ -2433,11 +2433,11 @@ static void parseStateControllerType(DreamMugenStateController* tController, Mug
 	if(!string_map_contains(&gVariableHandler.mStateControllerParsers, type)) {
 		logWarningFormat("Unable to determine state controller type %s. Defaulting to null.", type);
 		freeMemory(type);
-		type = allocMemory(10);
+		type = (char*)allocMemory(10);
 		strcpy(type, "null");
 	}
 
-	StateControllerParseFunction func = string_map_get(&gVariableHandler.mStateControllerParsers, type);
+	StateControllerParseFunction func = (StateControllerParseFunction)string_map_get(&gVariableHandler.mStateControllerParsers, type);
 	func(tController, tGroup);
 
 	freeMemory(type);
@@ -2452,7 +2452,7 @@ int gDebugStateControllerAmount;
 
 DreamMugenStateController * parseDreamMugenStateControllerFromGroup(MugenDefScriptGroup* tGroup)
 {
-	DreamMugenStateController* ret = allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenStateController));
+	DreamMugenStateController* ret = (DreamMugenStateController*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenStateController));
 	gDebugStateControllerAmount++;
 	parseStateControllerType(ret, tGroup);
 	parseStateControllerTriggers(ret, tGroup);
@@ -2467,7 +2467,7 @@ static void unloadStateControllerType(DreamMugenStateController* tController) {
 		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_NULL;
 	}
 
-	StateControllerUnloadFunction func = int_map_get(&gVariableHandler.mStateControllerUnloaders, tController->mType);
+	StateControllerUnloadFunction func = (StateControllerUnloadFunction)int_map_get(&gVariableHandler.mStateControllerUnloaders, tController->mType);
 	func(tController);
 }
 
@@ -2478,7 +2478,7 @@ void unloadDreamMugenStateController(DreamMugenStateController * tController)
 }
 
 static int handleVelocitySetting(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	Set2DPhysicsController* e = tController->mData;
+	Set2DPhysicsController* e = (Set2DPhysicsController*)tController->mData;
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
@@ -2494,7 +2494,7 @@ static int handleVelocitySetting(DreamMugenStateController* tController, DreamPl
 }
 
 static int handleVelocityMultiplication(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	Set2DPhysicsController* e = tController->mData;
+	Set2DPhysicsController* e = (Set2DPhysicsController*)tController->mData;
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
@@ -2510,7 +2510,7 @@ static int handleVelocityMultiplication(DreamMugenStateController* tController, 
 }
 
 static int handleVelocityAddition(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	Set2DPhysicsController* e = tController->mData;
+	Set2DPhysicsController* e = (Set2DPhysicsController*)tController->mData;
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
@@ -2526,7 +2526,7 @@ static int handleVelocityAddition(DreamMugenStateController* tController, DreamP
 }
 
 static int handlePositionSetting(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	Set2DPhysicsController* e = tController->mData;
+	Set2DPhysicsController* e = (Set2DPhysicsController*)tController->mData;
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
@@ -2542,7 +2542,7 @@ static int handlePositionSetting(DreamMugenStateController* tController, DreamPl
 }
 
 static int handlePositionAdding(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	Set2DPhysicsController* e = tController->mData;
+	Set2DPhysicsController* e = (Set2DPhysicsController*)tController->mData;
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
@@ -2559,7 +2559,7 @@ static int handlePositionAdding(DreamMugenStateController* tController, DreamPla
 
 
 static int handleStateChange(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	ChangeStateController* e = tController->mData;
+	ChangeStateController* e = (ChangeStateController*)tController->mData;
 
 	int state = evaluateDreamAssignmentAndReturnAsInteger(&e->mState, tPlayer);
 	changePlayerStateBeforeImmediatelyEvaluatingIt(tPlayer, state);
@@ -2573,7 +2573,7 @@ static int handleStateChange(DreamMugenStateController* tController, DreamPlayer
 }
 
 static int handleSelfStateChange(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	ChangeStateController* e = tController->mData;
+	ChangeStateController* e = (ChangeStateController*)tController->mData;
 
 	int state = evaluateDreamAssignmentAndReturnAsInteger(&e->mState, tPlayer);
 
@@ -2606,7 +2606,7 @@ static void getSingleFloatValueOrDefault(DreamMugenAssignment** tAssignment, Dre
 }
 
 static int handleTargetStateChange(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	TargetChangeStateController* e = tController->mData;
+	TargetChangeStateController* e = (TargetChangeStateController*)tController->mData;
 
 	int id;
 	getSingleIntegerValueOrDefault(&e->mID, tPlayer, &id, -1);
@@ -2672,7 +2672,7 @@ static void handleSoundEffectValue(DreamMugenAssignment** tAssignment, DreamPlay
 }
 
 static int handlePlaySound(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	PlaySoundController* e = tController->mData;
+	PlaySoundController* e = (PlaySoundController*)tController->mData;
 
 	handleSoundEffectValue(&e->mValue, tPlayer); // TODO: other parameters
 
@@ -3245,7 +3245,7 @@ static void handleHitDefinitionWithController(HitDefinitionController* e, DreamP
 }
 
 static int handleHitDefinition(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	HitDefinitionController* e = tController->mData;
+	HitDefinitionController* e = (HitDefinitionController*)tController->mData;
 
 	handleHitDefinitionWithController(e, tPlayer);
 
@@ -3253,7 +3253,7 @@ static int handleHitDefinition(DreamMugenStateController* tController, DreamPlay
 }
 
 static int handleAnimationChange(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	ChangeAnimationController* e = tController->mData;
+	ChangeAnimationController* e = (ChangeAnimationController*)tController->mData;
 
 	int animation = evaluateDreamAssignmentAndReturnAsInteger(&e->tNewAnimation, tPlayer);
 	int step = evaluateDreamAssignmentAndReturnAsInteger(&e->tStep, tPlayer);
@@ -3263,7 +3263,7 @@ static int handleAnimationChange(DreamMugenStateController* tController, DreamPl
 }
 
 static int handleAnimationChange2(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	ChangeAnimationController* e = tController->mData;
+	ChangeAnimationController* e = (ChangeAnimationController*)tController->mData;
 
 	int animation = evaluateDreamAssignmentAndReturnAsInteger(&e->tNewAnimation, tPlayer);
 	int step = evaluateDreamAssignmentAndReturnAsInteger(&e->tStep, tPlayer);
@@ -3273,7 +3273,7 @@ static int handleAnimationChange2(DreamMugenStateController* tController, DreamP
 }
 
 static int handleControlSetting(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	ControlSettingController* e = tController->mData;
+	ControlSettingController* e = (ControlSettingController*)tController->mData;
 
 	int control = evaluateDreamAssignmentAndReturnAsInteger(&e->tValue, tPlayer);
 	setPlayerControl(tPlayer, control);
@@ -3282,7 +3282,7 @@ static int handleControlSetting(DreamMugenStateController* tController, DreamPla
 }
 
 static int handleWidth(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	WidthController* e = tController->mData;
+	WidthController* e = (WidthController*)tController->mData;
 
 	Vector3DI stage;
 	Vector3DI player;
@@ -3302,7 +3302,7 @@ static int handleWidth(DreamMugenStateController* tController, DreamPlayer* tPla
 }
 
 static int handleSpritePriority(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	SpritePriorityController* e = tController->mData;
+	SpritePriorityController* e = (SpritePriorityController*)tController->mData;
 
 	int value = evaluateDreamAssignmentAndReturnAsInteger(&e->tValue, tPlayer);
 	setPlayerSpritePriority(tPlayer, value);
@@ -3378,7 +3378,7 @@ static void handleSingleSpecialAssert(DreamMugenAssignment** tAssignment, DreamP
 }
 
 static int handleSpecialAssert(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	SpecialAssertController* e = tController->mData;
+	SpecialAssertController* e = (SpecialAssertController*)tController->mData;
 
 	handleSingleSpecialAssert(&e->mFlag, tPlayer);
 
@@ -3393,7 +3393,7 @@ static int handleSpecialAssert(DreamMugenStateController* tController, DreamPlay
 }
 
 static int handleMakeDust(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	MakeDustController* e = tController->mData;
+	MakeDustController* e = (MakeDustController*)tController->mData;
 
 	Vector3D pos = evaluateDreamAssignmentAndReturnAsVector3D(&e->mPositionOffset, tPlayer);
 	int spacing = evaluateDreamAssignmentAndReturnAsInteger(&e->mSpacing, tPlayer);
@@ -3415,8 +3415,8 @@ typedef struct {
 } VarSetHandlingCaller;
 
 static void handleSettingSingleVariable(void* tCaller, void* tData) {
-	VarSetHandlingCaller* caller = tCaller;
-	VarSetControllerEntry* e = tData;
+	VarSetHandlingCaller* caller = (VarSetHandlingCaller*)tCaller;
+	VarSetControllerEntry* e = (VarSetControllerEntry*)tData;
 
 	if (e->mType == VAR_SET_TYPE_SYSTEM) {
 		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, caller->mPlayer);
@@ -3442,7 +3442,7 @@ static void handleSettingSingleVariable(void* tCaller, void* tData) {
 static int handleSettingVariable(DreamMugenStateController* tController, DreamPlayer* tPlayer, DreamPlayer* tTarget) {
 	if (!tPlayer) return 0;
 
-	VarSetController* e = tController->mData;
+	VarSetController* e = (VarSetController*)tController->mData;
 	VarSetHandlingCaller caller;
 	caller.mPlayer = tPlayer;
 	caller.mTarget = tTarget;
@@ -3453,8 +3453,8 @@ static int handleSettingVariable(DreamMugenStateController* tController, DreamPl
 }
 
 static void handleAddingSingleVariable(void* tCaller, void* tData) {
-	VarSetHandlingCaller* caller = tCaller;
-	VarSetControllerEntry* e = tData;
+	VarSetHandlingCaller* caller = (VarSetHandlingCaller*)tCaller;
+	VarSetControllerEntry* e = (VarSetControllerEntry*)tData;
 
 	if (e->mType == VAR_SET_TYPE_SYSTEM) {
 		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, caller->mPlayer);
@@ -3480,7 +3480,7 @@ static void handleAddingSingleVariable(void* tCaller, void* tData) {
 static int handleAddingVariable(DreamMugenStateController* tController, DreamPlayer* tPlayer, DreamPlayer* tTarget) {
 	if (!tPlayer) return 0;
 	
-	VarSetController* e = tController->mData;
+	VarSetController* e = (VarSetController*)tController->mData;
 	VarSetHandlingCaller caller;
 	caller.mPlayer = tPlayer;
 	caller.mTarget = tTarget;
@@ -3547,7 +3547,7 @@ static DreamMugenStateMoveType handleStateMoveTypeAssignment(DreamMugenAssignmen
 }
 
 static int handleStateTypeSet(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	StateTypeSetController* e = tController->mData;
+	StateTypeSetController* e = (StateTypeSetController*)tController->mData;
 
 	if (e->mHasStateType) {
 		DreamMugenStateType type = handleStateTypeAssignment(&e->mStateType, tPlayer);
@@ -3568,7 +3568,7 @@ static int handleStateTypeSet(DreamMugenStateController* tController, DreamPlaye
 }
 
 static int handleHitVelocitySetting(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	Set2DPhysicsController* e = tController->mData;
+	Set2DPhysicsController* e = (Set2DPhysicsController*)tController->mData;
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
@@ -3584,7 +3584,7 @@ static int handleHitVelocitySetting(DreamMugenStateController* tController, Drea
 }
 
 static int handleDefenseMultiplier(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	DefenseMultiplierController* e = tController->mData;
+	DefenseMultiplierController* e = (DefenseMultiplierController*)tController->mData;
 
 	double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mValue, tPlayer);
 	setPlayerDefenseMultiplier(tPlayer, val);
@@ -3697,7 +3697,7 @@ static void handleExplodTransparencyType(DreamMugenAssignment** tAssignment, int
 }
 
 static int handleExplod(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	ExplodController* e = tController->mData;
+	ExplodController* e = (ExplodController*)tController->mData;
 
 	int id = addExplod(tPlayer);
 	handleExplodAnimation(&e->mAnim, tPlayer, id);
@@ -3730,7 +3730,7 @@ static int handleExplod(DreamMugenStateController* tController, DreamPlayer* tPl
 }
 
 static int modifyExplod(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	ExplodController* e = tController->mData;
+	ExplodController* e = (ExplodController*)tController->mData;
 	return 0;
 
 	int id;
@@ -3752,7 +3752,7 @@ static int handleHitFallDamage(DreamPlayer* tPlayer) {
 }
 
 static int handlePositionFreeze(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	PositionFreezeController* e = tController->mData;
+	PositionFreezeController* e = (PositionFreezeController*)tController->mData;
 
 	int val = evaluateDreamAssignment(&e->mValue, tPlayer);
 	if (val) setPlayerPositionFrozen(tPlayer);
@@ -3799,7 +3799,7 @@ static void handleReversalDefinitionEntry(MugenStringVector tValue, DreamPlayer*
 
 
 static int handleNotHitBy(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	NotHitByController* e = tController->mData;
+	NotHitByController* e = (NotHitByController*)tController->mData;
 
 	int time = evaluateDreamAssignmentAndReturnAsInteger(&e->mTime, tPlayer);
 
@@ -3810,7 +3810,7 @@ static int handleNotHitBy(DreamMugenStateController* tController, DreamPlayer* t
 }
 
 static int handleHitBy(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	NotHitByController* e = tController->mData;
+	NotHitByController* e = (NotHitByController*)tController->mData;
 
 	int time = evaluateDreamAssignmentAndReturnAsInteger(&e->mTime, tPlayer);
 
@@ -3821,7 +3821,7 @@ static int handleHitBy(DreamMugenStateController* tController, DreamPlayer* tPla
 }
 
 static int handleHitFallSet(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	HitFallSetController* e = tController->mData;
+	HitFallSetController* e = (HitFallSetController*)tController->mData;
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(tPlayer);
 
 	int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mValue, tPlayer);
@@ -3844,7 +3844,7 @@ static int handleHitFallSet(DreamMugenStateController* tController, DreamPlayer*
 
 
 static int handleAttackMultiplierSetting(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	SingleRequiredValueController* e = tController->mData;
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	double value = evaluateDreamAssignmentAndReturnAsFloat(&e->mValue, tPlayer);
 
@@ -3854,7 +3854,7 @@ static int handleAttackMultiplierSetting(DreamMugenStateController* tController,
 }
 
 static int handlePowerAddition(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	SingleRequiredValueController* e = tController->mData;
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	int value = evaluateDreamAssignmentAndReturnAsInteger(&e->mValue, tPlayer);
 	addPlayerPower(tPlayer, value);
@@ -3863,7 +3863,7 @@ static int handlePowerAddition(DreamMugenStateController* tController, DreamPlay
 }
 
 static int handlePowerSettingController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	SingleRequiredValueController* e = tController->mData;
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	int value = evaluateDreamAssignmentAndReturnAsInteger(&e->mValue, tPlayer);
 	setPlayerPower(tPlayer, value);
@@ -3999,7 +3999,7 @@ static void handleSuperPauseSound(DreamMugenAssignment** tAssignment, DreamPlaye
 }
 
 static int handleSuperPause(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	SuperPauseController* e = tController->mData;
+	SuperPauseController* e = (SuperPauseController*)tController->mData;
 
 	handleHitDefinitionOneIntegerElement(&e->mTime, tPlayer, setDreamSuperPauseTime, 30);
 	handleHitDefinitionOneIntegerElement(&e->mBufferTimeForCommandsDuringPauseEnd, tPlayer, setDreamSuperPauseBufferTimeForCommandsDuringPauseEnd, 0);
@@ -4131,7 +4131,7 @@ static Position getFinalHelperPositionFromPositionType(DreamExplodPositionType t
 static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	// return 0; // TODO
 
-	HelperController* e = tController->mData;
+	HelperController* e = (HelperController*)tController->mData;
 	DreamPlayer* helper = clonePlayerAsHelper(tPlayer);
 
 	handleHelperOneIntegerElement(&e->mID, tPlayer, helper, setPlayerID, 0);
@@ -4190,7 +4190,7 @@ static int handleDestroySelf(DreamPlayer* tPlayer) {
 }
 
 static int handleAddingLife(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	LifeAddController* e = tController->mData;
+	LifeAddController* e = (LifeAddController*)tController->mData;
 
 	int val, canKill, isAbsolute;
 	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &val, 0);
@@ -4211,7 +4211,7 @@ static int handleAddingLife(DreamMugenStateController* tController, DreamPlayer*
 }
 
 static int handleAddingTargetLife(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	TargetLifeAddController* e = tController->mData;
+	TargetLifeAddController* e = (TargetLifeAddController*)tController->mData;
 
 	int val, canKill, isAbsolute, id;
 	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &val, 0);
@@ -4225,7 +4225,7 @@ static int handleAddingTargetLife(DreamMugenStateController* tController, DreamP
 }
 
 static int handleAddingTargetPower(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	TargetPowerAddController* e = tController->mData;
+	TargetPowerAddController* e = (TargetPowerAddController*)tController->mData;
 
 	int val, id;
 	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &val, 0);
@@ -4237,7 +4237,7 @@ static int handleAddingTargetPower(DreamMugenStateController* tController, Dream
 }
 
 static int handleTargetVelocityAddController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	Target2DPhysicsController* e = tController->mData;
+	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	int id;
 	getSingleIntegerValueOrDefault(&e->mID, tPlayer, &id, -1);
@@ -4256,7 +4256,7 @@ static int handleTargetVelocityAddController(DreamMugenStateController* tControl
 }
 
 static int handleTargetVelocitySetController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	Target2DPhysicsController* e = tController->mData;
+	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	int id;
 	getSingleIntegerValueOrDefault(&e->mID, tPlayer, &id, -1);
@@ -4275,7 +4275,7 @@ static int handleTargetVelocitySetController(DreamMugenStateController* tControl
 }
 
 static int handleAngleDrawController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	AngleDrawController* e = tController->mData;
+	AngleDrawController* e = (AngleDrawController*)tController->mData;
 
 	if (e->mHasScale) {
 		Vector3D scale = evaluateDreamAssignmentAndReturnAsVector3D(&e->mScale, tPlayer);
@@ -4291,7 +4291,7 @@ static int handleAngleDrawController(DreamMugenStateController* tController, Dre
 }
 
 static int handleAngleAddController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	SingleRequiredValueController* e = tController->mData;
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	double angle = evaluateDreamAssignmentAndReturnAsFloat(&e->mValue, tPlayer);
 	addPlayerDrawAngle(tPlayer, angle);
@@ -4300,7 +4300,7 @@ static int handleAngleAddController(DreamMugenStateController* tController, Drea
 }
 
 static int handleAngleMulController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	SingleRequiredValueController* e = tController->mData;
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	double angle = evaluateDreamAssignmentAndReturnAsFloat(&e->mValue, tPlayer);
 	multiplyPlayerDrawAngle(tPlayer, angle);
@@ -4309,7 +4309,7 @@ static int handleAngleMulController(DreamMugenStateController* tController, Drea
 }
 
 static int handleAngleSetController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	SingleRequiredValueController* e = tController->mData;
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	double angle = evaluateDreamAssignmentAndReturnAsFloat(&e->mValue, tPlayer);
 	setPlayerFixedDrawAngle(tPlayer, angle);
@@ -4318,7 +4318,7 @@ static int handleAngleSetController(DreamMugenStateController* tController, Drea
 }
 
 static int handleRemovingExplod(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	RemoveExplodController* e = tController->mData;
+	RemoveExplodController* e = (RemoveExplodController*)tController->mData;
 
 	if (e->mHasID) {
 		int id = evaluateDreamAssignmentAndReturnAsInteger(&e->mID, tPlayer);
@@ -4332,7 +4332,7 @@ static int handleRemovingExplod(DreamMugenStateController* tController, DreamPla
 }
 
 static int handleBindToRootController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	BindController* e = tController->mData;
+	BindController* e = (BindController*)tController->mData;
 
 	int time, facing;
 	Vector3D offset = makePosition(0, 0, 0);
@@ -4346,7 +4346,7 @@ static int handleBindToRootController(DreamMugenStateController* tController, Dr
 }
 
 static int handleBindToParentController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	BindController* e = tController->mData;
+	BindController* e = (BindController*)tController->mData;
 
 	int time, facing;
 	Vector3D offset = makePosition(0, 0, 0);
@@ -4390,7 +4390,7 @@ static DreamPlayerBindPositionType handleBindToTargetPositionType(DreamMugenAssi
 }
 
 static int handleBindToTargetController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	BindController* e = tController->mData;
+	BindController* e = (BindController*)tController->mData;
 
 	int time, id;
 	Vector3D offset = makePosition(0, 0, 0);
@@ -4399,7 +4399,7 @@ static int handleBindToTargetController(DreamMugenStateController* tController, 
 	getTwoFloatValuesWithDefaultValues(&e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
 	DreamPlayerBindPositionType bindType = handleBindToTargetPositionType(&e->mPosition, tPlayer);
 
-	bindPlayerToTarget(tPlayer, time, offset, id, bindType);
+	bindPlayerToTarget(tPlayer, time, offset, bindType, id);
 
 	return 0;
 }
@@ -4411,7 +4411,7 @@ static int handleTurnController(DreamPlayer* tPlayer) {
 }
 
 static int handlePushPlayerController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	SingleRequiredValueController* e = tController->mData;
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	int isPushDisabled = evaluateDreamAssignment(&e->mValue, tPlayer);
 
@@ -4421,7 +4421,7 @@ static int handlePushPlayerController(DreamMugenStateController* tController, Dr
 }
 
 static int handleSettingVariableRange(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	VarRangeSetController* e = tController->mData;
+	VarRangeSetController* e = (VarRangeSetController*)tController->mData;
 
 	if (e->mType == VAR_SET_TYPE_INTEGER) {
 		int value, first, last;
@@ -4452,7 +4452,7 @@ static int handleSettingVariableRange(DreamMugenStateController* tController, Dr
 }
 
 static int handleScreenBound(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	ScreenBoundController* e = tController->mData;
+	ScreenBoundController* e = (ScreenBoundController*)tController->mData;
 
 	int val;
 	int moveCameraX, moveCameraY;
@@ -4479,7 +4479,7 @@ static int handleGravity(DreamPlayer* tPlayer) {
 }
 
 static int handleSettingAttackDistance(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	SingleRequiredValueController* e = tController->mData;
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	int value = evaluateDreamAssignmentAndReturnAsInteger(&e->mValue, tPlayer);
 	setHitDataGuardDistance(tPlayer, value);
@@ -4488,7 +4488,7 @@ static int handleSettingAttackDistance(DreamMugenStateController* tController, D
 }
 
 static int handleTargetBindController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	BindController* e = tController->mData;
+	BindController* e = (BindController*)tController->mData;
 
 	int time, id;
 	Vector3D offset = makePosition(0, 0, 0);
@@ -4502,7 +4502,7 @@ static int handleTargetBindController(DreamMugenStateController* tController, Dr
 }
 
 static int handleSetTargetFacing(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	SetTargetFacingController* e = tController->mData;
+	SetTargetFacingController* e = (SetTargetFacingController*)tController->mData;
 
 	int value = evaluateDreamAssignmentAndReturnAsInteger(&e->mValue, tPlayer);
 	int id;
@@ -4514,7 +4514,7 @@ static int handleSetTargetFacing(DreamMugenStateController* tController, DreamPl
 }
 
 static int handleReversalDefinition(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	ReversalDefinitionController* e = tController->mData;
+	ReversalDefinitionController* e = (ReversalDefinitionController*)tController->mData;
 
 	handleReversalDefinitionEntry(e->mAttributes, tPlayer);
 
@@ -4593,7 +4593,7 @@ static Position getFinalProjectilePositionFromPositionType(DreamExplodPositionTy
 static int handleProjectile(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	//return 0; // TODO
 
-	ProjectileController* e = tController->mData;
+	ProjectileController* e = (ProjectileController*)tController->mData;
 
 	DreamPlayer* p = createNewProjectileFromPlayer(tPlayer);
 
@@ -4625,7 +4625,7 @@ static int handleProjectile(DreamMugenStateController* tController, DreamPlayer*
 	offset.z = 0;
 	int positionType;
 	getSingleIntegerValueOrDefault(&e->mPositionType, p, &positionType, EXPLOD_POSITION_TYPE_RELATIVE_TO_P1);
-	Position pos = getFinalProjectilePositionFromPositionType(positionType, offset, tPlayer);
+	Position pos = getFinalProjectilePositionFromPositionType((DreamExplodPositionType)positionType, offset, tPlayer);
 	setProjectilePosition(p, pos);
 
 	handleHitDefinitionOneIntegerElement(&e->mShadow, p, setProjectileShadow, 0);
@@ -4651,7 +4651,7 @@ int handleDreamMugenStateControllerAndReturnWhetherStateChanged(DreamMugenStateC
 		return 0;
 	}
 
-	StateControllerHandleFunction func = int_map_get(&gVariableHandler.mStateControllerHandlers, tController->mType);
+	StateControllerHandleFunction func = (StateControllerHandleFunction)int_map_get(&gVariableHandler.mStateControllerHandlers, tController->mType);
 	return func(tController, tPlayer);
 }
 
@@ -4683,7 +4683,7 @@ static int handlePaletteEffect(DreamMugenStateController* tController, DreamPlay
 }
 
 static int handleAppendToClipboardController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	ClipboardController* e = tController->mData;
+	ClipboardController* e = (ClipboardController*)tController->mData;
 
 	char* formatString = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mText, tPlayer);
 	char* parameterString = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mParams, tPlayer);
@@ -4719,7 +4719,7 @@ static int handleDisplayToClipboardController(DreamMugenStateController* tContro
 }
 
 static int handleEnvironmentColorController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	EnvironmentColorController* e = tController->mData;
+	EnvironmentColorController* e = (EnvironmentColorController*)tController->mData;
 
 	int time;
 	int isUnderCharacters;
@@ -4733,7 +4733,7 @@ static int handleEnvironmentColorController(DreamMugenStateController* tControll
 }
 
 static int handleEnvironmentShakeController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	EnvironmentShakeController* e = tController->mData;
+	EnvironmentShakeController* e = (EnvironmentShakeController*)tController->mData;
 
 	int time, ampl;
 	double freq, phase;
@@ -4749,7 +4749,7 @@ static int handleEnvironmentShakeController(DreamMugenStateController* tControll
 }
 
 static int handleExplodBindTimeController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	ExplodBindTimeController* e = tController->mData;
+	ExplodBindTimeController* e = (ExplodBindTimeController*)tController->mData;
 	
 	int id, time;
 
@@ -4762,7 +4762,7 @@ static int handleExplodBindTimeController(DreamMugenStateController* tController
 }
 
 static int handleForceFeedbackController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	ForceFeedbackController* e = tController->mData;
+	ForceFeedbackController* e = (ForceFeedbackController*)tController->mData;
 
 	int time;
 	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &time, 1);
@@ -4780,7 +4780,7 @@ static int handleForceFeedbackController(DreamMugenStateController* tController,
 }
 
 static int handleGameMakeAnimController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	GameMakeAnimController* e = tController->mData;
+	GameMakeAnimController* e = (GameMakeAnimController*)tController->mData;
 	int animationNumber;
 	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &animationNumber, 0);
 
@@ -4808,7 +4808,7 @@ static int handleGameMakeAnimController(DreamMugenStateController* tController, 
 }
 
 static int handleHitAddController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	SingleRequiredValueController* e = tController->mData;
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	int value;
 	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &value, 0);
@@ -4820,7 +4820,7 @@ static int handleHitAddController(DreamMugenStateController* tController, DreamP
 }
 
 static int handleHitOverrideController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	HitOverrideController* e = tController->mData;
+	HitOverrideController* e = (HitOverrideController*)tController->mData;
 	char* attr = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mAttributeString, tPlayer);
 
 	DreamMugenStateType stateType;
@@ -4841,7 +4841,7 @@ static int handleHitOverrideController(DreamMugenStateController* tController, D
 }
 
 static int handleSetLifeController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	SingleRequiredValueController* e = tController->mData;
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	int value;
 	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &value, 0);
@@ -4852,7 +4852,7 @@ static int handleSetLifeController(DreamMugenStateController* tController, Dream
 }
 
 static int handleDrawOffsetController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	Set2DPhysicsController* e = tController->mData;
+	Set2DPhysicsController* e = (Set2DPhysicsController*)tController->mData;
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
@@ -4951,7 +4951,7 @@ static BlendType handleTransparencyType(DreamMugenAssignment** tType, DreamPlaye
 }
 
 static int handleTransparencyController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	TransparencyController* e = tController->mData;
+	TransparencyController* e = (TransparencyController*)tController->mData;
 	
 	int alphaDefaultSrc, alphaDefaultDst;
 	BlendType type = handleTransparencyType(&e->mTransparency, tPlayer, &alphaDefaultSrc, &alphaDefaultDst);
@@ -4965,7 +4965,7 @@ static int handleTransparencyController(DreamMugenStateController* tController, 
 }
 
 static int handleRandomVariableController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	VarRandomController* e = tController->mData;
+	VarRandomController* e = (VarRandomController*)tController->mData;
 	
 	int index;
 	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &index, 0);
@@ -5566,7 +5566,7 @@ typedef struct {
 } CreateAnimationStoryController;
 
 static void parseCreateAnimationStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	CreateAnimationStoryController* e = allocMemoryOnMemoryStackOrMemory(sizeof(CreateAnimationStoryController));
+	CreateAnimationStoryController* e = (CreateAnimationStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(CreateAnimationStoryController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mAnimation, "");
@@ -5584,7 +5584,7 @@ typedef struct {
 } RemoveAnimationStoryController;
 
 static void parseRemoveAnimationStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	RemoveAnimationStoryController* e = allocMemoryOnMemoryStackOrMemory(sizeof(RemoveAnimationStoryController));
+	RemoveAnimationStoryController* e = (RemoveAnimationStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(RemoveAnimationStoryController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 
@@ -5600,7 +5600,7 @@ typedef struct {
 } ChangeAnimationStoryController;
 
 static void parseChangeAnimationStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	ChangeAnimationStoryController* e = allocMemoryOnMemoryStackOrMemory(sizeof(ChangeAnimationStoryController));
+	ChangeAnimationStoryController* e = (ChangeAnimationStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(ChangeAnimationStoryController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mAnimation, "");
@@ -5633,7 +5633,7 @@ typedef struct {
 } CreateTextStoryController;
 
 static void parseCreateTextStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	CreateTextStoryController* e = allocMemoryOnMemoryStackOrMemory(sizeof(CreateTextStoryController));
+	CreateTextStoryController* e = (CreateTextStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(CreateTextStoryController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition, "");
@@ -5662,7 +5662,7 @@ typedef struct {
 } RemoveElementStoryController;
 
 static void parseRemoveElementStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
-	RemoveElementStoryController* e = allocMemoryOnMemoryStackOrMemory(sizeof(RemoveElementStoryController));
+	RemoveElementStoryController* e = (RemoveElementStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(RemoveElementStoryController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 	
@@ -5694,7 +5694,7 @@ typedef struct {
 } ChangeTextStoryController;
 
 static void parseChangeTextStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	ChangeTextStoryController* e = allocMemoryOnMemoryStackOrMemory(sizeof(ChangeTextStoryController));
+	ChangeTextStoryController* e = (ChangeTextStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(ChangeTextStoryController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 	e->mDoesChangePosition = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("pos", tGroup, &e->mPosition);
@@ -5719,7 +5719,7 @@ typedef struct {
 } FadeStoryController;
 
 static void parseFadeStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
-	FadeStoryController* e = allocMemoryOnMemoryStackOrMemory(sizeof(FadeStoryController));
+	FadeStoryController* e = (FadeStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(FadeStoryController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("duration", tGroup, &e->mDuration, "");
 
@@ -5734,7 +5734,7 @@ typedef struct {
 } AnimationSetFaceDirectionStoryController;
 
 static void parseAnimationSetFaceDirectionStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	AnimationSetFaceDirectionStoryController* e = allocMemoryOnMemoryStackOrMemory(sizeof(AnimationSetFaceDirectionStoryController));
+	AnimationSetFaceDirectionStoryController* e = (AnimationSetFaceDirectionStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(AnimationSetFaceDirectionStoryController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mFacing, "");
@@ -5785,7 +5785,7 @@ static void setupStoryStateControllerParsers() {
 }
 
 static int handleCreateAnimationStoryController(DreamMugenStateController* tController) {
-	CreateAnimationStoryController* e = tController->mData;
+	CreateAnimationStoryController* e = (CreateAnimationStoryController*)tController->mData;
 
 	int id, animation, isLooping, isBoundToStage;
 	Position position = makePosition(0, 0, 0);
@@ -5811,7 +5811,7 @@ static int handleCreateAnimationStoryController(DreamMugenStateController* tCont
 }
 
 static int handleRemoveAnimationStoryController(DreamMugenStateController* tController) {
-	RemoveAnimationStoryController* e = tController->mData;
+	RemoveAnimationStoryController* e = (RemoveAnimationStoryController*)tController->mData;
 
 	int id;
 	getSingleIntegerValueOrDefault(&e->mID, NULL, &id, 1);
@@ -5823,7 +5823,7 @@ static int handleRemoveAnimationStoryController(DreamMugenStateController* tCont
 }
 
 static int handleChangeAnimationStoryController(DreamMugenStateController* tController) {
-	ChangeAnimationStoryController* e = tController->mData;
+	ChangeAnimationStoryController* e = (ChangeAnimationStoryController*)tController->mData;
 
 	int id, animation;
 	getSingleIntegerValueOrDefault(&e->mID, NULL, &id, 1);
@@ -5845,7 +5845,7 @@ static void handleSingleStoryTextSprite(int id, int tHasSprite, DreamMugenAssign
 }
 
 static int handleCreateTextStoryController(DreamMugenStateController* tController) {
-	CreateTextStoryController* e = tController->mData;
+	CreateTextStoryController* e = (CreateTextStoryController*)tController->mData;
 
 	int id;
 	Position basePosition = makePosition(0, 0, 0);
@@ -5875,7 +5875,7 @@ static int handleCreateTextStoryController(DreamMugenStateController* tControlle
 }
 
 static int handleRemoveTextStoryController(DreamMugenStateController* tController) {
-	RemoveElementStoryController* e = tController->mData;
+	RemoveElementStoryController* e = (RemoveElementStoryController*)tController->mData;
 
 	int id;
 	getSingleIntegerValueOrDefault(&e->mID, NULL, &id, 1);
@@ -5885,7 +5885,7 @@ static int handleRemoveTextStoryController(DreamMugenStateController* tControlle
 }
 
 static int handleChangeTextStoryController(DreamMugenStateController* tController) {
-	ChangeTextStoryController* e = tController->mData;
+	ChangeTextStoryController* e = (ChangeTextStoryController*)tController->mData;
 
 	int id;
 	getSingleIntegerValueOrDefault(&e->mID, NULL, &id, 1);
@@ -5925,7 +5925,7 @@ static int handleChangeTextStoryController(DreamMugenStateController* tControlle
 }
 
 static int handleChangeStateStoryController(DreamMugenStateController* tController) {
-	SingleRequiredValueController* e = tController->mData;
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 	
 	int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mValue, NULL);
 	changeDolmexicaStoryState(val);
@@ -5934,7 +5934,7 @@ static int handleChangeStateStoryController(DreamMugenStateController* tControll
 }
 
 static int handleFadeInStoryController(DreamMugenStateController* tController) {
-	FadeStoryController* e = tController->mData;
+	FadeStoryController* e = (FadeStoryController*)tController->mData;
 
 	double duration;
 	getSingleFloatValueOrDefault(&e->mDuration, NULL, &duration, 20);
@@ -5944,7 +5944,7 @@ static int handleFadeInStoryController(DreamMugenStateController* tController) {
 }
 
 static int handleFadeOutStoryController(DreamMugenStateController* tController) {
-	FadeStoryController* e = tController->mData;
+	FadeStoryController* e = (FadeStoryController*)tController->mData;
 
 	double duration;
 	getSingleFloatValueOrDefault(&e->mDuration, NULL, &duration, 20);
@@ -5954,7 +5954,7 @@ static int handleFadeOutStoryController(DreamMugenStateController* tController) 
 }
 
 static int handleGotoStoryStepStoryController(DreamMugenStateController* tController) {
-	SingleRequiredValueController* e = tController->mData;
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	int newStep = evaluateDreamAssignmentAndReturnAsInteger(&e->mValue, NULL);
 	(void)newStep; // TODO
@@ -5963,7 +5963,7 @@ static int handleGotoStoryStepStoryController(DreamMugenStateController* tContro
 }
 
 static int handleAnimationSetPositionStoryController(DreamMugenStateController* tController) {
-	Target2DPhysicsController* e = tController->mData;
+	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	int id;
 	getSingleIntegerValueOrDefault(&e->mID, NULL, &id, 1);
@@ -5981,7 +5981,7 @@ static int handleAnimationSetPositionStoryController(DreamMugenStateController* 
 }
 
 static int handleAnimationAddPositionStoryController(DreamMugenStateController* tController) {
-	Target2DPhysicsController* e = tController->mData;
+	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	int id;
 	getSingleIntegerValueOrDefault(&e->mID, NULL, &id, 1);
@@ -5999,7 +5999,7 @@ static int handleAnimationAddPositionStoryController(DreamMugenStateController* 
 }
 
 static int handleAnimationSetScaleStoryController(DreamMugenStateController* tController) {
-	Target2DPhysicsController* e = tController->mData;
+	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	int id;
 	getSingleIntegerValueOrDefault(&e->mID, NULL, &id, 1);
@@ -6017,7 +6017,7 @@ static int handleAnimationSetScaleStoryController(DreamMugenStateController* tCo
 }
 
 static int handleAnimationSetFaceDirectionController(DreamMugenStateController* tController) {
-	AnimationSetFaceDirectionStoryController* e = tController->mData;
+	AnimationSetFaceDirectionStoryController* e = (AnimationSetFaceDirectionStoryController*)tController->mData;
 
 	int id, faceDirection;
 	getSingleIntegerValueOrDefault(&e->mID, NULL, &id, 1);
@@ -6031,7 +6031,7 @@ static int handleAnimationSetFaceDirectionController(DreamMugenStateController* 
 }
 
 static int handleEndStoryboardController(DreamMugenStateController* tController) {
-	SingleRequiredValueController* e = tController->mData;
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	int nextState;
 	getSingleIntegerValueOrDefault(&e->mValue, NULL, &nextState, 1);
@@ -6042,7 +6042,7 @@ static int handleEndStoryboardController(DreamMugenStateController* tController)
 }
 
 static int handleMoveStageStoryController(DreamMugenStateController* tController) {
-	Set2DPhysicsController* e = tController->mData;
+	Set2DPhysicsController* e = (Set2DPhysicsController*)tController->mData;
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, NULL);

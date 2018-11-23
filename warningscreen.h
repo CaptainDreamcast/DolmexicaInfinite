@@ -2,4 +2,4 @@
 
 #include <prism/wrapper.h>
 
-extern Screen DreamWarningScreen;
+Screen* getDreamWarningScreen();

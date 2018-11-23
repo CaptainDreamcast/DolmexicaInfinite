@@ -1,6 +1,7 @@
 #include "arcademode.h"
 
 #include <assert.h>
+#include <algorithm>
 
 #include <prism/mugendefreader.h>
 #include <prism/math.h>
@@ -16,6 +17,8 @@
 #include "stage.h"
 #include "fightui.h"
 #include "fightresultdisplay.h"
+
+using namespace std;
 
 typedef struct {
 	char mDefinitionPath[300];
@@ -42,14 +45,14 @@ static struct {
 static void fightFinishedCB();
 
 static void gameOverFinishedCB() {
-	setNewScreen(&DreamTitleScreen);
+	setNewScreen(getDreamTitleScreen());
 }
 
 static void fightLoseCB() {
 	if (gData.mHasGameOver) {
 		setStoryDefinitionFile(gData.mGameOverPath);
 		setStoryScreenFinishedCB(gameOverFinishedCB);
-		setNewScreen(&StoryScreen);
+		setNewScreen(getStoryScreen());
 	}
 	else {
 		gameOverFinishedCB();
@@ -82,22 +85,22 @@ typedef struct {
 } AddEnemyCaller;
 
 static void addNewEnemyOrderToCaller(AddEnemyCaller* tCaller, int tOrder) {
-	Order* e = allocMemory(sizeof(Order));
+	Order* e = (Order*)allocMemory(sizeof(Order));
 	e->mEnemies = new_vector();
 
 	int_map_push_owned(&tCaller->mOrders, tOrder, e);
 }
 
 static void addSingleEnemyToSelection(void* tCaller, void* tData) {
-	AddEnemyCaller* caller = tCaller;
-	MugenDefScriptGroupElement* element = tData;
+	AddEnemyCaller* caller = (AddEnemyCaller*)tCaller;
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)tData;
 
 	if (!isMugenDefStringVectorVariableAsElement(element)) return;
 
 	MugenStringVector stringVector = getMugenDefStringVectorVariableAsElement(element);
 	assert(stringVector.mSize >= 2);
 
-	SingleArcadeEnemy* e = allocMemory(sizeof(SingleArcadeEnemy));
+	SingleArcadeEnemy* e = (SingleArcadeEnemy*)allocMemory(sizeof(SingleArcadeEnemy));
 	e->mIsSelected = 0;
 	e->mOrder = 1;
 	getCharacterSelectNamePath(stringVector.mElement[0], e->mDefinitionPath);
@@ -119,7 +122,7 @@ static void addSingleEnemyToSelection(void* tCaller, void* tData) {
 	if (!int_map_contains(&caller->mOrders, e->mOrder)) {
 		addNewEnemyOrderToCaller(caller, e->mOrder);
 	}
-	Order* order = int_map_get(&caller->mOrders, e->mOrder);
+	Order* order = (Order*)int_map_get(&caller->mOrders, e->mOrder);
 
 	vector_push_back_owned(&order->mEnemies, e);
 }
@@ -137,7 +140,7 @@ static void addArcadeEnemy(SingleArcadeEnemy* tEnemy) {
 static void addOrderEnemies(int tOrder, int tAmount, AddEnemyCaller* tCaller) {
 	if (!int_map_contains(&tCaller->mOrders, tOrder)) return;
 
-	Order* order = int_map_get(&tCaller->mOrders, tOrder);
+	Order* order = (Order*)int_map_get(&tCaller->mOrders, tOrder);
 
 	tAmount = min(tAmount, vector_size(&order->mEnemies));
 
@@ -146,7 +149,7 @@ static void addOrderEnemies(int tOrder, int tAmount, AddEnemyCaller* tCaller) {
 		int j;
 		for (j = 0; j < 100; j++) {
 			int index = randfromInteger(0, vector_size(&order->mEnemies) - 1);
-			SingleArcadeEnemy* enemy = vector_get(&order->mEnemies, index);
+			SingleArcadeEnemy* enemy = (SingleArcadeEnemy*)vector_get(&order->mEnemies, index);
 
 			if (enemy->mIsSelected) continue;
 
@@ -159,7 +162,7 @@ static void addOrderEnemies(int tOrder, int tAmount, AddEnemyCaller* tCaller) {
 
 static int unloadSingleOrder(void* tCaller, void* tData) {
 	(void)tCaller;
-	Order* e = tData;
+	Order* e = (Order*)tData;
 	delete_vector(&e->mEnemies);
 	return 1;
 }
@@ -169,7 +172,7 @@ static void generateEnemies() {
 
 	MugenStringVector enemyTypeAmountVector = getMugenDefStringVectorVariable(&script, "Options", "arcade.maxmatches");
 
-	MugenDefScriptGroup* group = string_map_get(&script.mGroups, "Characters");
+	MugenDefScriptGroup* group = (MugenDefScriptGroup*)string_map_get(&script.mGroups, "Characters");
 	AddEnemyCaller caller;
 	caller.mOrders = new_int_map();
 	list_map(&group->mOrderedElementList, addSingleEnemyToSelection, &caller);
@@ -196,7 +199,7 @@ static void endingScreenFinishedCB() {
 	if (gData.mHasCredits) {
 		setStoryDefinitionFile(gData.mCreditsPath);
 		setStoryScreenFinishedCB(creditsFinishedCB);
-		setNewScreen(&StoryScreen);
+		setNewScreen(getStoryScreen());
 		return;
 	}
 
@@ -217,14 +220,14 @@ static void startEnding() {
 		if (isFile(path)) {
 			setStoryDefinitionFile(path);
 			setStoryScreenFinishedCB(endingScreenFinishedCB);
-			setNewScreen(&StoryScreen);
+			setNewScreen(getStoryScreen());
 			return;
 		}
 	}
 	else if (gData.mHasDefaultEnding) {
 		setStoryDefinitionFile(gData.mDefaultEndingPath);
 		setStoryScreenFinishedCB(endingScreenFinishedCB);
-		setNewScreen(&StoryScreen);
+		setNewScreen(getStoryScreen());
 		return;
 	}
 
@@ -250,7 +253,7 @@ static void fightFinishedCB() {
 		setDreamStageMugenDefinition(gData.mEnemies[gData.mCurrentEnemy].mStagePath, gData.mEnemies[gData.mCurrentEnemy].mMusicPath);
 	}
 	setVersusScreenFinishedCB(versusScreenFinishedCB);
-	setNewScreen(&VersusScreen);
+	setNewScreen(getVersusScreen());
 }
 
 static void introScreenFinishedCB() {
@@ -288,7 +291,7 @@ static void characterSelectFinishedCB() {
 	unloadMugenDefScript(script);
 
 	if (isGoingToStory) {
-		setNewScreen(&StoryScreen);
+		setNewScreen(getStoryScreen());
 	}
 	else {
 		introScreenFinishedCB();
@@ -351,5 +354,5 @@ void startArcadeMode()
 	setCharacterSelectOnePlayer();
 	setCharacterSelectStageInactive();
 	setCharacterSelectFinishedCB(characterSelectFinishedCB);
-	setNewScreen(&CharacterSelectScreen);
+	setNewScreen(getCharacterSelectScreen());
 }

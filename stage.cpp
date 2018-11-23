@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <algorithm>
 
 #include <prism/memoryhandler.h>
 #include <prism/log.h>
@@ -18,6 +19,8 @@
 #include "mugenstagehandler.h"
 #include "mugenbackgroundstatehandler.h"
 #include "mugensound.h"
+
+using namespace std;
 
 typedef struct {
 	char mName[1024];
@@ -252,7 +255,7 @@ static MugenDefScriptGroup* loadStageBackgroundDefinitionAndReturnGroup(MugenDef
 		return NULL;
 	}
 
-	bgdef = string_map_get(&s->mGroups, name);
+	bgdef = (MugenDefScriptGroup*)string_map_get(&s->mGroups, name);
 
 	getMugenDefStringOrDefault(gData.mBackgroundDefinition.mSpritePath, s, name, "spr", "");
 	gData.mBackgroundDefinition.mDebugBG = getMugenDefIntegerOrDefault(s, name, "debugbg", 0);
@@ -306,7 +309,7 @@ static BlendType getBackgroundBlendType(MugenDefScriptGroup* tGroup) {
 }
 
 static void loadBackgroundElement(MugenDefScriptGroup* tGroup, int i) {
-	StageBackgroundElement* e = allocMemory(sizeof(StageBackgroundElement));
+	StageBackgroundElement* e = (StageBackgroundElement*)allocMemory(sizeof(StageBackgroundElement));
 
 	debugLog("Load background element.");
  	debugString(tName);
@@ -403,8 +406,8 @@ static void setStageCamera() {
 static void loadStage(void* tData)
 {
 	(void)tData;
-	instantiateActor(DreamMugenStageHandler);
-	instantiateActor(BackgroundStateHandler);
+	instantiateActor(getDreamMugenStageHandler());
+	instantiateActor(getBackgroundStateHandler());
 
 	gData.mAnimations = loadMugenAnimationFile(gData.mDefinitionPath);
 
@@ -486,11 +489,9 @@ static void updateStage(void* tData) {
 	updateCameraMovement();
 }
 
-ActorBlueprint DreamStageBP = {
-	.mLoad = loadStage,
-	.mUnload = unloadStage,
-	.mUpdate = updateStage,
-};
+ActorBlueprint getDreamStageBP() {
+	return makeActorBlueprint(loadStage, unloadStage, updateStage);
+}
 
 
 void setDreamStageMugenDefinition(char * tPath, char* tCustomMusicPath)

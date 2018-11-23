@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <algorithm>
 
 #include <prism/file.h>
 #include <prism/physicshandler.h>
@@ -33,6 +34,8 @@
 #include "mugenanimationutilities.h"
 #include "mugenexplod.h"
 #include "pausecontrollers.h"
+
+using namespace std;
 
 #define SHADOW_Z 33
 #define REFLECTION_Z 34
@@ -397,14 +400,14 @@ void loadPlayerSprites() {
 
 static int unloadSingleHelper(void* tCaller, void* tData) {
 	(void)tCaller;
-	DreamPlayer* p = tData;
+	DreamPlayer* p = (DreamPlayer*)tData;
 	// TODO
 	return 1;
 }
 
 static int unloadSingleProjectile(void* tCaller, void* tData) {
 	(void)tCaller;
-	DreamPlayer* p = tData;
+	DreamPlayer* p = (DreamPlayer*)tData;
 	// TODO
 	return 1;
 }
@@ -778,7 +781,7 @@ static int updateSinglePlayer(DreamPlayer* p);
 
 static int updateSinglePlayerCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	DreamPlayer* p = tData;
+	DreamPlayer* p = (DreamPlayer*)tData;
 	return updateSinglePlayer(p);
 }
 
@@ -1047,7 +1050,7 @@ void updatePlayers()
 static int updateSinglePlayerPreStateMachine(DreamPlayer* p);
 static int updateSinglePlayerPreStateMachineCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	DreamPlayer* p = tData;
+	DreamPlayer* p = (DreamPlayer*)tData;
 	return updateSinglePlayerPreStateMachine(p);
 }
 
@@ -1091,7 +1094,7 @@ static void drawSinglePlayer(DreamPlayer* p);
 
 static void drawSinglePlayerCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	DreamPlayer* p = tData;
+	DreamPlayer* p = (DreamPlayer*)tData;
 	drawSinglePlayer(p);
 }
 
@@ -1138,24 +1141,20 @@ void drawPlayers() {
 	}
 }
 
-ActorBlueprint PreStateMachinePlayersBlueprint = {
-    .mLoad = NULL,
-    .mUnload = NULL,
-	.mUpdate = updatePlayersPreStateMachine,
-    .mDraw = NULL,
-    .mIsActive = NULL,
+ActorBlueprint getPreStateMachinePlayersBlueprint() {
+	return makeActorBlueprint(NULL, NULL, updatePlayersPreStateMachine);
 };
 
 
 static void setPlayerHitOver(void* tCaller) {
-	DreamPlayer* p = tCaller;
+	DreamPlayer* p = (DreamPlayer*)tCaller;
 
 	setActiveHitDataInactive(p);
 	p->mIsHitOver = 1;
 }
 
 static void setPlayerHitShakeOver(void* tCaller) {
-	DreamPlayer* p = tCaller;
+	DreamPlayer* p = (DreamPlayer*)tCaller;
 	if (!isPlayer(p)) { // TODO: fix
 		logWarning("Trying to access nonexistant character. Ignoring.");
 		return;
@@ -1565,7 +1564,7 @@ static void increaseDisplayedComboCounter(DreamPlayer* p) {
 void playerHitCB(void* tData, void* tHitData)
 {
 	// TOOD: reversaldef
-	DreamPlayer* p = tData;
+	DreamPlayer* p = (DreamPlayer*)tData;
 
 	DreamPlayer* otherPlayer = getReceivedHitDataPlayer(tHitData);
 
@@ -2809,7 +2808,7 @@ int getPlayerTargetAmountWithID(DreamPlayer* p, int tID)
 
 DreamPlayer* getPlayerByIndex(int i) {
 	i = min(i, list_size(&gData.mAllPlayers) - 1);
-	DreamPlayer* p = list_get(&gData.mAllPlayers, i);
+	DreamPlayer* p = (DreamPlayer*)list_get(&gData.mAllPlayers, i);
 	return p;
 }
 
@@ -2829,8 +2828,8 @@ typedef struct {
 } PlayerHelperCountCaller;
 
 static void countHelperByIDCB(void* tCaller, void* tData) {
-	PlayerHelperCountCaller* caller = tCaller;
-	DreamPlayer* helper = tData;
+	PlayerHelperCountCaller* caller = (PlayerHelperCountCaller*)tCaller;
+	DreamPlayer* helper = (DreamPlayer*)tData;
 
 	if (helper->mID == caller->mSearchID) {
 		caller->mFoundAmount++;
@@ -2856,8 +2855,8 @@ typedef struct {
 } PlayerHelperFindCaller;
 
 static void findHelperByIDCB(void* tCaller, void* tData) {
-	PlayerHelperFindCaller* caller = tCaller;
-	DreamPlayer* helper = tData;
+	PlayerHelperFindCaller* caller = (PlayerHelperFindCaller*)tCaller;
+	DreamPlayer* helper = (DreamPlayer*)tData;
 
 	if (helper->mID == caller->mSearchID) {
 		caller->mFoundHelper = helper;
@@ -3197,7 +3196,7 @@ void setPlayerHeight(DreamPlayer * p, int tHeight)
 static void increaseSinglePlayerRoundsExisted(DreamPlayer * p);
 static void increasePlayerRoundsExistedCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	DreamPlayer* p = tData;
+	DreamPlayer* p = (DreamPlayer*)tData;
 	increaseSinglePlayerRoundsExisted(p);
 }
 
@@ -3432,8 +3431,8 @@ typedef struct {
 // TODO: split in two
 
 static void searchPlayerBeingAttackedRecursive(void* tCaller, void* tData) {
-	PlayerBeingAttackedSearchCaller* caller = tCaller;
-	DreamPlayer* p = tData;
+	PlayerBeingAttackedSearchCaller* caller = (PlayerBeingAttackedSearchCaller*)tCaller;
+	DreamPlayer* p = (DreamPlayer*)tData;
 	caller->mIsAttacking |= isHitDataActive(p);
 
 	list_map(&p->mHelpers, searchPlayerBeingAttackedRecursive, caller);
@@ -3449,8 +3448,8 @@ int isPlayerBeingAttacked(DreamPlayer* p) {
 }
 
 static void searchPlayerInGuardDistanceRecursive(void* tCaller, void* tData) {
-	PlayerBeingAttackedSearchCaller* caller = tCaller;
-	DreamPlayer* otherPlayer = tData;
+	PlayerBeingAttackedSearchCaller* caller = (PlayerBeingAttackedSearchCaller*)tCaller;
+	DreamPlayer* otherPlayer = (DreamPlayer*)tData;
 
 	int isAttacking = isHitDataActive(otherPlayer);
 	if (isAttacking) {
@@ -3578,7 +3577,7 @@ void setPlayerScaleY(DreamPlayer * p, double tScaleY)
 
 DreamPlayer * clonePlayerAsHelper(DreamPlayer * p)
 {
-	DreamPlayer* helper = allocMemory(sizeof(DreamPlayer));
+	DreamPlayer* helper = (DreamPlayer*)allocMemory(sizeof(DreamPlayer));
 	*helper = *p;
 
 	resetHelperState(helper);
@@ -3602,8 +3601,8 @@ typedef struct {
 } MovePlayerHelperCaller;
 
 static int moveSinglePlayerHelper(void* tCaller, void* tData) {
-	MovePlayerHelperCaller* caller = tCaller;
-	DreamPlayer* helper = tData;
+	MovePlayerHelperCaller* caller = (MovePlayerHelperCaller*)tCaller;
+	DreamPlayer* helper = (DreamPlayer*)tData;
 	DreamPlayer* parent = caller->mParent;
 	DreamPlayer* parentParent = parent->mParent;
 	
@@ -3622,7 +3621,7 @@ static void movePlayerHelpersToParent(DreamPlayer* p) {
 
 static void removePlayerBindingCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	DreamPlayer* p = tData;
+	DreamPlayer* p = (DreamPlayer*)tData;
 	removePlayerBinding(p);
 }
 
@@ -3686,7 +3685,7 @@ static void addProjectileToRoot(DreamPlayer* tPlayer, DreamPlayer* tProjectile) 
 
 DreamPlayer * createNewProjectileFromPlayer(DreamPlayer * p)
 {
-	DreamPlayer* helper = allocMemory(sizeof(DreamPlayer));
+	DreamPlayer* helper = (DreamPlayer*)allocMemory(sizeof(DreamPlayer));
 	*helper = *p;
 
 	resetHelperState(helper);
@@ -3795,8 +3794,8 @@ typedef struct {
 static void bindSinglePlayerToTarget(DreamPlayer* tBindRoot, DreamPlayer* tTarget, BindPlayerTargetsCaller* tCaller);
 
 static void bindPlayerTargetCB(void* tCaller, void* tData) {
-	BindPlayerTargetsCaller* caller = tCaller;
-	DreamPlayer* helper = tData;
+	BindPlayerTargetsCaller* caller = (BindPlayerTargetsCaller*)tCaller;
+	DreamPlayer* helper = (DreamPlayer*)tData;
 
 	bindSinglePlayerToTarget(caller->mBindRoot, helper, caller);
 }
@@ -3830,8 +3829,8 @@ int isPlayerBound(DreamPlayer * p)
 static void bindSingleTargetToPlayer(DreamPlayer* tBindRoot, DreamPlayer* tTarget, BindPlayerTargetsCaller* tCaller);
 
 static void bindTargetToPlayerCB(void* tCaller, void* tData) {
-	BindPlayerTargetsCaller* caller = tCaller;
-	DreamPlayer* helper = tData;
+	BindPlayerTargetsCaller* caller = (BindPlayerTargetsCaller*)tCaller;
+	DreamPlayer* helper = (DreamPlayer*)tData;
 
 	bindSingleTargetToPlayer(caller->mBindRoot, helper, caller);
 }
@@ -3958,8 +3957,8 @@ typedef struct {
 static DreamPlayer* searchSinglePlayerForID(DreamPlayer* p, int tID);
 
 static void searchPlayerForIDCB(void* tCaller, void* tData) {
-	SearchPlayerIDCaller* caller = tCaller;
-	DreamPlayer* p = tData;
+	SearchPlayerIDCaller* caller = (SearchPlayerIDCaller*)tCaller;
+	DreamPlayer* p = (DreamPlayer*)tData;
 
 	DreamPlayer* ret = searchSinglePlayerForID(p, caller->mSearchID);
 	if (ret != NULL) {
@@ -4046,7 +4045,7 @@ static void copyOverCleanFlag2(char* tDst, char* tSrc) {
 void addPlayerNotHitByFlag2(DreamPlayer * p, int tSlot, char * tFlag)
 {
 
-	char* nFlag = allocMemory(strlen(tFlag) + 5);
+	char* nFlag = (char*)allocMemory(strlen(tFlag) + 5);
 	copyOverCleanFlag2(nFlag, tFlag);
 	if (strlen(nFlag) != 2) {
 		logErrorFormat("Unable to parse nothitby flag %s. Ignoring.", tFlag);
@@ -4206,7 +4205,7 @@ int isPlayerCollisionDebugActive() {
 
 static void setPlayerCollisionDebugRecursiveCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	DreamPlayer* p = tData;
+	DreamPlayer* p = (DreamPlayer*)tData;
 	setMugenAnimationCollisionDebug(p->mAnimationID, gData.mIsCollisionDebugActive);
 
 	if (!gData.mIsCollisionDebugActive) {

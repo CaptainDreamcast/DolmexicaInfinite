@@ -363,8 +363,6 @@ static void updateFightDebug(void* tData) {
 	updateDebugText();
 }
 
-ActorBlueprint FightDebug = {
-	.mLoad = loadFightDebug,
-	.mUnload = unloadFightDebug,
-	.mUpdate = updateFightDebug,
+ActorBlueprint getFightDebug() {
+	return makeActorBlueprint(loadFightDebug, unloadFightDebug, updateFightDebug);
 };

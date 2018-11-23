@@ -2,6 +2,6 @@
 
 #include <prism/wrapper.h>
 
-extern Screen VersusScreen;
+Screen* getVersusScreen();
 
 void setVersusScreenFinishedCB(void(*tCB)());

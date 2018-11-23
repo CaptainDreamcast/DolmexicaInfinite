@@ -46,12 +46,12 @@ static void loadStoryboardGroup(MugenDefScriptGroup* tGroup) {
 	sprintf(path, "assets/%s%s", folder, file);
 	if (!isFile(path)) {
 		logWarningFormat("Unable to open storyboard %s. Returning to title.", path);
-		setNewScreen(&DreamTitleScreen);
+		setNewScreen(getDreamTitleScreen());
 		return;
 	}
 
 	setDolmexicaStoryScreenFile(path);
-	setNewScreen(&DolmexicaStoryScreen);
+	setNewScreen(getDolmexicaStoryScreen());
 }
 
 static void fightFinishedCB() {
@@ -104,7 +104,7 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 }
 
 static void loadTitleGroup() {
-	setNewScreen(&DreamTitleScreen);
+	setNewScreen(getDreamTitleScreen());
 }
 
 static void loadStoryModeScreen() {
@@ -115,7 +115,7 @@ static void loadStoryModeScreen() {
 	MugenDefScriptGroup* group = getMugenDefStoryScriptGroupByIndex(&script, gData.mCurrentState);
 	if (!group || !isMugenDefStringVariableAsGroup(group, "type")) {
 		logWarningFormat("Unable to read story state %d (from %s). Returning to title.", gData.mCurrentState, gData.mStoryPath);
-		setNewScreen(&DreamTitleScreen);
+		setNewScreen(getDreamTitleScreen());
 		return;
 	}
 
@@ -129,14 +129,16 @@ static void loadStoryModeScreen() {
 	}
 	else {
 		logWarningFormat("Unable to read story state %d type %s (from %s). Returning to title.", gData.mCurrentState, type, gData.mStoryPath);
-		setNewScreen(&DreamTitleScreen);
+		setNewScreen(getDreamTitleScreen());
 	}
 	freeMemory(type);
 }
 
+static Screen gStoryModeScreen;
 
-static Screen StoryModeScreen = {
-	.mLoad = loadStoryModeScreen,
+static Screen* getStoryModeScreen() {
+	gStoryModeScreen = makeScreen(loadStoryModeScreen);
+	return &gStoryModeScreen;
 };
 
 static void loadStoryHeader() {
@@ -149,35 +151,35 @@ static void loadStoryHeader() {
 }
 
 static void startFirstStoryElement(MugenDefScriptGroup* tStories) {
-	MugenDefScriptGroupElement* story = list_front(&tStories->mOrderedElementList);
+	MugenDefScriptGroupElement* story = (MugenDefScriptGroupElement*)list_front(&tStories->mOrderedElementList);
 
 	if (story->mType != MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
-		setNewScreen(&DreamTitleScreen);
+		setNewScreen(getDreamTitleScreen());
 		return;
 	}
 
-	MugenDefScriptStringElement* stringElement = story->mData;
+	MugenDefScriptStringElement* stringElement = (MugenDefScriptStringElement*)story->mData;
 	setStoryModeStoryPath(stringElement->mString);
 	loadStoryHeader();
-	setNewScreen(&StoryModeScreen);
+	setNewScreen(getStoryModeScreen());
 }
 
 static void characterSelectFinishedCB() {
 	loadStoryHeader();
-	setNewScreen(&StoryModeScreen);
+	setNewScreen(getStoryModeScreen());
 }
 
 void startStoryMode()
 {
 	MugenDefScript selectScript = loadMugenDefScript("assets/data/select.def");
 	if (!string_map_contains(&selectScript.mGroups, "Stories")) {
-		setNewScreen(&DreamTitleScreen);
+		setNewScreen(getDreamTitleScreen());
 		return;
 	}
 	
-	MugenDefScriptGroup* stories = string_map_get(&selectScript.mGroups, "Stories");
+	MugenDefScriptGroup* stories = (MugenDefScriptGroup*)string_map_get(&selectScript.mGroups, "Stories");
 	if (!list_size(&stories->mOrderedElementList)) {
-		setNewScreen(&DreamTitleScreen);
+		setNewScreen(getDreamTitleScreen());
 		return;
 	}
 
@@ -189,14 +191,14 @@ void startStoryMode()
 		setCharacterSelectStory();
 		setCharacterSelectStageInactive();
 		setCharacterSelectFinishedCB(characterSelectFinishedCB);
-		setNewScreen(&CharacterSelectScreen);
+		setNewScreen(getCharacterSelectScreen());
 	}
 }
 
 void storyModeOverCB(int tStep)
 {
 	gData.mCurrentState = tStep;
-	setNewScreen(&StoryModeScreen);
+	setNewScreen(getStoryModeScreen());
 }
 
 void setStoryModeStoryPath(char * tPath)

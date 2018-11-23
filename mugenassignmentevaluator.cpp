@@ -861,7 +861,7 @@ static int tryEvaluateVariableComparison(DreamMugenVariableAssignment* tVariable
 		*tIsStatic = 0;
 	}
 	else if (string_map_contains(&gVariableHandler.mComparisons, name)) {
-		ComparisonFunction func = string_map_get(&gVariableHandler.mComparisons, name);
+		ComparisonFunction func = (ComparisonFunction)string_map_get(&gVariableHandler.mComparisons, name);
 		hasReturn = 1;
 		*oRet = func(name, b, tPlayer, tIsStatic);
 	}
@@ -1786,7 +1786,7 @@ static AssignmentReturnValue evaluateVariableAssignment(DreamMugenAssignment** t
 	*tIsStatic = 0;
 
 	if (string_map_contains(&gVariableHandler.mVariables, testString)) {
-		VariableFunction func = string_map_get(&gVariableHandler.mVariables, testString);
+		VariableFunction func = (VariableFunction)string_map_get(&gVariableHandler.mVariables, testString);
 		return func(tPlayer);
 	}
 	
@@ -1951,7 +1951,7 @@ static AssignmentReturnValue evaluateConstArrayAssignment(AssignmentReturnValue 
 		return makeBottomAssignmentReturn(); 
 	}
 
-	VariableFunction func = string_map_get(&gVariableHandler.mConstants, var);
+	VariableFunction func = (VariableFunction)string_map_get(&gVariableHandler.mConstants, var);
 	freeMemory(var);
 
 	*tIsStatic = 0;
@@ -2319,7 +2319,7 @@ static AssignmentReturnValue evaluateArrayAssignment(DreamMugenAssignment** tAss
 		return makeBottomAssignmentReturn(); 
 	}
 
-	ArrayFunction func = string_map_get(&gVariableHandler.mArrays, test);
+	ArrayFunction func = (ArrayFunction)string_map_get(&gVariableHandler.mArrays, test);
 	return func(arrays, tPlayer, tIsStatic);
 }
 
@@ -2352,7 +2352,7 @@ typedef struct {
 int gPruneAmount;
 
 static DreamMugenAssignment* makeStaticDreamMugenAssignment(AssignmentReturnValue tValue) {
-	DreamMugenStaticAssignment* e = allocMemory(sizeof(DreamMugenStaticAssignment));
+	DreamMugenStaticAssignment* e = (DreamMugenStaticAssignment*)allocMemory(sizeof(DreamMugenStaticAssignment));
 	e->mType = MUGEN_ASSIGNMENT_TYPE_STATIC;
 	e->mValue = tValue;
 

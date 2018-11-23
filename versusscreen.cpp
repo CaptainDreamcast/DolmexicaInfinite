@@ -194,12 +194,12 @@ static void updateVersusScreen() {
 	}
 }
 
-Screen VersusScreen = {
-	.mLoad = loadVersusScreen,
-	.mUpdate = updateVersusScreen,
-    .mDraw = NULL,
-	.mUnload = unloadVersusScreen,
-};
+static Screen gVersusScreen;
+
+Screen* getVersusScreen() {
+	gVersusScreen = makeScreen(loadVersusScreen, updateVersusScreen, NULL, unloadVersusScreen);
+	return &gVersusScreen;
+}
 
 void setVersusScreenFinishedCB(void(*tCB)())
 {

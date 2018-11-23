@@ -261,7 +261,7 @@ static void addMenuPoint(char* tVariableName, void(*tCB)()) {
 	}
 
 	int index = vector_size(&gData.mMenus);
-	MenuText* e = allocMemory(sizeof(MenuText));
+	MenuText* e = (MenuText*)allocMemory(sizeof(MenuText));
 	e->mCB = tCB;
 	e->mOffset = makePosition(gData.mHeader.mItemSpacing.x*index, gData.mHeader.mItemSpacing.y*index, 50);
 	Position position = vecAdd(gData.mHeader.mMenuPosition, e->mOffset);
@@ -285,7 +285,7 @@ static void setUpperOptionAsBase() {
 }
 
 static void setSelectedMenuElementActive() {
-	MenuText* e = vector_get(&gData.mMenus, gData.mSelected);
+	MenuText* e = (MenuText*)vector_get(&gData.mMenus, gData.mSelected);
 	setMugenTextFont(e->mTextID, gData.mHeader.mItemActiveFont.x);
 	setMugenTextColor(e->mTextID, getMugenTextColorFromMugenTextColorIndex(gData.mHeader.mItemActiveFont.y));
 	setMugenTextAlignment(e->mTextID, getMugenTextAlignmentFromMugenAlignmentIndex(gData.mHeader.mItemActiveFont.z));
@@ -299,7 +299,7 @@ static void setSelectedMenuElementActive() {
 }
 
 static void setSelectedMenuElementInactive() {
-	MenuText* e = vector_get(&gData.mMenus, gData.mSelected);
+	MenuText* e = (MenuText*)vector_get(&gData.mMenus, gData.mSelected);
 	setMugenTextFont(e->mTextID, gData.mHeader.mItemFont.x);
 	setMugenTextColor(e->mTextID, getMugenTextColorFromMugenTextColorIndex(gData.mHeader.mItemFont.y));
 	setMugenTextAlignment(e->mTextID, getMugenTextAlignmentFromMugenAlignmentIndex(gData.mHeader.mItemFont.z));
@@ -335,9 +335,9 @@ static void loadTitleMusic() {
 }
 
 static void loadTitleScreen() {
-	setWrapperTitleScreen(&DreamTitleScreen);
+	setWrapperTitleScreen(getDreamTitleScreen());
 	
-	instantiateActor(BoxCursorHandler);
+	instantiateActor(getBoxCursorHandler());
 
 	gData.mWhiteTexture = getEmptyWhiteTexture();
 
@@ -430,21 +430,21 @@ static void updateMenuElementPositions() {
 	int i;
 	int l = vector_size(&gData.mMenus);
 	for (i = 0; i < l; i++) {
-		MenuText* e = vector_get(&gData.mMenus, i);
+		MenuText* e = (MenuText*)vector_get(&gData.mMenus, i);
 		setMugenTextPosition(e->mTextID, vecAdd(gData.mMenuBasePosition, e->mOffset));
 	}
 }
 
 static void updateItemSelectionConfirmation() {
 	if (hasPressedAFlank() || hasPressedStartFlank()) {
-		MenuText* e = vector_get(&gData.mMenus, gData.mSelected);
+		MenuText* e = (MenuText*)vector_get(&gData.mMenus, gData.mSelected);
 		tryPlayMugenSound(&gData.mSounds, gData.mHeader.mCursorDoneSound.x, gData.mHeader.mCursorDoneSound.y);
 		e->mCB();
 	}
 }
 
 static void updateSelectionBoxPosition() {
-	MenuText* e = vector_get(&gData.mMenus, gData.mSelected);
+	MenuText* e = (MenuText*)vector_get(&gData.mMenus, gData.mSelected);
 
 	Position pos = getMugenTextPosition(e->mTextID);
 	pos.z = 0;
@@ -483,9 +483,9 @@ static void updateTitleScreen() {
 	updateDemoMode();
 }
 
-Screen DreamTitleScreen = {
-	.mLoad = loadTitleScreen,
-	.mUpdate = updateTitleScreen,
-    .mDraw = NULL,
-	.mUnload = unloadTitleScreen,
-};
+static Screen gDreamTitleScreen;
+
+Screen* getDreamTitleScreen() {
+	gDreamTitleScreen = makeScreen(loadTitleScreen, updateTitleScreen, NULL, unloadTitleScreen);
+	return &gDreamTitleScreen;
+}

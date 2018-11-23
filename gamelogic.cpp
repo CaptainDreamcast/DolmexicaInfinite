@@ -372,13 +372,9 @@ static void updateGameLogic(void* tData) {
 	updateIntroSkip();
 }
 
-ActorBlueprint DreamGameLogic = {
-	.mLoad = loadGameLogic,
-    .mUnload = NULL,
-	.mUpdate = updateGameLogic,
-    .mDraw = NULL,
-    .mIsActive = NULL,
-};
+ActorBlueprint getDreamGameLogic() {
+	return makeActorBlueprint(loadGameLogic, NULL, updateGameLogic);
+}
 
 
 int getDreamGameTime()

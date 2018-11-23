@@ -13,4 +13,4 @@ void setDreamPlayerCommandActiveForAI(int tID, char* tCommandName, Duration tBuf
 
 void setDreamMugenCommandFaceDirection(int tID, FaceDirection tDirection);
 
-extern ActorBlueprint DreamMugenCommandHandler;
+ActorBlueprint getDreamMugenCommandHandler();

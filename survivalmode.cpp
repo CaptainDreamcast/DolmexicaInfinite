@@ -115,5 +115,5 @@ void startSurvivalMode()
 	setCharacterSelectOnePlayer();
 	setCharacterSelectStageActive();
 	setCharacterSelectFinishedCB(fightFinishedCB);
-	setNewScreen(&CharacterSelectScreen);
+	setNewScreen(getCharacterSelectScreen());
 }

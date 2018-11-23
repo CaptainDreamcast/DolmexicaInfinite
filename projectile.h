@@ -4,7 +4,7 @@
 
 #include <prism/actorhandler.h>
 
-extern ActorBlueprint ProjectileHandler;
+ActorBlueprint getProjectileHandler();
 
 void addAdditionalProjectileData(DreamPlayer* tProjectile);
 void removeAdditionalProjectileData(DreamPlayer* tProjectile);

@@ -57,8 +57,8 @@ static int evaluateTrigger(DreamMugenStateControllerTrigger* tTrigger, DreamPlay
 }
 
 static void updateSingleController(void* tCaller, void* tData) {
-	MugenStateControllerCaller* caller = tCaller;
-	DreamMugenStateController* controller = tData;
+	MugenStateControllerCaller* caller = (MugenStateControllerCaller*)tCaller;
+	DreamMugenStateController* controller = (DreamMugenStateController*)tData;
 	
 	if (caller->mRegisteredState->mPlayer && isPlayerDestroyed(caller->mRegisteredState->mPlayer)) return;
 	if (caller->mHasChangedState) return;
@@ -95,7 +95,7 @@ static void updateSingleState(RegisteredState* tRegisteredState, int tState, Dre
 	while (isEvaluating) {
 		if (!int_map_contains(&tStates->mStates, tState)) break;
 		int_map_push(&visitedStates, tState, NULL);
-		DreamMugenState* state = int_map_get(&tStates->mStates, tState);
+		DreamMugenState* state = (DreamMugenState*)int_map_get(&tStates->mStates, tState);
 		MugenStateControllerCaller caller;
 		caller.mRegisteredState = tRegisteredState;
 		caller.mState = state;
@@ -135,7 +135,7 @@ static int updateSingleStateMachineByReference(RegisteredState* tRegisteredState
 
 static int updateSingleStateMachine(void* tCaller, void* tData) {
 	(void)tCaller;
-	RegisteredState* registeredState = tData;
+	RegisteredState* registeredState = (RegisteredState*)tData;
 	return updateSingleStateMachineByReference(registeredState);
 }
 
@@ -144,15 +144,13 @@ static void updateStateHandler(void* tData) {
 	int_map_remove_predicate(&gData.mRegisteredStates, updateSingleStateMachine, NULL);
 }
 
-ActorBlueprint DreamMugenStateHandler = {
-	.mLoad = loadStateHandler,
-	.mUnload = unloadStateHandler,
-	.mUpdate = updateStateHandler,
-};
+ActorBlueprint getDreamMugenStateHandler() {
+	return makeActorBlueprint(loadStateHandler, unloadStateHandler, updateStateHandler);
+}
 
 int registerDreamMugenStateMachine(DreamMugenStates * tStates, DreamPlayer* tPlayer)
 {
-	RegisteredState* e = allocMemory(sizeof(RegisteredState));
+	RegisteredState* e = (RegisteredState*)allocMemory(sizeof(RegisteredState));
 	e->mStates = tStates;
 	e->mIsUsingTemporaryOtherStateMachine = 0;
 	e->mPreviousState = 0;
@@ -186,7 +184,7 @@ void removeDreamRegisteredStateMachine(int tID)
 int getDreamRegisteredStateState(int tID)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 
 	return e->mState;
 }
@@ -194,7 +192,7 @@ int getDreamRegisteredStateState(int tID)
 int getDreamRegisteredStatePreviousState(int tID)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 
 	return e->mPreviousState;
 }
@@ -202,14 +200,14 @@ int getDreamRegisteredStatePreviousState(int tID)
 void pauseDreamRegisteredStateMachine(int tID)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	e->mIsPaused = 1;
 }
 
 void unpauseDreamRegisteredStateMachine(int tID)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	if (e->mIsDisabled) return;
 	e->mIsPaused = 0;
 }
@@ -217,7 +215,7 @@ void unpauseDreamRegisteredStateMachine(int tID)
 void disableDreamRegisteredStateMachine(int tID)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	e->mIsDisabled = 1;
 	pauseDreamRegisteredStateMachine(tID);
 }
@@ -225,7 +223,7 @@ void disableDreamRegisteredStateMachine(int tID)
 int getDreamRegisteredStateJugglePoints(int tID)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 
 	return e->mCurrentJugglePoints;
 }
@@ -233,7 +231,7 @@ int getDreamRegisteredStateJugglePoints(int tID)
 int getDreamRegisteredStateTimeInState(int tID)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 
 	return e->mTimeInState;
 }
@@ -241,7 +239,7 @@ int getDreamRegisteredStateTimeInState(int tID)
 void setDreamRegisteredStateTimeInState(int tID, int tTime)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 
 	e->mTimeInState = tTime;
 }
@@ -249,21 +247,21 @@ void setDreamRegisteredStateTimeInState(int tID, int tTime)
 void setDreamRegisteredStateToHelperMode(int tID)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	e->mIsInHelperMode = 1;
 }
 
 void setDreamRegisteredStateDisableCommandState(int tID)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	e->mIsInputControlDisabled = 1;
 }
 
 int hasDreamHandledStateMachineState(int tID, int tNewState)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	
 	DreamMugenStates* states = getCurrentStateMachineStates(e);
 	return int_map_contains(&states->mStates, tNewState);
@@ -272,20 +270,20 @@ int hasDreamHandledStateMachineState(int tID, int tNewState)
 int hasDreamHandledStateMachineStateSelf(int tID, int tNewState)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	return int_map_contains(&e->mStates->mStates, tNewState);
 }
 
 int isInOwnStateMachine(int tID)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	return !e->mIsUsingTemporaryOtherStateMachine;
 }
 
 static void resetSingleStateController(void* tCaller, void* tData) {
 	(void)tCaller;
-	DreamMugenStateController* controller = tData;
+	DreamMugenStateController* controller = (DreamMugenStateController*)tData;
 	controller->mAccessAmount = 0;
 }
 
@@ -296,7 +294,7 @@ static void resetStateControllers(DreamMugenState* e) {
 void changeDreamHandledStateMachineState(int tID, int tNewState)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	e->mTimeInState = 0;
 
 	printf("%d %d %d->%d\n", e->mPlayer->mRootID, e->mPlayer->mID, e->mState, tNewState);
@@ -307,7 +305,7 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 	DreamMugenStates* states = getCurrentStateMachineStates(e);
 	assert(int_map_contains(&states->mStates, e->mState));
 	
-	DreamMugenState* newState = int_map_get(&states->mStates, e->mState);
+	DreamMugenState* newState = (DreamMugenState*)int_map_get(&states->mStates, e->mState);
 	resetStateControllers(newState);
 	
 	if (!e->mPlayer) return;
@@ -366,10 +364,10 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 void changeDreamHandledStateMachineStateToOtherPlayerStateMachine(int tID, int tTemporaryID, int tNewState)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 
 	assert(int_map_contains(&gData.mRegisteredStates, tTemporaryID));
-	RegisteredState* borrowFromState = int_map_get(&gData.mRegisteredStates, tTemporaryID);
+	RegisteredState* borrowFromState = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tTemporaryID);
 
 	e->mIsUsingTemporaryOtherStateMachine = 1;
 	e->mTemporaryStates = borrowFromState->mStates;
@@ -379,7 +377,7 @@ void changeDreamHandledStateMachineStateToOtherPlayerStateMachine(int tID, int t
 void changeDreamHandledStateMachineStateToOwnStateMachine(int tID, int tNewState)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	e->mIsUsingTemporaryOtherStateMachine = 0;
 
 	changeDreamHandledStateMachineState(tID, tNewState);
@@ -388,12 +386,12 @@ void changeDreamHandledStateMachineStateToOwnStateMachine(int tID, int tNewState
 void changeDreamHandledStateMachineStateToOwnStateMachineWithoutChangingState(int tID)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	e->mIsUsingTemporaryOtherStateMachine = 0;
 }
 
 void updateDreamSingleStateMachineByID(int tID) {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
-	RegisteredState* e = int_map_get(&gData.mRegisteredStates, tID);
+	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	updateSingleStateMachineByReference(e);
 }

@@ -41,7 +41,7 @@ void startIntroFirstTime()
 		playIntroStoryboard();
 	}
 	else {
-		setNewScreen(&DreamTitleScreen);
+		setNewScreen(getDreamTitleScreen());
 	}
 
 }
@@ -56,7 +56,7 @@ static void logoStoryboardFinishedCB() {
 		playIntroStoryboard();
 	}
 	else {
-		setNewScreen(&DreamTitleScreen);
+		setNewScreen(getDreamTitleScreen());
 	}
 }
 
@@ -67,7 +67,7 @@ void playLogoStoryboard()
 	
 	setStoryDefinitionFile(logoStoryboard);
 	setStoryScreenFinishedCB(logoStoryboardFinishedCB);
-	setNewScreen(&StoryScreen); // TODO: Dolmexica storyboards
+	setNewScreen(getStoryScreen()); // TODO: Dolmexica storyboards
 	
 }
 
@@ -87,7 +87,7 @@ void increaseIntroWaitCycle()
 }
 
 static void introStoryboardFinishedCB() {
-	setNewScreen(&DreamTitleScreen);
+	setNewScreen(getDreamTitleScreen());
 }
 
 void playIntroStoryboard()
@@ -99,5 +99,5 @@ void playIntroStoryboard()
 	setStoryScreenFinishedCB(introStoryboardFinishedCB);
 
 	gData.mWaitCycleNow = 0;
-	setNewScreen(&StoryScreen); // TODO: Dolmexica storyboards
+	setNewScreen(getStoryScreen()); // TODO: Dolmexica storyboards
 }

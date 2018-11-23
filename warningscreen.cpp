@@ -35,7 +35,7 @@ static void fadeOut(void* tCaller) {
 }
 
 static void startFadeIn(void* tCaller) {
-	double* dst = tCaller;
+	double* dst = (double*)tCaller;
 
 	tweenDouble(dst, 0, 1, quadraticTweeningFunction, 60, NULL, NULL);
 }
@@ -85,9 +85,9 @@ static void updateWarningScreen() {
 	}
 }
 
-Screen DreamWarningScreen = {
-	.mLoad = loadWarningScreen,
-	.mUpdate = updateWarningScreen,
-    .mDraw = NULL,
-	.mUnload = unloadWarningScreen,
+static Screen gDreamWarningScreen;
+
+Screen* getDreamWarningScreen() {
+	gDreamWarningScreen = makeScreen(loadWarningScreen, updateWarningScreen, NULL, unloadWarningScreen);
+	return &gDreamWarningScreen;
 };

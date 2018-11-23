@@ -1,6 +1,7 @@
 #include "mugencommandhandler.h"
 
 #include <assert.h>
+#include <algorithm>
 
 #include <prism/profiling.h>
 #include <prism/datastructures.h>
@@ -8,6 +9,8 @@
 #include <prism/system.h>
 #include <prism/input.h>
 #include <prism/math.h>
+
+using namespace std;
 
 typedef struct {
 	char mName[100];
@@ -59,7 +62,7 @@ static void loadMugenCommandHandler(void* tData) {
 
 static void unloadSingleRegisteredCommand(void* tCaller, void* tData) {
 	(void)tCaller;
-	RegisteredMugenCommand* e = tData;
+	RegisteredMugenCommand* e = (RegisteredMugenCommand*)tData;
 	delete_list(&e->mActiveCommands);
 	delete_string_map(&e->tStates->mStates);
 	delete_string_map(&e->mInternalStates);
@@ -74,14 +77,14 @@ static void unloadMugenCommandHandler(void* tData) {
 
 static void addSingleMugenCommandState(void* tCaller, char* tKey, void* tData) {
 	(void)tData;
-	RegisteredMugenCommand* s = tCaller;
+	RegisteredMugenCommand* s = (RegisteredMugenCommand*)tCaller;
 
-	MugenCommandState* e = allocMemory(sizeof(MugenCommandState));
+	MugenCommandState* e = (MugenCommandState*)allocMemory(sizeof(MugenCommandState));
 	strcpy(e->mName, tKey);
 	e->mIsActive = 0;
 	string_map_push_owned(&s->tStates->mStates, tKey, e);
 	
-	InternalMugenCommandState* internalState = allocMemory(sizeof(InternalMugenCommandState));
+	InternalMugenCommandState* internalState = (InternalMugenCommandState*)allocMemory(sizeof(InternalMugenCommandState));
 	internalState->mIsBeingProcessed = 0;
 	string_map_push_owned(&s->mInternalStates, tKey, internalState);
 }
@@ -94,10 +97,10 @@ static void setupMugenCommandStates(RegisteredMugenCommand* e) {
 int registerDreamMugenCommands(DreamPlayer* tPlayer, DreamMugenCommands * tCommands)
 {
 	
-	RegisteredMugenCommand* e = allocMemory(sizeof(RegisteredMugenCommand));
+	RegisteredMugenCommand* e = (RegisteredMugenCommand*)allocMemory(sizeof(RegisteredMugenCommand));
 	e->mActiveCommands = new_list();
 	e->tCommands = tCommands;
-	e->tStates = allocMemory(sizeof(MugenCommandStates));;
+	e->tStates = (MugenCommandStates*)allocMemory(sizeof(MugenCommandStates));
 	e->mInternalStates = new_string_map();
 	e->mPlayer = tPlayer;
 	e->mIsFacingRight = 1;
@@ -110,12 +113,12 @@ int registerDreamMugenCommands(DreamPlayer* tPlayer, DreamMugenCommands * tComma
 
 int isDreamCommandActive(int tID, char * tCommandName)
 {
-	RegisteredMugenCommand* e = vector_get(&gData.mRegisteredCommands, tID);
+	RegisteredMugenCommand* e = (RegisteredMugenCommand*)vector_get(&gData.mRegisteredCommands, tID);
 	if (!string_map_contains(&e->tStates->mStates, tCommandName)) {
 		logWarningFormat("Querying nonexistant command name %s.", tCommandName);
 		return 0;
 	}
-	MugenCommandState* state = string_map_get(&e->tStates->mStates, tCommandName);
+	MugenCommandState* state = (MugenCommandState*)string_map_get(&e->tStates->mStates, tCommandName);
 	
 	return state->mIsActive;
 }
@@ -124,13 +127,13 @@ static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, ch
 
 void setDreamPlayerCommandActiveForAI(int tID, char * tCommandName, Duration tBufferTime)
 {
-	RegisteredMugenCommand* e = vector_get(&gData.mRegisteredCommands, tID);
+	RegisteredMugenCommand* e = (RegisteredMugenCommand*)vector_get(&gData.mRegisteredCommands, tID);
 	setCommandStateActive(e, tCommandName, tBufferTime);
 }
 
 void setDreamMugenCommandFaceDirection(int tID, FaceDirection tDirection)
 {
-	RegisteredMugenCommand* e = vector_get(&gData.mRegisteredCommands, tID);
+	RegisteredMugenCommand* e = (RegisteredMugenCommand*)vector_get(&gData.mRegisteredCommands, tID);
 	e->mIsFacingRight = tDirection == FACE_DIRECTION_RIGHT;
 }
 
@@ -144,8 +147,8 @@ typedef struct {
 } MultipleCommandInputStepCaller;
 
 static void handleSingleMultipleCommandInputStep(void* tCaller, void* tData) {
-	MultipleCommandInputStepCaller* caller = tCaller;
-	DreamMugenCommandInputStep* step = tData;
+	MultipleCommandInputStepCaller* caller = (MultipleCommandInputStepCaller*)tCaller;
+	DreamMugenCommandInputStep* step = (DreamMugenCommandInputStep*)tData;
 
 	int isStepOver = 0;
 	int isActive = handleSingleCommandInputStepAndReturnIfActive(step, &isStepOver, caller->mPlayer, caller->mIsFacingRight);
@@ -155,7 +158,7 @@ static void handleSingleMultipleCommandInputStep(void* tCaller, void* tData) {
 }
 
 static int handleMultipleCommandInputStep(DreamMugenCommandInputStep* tStep, int* oIsStepOver, DreamPlayer* tPlayer, int tIsFacingRight) {
-	DreamMugenCommandInputStepMultipleTargetData* data = tStep->mData;
+	DreamMugenCommandInputStepMultipleTargetData* data = (DreamMugenCommandInputStepMultipleTargetData*)tStep->mData;
 	assert(tStep->mTarget == MUGEN_COMMAND_INPUT_STEP_TARGET_MULTIPLE);
 
 	MultipleCommandInputStepCaller caller;
@@ -315,12 +318,12 @@ static int handleSingleCommandInputStepAndReturnIfActive(DreamMugenCommandInputS
 }
 
 static void removeActiveCommand(ActiveMugenCommand* tCommand, RegisteredMugenCommand* tRegisteredCommand) {
-	InternalMugenCommandState* state = string_map_get(&tRegisteredCommand->mInternalStates, tCommand->mName);
+	InternalMugenCommandState* state = (InternalMugenCommandState*)string_map_get(&tRegisteredCommand->mInternalStates, tCommand->mName);
 	state->mIsBeingProcessed = 0;
 }
 
 static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, char* tName, Duration tBufferTime) {
-	MugenCommandState* state = string_map_get(&tRegisteredCommand->tStates->mStates, tName);
+	MugenCommandState* state = (MugenCommandState*)string_map_get(&tRegisteredCommand->tStates->mStates, tName);
 	state->mIsActive = 1;
 	state->mNow = 0;
 	state->mBufferTime = tBufferTime;
@@ -334,8 +337,8 @@ static int isSameStepAsBefore(ActiveMugenCommand* tCommand) {
 	assert(tCommand->mStep > 0);
 	assert(tCommand->mStep < vector_size(&tCommand->mInput->mInputSteps));
 
-	DreamMugenCommandInputStep* mPreviousStep = vector_get(&tCommand->mInput->mInputSteps, tCommand->mStep - 1);
-	DreamMugenCommandInputStep* mStep = vector_get(&tCommand->mInput->mInputSteps, tCommand->mStep);
+	DreamMugenCommandInputStep* mPreviousStep = (DreamMugenCommandInputStep*)vector_get(&tCommand->mInput->mInputSteps, tCommand->mStep - 1);
+	DreamMugenCommandInputStep* mStep = (DreamMugenCommandInputStep*)vector_get(&tCommand->mInput->mInputSteps, tCommand->mStep);
 
 	int isSameType = mPreviousStep->mType == mStep->mType;
 	if (!isSameType) return 0;
@@ -348,8 +351,8 @@ static int isSameStepAsBefore(ActiveMugenCommand* tCommand) {
 }
 
 static int updateSingleActiveMugenCommand(void* tCaller, void* tData) {
-	RegisteredMugenCommand* registeredCommand = tCaller;
-	ActiveMugenCommand* command = tData;
+	RegisteredMugenCommand* registeredCommand = (RegisteredMugenCommand*)tCaller;
+	ActiveMugenCommand* command = (ActiveMugenCommand*)tData;
 
 	if (handleDurationAndCheckIfOver(&command->mNow, command->mInput->mTime)) {
 		removeActiveCommand(command, registeredCommand);
@@ -358,7 +361,7 @@ static int updateSingleActiveMugenCommand(void* tCaller, void* tData) {
 
 	int isRunning = 1;
 	while (isRunning) {
-		DreamMugenCommandInputStep* step = vector_get(&command->mInput->mInputSteps, command->mStep);
+		DreamMugenCommandInputStep* step = (DreamMugenCommandInputStep*)vector_get(&command->mInput->mInputSteps, command->mStep);
 
 		int isStepOver = 0;
 		int isActive = handleSingleCommandInputStepAndReturnIfActive(step, &isStepOver, registeredCommand->mPlayer, registeredCommand->mIsFacingRight);
@@ -395,7 +398,7 @@ static void addNewActiveMugenCommand(DreamMugenCommandInput* tInput, RegisteredM
 		return;
 	}
 
-	ActiveMugenCommand* e = allocMemory(sizeof(ActiveMugenCommand));
+	ActiveMugenCommand* e = (ActiveMugenCommand*)allocMemory(sizeof(ActiveMugenCommand));
 	e->mInput = tInput;
 	strcpy(e->mName, tName);
 	e->mNow = 0;
@@ -410,10 +413,10 @@ static void addNewActiveMugenCommand(DreamMugenCommandInput* tInput, RegisteredM
 }
 
 static void updateSingleStaticMugenCommandInput(void* tCaller, void* tData) {
-	DreamMugenCommandInput* input = tData;
-	StaticMugenCommandInputCaller* caller = tCaller;
+	DreamMugenCommandInput* input = (DreamMugenCommandInput*)tData;
+	StaticMugenCommandInputCaller* caller = (StaticMugenCommandInputCaller*)tCaller;
 
-	DreamMugenCommandInputStep* firstStep = vector_get(&input->mInputSteps, 0);
+	DreamMugenCommandInputStep* firstStep = (DreamMugenCommandInputStep*)vector_get(&input->mInputSteps, 0);
 
 	int mIsStepOver = 0;
 	int mIsActive = handleSingleCommandInputStepAndReturnIfActive(firstStep, &mIsStepOver, caller->mRegisteredCommand->mPlayer, caller->mRegisteredCommand->mIsFacingRight);
@@ -424,10 +427,10 @@ static void updateSingleStaticMugenCommandInput(void* tCaller, void* tData) {
 }
 
 static void updateSingleStaticMugenCommand(void* tCaller, char* tKey, void* tData) {
-	RegisteredMugenCommand* registeredCommand = tCaller;
-	DreamMugenCommand* command = tData;
+	RegisteredMugenCommand* registeredCommand = (RegisteredMugenCommand*)tCaller;
+	DreamMugenCommand* command = (DreamMugenCommand*)tData;
 	
-	InternalMugenCommandState* internalState = string_map_get(&registeredCommand->mInternalStates, tKey);
+	InternalMugenCommandState* internalState = (InternalMugenCommandState*)string_map_get(&registeredCommand->mInternalStates, tKey);
 	if (internalState->mIsBeingProcessed) return;
 
 	StaticMugenCommandInputCaller caller;
@@ -443,7 +446,7 @@ static void updateStaticMugenCommands(RegisteredMugenCommand* tCommand) {
 static void updateSingleCommandState(void* tCaller, char* tKey, void* tData) {
 	(void)tCaller;
 	(void)tKey;
-	MugenCommandState* state = tData;
+	MugenCommandState* state = (MugenCommandState*)tData;
 	if (!state->mIsActive) return;
 
 	if (handleDurationAndCheckIfOver(&state->mNow, state->mBufferTime)) {
@@ -489,7 +492,7 @@ static void updateInputMasks() {
 
 static void updateSingleRegisteredCommand(void* tCaller, void* tData) {
 	(void)tCaller;
-	RegisteredMugenCommand* command = tData;
+	RegisteredMugenCommand* command = (RegisteredMugenCommand*)tData;
 
 	updateCommandStates(command);
 	updateActiveMugenCommands(command);
@@ -503,8 +506,6 @@ static void updateMugenCommandHandler(void* tData) {
 	vector_map(&gData.mRegisteredCommands, updateSingleRegisteredCommand, NULL);
 }
 
-ActorBlueprint DreamMugenCommandHandler = {
-	.mLoad = loadMugenCommandHandler,
-	.mUnload = unloadMugenCommandHandler,
-	.mUpdate = updateMugenCommandHandler,
+ActorBlueprint getDreamMugenCommandHandler() {
+	return makeActorBlueprint(loadMugenCommandHandler, unloadMugenCommandHandler, updateMugenCommandHandler);
 };

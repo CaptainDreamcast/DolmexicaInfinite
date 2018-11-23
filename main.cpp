@@ -89,9 +89,9 @@ int main(int argc, char** argv) {
 	setMinimumLogType(LOG_TYPE_NORMAL);
 	setScreenEffectZ(99);
 	loadMugenConfig();
-	setScreenAfterWrapperLogoScreen(&DreamTitleScreen);
+	setScreenAfterWrapperLogoScreen(getDreamTitleScreen());
 
-	startScreenHandling(&DreamWarningScreen);
+	startScreenHandling(getDreamWarningScreen());
 	
 	exitGame();
 	

@@ -2,4 +2,4 @@
 
 #include <prism/actorhandler.h>
 
-extern ActorBlueprint FightDebug;
+extern ActorBlueprint getFightDebug();
