@@ -1357,15 +1357,15 @@ static AssignmentReturnValue hitDefAttributeComparisonFunction(char* tName, Assi
 static void setupComparisons() {
 	gVariableHandler.mComparisons = new_string_map();
 
-	string_map_push(&gVariableHandler.mComparisons, "command", commandComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "statetype", stateTypeComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "p2statetype", p2StateTypeComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "movetype", moveTypeComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "p2movetype", p2MoveTypeComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "animelem", animElemComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "timemod", timeModComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "teammode", teamModeComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "hitdefattr", hitDefAttributeComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "command", (void*)commandComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "statetype", (void*)stateTypeComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "p2statetype", (void*)p2StateTypeComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "movetype", (void*)moveTypeComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "p2movetype", (void*)p2MoveTypeComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "animelem", (void*)animElemComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "timemod", (void*)timeModComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "teammode", (void*)teamModeComparisonFunction);
+	string_map_push(&gVariableHandler.mComparisons, "hitdefattr", (void*)hitDefAttributeComparisonFunction);
 }
 
 static AssignmentReturnValue aiLevelFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerAILevel(tPlayer)); }
@@ -1475,115 +1475,115 @@ static AssignmentReturnValue winFunction(DreamPlayer* tPlayer) { return makeBool
 
 static void setupVariableAssignments() {
 	gVariableHandler.mVariables = new_string_map();
-	string_map_push(&gVariableHandler.mVariables, "ailevel", aiLevelFunction);
-	string_map_push(&gVariableHandler.mVariables, "alive", aliveFunction);
-	string_map_push(&gVariableHandler.mVariables, "anim", animFunction);
-	string_map_push(&gVariableHandler.mVariables, "animtime", animTimeFunction);
-	string_map_push(&gVariableHandler.mVariables, "authorname", authorNameFunction);
+	string_map_push(&gVariableHandler.mVariables, "ailevel", (void*)aiLevelFunction);
+	string_map_push(&gVariableHandler.mVariables, "alive", (void*)aliveFunction);
+	string_map_push(&gVariableHandler.mVariables, "anim", (void*)animFunction);
+	string_map_push(&gVariableHandler.mVariables, "animtime", (void*)animTimeFunction);
+	string_map_push(&gVariableHandler.mVariables, "authorname", (void*)authorNameFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "backedge", backEdgeFunction);
-	string_map_push(&gVariableHandler.mVariables, "backedgebodydist", backEdgeBodyDistFunction);
-	string_map_push(&gVariableHandler.mVariables, "backedgedist", backEdgeDistFunction);
-	string_map_push(&gVariableHandler.mVariables, "bottomedge", bottomEdgeFunction);
+	string_map_push(&gVariableHandler.mVariables, "backedge", (void*)backEdgeFunction);
+	string_map_push(&gVariableHandler.mVariables, "backedgebodydist", (void*)backEdgeBodyDistFunction);
+	string_map_push(&gVariableHandler.mVariables, "backedgedist", (void*)backEdgeDistFunction);
+	string_map_push(&gVariableHandler.mVariables, "bottomedge", (void*)bottomEdgeFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "camerapos x", cameraPosXFunction);
-	string_map_push(&gVariableHandler.mVariables, "camerapos y", cameraPosYFunction);
-	string_map_push(&gVariableHandler.mVariables, "camerazoom", cameraZoomFunction);
-	string_map_push(&gVariableHandler.mVariables, "canrecover", canRecoverFunction);
-	string_map_push(&gVariableHandler.mVariables, "ctrl", ctrlFunction);
+	string_map_push(&gVariableHandler.mVariables, "camerapos x", (void*)cameraPosXFunction);
+	string_map_push(&gVariableHandler.mVariables, "camerapos y", (void*)cameraPosYFunction);
+	string_map_push(&gVariableHandler.mVariables, "camerazoom", (void*)cameraZoomFunction);
+	string_map_push(&gVariableHandler.mVariables, "canrecover", (void*)canRecoverFunction);
+	string_map_push(&gVariableHandler.mVariables, "ctrl", (void*)ctrlFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "drawgame", drawGameFunction);
+	string_map_push(&gVariableHandler.mVariables, "drawgame", (void*)drawGameFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "e", eFunction);
+	string_map_push(&gVariableHandler.mVariables, "e", (void*)eFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "facing", facingFunction);
-	string_map_push(&gVariableHandler.mVariables, "frontedge", frontEdgeFunction);
-	string_map_push(&gVariableHandler.mVariables, "frontedgebodydist", frontEdgeBodyDistFunction);
-	string_map_push(&gVariableHandler.mVariables, "frontedgedist", frontEdgeDistFunction);
+	string_map_push(&gVariableHandler.mVariables, "facing", (void*)facingFunction);
+	string_map_push(&gVariableHandler.mVariables, "frontedge", (void*)frontEdgeFunction);
+	string_map_push(&gVariableHandler.mVariables, "frontedgebodydist", (void*)frontEdgeBodyDistFunction);
+	string_map_push(&gVariableHandler.mVariables, "frontedgedist", (void*)frontEdgeDistFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "gameheight", gameHeightFunction);
-	string_map_push(&gVariableHandler.mVariables, "gametime", gameTimeFunction);
-	string_map_push(&gVariableHandler.mVariables, "gamewidth", gameWidthFunction);
+	string_map_push(&gVariableHandler.mVariables, "gameheight", (void*)gameHeightFunction);
+	string_map_push(&gVariableHandler.mVariables, "gametime", (void*)gameTimeFunction);
+	string_map_push(&gVariableHandler.mVariables, "gamewidth", (void*)gameWidthFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "hitcount", hitCountFunction);
-	string_map_push(&gVariableHandler.mVariables, "hitfall", hitFallFunction);
-	string_map_push(&gVariableHandler.mVariables, "hitover", hitOverFunction);
-	string_map_push(&gVariableHandler.mVariables, "hitpausetime", hitPauseTimeFunction);
-	string_map_push(&gVariableHandler.mVariables, "hitshakeover", hitShakeOverFunction);
-	string_map_push(&gVariableHandler.mVariables, "hitvel x", hitVelXFunction);
-	string_map_push(&gVariableHandler.mVariables, "hitvel y", hitVelYFunction);
+	string_map_push(&gVariableHandler.mVariables, "hitcount", (void*)hitCountFunction);
+	string_map_push(&gVariableHandler.mVariables, "hitfall", (void*)hitFallFunction);
+	string_map_push(&gVariableHandler.mVariables, "hitover", (void*)hitOverFunction);
+	string_map_push(&gVariableHandler.mVariables, "hitpausetime", (void*)hitPauseTimeFunction);
+	string_map_push(&gVariableHandler.mVariables, "hitshakeover", (void*)hitShakeOverFunction);
+	string_map_push(&gVariableHandler.mVariables, "hitvel x", (void*)hitVelXFunction);
+	string_map_push(&gVariableHandler.mVariables, "hitvel y", (void*)hitVelYFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "id", idFunction);
-	string_map_push(&gVariableHandler.mVariables, "inguarddist", inGuardDistFunction);
-	string_map_push(&gVariableHandler.mVariables, "ishelper", isHelperFunction);
-	string_map_push(&gVariableHandler.mVariables, "ishometeam", isHomeTeamFunction);
+	string_map_push(&gVariableHandler.mVariables, "id", (void*)idFunction);
+	string_map_push(&gVariableHandler.mVariables, "inguarddist", (void*)inGuardDistFunction);
+	string_map_push(&gVariableHandler.mVariables, "ishelper", (void*)isHelperFunction);
+	string_map_push(&gVariableHandler.mVariables, "ishometeam", (void*)isHomeTeamFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "leftedge", leftEdgeFunction);
-	string_map_push(&gVariableHandler.mVariables, "life", lifeFunction);
-	string_map_push(&gVariableHandler.mVariables, "lifemax", lifeMaxFunction);
-	string_map_push(&gVariableHandler.mVariables, "lose", loseFunction);
+	string_map_push(&gVariableHandler.mVariables, "leftedge", (void*)leftEdgeFunction);
+	string_map_push(&gVariableHandler.mVariables, "life", (void*)lifeFunction);
+	string_map_push(&gVariableHandler.mVariables, "lifemax", (void*)lifeMaxFunction);
+	string_map_push(&gVariableHandler.mVariables, "lose", (void*)loseFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "matchno", matchNoFunction);
-	string_map_push(&gVariableHandler.mVariables, "matchover", matchOverFunction);
-	string_map_push(&gVariableHandler.mVariables, "movecontact", moveContactFunction);
-	string_map_push(&gVariableHandler.mVariables, "moveguarded", moveGuardedFunction);
-	string_map_push(&gVariableHandler.mVariables, "movehit", moveHitFunction);
-	string_map_push(&gVariableHandler.mVariables, "movereversed", moveReversedFunction);
+	string_map_push(&gVariableHandler.mVariables, "matchno", (void*)matchNoFunction);
+	string_map_push(&gVariableHandler.mVariables, "matchover", (void*)matchOverFunction);
+	string_map_push(&gVariableHandler.mVariables, "movecontact", (void*)moveContactFunction);
+	string_map_push(&gVariableHandler.mVariables, "moveguarded", (void*)moveGuardedFunction);
+	string_map_push(&gVariableHandler.mVariables, "movehit", (void*)moveHitFunction);
+	string_map_push(&gVariableHandler.mVariables, "movereversed", (void*)moveReversedFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "name", nameFunction);
-	string_map_push(&gVariableHandler.mVariables, "numenemy", numEnemyFunction);
-	string_map_push(&gVariableHandler.mVariables, "numexplod", numExplodFunction);
-	string_map_push(&gVariableHandler.mVariables, "numhelper", numHelperFunction);
-	string_map_push(&gVariableHandler.mVariables, "numpartner", numPartnerFunction);
-	string_map_push(&gVariableHandler.mVariables, "numproj", numProjFunction);
-	string_map_push(&gVariableHandler.mVariables, "numtarget", numTargetFunction);
+	string_map_push(&gVariableHandler.mVariables, "name", (void*)nameFunction);
+	string_map_push(&gVariableHandler.mVariables, "numenemy", (void*)numEnemyFunction);
+	string_map_push(&gVariableHandler.mVariables, "numexplod", (void*)numExplodFunction);
+	string_map_push(&gVariableHandler.mVariables, "numhelper", (void*)numHelperFunction);
+	string_map_push(&gVariableHandler.mVariables, "numpartner", (void*)numPartnerFunction);
+	string_map_push(&gVariableHandler.mVariables, "numproj", (void*)numProjFunction);
+	string_map_push(&gVariableHandler.mVariables, "numtarget", (void*)numTargetFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "p1name", p1NameFunction);
-	string_map_push(&gVariableHandler.mVariables, "p2bodydist x", p2BodyDistFunctionX);
-	string_map_push(&gVariableHandler.mVariables, "p2bodydist y", p2BodyDistFunctionY);
-	string_map_push(&gVariableHandler.mVariables, "p2dist x", p2DistFunctionX);
-	string_map_push(&gVariableHandler.mVariables, "p2dist y", p2DistFunctionY);
-	string_map_push(&gVariableHandler.mVariables, "p2life", p2LifeFunction);
-	string_map_push(&gVariableHandler.mVariables, "p2name", p2NameFunction);
-	string_map_push(&gVariableHandler.mVariables, "p2stateno", p2StateNoFunction);
-	string_map_push(&gVariableHandler.mVariables, "p3name", p3NameFunction);
-	string_map_push(&gVariableHandler.mVariables, "p4name", p4NameFunction);
-	string_map_push(&gVariableHandler.mVariables, "palno", palNoFunction);
-	string_map_push(&gVariableHandler.mVariables, "parentdist x", parentDistXFunction);
-	string_map_push(&gVariableHandler.mVariables, "parentdist y", parentDistYFunction);
-	string_map_push(&gVariableHandler.mVariables, "pi", piFunction);
-	string_map_push(&gVariableHandler.mVariables, "pos x", posXFunction);
-	string_map_push(&gVariableHandler.mVariables, "pos y", posYFunction);
-	string_map_push(&gVariableHandler.mVariables, "power", powerFunction);
-	string_map_push(&gVariableHandler.mVariables, "powermax", powerMaxFunction);
-	string_map_push(&gVariableHandler.mVariables, "prevstateno", prevStateNoFunction);
+	string_map_push(&gVariableHandler.mVariables, "p1name", (void*)p1NameFunction);
+	string_map_push(&gVariableHandler.mVariables, "p2bodydist x", (void*)p2BodyDistFunctionX);
+	string_map_push(&gVariableHandler.mVariables, "p2bodydist y", (void*)p2BodyDistFunctionY);
+	string_map_push(&gVariableHandler.mVariables, "p2dist x", (void*)p2DistFunctionX);
+	string_map_push(&gVariableHandler.mVariables, "p2dist y", (void*)p2DistFunctionY);
+	string_map_push(&gVariableHandler.mVariables, "p2life", (void*)p2LifeFunction);
+	string_map_push(&gVariableHandler.mVariables, "p2name", (void*)p2NameFunction);
+	string_map_push(&gVariableHandler.mVariables, "p2stateno", (void*)p2StateNoFunction);
+	string_map_push(&gVariableHandler.mVariables, "p3name", (void*)p3NameFunction);
+	string_map_push(&gVariableHandler.mVariables, "p4name", (void*)p4NameFunction);
+	string_map_push(&gVariableHandler.mVariables, "palno", (void*)palNoFunction);
+	string_map_push(&gVariableHandler.mVariables, "parentdist x", (void*)parentDistXFunction);
+	string_map_push(&gVariableHandler.mVariables, "parentdist y", (void*)parentDistYFunction);
+	string_map_push(&gVariableHandler.mVariables, "pi", (void*)piFunction);
+	string_map_push(&gVariableHandler.mVariables, "pos x", (void*)posXFunction);
+	string_map_push(&gVariableHandler.mVariables, "pos y", (void*)posYFunction);
+	string_map_push(&gVariableHandler.mVariables, "power", (void*)powerFunction);
+	string_map_push(&gVariableHandler.mVariables, "powermax", (void*)powerMaxFunction);
+	string_map_push(&gVariableHandler.mVariables, "prevstateno", (void*)prevStateNoFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "random", randomFunction);
-	string_map_push(&gVariableHandler.mVariables, "rightedge", rightEdgeFunction);
-	string_map_push(&gVariableHandler.mVariables, "rootdist x", rootDistXFunction);
-	string_map_push(&gVariableHandler.mVariables, "rootdist y", rootDistYFunction);
-	string_map_push(&gVariableHandler.mVariables, "roundno", roundNoFunction);
-	string_map_push(&gVariableHandler.mVariables, "roundsexisted", roundsExistedFunction);
-	string_map_push(&gVariableHandler.mVariables, "roundstate", roundStateFunction);
+	string_map_push(&gVariableHandler.mVariables, "random", (void*)randomFunction);
+	string_map_push(&gVariableHandler.mVariables, "rightedge", (void*)rightEdgeFunction);
+	string_map_push(&gVariableHandler.mVariables, "rootdist x", (void*)rootDistXFunction);
+	string_map_push(&gVariableHandler.mVariables, "rootdist y", (void*)rootDistYFunction);
+	string_map_push(&gVariableHandler.mVariables, "roundno", (void*)roundNoFunction);
+	string_map_push(&gVariableHandler.mVariables, "roundsexisted", (void*)roundsExistedFunction);
+	string_map_push(&gVariableHandler.mVariables, "roundstate", (void*)roundStateFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "screenpos x", screenPosXFunction);
-	string_map_push(&gVariableHandler.mVariables, "screenpos y", screenPosYFunction);
-	string_map_push(&gVariableHandler.mVariables, "screenheight", screenHeightFunction);
-	string_map_push(&gVariableHandler.mVariables, "screenwidth", screenWidthFunction);
-	string_map_push(&gVariableHandler.mVariables, "stateno", stateNoFunction);
-	string_map_push(&gVariableHandler.mVariables, "statetime", timeFunction);
+	string_map_push(&gVariableHandler.mVariables, "screenpos x", (void*)screenPosXFunction);
+	string_map_push(&gVariableHandler.mVariables, "screenpos y", (void*)screenPosYFunction);
+	string_map_push(&gVariableHandler.mVariables, "screenheight", (void*)screenHeightFunction);
+	string_map_push(&gVariableHandler.mVariables, "screenwidth", (void*)screenWidthFunction);
+	string_map_push(&gVariableHandler.mVariables, "stateno", (void*)stateNoFunction);
+	string_map_push(&gVariableHandler.mVariables, "statetime", (void*)timeFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "teamside", teamSideFunction);
-	string_map_push(&gVariableHandler.mVariables, "tickspersecond", ticksPerSecondFunction);
-	string_map_push(&gVariableHandler.mVariables, "time", timeFunction);
-	string_map_push(&gVariableHandler.mVariables, "topedge", topEdgeFunction);
+	string_map_push(&gVariableHandler.mVariables, "teamside", (void*)teamSideFunction);
+	string_map_push(&gVariableHandler.mVariables, "tickspersecond", (void*)ticksPerSecondFunction);
+	string_map_push(&gVariableHandler.mVariables, "time", (void*)timeFunction);
+	string_map_push(&gVariableHandler.mVariables, "topedge", (void*)topEdgeFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "uniquehitcount", uniqHitCountFunction);
+	string_map_push(&gVariableHandler.mVariables, "uniquehitcount", (void*)uniqHitCountFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "vel x", velXFunction);
-	string_map_push(&gVariableHandler.mVariables, "vel y", velYFunction);
+	string_map_push(&gVariableHandler.mVariables, "vel x", (void*)velXFunction);
+	string_map_push(&gVariableHandler.mVariables, "vel y", (void*)velYFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "win", winFunction);
+	string_map_push(&gVariableHandler.mVariables, "win", (void*)winFunction);
 }
 
 
@@ -1667,83 +1667,83 @@ static AssignmentReturnValue movementDownFrictionThresholdFunction(DreamPlayer* 
 
 static void setupConstantAssignments() { 
 	gVariableHandler.mConstants = new_string_map();
-	string_map_push(&gVariableHandler.mConstants, "data.life", dataLifeFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.power", dataPowerFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.attack", dataAttackFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.defence", dataDefenceFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.fall.defence_mul", dataFallDefenceMultiplierFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.liedown.time", dataLiedownTimeFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.airjuggle", dataAirjuggleFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.sparkno", dataSparkNoFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.guard.sparkno", dataGuardSparkNoFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.ko.echo", dataKOEchoFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.intpersistindex", dataIntPersistIndexFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.floatpersistindex", dataFloatPersistIndexFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.life", (void*)dataLifeFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.power", (void*)dataPowerFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.attack", (void*)dataAttackFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.defence", (void*)dataDefenceFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.fall.defence_mul", (void*)dataFallDefenceMultiplierFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.liedown.time", (void*)dataLiedownTimeFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.airjuggle", (void*)dataAirjuggleFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.sparkno", (void*)dataSparkNoFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.guard.sparkno", (void*)dataGuardSparkNoFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.ko.echo", (void*)dataKOEchoFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.intpersistindex", (void*)dataIntPersistIndexFunction);
+	string_map_push(&gVariableHandler.mConstants, "data.floatpersistindex", (void*)dataFloatPersistIndexFunction);
 	
-	string_map_push(&gVariableHandler.mConstants, "size.xscale", sizeXScaleFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.yscale", sizeYScaleFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.ground.back", sizeGroundBackFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.ground.front", sizeGroundFrontFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.air.back", sizeAirBackFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.air.front", sizeAirFrontFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.height", sizeHeightFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.attack.dist", sizeAttackDistFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.proj.attack.dist", sizeProjAttackDistFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.proj.doscale", sizeProjDoScaleFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.head.pos.x", sizeHeadPosXFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.head.pos.y", sizeHeadPosYFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.mid.pos.x", sizeMidPosXFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.mid.pos.y", sizeMidPosYFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.shadowoffset", sizeShadowOffsetFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.draw.offset.x", sizeDrawOffsetXFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.draw.offset.y", sizeDrawOffsetYFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.xscale", (void*)sizeXScaleFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.yscale", (void*)sizeYScaleFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.ground.back", (void*)sizeGroundBackFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.ground.front", (void*)sizeGroundFrontFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.air.back", (void*)sizeAirBackFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.air.front", (void*)sizeAirFrontFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.height", (void*)sizeHeightFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.attack.dist", (void*)sizeAttackDistFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.proj.attack.dist", (void*)sizeProjAttackDistFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.proj.doscale", (void*)sizeProjDoScaleFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.head.pos.x", (void*)sizeHeadPosXFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.head.pos.y", (void*)sizeHeadPosYFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.mid.pos.x", (void*)sizeMidPosXFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.mid.pos.y", (void*)sizeMidPosYFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.shadowoffset", (void*)sizeShadowOffsetFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.draw.offset.x", (void*)sizeDrawOffsetXFunction);
+	string_map_push(&gVariableHandler.mConstants, "size.draw.offset.y", (void*)sizeDrawOffsetYFunction);
 
-	string_map_push(&gVariableHandler.mConstants, "velocity.walk.fwd.x", velocityWalkFwdXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.walk.back.x", velocityWalkBackXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.run.fwd.x", velocityRunFwdXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.run.fwd.y", velocityRunFwdYFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.run.back.x", velocityRunBackXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.run.back.y", velocityRunBackYFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.jump.y", velocityJumpYFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.jump.neu.x", velocityJumpNeuXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.jump.back.x", velocityJumpBackXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.jump.fwd.x", velocityJumpFwdXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.runjump.back.x", velocityRunJumpBackXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.runjump.fwd.x", velocityRunJumpFwdXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.y", velocityAirJumpYFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.neu.x", velocityAirJumpNeuXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.back.x", velocityAirJumpBackXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.fwd.x", velocityAirJumpFwdXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.groundrecover.x", velocityAirGetHitGroundRecoverXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.groundrecover.y", velocityAirGetHitGroundRecoverYFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.mul.x", velocityAirGetHitAirRecoverMulXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.mul.y", velocityAirGetHitAirRecoverMulYFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.add.x", velocityAirGetHitAirRecoverAddXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.add.y", velocityAirGetHitAirRecoverAddYFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.back", velocityAirGetHitAirRecoverBackFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.fwd", velocityAirGetHitAirRecoverFwdFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.up", velocityAirGetHitAirRecoverUpFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.down", velocityAirGetHitAirRecoverDownFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.walk.fwd.x", (void*)velocityWalkFwdXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.walk.back.x", (void*)velocityWalkBackXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.run.fwd.x", (void*)velocityRunFwdXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.run.fwd.y", (void*)velocityRunFwdYFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.run.back.x", (void*)velocityRunBackXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.run.back.y", (void*)velocityRunBackYFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.jump.y", (void*)velocityJumpYFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.jump.neu.x", (void*)velocityJumpNeuXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.jump.back.x", (void*)velocityJumpBackXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.jump.fwd.x", (void*)velocityJumpFwdXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.runjump.back.x", (void*)velocityRunJumpBackXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.runjump.fwd.x", (void*)velocityRunJumpFwdXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.y", (void*)velocityAirJumpYFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.neu.x", (void*)velocityAirJumpNeuXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.back.x", (void*)velocityAirJumpBackXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.fwd.x", (void*)velocityAirJumpFwdXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.groundrecover.x", (void*)velocityAirGetHitGroundRecoverXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.groundrecover.y", (void*)velocityAirGetHitGroundRecoverYFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.mul.x", (void*)velocityAirGetHitAirRecoverMulXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.mul.y", (void*)velocityAirGetHitAirRecoverMulYFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.add.x", (void*)velocityAirGetHitAirRecoverAddXFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.add.y", (void*)velocityAirGetHitAirRecoverAddYFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.back", (void*)velocityAirGetHitAirRecoverBackFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.fwd", (void*)velocityAirGetHitAirRecoverFwdFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.up", (void*)velocityAirGetHitAirRecoverUpFunction);
+	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.down", (void*)velocityAirGetHitAirRecoverDownFunction);
 
-	string_map_push(&gVariableHandler.mConstants, "movement.airjump.num", movementAirJumpNumFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.airjump.height", movementAirJumpHeightFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.yaccel", movementYAccelFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.stand.friction", movementStandFrictionFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.crouch.friction", movementCrouchFrictionFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.stand.friction.threshold", movementStandFrictionThresholdFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.crouch.friction.threshold", movementCrouchFrictionThresholdFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.jump.changeanim.threshold", movementJumpChangeAnimThresholdFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.groundlevel", movementAirGetHitGroundLevelFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.groundrecover.ground.threshold", movementAirGetHitGroundRecoverGroundThresholdFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.groundrecover.groundlevel", movementAirGetHitGroundRecoverGroundLevelFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.airrecover.threshold", movementAirGetHitAirRecoverThresholdFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.airrecover.yaccel", movementAirGetHitAirRecoverYAccelFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.trip.groundlevel", movementAirGetHitTripGroundLevelFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.offset.x", movementDownBounceOffsetXFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.offset.y", movementDownBounceOffsetYFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.yaccel", movementDownBounceYAccelFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.groundlevel", movementDownBounceGroundLevelFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.down.friction.threshold", movementDownFrictionThresholdFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.airjump.num", (void*)movementAirJumpNumFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.airjump.height", (void*)movementAirJumpHeightFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.yaccel", (void*)movementYAccelFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.stand.friction", (void*)movementStandFrictionFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.crouch.friction", (void*)movementCrouchFrictionFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.stand.friction.threshold", (void*)movementStandFrictionThresholdFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.crouch.friction.threshold", (void*)movementCrouchFrictionThresholdFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.jump.changeanim.threshold", (void*)movementJumpChangeAnimThresholdFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.groundlevel", (void*)movementAirGetHitGroundLevelFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.groundrecover.ground.threshold", (void*)movementAirGetHitGroundRecoverGroundThresholdFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.groundrecover.groundlevel", (void*)movementAirGetHitGroundRecoverGroundLevelFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.airrecover.threshold", (void*)movementAirGetHitAirRecoverThresholdFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.airrecover.yaccel", (void*)movementAirGetHitAirRecoverYAccelFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.trip.groundlevel", (void*)movementAirGetHitTripGroundLevelFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.offset.x", (void*)movementDownBounceOffsetXFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.offset.y", (void*)movementDownBounceOffsetYFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.yaccel", (void*)movementDownBounceYAccelFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.groundlevel", (void*)movementDownBounceGroundLevelFunction);
+	string_map_push(&gVariableHandler.mConstants, "movement.down.friction.threshold", (void*)movementDownFrictionThresholdFunction);
 }
 
 
@@ -2254,50 +2254,50 @@ static AssignmentReturnValue projHitTimeFunction(DreamMugenDependOnTwoAssignment
 static void setupArrayAssignments() {
 	gVariableHandler.mArrays = new_string_map();
 
-	string_map_push(&gVariableHandler.mArrays, "var", varFunction);
-	string_map_push(&gVariableHandler.mArrays, "sysvar", sysVarFunction);
-	string_map_push(&gVariableHandler.mArrays, "fvar", fVarFunction);
-	string_map_push(&gVariableHandler.mArrays, "sysfvar", sysFVarFunction);
-	string_map_push(&gVariableHandler.mArrays, "stagevar", stageVarFunction);
-	string_map_push(&gVariableHandler.mArrays, "abs", absFunction);
-	string_map_push(&gVariableHandler.mArrays, "exp", expFunction);
-	string_map_push(&gVariableHandler.mArrays, "ln", lnFunction);
-	string_map_push(&gVariableHandler.mArrays, "log", logFunction);
-	string_map_push(&gVariableHandler.mArrays, "cos", cosFunction);
-	string_map_push(&gVariableHandler.mArrays, "acos", acosFunction);
-	string_map_push(&gVariableHandler.mArrays, "sin", sinFunction);
-	string_map_push(&gVariableHandler.mArrays, "asin", asinFunction);
-	string_map_push(&gVariableHandler.mArrays, "tan", tanFunction);
-	string_map_push(&gVariableHandler.mArrays, "atan", atanFunction);
-	string_map_push(&gVariableHandler.mArrays, "floor", floorFunction);
-	string_map_push(&gVariableHandler.mArrays, "ceil", ceilFunction);
-	string_map_push(&gVariableHandler.mArrays, "const", constFunction);
-	string_map_push(&gVariableHandler.mArrays, "gethitvar", getHitVarFunction);
-	string_map_push(&gVariableHandler.mArrays, "animelemtime", animElemTimeFunction);
-	string_map_push(&gVariableHandler.mArrays, "animelemno", animElemNoFunction);
-	string_map_push(&gVariableHandler.mArrays, "ifelse", ifElseFunction);
-	string_map_push(&gVariableHandler.mArrays, "sifelse", ifElseFunction);
-	string_map_push(&gVariableHandler.mArrays, "cond", condFunction);
-	string_map_push(&gVariableHandler.mArrays, "animexist", animExistFunction);
-	string_map_push(&gVariableHandler.mArrays, "selfanimexist", selfAnimExistFunction);
-	string_map_push(&gVariableHandler.mArrays, "const240p", const240pFunction);
-	string_map_push(&gVariableHandler.mArrays, "const480p", const480pFunction);
-	string_map_push(&gVariableHandler.mArrays, "const720p", const720pFunction);
-	string_map_push(&gVariableHandler.mArrays, "f", externalFileFunction);
-	string_map_push(&gVariableHandler.mArrays, "s", externalFileFunction);
-	string_map_push(&gVariableHandler.mArrays, "numtarget", numTargetArrayFunction);
-	string_map_push(&gVariableHandler.mArrays, "numhelper", numHelperArrayFunction);
-	string_map_push(&gVariableHandler.mArrays, "numexplod", numExplodArrayFunction);
-	string_map_push(&gVariableHandler.mArrays, "ishelper", isHelperArrayFunction);
-	string_map_push(&gVariableHandler.mArrays, "helper", helperFunction);
-	string_map_push(&gVariableHandler.mArrays, "enemynear", enemyNearFunction);
-	string_map_push(&gVariableHandler.mArrays, "playerid", playerIDFunction);
-	string_map_push(&gVariableHandler.mArrays, "playeridexist", playerIDExistFunction);
-	string_map_push(&gVariableHandler.mArrays, "numprojid", numProjIDFunction);
-	string_map_push(&gVariableHandler.mArrays, "projcanceltime", projCancelTimeFunction);
-	string_map_push(&gVariableHandler.mArrays, "projcontacttime", projContactTimeFunction);
-	string_map_push(&gVariableHandler.mArrays, "projguardedtime", projGuardedTimeFunction);
-	string_map_push(&gVariableHandler.mArrays, "projhittime", projHitTimeFunction);
+	string_map_push(&gVariableHandler.mArrays, "var", (void*)varFunction);
+	string_map_push(&gVariableHandler.mArrays, "sysvar", (void*)sysVarFunction);
+	string_map_push(&gVariableHandler.mArrays, "fvar", (void*)fVarFunction);
+	string_map_push(&gVariableHandler.mArrays, "sysfvar", (void*)sysFVarFunction);
+	string_map_push(&gVariableHandler.mArrays, "stagevar", (void*)stageVarFunction);
+	string_map_push(&gVariableHandler.mArrays, "abs", (void*)absFunction);
+	string_map_push(&gVariableHandler.mArrays, "exp", (void*)expFunction);
+	string_map_push(&gVariableHandler.mArrays, "ln", (void*)lnFunction);
+	string_map_push(&gVariableHandler.mArrays, "log", (void*)logFunction);
+	string_map_push(&gVariableHandler.mArrays, "cos", (void*)cosFunction);
+	string_map_push(&gVariableHandler.mArrays, "acos", (void*)acosFunction);
+	string_map_push(&gVariableHandler.mArrays, "sin", (void*)sinFunction);
+	string_map_push(&gVariableHandler.mArrays, "asin", (void*)asinFunction);
+	string_map_push(&gVariableHandler.mArrays, "tan", (void*)tanFunction);
+	string_map_push(&gVariableHandler.mArrays, "atan", (void*)atanFunction);
+	string_map_push(&gVariableHandler.mArrays, "floor", (void*)floorFunction);
+	string_map_push(&gVariableHandler.mArrays, "ceil", (void*)ceilFunction);
+	string_map_push(&gVariableHandler.mArrays, "const", (void*)constFunction);
+	string_map_push(&gVariableHandler.mArrays, "gethitvar", (void*)getHitVarFunction);
+	string_map_push(&gVariableHandler.mArrays, "animelemtime", (void*)animElemTimeFunction);
+	string_map_push(&gVariableHandler.mArrays, "animelemno", (void*)animElemNoFunction);
+	string_map_push(&gVariableHandler.mArrays, "ifelse", (void*)ifElseFunction);
+	string_map_push(&gVariableHandler.mArrays, "sifelse", (void*)ifElseFunction);
+	string_map_push(&gVariableHandler.mArrays, "cond", (void*)condFunction);
+	string_map_push(&gVariableHandler.mArrays, "animexist", (void*)animExistFunction);
+	string_map_push(&gVariableHandler.mArrays, "selfanimexist", (void*)selfAnimExistFunction);
+	string_map_push(&gVariableHandler.mArrays, "const240p", (void*)const240pFunction);
+	string_map_push(&gVariableHandler.mArrays, "const480p", (void*)const480pFunction);
+	string_map_push(&gVariableHandler.mArrays, "const720p", (void*)const720pFunction);
+	string_map_push(&gVariableHandler.mArrays, "f", (void*)externalFileFunction);
+	string_map_push(&gVariableHandler.mArrays, "s", (void*)externalFileFunction);
+	string_map_push(&gVariableHandler.mArrays, "numtarget", (void*)numTargetArrayFunction);
+	string_map_push(&gVariableHandler.mArrays, "numhelper", (void*)numHelperArrayFunction);
+	string_map_push(&gVariableHandler.mArrays, "numexplod", (void*)numExplodArrayFunction);
+	string_map_push(&gVariableHandler.mArrays, "ishelper", (void*)isHelperArrayFunction);
+	string_map_push(&gVariableHandler.mArrays, "helper", (void*)helperFunction);
+	string_map_push(&gVariableHandler.mArrays, "enemynear", (void*)enemyNearFunction);
+	string_map_push(&gVariableHandler.mArrays, "playerid", (void*)playerIDFunction);
+	string_map_push(&gVariableHandler.mArrays, "playeridexist", (void*)playerIDExistFunction);
+	string_map_push(&gVariableHandler.mArrays, "numprojid", (void*)numProjIDFunction);
+	string_map_push(&gVariableHandler.mArrays, "projcanceltime", (void*)projCancelTimeFunction);
+	string_map_push(&gVariableHandler.mArrays, "projcontacttime", (void*)projContactTimeFunction);
+	string_map_push(&gVariableHandler.mArrays, "projguardedtime", (void*)projGuardedTimeFunction);
+	string_map_push(&gVariableHandler.mArrays, "projhittime", (void*)projHitTimeFunction);
 }
 
 
@@ -2371,36 +2371,36 @@ static AssignmentReturnValue evaluateStaticAssignment(DreamMugenAssignment** tAs
 typedef AssignmentReturnValue(AssignmentEvaluationFunction)(DreamMugenAssignment**, DreamPlayer*, int*);
 
 static void* gEvaluationFunctions[] = {
-	evaluateBooleanAssignment,
-	evaluateAndAssignment,
-	evaluateOrAssignment,
-	evaluateComparisonAssignment,
-	evaluateInequalityAssignment,
-	evaluateLessOrEqualAssignment,
-	evaluateGreaterOrEqualAssignment,
-	evaluateVectorAssignment,
-	evaluateRangeAssignment,
-	evaluateBooleanAssignment,
-	evaluateNegationAssignment,
-	evaluateVariableAssignment,
-	evaluateNumberAssignment,
-	evaluateFloatAssignment,
-	evaluateStringAssignment,
-	evaluateArrayAssignment,
-	evaluateLessAssignment,
-	evaluateGreaterAssignment,
-	evaluateAdditionAssignment,
-	evaluateMultiplicationAssignment,
-	evaluateModuloAssignment,
-	evaluateSubtractionAssignment,
-	evaluateSetVariableAssignment,
-	evaluateDivisionAssignment,
-	evaluateExponentiationAssignment,
-	evaluateUnaryMinusAssignment,
-	evaluateOperatorArgumentAssignment,
-	evaluateBitwiseAndAssignment,
-	evaluateBitwiseOrAssignment,
-	evaluateStaticAssignment,
+	(void*)evaluateBooleanAssignment,
+	(void*)evaluateAndAssignment,
+	(void*)evaluateOrAssignment,
+	(void*)evaluateComparisonAssignment,
+	(void*)evaluateInequalityAssignment,
+	(void*)evaluateLessOrEqualAssignment,
+	(void*)evaluateGreaterOrEqualAssignment,
+	(void*)evaluateVectorAssignment,
+	(void*)evaluateRangeAssignment,
+	(void*)evaluateBooleanAssignment,
+	(void*)evaluateNegationAssignment,
+	(void*)evaluateVariableAssignment,
+	(void*)evaluateNumberAssignment,
+	(void*)evaluateFloatAssignment,
+	(void*)evaluateStringAssignment,
+	(void*)evaluateArrayAssignment,
+	(void*)evaluateLessAssignment,
+	(void*)evaluateGreaterAssignment,
+	(void*)evaluateAdditionAssignment,
+	(void*)evaluateMultiplicationAssignment,
+	(void*)evaluateModuloAssignment,
+	(void*)evaluateSubtractionAssignment,
+	(void*)evaluateSetVariableAssignment,
+	(void*)evaluateDivisionAssignment,
+	(void*)evaluateExponentiationAssignment,
+	(void*)evaluateUnaryMinusAssignment,
+	(void*)evaluateOperatorArgumentAssignment,
+	(void*)evaluateBitwiseAndAssignment,
+	(void*)evaluateBitwiseOrAssignment,
+	(void*)evaluateStaticAssignment,
 };
 
 
@@ -2465,9 +2465,9 @@ static AssignmentReturnValue timeStoryFunction(DreamPlayer* tPlayer) { return ma
 
 static void setupStoryVariableAssignments() {
 	gVariableHandler.mVariables = new_string_map();
-	string_map_push(&gVariableHandler.mVariables, "time", timeStoryFunction);
+	string_map_push(&gVariableHandler.mVariables, "time", (void*)timeStoryFunction);
 
-	string_map_push(&gVariableHandler.mVariables, "random", randomFunction);
+	string_map_push(&gVariableHandler.mVariables, "random", (void*)randomFunction);
 }
 
 //static AssignmentReturnValue movementDownFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerLyingDownFrictionThreshold(tPlayer)); }
@@ -2494,9 +2494,9 @@ static AssignmentReturnValue animPosXStoryFunction(DreamMugenDependOnTwoAssignme
 static void setupStoryArrayAssignments() {
 	gVariableHandler.mArrays = new_string_map();
 
-	string_map_push(&gVariableHandler.mArrays, "animtime", animTimeStoryFunction);
-	string_map_push(&gVariableHandler.mArrays, "x", animPosXStoryFunction);
-	string_map_push(&gVariableHandler.mArrays, "ifelse", ifElseFunction);
+	string_map_push(&gVariableHandler.mArrays, "animtime", (void*)animTimeStoryFunction);
+	string_map_push(&gVariableHandler.mArrays, "x", (void*)animPosXStoryFunction);
+	string_map_push(&gVariableHandler.mArrays, "ifelse", (void*)ifElseFunction);
 }
 
 void setupDreamStoryAssignmentEvaluator()
