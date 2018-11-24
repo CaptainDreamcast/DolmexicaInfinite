@@ -312,7 +312,7 @@ void loadDreamMugenStateDefinitionsFromFile(DreamMugenStates* tStates, char* tPa
 
 DreamMugenStates createEmptyMugenStates() {
 	DreamMugenStates ret;
-	ret.mStates = stl_new_map<int, DreamMugenState>();
+	ret.mStates.clear();
 	return ret;
 }
 
@@ -505,7 +505,7 @@ static int unloadSingleStateCB(void* tCaller, DreamMugenState& e) {
 
 static void unloadMugenStates(DreamMugenStates* tStates) {
 	stl_int_map_remove_predicate(tStates->mStates, unloadSingleStateCB);
-	stl_delete_map(tStates->mStates);
+	tStates->mStates.clear();
 }
 
 void unloadDreamMugenConstantsFile(DreamMugenConstants * tConstants)
