@@ -4,6 +4,7 @@
 
 #include <prism/datastructures.h>
 #include <prism/system.h>
+#include <prism/stlutil.h>
 
 #include "playerdefinition.h"
 #include "pausecontrollers.h"
@@ -92,9 +93,9 @@ static void updateSingleState(RegisteredState* tRegisteredState, int tState, Dre
 	
 	int isEvaluating = 1;
 	while (isEvaluating) {
-		if (!int_map_contains(&tStates->mStates, tState)) break;
+		if (!stl_int_map_contains(tStates->mStates, tState)) break;
 		int_map_push(&visitedStates, tState, NULL);
-		DreamMugenState* state = (DreamMugenState*)int_map_get(&tStates->mStates, tState);
+		DreamMugenState* state = &tStates->mStates[tState];
 		MugenStateControllerCaller caller;
 		caller.mRegisteredState = tRegisteredState;
 		caller.mState = state;
@@ -263,14 +264,14 @@ int hasDreamHandledStateMachineState(int tID, int tNewState)
 	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	
 	DreamMugenStates* states = getCurrentStateMachineStates(e);
-	return int_map_contains(&states->mStates, tNewState);
+	return stl_int_map_contains(states->mStates, tNewState);
 }
 
 int hasDreamHandledStateMachineStateSelf(int tID, int tNewState)
 {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
 	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
-	return int_map_contains(&e->mStates->mStates, tNewState);
+	return stl_int_map_contains(e->mStates->mStates, tNewState);
 }
 
 int isInOwnStateMachine(int tID)
@@ -302,9 +303,9 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 	e->mState = tNewState;
 
 	DreamMugenStates* states = getCurrentStateMachineStates(e);
-	assert(int_map_contains(&states->mStates, e->mState));
+	assert(stl_int_map_contains(states->mStates, e->mState));
 	
-	DreamMugenState* newState = (DreamMugenState*)int_map_get(&states->mStates, e->mState);
+	DreamMugenState* newState = &states->mStates[e->mState];
 	resetStateControllers(newState);
 	
 	if (!e->mPlayer) return;

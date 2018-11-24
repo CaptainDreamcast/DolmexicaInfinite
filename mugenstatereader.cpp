@@ -7,8 +7,11 @@
 #include <prism/memoryhandler.h>
 #include <prism/mugendefreader.h>
 #include <prism/math.h>
+#include <prism/stlutil.h>
 
 #include "mugenstatecontrollers.h"
+
+using namespace std;
 
 static int isMugenStateDef(char* tName) {
 	char firstW[100];
@@ -222,48 +225,46 @@ static void handleSingleMugenStateDefElement(void* tCaller, char* tKey, void* tD
 	}
 }
 
-static void unloadSingleState(DreamMugenState* e);
-
 static void removeState(DreamMugenStates* tStates, int tState) {
-	DreamMugenState* e = (DreamMugenState*)int_map_get(&tStates->mStates, tState);
+	DreamMugenState* e = &tStates->mStates[tState];
 	// unloadSingleState(e); // TODO: reinsert
-	int_map_remove(&tStates->mStates, tState);
+	tStates->mStates.erase(tState);
 }
 
 static void handleMugenStateDef(DreamMugenStates* tStates, MugenDefScriptGroup* tGroup) {
 
-	DreamMugenState* state = (DreamMugenState*)allocMemory(sizeof(DreamMugenState));
+	DreamMugenState state;
 
 	char dummy[100];
-	sscanf(tGroup->mName, "%s %d", dummy, &state->mID);
-	gMugenStateDefParseState.mCurrentGroup = state->mID;
+	sscanf(tGroup->mName, "%s %d", dummy, &state.mID);
+	gMugenStateDefParseState.mCurrentGroup = state.mID;
 
-	state->mType = MUGEN_STATE_TYPE_STANDING;
-	state->mMoveType = MUGEN_STATE_MOVE_TYPE_IDLE;
-	state->mPhysics = MUGEN_STATE_PHYSICS_NONE;
-	state->mIsChangingAnimation = 0;
-	state->mIsSettingVelocity = 0;
-	state->mIsChangingControl = 0;
-	state->mIsChangingSpritePriority = 0;
-	state->mIsAddingPower = 0;
-	state->mDoesRequireJuggle = 0;
-	state->mDoHitDefinitionsPersist = 0;
-	state->mDoMoveHitInfosPersist = 0;
-	state->mDoesHitCountPersist = 0;
-	state->mHasFacePlayer2Info = 0;
-	state->mHasPriority = 0;
+	state.mType = MUGEN_STATE_TYPE_STANDING;
+	state.mMoveType = MUGEN_STATE_MOVE_TYPE_IDLE;
+	state.mPhysics = MUGEN_STATE_PHYSICS_NONE;
+	state.mIsChangingAnimation = 0;
+	state.mIsSettingVelocity = 0;
+	state.mIsChangingControl = 0;
+	state.mIsChangingSpritePriority = 0;
+	state.mIsAddingPower = 0;
+	state.mDoesRequireJuggle = 0;
+	state.mDoHitDefinitionsPersist = 0;
+	state.mDoMoveHitInfosPersist = 0;
+	state.mDoesHitCountPersist = 0;
+	state.mHasFacePlayer2Info = 0;
+	state.mHasPriority = 0;
 
-	state->mControllers = new_vector();
+	state.mControllers = new_vector();
 
 	MugenStateDefCaller caller;
-	caller.mState = state;
+	caller.mState = &state;
 	caller.mGroup = tGroup;
 	string_map_map(&tGroup->mElements, handleSingleMugenStateDefElement, &caller);
 
-	if (int_map_contains(&tStates->mStates, state->mID)) {
-		removeState(tStates, state->mID); // TODO
+	if (stl_int_map_contains(tStates->mStates, state.mID)) {
+		removeState(tStates, state.mID); // TODO
 	}
-	int_map_push_owned(&tStates->mStates, state->mID, state);
+	tStates->mStates[state.mID] = state;
 }
 
 static int isMugenStateController(char* tName) {
@@ -273,9 +274,7 @@ static int isMugenStateController(char* tName) {
 }
 
 static void handleMugenStateControllerInDefGroup(DreamMugenStates* tStates, MugenDefScriptGroup* tGroup) {
-	
-	assert(int_map_contains(&tStates->mStates, gMugenStateDefParseState.mCurrentGroup));
-	DreamMugenState* state = (DreamMugenState*)int_map_get(&tStates->mStates, gMugenStateDefParseState.mCurrentGroup);
+	DreamMugenState* state = &tStates->mStates[gMugenStateDefParseState.mCurrentGroup];
 
 	DreamMugenStateController* controller = parseDreamMugenStateControllerFromGroup(tGroup);
 
@@ -313,7 +312,7 @@ void loadDreamMugenStateDefinitionsFromFile(DreamMugenStates* tStates, char* tPa
 
 DreamMugenStates createEmptyMugenStates() {
 	DreamMugenStates ret;
-	ret.mStates = new_int_map();
+	ret.mStates = stl_new_map<int, DreamMugenState>();
 	return ret;
 }
 
@@ -466,39 +465,38 @@ static void unloadSingleController(void* tCaller, void* tData) {
 	unloadDreamMugenStateController(e);
 }
 
-static void unloadSingleState(DreamMugenState* e) {
-	if (e->mIsChangingAnimation) {
-		destroyDreamMugenAssignment(e->mAnimation);
+static void unloadSingleState(DreamMugenState& e) {
+	if (e.mIsChangingAnimation) {
+		destroyDreamMugenAssignment(e.mAnimation);
 	}
-	if (e->mIsSettingVelocity) {
-		destroyDreamMugenAssignment(e->mVelocity);
+	if (e.mIsSettingVelocity) {
+		destroyDreamMugenAssignment(e.mVelocity);
 	}
-	if (e->mIsChangingControl) {
-		destroyDreamMugenAssignment(e->mControl);
+	if (e.mIsChangingControl) {
+		destroyDreamMugenAssignment(e.mControl);
 	}
-	if (e->mIsChangingSpritePriority) {
-		destroyDreamMugenAssignment(e->mSpritePriority);
+	if (e.mIsChangingSpritePriority) {
+		destroyDreamMugenAssignment(e.mSpritePriority);
 	}
-	if (e->mIsAddingPower) {
-		destroyDreamMugenAssignment(e->mPowerAdd);
+	if (e.mIsAddingPower) {
+		destroyDreamMugenAssignment(e.mPowerAdd);
 	}
-	if (e->mDoesRequireJuggle) {
-		destroyDreamMugenAssignment(e->mJuggleRequired);
+	if (e.mDoesRequireJuggle) {
+		destroyDreamMugenAssignment(e.mJuggleRequired);
 	}
-	if (e->mHasFacePlayer2Info) {
-		destroyDreamMugenAssignment(e->mDoesFacePlayer2);
+	if (e.mHasFacePlayer2Info) {
+		destroyDreamMugenAssignment(e.mDoesFacePlayer2);
 	}
-	if (e->mHasPriority) {
-		destroyDreamMugenAssignment(e->mPriority);
+	if (e.mHasPriority) {
+		destroyDreamMugenAssignment(e.mPriority);
 	}
 
-	vector_map(&e->mControllers, unloadSingleController, NULL);
-	delete_vector(&e->mControllers);
+	vector_map(&e.mControllers, unloadSingleController, NULL);
+	delete_vector(&e.mControllers);
 }
 
-static int unloadSingleStateCB(void* tCaller, void* tData) {
+static int unloadSingleStateCB(void* tCaller, DreamMugenState& e) {
 	(void)tCaller;
-	DreamMugenState* e = (DreamMugenState*)tData;
 
 	unloadSingleState(e);
 
@@ -506,8 +504,8 @@ static int unloadSingleStateCB(void* tCaller, void* tData) {
 }
 
 static void unloadMugenStates(DreamMugenStates* tStates) {
-	int_map_remove_predicate(&tStates->mStates, unloadSingleStateCB, NULL);
-	delete_int_map(&tStates->mStates);
+	stl_int_map_remove_predicate(tStates->mStates, unloadSingleStateCB);
+	stl_delete_map(tStates->mStates);
 }
 
 void unloadDreamMugenConstantsFile(DreamMugenConstants * tConstants)

@@ -123,6 +123,7 @@ static void loadFightScreen() {
 }
 
 static void unloadFightScreen() {
+	unloadPlayers();
 	shutdownDreamMugenStoryStateControllerHandler();
 	shutdownDreamAssignmentEvaluator();
 	shutdownDreamAssignmentReader();

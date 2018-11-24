@@ -54,7 +54,7 @@ static struct {
 	int mIsLoading;
 
 	List mAllPlayers; // contains DreamPlayer
-} gData;
+} gPlayerDefinition;
 
 static void loadPlayerHeaderFromScript(DreamPlayerHeader* tHeader, MugenDefScript* tScript) {
 	getMugenDefStringOrDefault(tHeader->mConstants.mName, tScript, "Info", "name", "Character");
@@ -98,14 +98,13 @@ static void setPlayerExternalDependencies(DreamPlayer* tPlayer) {
 
 	Position p = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(tPlayer));
 	p.z = PLAYER_Z;
-	tPlayer->mAnimationID = addMugenAnimation(getMugenAnimation(&tPlayer->mHeader->mFiles.mAnimations, 0), gData.mIsLoading ? NULL : &tPlayer->mHeader->mFiles.mSprites, p);
+	tPlayer->mAnimationID = addMugenAnimation(getMugenAnimation(&tPlayer->mHeader->mFiles.mAnimations, 0), gPlayerDefinition.mIsLoading ? NULL : &tPlayer->mHeader->mFiles.mSprites, p);
 	setMugenAnimationBasePosition(tPlayer->mAnimationID, getHandledPhysicsPositionReference(tPlayer->mPhysicsID));
 	setMugenAnimationCameraPositionReference(tPlayer->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationAttackCollisionActive(tPlayer->mAnimationID, getDreamPlayerAttackCollisionList(tPlayer), NULL, NULL, getPlayerHitDataReference(tPlayer));
 	setMugenAnimationPassiveCollisionActive(tPlayer->mAnimationID, getDreamPlayerPassiveCollisionList(tPlayer), playerHitCB, tPlayer, getPlayerHitDataReference(tPlayer));
 	tPlayer->mStateMachineID = registerDreamMugenStateMachine(&tPlayer->mHeader->mFiles.mConstants.mStates, tPlayer);
 }
-
 
 static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* tScript) {
 	char file[200];
@@ -155,7 +154,7 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	getMugenDefStringOrDefault(file, tScript, "Files", "anim", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
-	tPlayer->mHeader->mFiles.mAnimations = loadMugenAnimationFileWithMemoryStack(scriptPath, gData.mMemoryStack);
+	tPlayer->mHeader->mFiles.mAnimations = loadMugenAnimationFileWithMemoryStack(scriptPath, gPlayerDefinition.mMemoryStack);
 	malloc_stats();
 
 
@@ -309,7 +308,7 @@ static void loadPlayerShadow(DreamPlayer* p) {
 	Position pos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
 	pos.z = SHADOW_Z;
 	p->mShadow.mShadowPosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
-	p->mShadow.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mHeader->mFiles.mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), gData.mIsLoading ? NULL : &p->mHeader->mFiles.mSprites, pos);
+	p->mShadow.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mHeader->mFiles.mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), gPlayerDefinition.mIsLoading ? NULL : &p->mHeader->mFiles.mSprites, pos);
 	setMugenAnimationBasePosition(p->mShadow.mAnimationID, &p->mShadow.mShadowPosition);
 	setMugenAnimationCameraPositionReference(p->mShadow.mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationDrawScale(p->mShadow.mAnimationID, makePosition(1, -getDreamStageShadowScaleY(), 1));
@@ -324,7 +323,7 @@ static void loadPlayerReflection(DreamPlayer* p) {
 	Position pos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(p));
 	pos.z = REFLECTION_Z;
 	p->mReflection.mPosition = *getHandledPhysicsPositionReference(p->mPhysicsID);
-	p->mReflection.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mHeader->mFiles.mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), gData.mIsLoading ? NULL : &p->mHeader->mFiles.mSprites, pos);
+	p->mReflection.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mHeader->mFiles.mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), gPlayerDefinition.mIsLoading ? NULL : &p->mHeader->mFiles.mSprites, pos);
 
 	setMugenAnimationBasePosition(p->mReflection.mAnimationID, &p->mReflection.mPosition);
 	setMugenAnimationCameraPositionReference(p->mReflection.mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
@@ -335,7 +334,7 @@ static void loadPlayerReflection(DreamPlayer* p) {
 }
 
 static void loadPlayerDebug(DreamPlayer* p) {
-	setMugenAnimationCollisionDebug(p->mAnimationID, gData.mIsCollisionDebugActive);
+	setMugenAnimationCollisionDebug(p->mAnimationID, gPlayerDefinition.mIsCollisionDebugActive);
 
 	char text[2];
 	text[0] = '\0';
@@ -360,24 +359,24 @@ static void loadSinglePlayerFromMugenDefinition(DreamPlayer* p)
 }
 
 void loadPlayers(MemoryStack* tMemoryStack) {
-	gData.mIsLoading = 1;
+	gPlayerDefinition.mIsLoading = 1;
 
-	gData.mAllPlayers = new_list();
-	list_push_back(&gData.mAllPlayers, &gData.mPlayers[0]);
-	list_push_back(&gData.mAllPlayers, &gData.mPlayers[1]);
+	gPlayerDefinition.mAllPlayers = new_list();
+	list_push_back(&gPlayerDefinition.mAllPlayers, &gPlayerDefinition.mPlayers[0]);
+	list_push_back(&gPlayerDefinition.mAllPlayers, &gPlayerDefinition.mPlayers[1]);
 
-	gData.mMemoryStack = tMemoryStack;
+	gPlayerDefinition.mMemoryStack = tMemoryStack;
 	int i = 0;
 	for (i = 0; i < 2; i++) {
-		gData.mPlayers[i].mHeader = &gData.mPlayerHeader[i];
-		gData.mPlayers[i].mRoot = &gData.mPlayers[i];
-		gData.mPlayers[i].mOtherPlayer = &gData.mPlayers[i ^ 1];
-		gData.mPlayers[i].mRootID = i;
-		gData.mPlayers[i].mControllerID = i; // TODO: remove
-		loadSinglePlayerFromMugenDefinition(&gData.mPlayers[i]);
+		gPlayerDefinition.mPlayers[i].mHeader = &gPlayerDefinition.mPlayerHeader[i];
+		gPlayerDefinition.mPlayers[i].mRoot = &gPlayerDefinition.mPlayers[i];
+		gPlayerDefinition.mPlayers[i].mOtherPlayer = &gPlayerDefinition.mPlayers[i ^ 1];
+		gPlayerDefinition.mPlayers[i].mRootID = i;
+		gPlayerDefinition.mPlayers[i].mControllerID = i; // TODO: remove
+		loadSinglePlayerFromMugenDefinition(&gPlayerDefinition.mPlayers[i]);
 	}
 
-	gData.mIsLoading = 0;
+	gPlayerDefinition.mIsLoading = 0;
 }
 
 static void loadSinglePlayerSprites(DreamPlayer* tPlayer) {
@@ -394,7 +393,7 @@ static void loadSinglePlayerSprites(DreamPlayer* tPlayer) {
 void loadPlayerSprites() {
 	int i;
 	for (i = 0; i < 2; i++) {
-		loadSinglePlayerSprites(&gData.mPlayers[i]);
+		loadSinglePlayerSprites(&gPlayerDefinition.mPlayers[i]);
 	}
 }
 
@@ -447,13 +446,19 @@ static void unloadSinglePlayer(DreamPlayer* p, DreamPlayerHeader* tHeader) {
 	unloadPlayerFiles(tHeader);
 }
 
+static void unloadPlayerHeader(int i) {
+	gPlayerDefinition.mPlayerHeader[i].mFiles.mConstants.mStates.mStates = std::map<int, DreamMugenState>();
+
+}
+
 void unloadPlayers() {
 	int i;
 	for (i = 0; i < 2; i++) {
-		unloadSinglePlayer(&gData.mPlayers[i], &gData.mPlayerHeader[i]);
+		unloadPlayerHeader(i);
+		//unloadSinglePlayer(&gPlayerDefinition.mPlayers[i], &gPlayerDefinition.mPlayerHeader[i]);
 	}
 
-	delete_list(&gData.mAllPlayers);
+	//delete_list(&gPlayerDefinition.mAllPlayers);
 }
 
 
@@ -475,8 +480,8 @@ static void resetSinglePlayer(DreamPlayer* p) {
 
 void resetPlayers()
 {
-	resetSinglePlayer(&gData.mPlayers[0]);
-	resetSinglePlayer(&gData.mPlayers[1]);
+	resetSinglePlayer(&gPlayerDefinition.mPlayers[0]);
+	resetSinglePlayer(&gPlayerDefinition.mPlayers[1]);
 	removeAllExplods();
 }
 
@@ -490,8 +495,8 @@ static void resetSinglePlayerEntirely(DreamPlayer* p) {
 void resetPlayersEntirely()
 {
 	resetPlayers();
-	resetSinglePlayerEntirely(&gData.mPlayers[0]);
-	resetSinglePlayerEntirely(&gData.mPlayers[1]);
+	resetSinglePlayerEntirely(&gPlayerDefinition.mPlayers[0]);
+	resetSinglePlayerEntirely(&gPlayerDefinition.mPlayers[1]);
 }
 
 static int isPlayerGuarding(DreamPlayer* p);
@@ -958,7 +963,7 @@ static void updateSingleProjectileCB(void* tCaller, void* tData) {
 }
 
 static void updatePlayerTrainingMode(DreamPlayer* p) {
-	if (!gData.mIsInTrainingMode) return;
+	if (!gPlayerDefinition.mIsInTrainingMode) return;
 	if (!getPlayerControl(p)) return;
 
 	addPlayerLife(p, 3);
@@ -966,7 +971,7 @@ static void updatePlayerTrainingMode(DreamPlayer* p) {
 }
 
 static void updatePlayerDebug(DreamPlayer* p) {
-	if (!gData.mIsCollisionDebugActive) return;
+	if (!gPlayerDefinition.mIsCollisionDebugActive) return;
 
 	double sx = getPlayerScreenPositionX(p, getPlayerCoordinateP(p));
 	double sy = getPlayerScreenPositionY(p, getPlayerCoordinateP(p));
@@ -1041,7 +1046,7 @@ void updatePlayers()
 {
 	int i;
 	for (i = 0; i < 2; i++) {
-		updateSinglePlayer(&gData.mPlayers[i]);
+		updateSinglePlayer(&gPlayerDefinition.mPlayers[i]);
 	}
 
 	updatePushFlags();
@@ -1086,7 +1091,7 @@ static void updatePlayersPreStateMachine(void* tData) {
 	(void)tData;
 	int i;
 	for (i = 0; i < 2; i++) {
-		updateSinglePlayerPreStateMachine(&gData.mPlayers[i]);
+		updateSinglePlayerPreStateMachine(&gPlayerDefinition.mPlayers[i]);
 	}
 }
 
@@ -1133,11 +1138,11 @@ static void drawSinglePlayer(DreamPlayer* p) {
 }
 
 void drawPlayers() {
-	if (!gData.mIsCollisionDebugActive) return;
+	if (!gPlayerDefinition.mIsCollisionDebugActive) return;
 
 	int i;
 	for (i = 0; i < 2; i++) {
-		drawSinglePlayer(&gData.mPlayers[i]);
+		drawSinglePlayer(&gPlayerDefinition.mPlayers[i]);
 	}
 }
 
@@ -1603,22 +1608,22 @@ void playerHitCB(void* tData, void* tHitData)
 
 void setPlayerDefinitionPath(int i, char * tDefinitionPath)
 {
-	strcpy(gData.mPlayerHeader[i].mFiles.mDefinitionPath, tDefinitionPath);
+	strcpy(gPlayerDefinition.mPlayerHeader[i].mFiles.mDefinitionPath, tDefinitionPath);
 }
 
 void getPlayerDefinitionPath(char* tDst, int i)
 {
-	strcpy(tDst, gData.mPlayerHeader[i].mFiles.mDefinitionPath);
+	strcpy(tDst, gPlayerDefinition.mPlayerHeader[i].mFiles.mDefinitionPath);
 }
 
 void setPlayerPreferredPalette(int i, int tPalette)
 {
-	gData.mPlayers[i].mPreferredPalette = tPalette;
+	gPlayerDefinition.mPlayers[i].mPreferredPalette = tPalette;
 }
 
 DreamPlayer * getRootPlayer(int i)
 {
-	return &gData.mPlayers[i];
+	return &gPlayerDefinition.mPlayers[i];
 }
 
 DreamPlayer * getPlayerRoot(DreamPlayer * p)
@@ -2764,7 +2769,7 @@ void setPlayerUnSuperPaused(DreamPlayer* p)
 } 
 
 static void setPlayerDead(DreamPlayer* p) {
-	if (gData.mIsInTrainingMode) return;
+	if (gPlayerDefinition.mIsInTrainingMode) return;
 	if (!p->mIsAlive) return;
 
 	p->mIsAlive = 0;
@@ -2807,14 +2812,14 @@ int getPlayerTargetAmountWithID(DreamPlayer* p, int tID)
 }
 
 DreamPlayer* getPlayerByIndex(int i) {
-	i = min(i, list_size(&gData.mAllPlayers) - 1);
-	DreamPlayer* p = (DreamPlayer*)list_get(&gData.mAllPlayers, i);
+	i = min(i, list_size(&gPlayerDefinition.mAllPlayers) - 1);
+	DreamPlayer* p = (DreamPlayer*)list_get(&gPlayerDefinition.mAllPlayers, i);
 	return p;
 }
 
 int getTotalPlayerAmount()
 {
-	return list_size(&gData.mAllPlayers);
+	return list_size(&gPlayerDefinition.mAllPlayers);
 }
 
 int getPlayerHelperAmount(DreamPlayer* p)
@@ -3208,8 +3213,8 @@ static void increaseSinglePlayerRoundsExisted(DreamPlayer * p)
 
 void increasePlayerRoundsExisted()
 {
-	increaseSinglePlayerRoundsExisted(&gData.mPlayers[0]);
-	increaseSinglePlayerRoundsExisted(&gData.mPlayers[1]);
+	increaseSinglePlayerRoundsExisted(&gPlayerDefinition.mPlayers[0]);
+	increaseSinglePlayerRoundsExisted(&gPlayerDefinition.mPlayers[1]);
 }
 
 
@@ -3371,7 +3376,7 @@ int getPlayerAILevel(DreamPlayer* p)
 }
 
 void setPlayerStartLifePercentage(int tIndex, double tPercentage) {
-	gData.mPlayers[tIndex].mStartLifePercentage = tPercentage;
+	gPlayerDefinition.mPlayers[tIndex].mStartLifePercentage = tPercentage;
 }
 
 double getPlayerLifePercentage(DreamPlayer* p) {
@@ -3590,7 +3595,7 @@ DreamPlayer * clonePlayerAsHelper(DreamPlayer * p)
 	helper->mParent = p;
 	helper->mIsHelper = 1;
 	helper->mHelperIDInParent = list_push_back(&p->mHelpers, helper);
-	helper->mHelperIDInRoot = list_push_back(&gData.mAllPlayers, helper);
+	helper->mHelperIDInRoot = list_push_back(&gPlayerDefinition.mAllPlayers, helper);
 
 	return helper;
 }
@@ -3653,7 +3658,7 @@ void destroyPlayer(DreamPlayer * p) // TODO: rename
 
 	printf("destroy %d %d\n", p->mRootID, p->mID);
 
-	list_remove(&gData.mAllPlayers, p->mHelperIDInRoot);
+	list_remove(&gPlayerDefinition.mAllPlayers, p->mHelperIDInRoot);
 	removePlayerBoundHelpers(p);
 	movePlayerHelpersToParent(p);
 	destroyGeneralPlayer(p);
@@ -4182,17 +4187,17 @@ int isPlayerAtFullLife(DreamPlayer * p)
 
 void setPlayersToTrainingMode()
 {
-	gData.mIsInTrainingMode = 1;
+	gPlayerDefinition.mIsInTrainingMode = 1;
 }
 
 void setPlayersToRealFightMode()
 {
-	gData.mIsInTrainingMode = 0;
+	gPlayerDefinition.mIsInTrainingMode = 0;
 }
 
 int isPlayer(DreamPlayer * p)
 {
-	return list_contains(&gData.mAllPlayers, p);
+	return list_contains(&gPlayerDefinition.mAllPlayers, p);
 }
 
 int isPlayerTargetValid(DreamPlayer* p) {
@@ -4200,15 +4205,15 @@ int isPlayerTargetValid(DreamPlayer* p) {
 }
 
 int isPlayerCollisionDebugActive() {
-	return gData.mIsCollisionDebugActive;
+	return gPlayerDefinition.mIsCollisionDebugActive;
 }
 
 static void setPlayerCollisionDebugRecursiveCB(void* tCaller, void* tData) {
 	(void)tCaller;
 	DreamPlayer* p = (DreamPlayer*)tData;
-	setMugenAnimationCollisionDebug(p->mAnimationID, gData.mIsCollisionDebugActive);
+	setMugenAnimationCollisionDebug(p->mAnimationID, gPlayerDefinition.mIsCollisionDebugActive);
 
-	if (!gData.mIsCollisionDebugActive) {
+	if (!gPlayerDefinition.mIsCollisionDebugActive) {
 		char text[3];
 		text[0] = '\0';
 		changeMugenText(p->mDebug.mCollisionTextID, text);
@@ -4216,8 +4221,8 @@ static void setPlayerCollisionDebugRecursiveCB(void* tCaller, void* tData) {
 }
 
 void setPlayerCollisionDebug(int tIsActive) {
-	gData.mIsCollisionDebugActive = tIsActive;
-	list_map(&gData.mAllPlayers, setPlayerCollisionDebugRecursiveCB, NULL);
+	gPlayerDefinition.mIsCollisionDebugActive = tIsActive;
+	list_map(&gPlayerDefinition.mAllPlayers, setPlayerCollisionDebugRecursiveCB, NULL);
 }
 
 void turnPlayerTowardsOtherPlayer(DreamPlayer* p) {

@@ -1,6 +1,7 @@
 #pragma once
 
-#include <prism/datastructures.h>
+#include <map>
+
 #include <prism/animation.h>
 
 #include "mugenassignment.h"
@@ -294,7 +295,7 @@ typedef struct {
 } DreamMugenState;
 
 typedef struct {
-	IntMap mStates;
+	std::map<int, DreamMugenState> mStates;
 } DreamMugenStates;
 
 typedef struct {
