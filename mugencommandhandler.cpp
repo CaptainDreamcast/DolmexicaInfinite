@@ -22,7 +22,7 @@ typedef struct {
 } MugenCommandState;
 
 typedef struct {
-	StringMap mStates;
+	map<string, MugenCommandState> mStates;
 } MugenCommandStates;
 
 typedef struct {
@@ -39,7 +39,7 @@ typedef struct {
 
 typedef struct {
 	DreamMugenCommands* tCommands;
-	MugenCommandStates* tStates;
+	MugenCommandStates tStates;
 	StringMap mInternalStates;
 
 	List mActiveCommands;
@@ -66,9 +66,8 @@ static void unloadSingleRegisteredCommand(void* tCaller, RegisteredMugenCommand&
 	(void)tCaller;
 	RegisteredMugenCommand* e = &tData;
 	delete_list(&e->mActiveCommands);
-	delete_string_map(&e->tStates->mStates);
+	stl_delete_map(e->tStates.mStates);
 	delete_string_map(&e->mInternalStates);
-	freeMemory(e->tStates);
 }
 
 static void unloadMugenCommandHandler(void* tData) {
@@ -81,18 +80,18 @@ static void addSingleMugenCommandState(RegisteredMugenCommand* tCaller, const st
 	(void)tData;
 	RegisteredMugenCommand* s = (RegisteredMugenCommand*)tCaller;
 
-	MugenCommandState* e = (MugenCommandState*)allocMemory(sizeof(MugenCommandState));
-	strcpy(e->mName, tKey.data());
-	e->mIsActive = 0;
-	string_map_push_owned(&s->tStates->mStates, e->mName, e);
+	MugenCommandState e;
+	strcpy(e.mName, tKey.data());
+	e.mIsActive = 0;
+	s->tStates.mStates[tKey] = e;
 	
 	InternalMugenCommandState* internalState = (InternalMugenCommandState*)allocMemory(sizeof(InternalMugenCommandState));
 	internalState->mIsBeingProcessed = 0;
-	string_map_push_owned(&s->mInternalStates, e->mName, internalState);
+	string_map_push_owned(&s->mInternalStates, e.mName, internalState);
 }
 
 static void setupMugenCommandStates(RegisteredMugenCommand* e) {
-	e->tStates->mStates = new_string_map();
+	stl_new_map(e->tStates.mStates);
 	stl_string_map_map(e->tCommands->mCommands, addSingleMugenCommandState, e);
 }
 
@@ -102,11 +101,9 @@ int registerDreamMugenCommands(DreamPlayer* tPlayer, DreamMugenCommands * tComma
 	RegisteredMugenCommand e;
 	e.mActiveCommands = new_list();
 	e.tCommands = tCommands;
-	e.tStates = (MugenCommandStates*)allocMemory(sizeof(MugenCommandStates));
 	e.mInternalStates = new_string_map();
 	e.mPlayer = tPlayer;
 	e.mIsFacingRight = 1;
-
 	setupMugenCommandStates(&e);
 
 	gMugenCommandHandler.mRegisteredCommands.push_back(e);
@@ -116,11 +113,12 @@ int registerDreamMugenCommands(DreamPlayer* tPlayer, DreamMugenCommands * tComma
 int isDreamCommandActive(int tID, const char * tCommandName)
 {
 	RegisteredMugenCommand* e = &gMugenCommandHandler.mRegisteredCommands[tID];
-	if (!string_map_contains(&e->tStates->mStates, tCommandName)) {
+	string key(tCommandName);
+	if (!stl_map_contains(e->tStates.mStates, key)) {
 		logWarningFormat("Querying nonexistant command name %s.", tCommandName);
 		return 0;
 	}
-	MugenCommandState* state = (MugenCommandState*)string_map_get(&e->tStates->mStates, tCommandName);
+	MugenCommandState* state = &e->tStates.mStates[key];
 	
 	return state->mIsActive;
 }
@@ -325,7 +323,7 @@ static void removeActiveCommand(ActiveMugenCommand* tCommand, RegisteredMugenCom
 }
 
 static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, const char* tName, Duration tBufferTime) {
-	MugenCommandState* state = (MugenCommandState*)string_map_get(&tRegisteredCommand->tStates->mStates, tName);
+	MugenCommandState* state = &tRegisteredCommand->tStates.mStates[tName];
 	state->mIsActive = 1;
 	state->mNow = 0;
 	state->mBufferTime = tBufferTime;
@@ -446,10 +444,10 @@ static void updateStaticMugenCommands(RegisteredMugenCommand* tCommand) {
 	stl_string_map_map(tCommand->tCommands->mCommands, updateSingleStaticMugenCommand, tCommand);
 }
 
-static void updateSingleCommandState(void* tCaller, char* tKey, void* tData) {
+static void updateSingleCommandState(void* tCaller, const string& tKey, MugenCommandState& tData) {
 	(void)tCaller;
 	(void)tKey;
-	MugenCommandState* state = (MugenCommandState*)tData;
+	MugenCommandState* state = &tData;
 	if (!state->mIsActive) return;
 
 	if (handleDurationAndCheckIfOver(&state->mNow, state->mBufferTime)) {
@@ -458,7 +456,7 @@ static void updateSingleCommandState(void* tCaller, char* tKey, void* tData) {
 }
 
 static void updateCommandStates(RegisteredMugenCommand* tCommand) {
-	string_map_map(&tCommand->tStates->mStates, updateSingleCommandState, NULL);
+	stl_string_map_map(tCommand->tStates.mStates, updateSingleCommandState);
 }
 
 static void updateSingleInputMaskEntry(int i, uint32_t tMask, int tHoldValue) {
