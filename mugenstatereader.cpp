@@ -261,7 +261,7 @@ static void handleMugenStateDef(DreamMugenStates* tStates, MugenDefScriptGroup* 
 	caller.mGroup = tGroup;
 	string_map_map(&tGroup->mElements, handleSingleMugenStateDefElement, &caller);
 
-	if (stl_int_map_contains(tStates->mStates, state.mID)) {
+	if (stl_map_contains(tStates->mStates, state.mID)) {
 		removeState(tStates, state.mID); // TODO
 	}
 	tStates->mStates[state.mID] = state;
@@ -312,7 +312,7 @@ void loadDreamMugenStateDefinitionsFromFile(DreamMugenStates* tStates, char* tPa
 
 DreamMugenStates createEmptyMugenStates() {
 	DreamMugenStates ret;
-	ret.mStates.clear();
+	stl_new_map(ret.mStates);
 	return ret;
 }
 
@@ -505,7 +505,7 @@ static int unloadSingleStateCB(void* tCaller, DreamMugenState& e) {
 
 static void unloadMugenStates(DreamMugenStates* tStates) {
 	stl_int_map_remove_predicate(tStates->mStates, unloadSingleStateCB);
-	tStates->mStates.clear();
+	stl_delete_map(tStates->mStates);
 }
 
 void unloadDreamMugenConstantsFile(DreamMugenConstants * tConstants)

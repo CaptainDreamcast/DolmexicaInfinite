@@ -4,11 +4,13 @@
 #include <assert.h>
 #include <string.h>
 
+#include <prism/stlutil.h>
 #include <prism/system.h>
 #include <prism/log.h>
 #include <prism/memoryhandler.h>
 #include <prism/mugendefreader.h>
 
+using namespace std;
 
 static struct {
 	int mDefaultTime;
@@ -318,22 +320,22 @@ static void addCallerToExistingCommand(DreamMugenCommand* tCommand, CommandCalle
 	vector_push_back_owned(&tCommand->mInputs, input);
 }
 
-static void addEmptyCommandToCommands(DreamMugenCommands* tCommands, char* tName) {
-	DreamMugenCommand* e = (DreamMugenCommand*)allocMemory(sizeof(DreamMugenCommand));
-	e->mInputs = new_vector();
-
-	assert(!string_map_contains(&tCommands->mCommands, tName));
-	string_map_push_owned(&tCommands->mCommands, tName, e);
+static void addEmptyCommandToCommands(DreamMugenCommands* tCommands, string tKey) {
+	DreamMugenCommand e;
+	e.mInputs = new_vector();
+	assert(!stl_map_contains(tCommands->mCommands, tKey));
+	tCommands->mCommands[tKey] = e;
 }
 
 static void addCallerToCommands(DreamMugenCommands* tCommands, CommandCaller* tCaller) {
-	if (!string_map_contains(&tCommands->mCommands, tCaller->mName)) {
-		addEmptyCommandToCommands(tCommands, tCaller->mName);
+	string key(tCaller->mName);
+
+	if (!stl_map_contains(tCommands->mCommands, key)) {
+		addEmptyCommandToCommands(tCommands, key);
 	}
+	assert(stl_map_contains(tCommands->mCommands, key));
 
-	assert(string_map_contains(&tCommands->mCommands, tCaller->mName));
-
-	DreamMugenCommand* command = (DreamMugenCommand*)string_map_get(&tCommands->mCommands, tCaller->mName);
+	DreamMugenCommand* command = &tCommands->mCommands[key]; 
 	addCallerToExistingCommand(command, tCaller);
 
 }
@@ -388,7 +390,7 @@ static void loadMugenCommandsFromDefScript(DreamMugenCommands* tCommands, MugenD
 
 static DreamMugenCommands makeEmptyMugenCommands() {
 	DreamMugenCommands ret;
-	ret.mCommands = new_string_map();
+	stl_new_map(ret.mCommands);
 	return ret;
 }
 
@@ -439,16 +441,16 @@ static void unloadSingleInput(void* tCaller, void* tData) {
 	delete_vector(&e->mInputSteps);
 }
 
-static void unloadSingleCommand(void* tCaller, char* tKey, void* tData) {
+static void unloadSingleCommand(void* tCaller, const string& tKey, DreamMugenCommand& tData) {
 	(void)tCaller;
 	(void)tKey;
-	DreamMugenCommand* e = (DreamMugenCommand*)tData;
+	DreamMugenCommand* e = &tData;
 	vector_map(&e->mInputs, unloadSingleInput, NULL);
 	delete_vector(&e->mInputs);
 }
 
 void unloadDreamMugenCommandFile(DreamMugenCommands * tCommands)
 {
-	string_map_map(&tCommands->mCommands, unloadSingleCommand, NULL);
-	delete_string_map(&tCommands->mCommands);
+	stl_string_map_map(tCommands->mCommands, unloadSingleCommand);
+	stl_delete_map(tCommands->mCommands);
 }

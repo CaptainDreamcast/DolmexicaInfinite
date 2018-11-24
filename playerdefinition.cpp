@@ -433,16 +433,16 @@ static void unloadPlayerState(DreamPlayer* p) {
 }
 
 static void unloadPlayerFiles(DreamPlayerHeader* tHeader) {
-	unloadDreamMugenConstantsFile(&tHeader->mFiles.mConstants);
+	//unloadDreamMugenConstantsFile(&tHeader->mFiles.mConstants);
 	unloadDreamMugenCommandFile(&tHeader->mFiles.mCommands);
-	unloadMugenAnimationFile(&tHeader->mFiles.mAnimations);
-	unloadMugenSpriteFile(&tHeader->mFiles.mSprites);
-	unloadMugenSoundFile(&tHeader->mFiles.mSounds);
+	//unloadMugenAnimationFile(&tHeader->mFiles.mAnimations);
+	//unloadMugenSpriteFile(&tHeader->mFiles.mSprites);
+	//unloadMugenSoundFile(&tHeader->mFiles.mSounds);
 
 }
 
 static void unloadSinglePlayer(DreamPlayer* p, DreamPlayerHeader* tHeader) {
-	unloadPlayerState(p);
+	//unloadPlayerState(p);
 	unloadPlayerFiles(tHeader);
 }
 
@@ -455,7 +455,7 @@ void unloadPlayers() {
 	int i;
 	for (i = 0; i < 2; i++) {
 		unloadPlayerHeader(i);
-		//unloadSinglePlayer(&gPlayerDefinition.mPlayers[i], &gPlayerDefinition.mPlayerHeader[i]);
+		unloadSinglePlayer(&gPlayerDefinition.mPlayers[i], &gPlayerDefinition.mPlayerHeader[i]);
 	}
 
 	//delete_list(&gPlayerDefinition.mAllPlayers);
@@ -2714,7 +2714,7 @@ int isPlayerPaused(DreamPlayer* p)
 static void pausePlayer(DreamPlayer* p) {
 	if (isPlayerPaused(p)) return;
 
-	pausePhysics(); // TODO: fix
+	pauseHandledPhysics(p->mPhysicsID);
 	pauseMugenAnimation(p->mAnimationID);
 	pauseMugenAnimation(p->mShadow.mAnimationID);
 	pauseMugenAnimation(p->mReflection.mAnimationID);
@@ -2724,7 +2724,7 @@ static void pausePlayer(DreamPlayer* p) {
 static void unpausePlayer(DreamPlayer* p) {
 	if (isPlayerPaused(p)) return;
 
-	resumePhysics(); // TODO: fix
+	resumeHandledPhysics(p->mPhysicsID);
 	unpauseMugenAnimation(p->mAnimationID);
 	unpauseMugenAnimation(p->mShadow.mAnimationID);
 	unpauseMugenAnimation(p->mReflection.mAnimationID);

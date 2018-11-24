@@ -4,8 +4,11 @@
 
 #include <prism/datastructures.h>
 #include <prism/math.h>
+#include <prism/stlutil.h>
 
 #include "mugencommandhandler.h"
+
+using  namespace std;
 
 typedef struct {
 	DreamPlayer* mPlayer;
@@ -18,38 +21,38 @@ typedef struct {
 	int mIsGuardingLogicActive;
 	int mWasGuardingSuccessful;
 
-	Vector mCommandNames; // contains char*
+	vector<string> mCommandNames; 
 } PlayerAI;
 
 static struct {
-	List mHandledPlayers; // contains DreamPlayer AI
+	list<PlayerAI> mHandledPlayers; 
 
-} gData;
+} gAI;
 
 static void loadAIHandler(void* tData) {
 	(void)tData;
-	gData.mHandledPlayers = new_list();
+	stl_new_list(gAI.mHandledPlayers);
 }
 
-static int unloadSingleHandledPlayer(void* tCaller, void* tData) {
+static int unloadSingleHandledPlayer(void* tCaller, PlayerAI& tData) {
 	(void)tCaller;
-	PlayerAI* e = (PlayerAI*)tData;
-	delete_vector(&e->mCommandNames);
+	PlayerAI* e = &tData;
+	stl_delete_vector(e->mCommandNames);
 	return 1;
 }
 
 static void unloadAIHandler(void* tData) {
 	(void)tData;
-	list_remove_predicate(&gData.mHandledPlayers, unloadSingleHandledPlayer, NULL);
-	delete_list(&gData.mHandledPlayers);
+	stl_list_remove_predicate(gAI.mHandledPlayers, unloadSingleHandledPlayer);
+	stl_delete_list(gAI.mHandledPlayers);
 }
 
 static void setRandomPlayerCommandActive(PlayerAI* e) {
-	int i = randfromInteger(0, vector_size(&e->mCommandNames) - 1);
+	int i = randfromInteger(0, e->mCommandNames.size() - 1);
 
-	char* name = (char*)vector_get(&e->mCommandNames, i);
+	const string& name = e->mCommandNames[i];
 
-	setDreamPlayerCommandActiveForAI(e->mPlayer->mCommandID, name, 2);
+	setDreamPlayerCommandActiveForAI(e->mPlayer->mCommandID, name.data(), 2);
 }
 
 static void updateAIMovement(PlayerAI* e) {
@@ -95,9 +98,9 @@ static void updateAICommands(PlayerAI* e) {
 	}
 }
 
-static void updateSingleAI(void* tCaller, void* tData) {
+static void updateSingleAI(void* tCaller, PlayerAI& tData) {
 	(void)tCaller;
-	PlayerAI* e = (PlayerAI*)tData;
+	PlayerAI* e = &tData;
 
 	updateAIMovement(e);
 	updateAIGuarding(e);
@@ -107,31 +110,30 @@ static void updateSingleAI(void* tCaller, void* tData) {
 static void updateAIHandler(void* tData) {
 	(void)tData;
 
-	list_map(&gData.mHandledPlayers, updateSingleAI, NULL);
+	stl_list_map(gAI.mHandledPlayers, updateSingleAI);
 }
 
-static void insertSingleCommandName(void* tCaller, char* tKey, void* tData) {
+static void insertSingleCommandName(vector<string>* tCaller, const string& tKey, DreamMugenCommand& tData) {
 	(void)tData;
-	Vector* names = (Vector*)tCaller;
-	vector_push_back(names, tKey);
+	tCaller->push_back(tKey);
 }
 
 void setDreamAIActive(DreamPlayer * p)
 {
 	assert(getPlayerAILevel(p));
 
-	PlayerAI* e = (PlayerAI*)allocMemory(sizeof(PlayerAI));
-	e->mPlayer = p;
-	e->mRandomInputNow = 0;
-	e->mRandomInputDuration = 20;
-	e->mIsMoving = 0;
-	e->mIsGuardingLogicActive = 0;
-	e->mCommandNames = new_vector();
+	PlayerAI e;
+	e.mPlayer = p;
+	e.mRandomInputNow = 0;
+	e.mRandomInputDuration = 20;
+	e.mIsMoving = 0;
+	e.mIsGuardingLogicActive = 0;
+	e.mCommandNames.clear();
 
 	DreamMugenCommands* commands = &p->mHeader->mFiles.mCommands;
-	string_map_map(&commands->mCommands, insertSingleCommandName, &e->mCommandNames);
+	stl_string_map_map(commands->mCommands, insertSingleCommandName, &e.mCommandNames);
 
-	list_push_back_owned(&gData.mHandledPlayers, e);
+	gAI.mHandledPlayers.push_back(e);
 }
 
 ActorBlueprint getDreamAIHandler() {
