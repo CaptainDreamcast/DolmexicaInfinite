@@ -4,6 +4,7 @@
 
 #include <prism/mugendefreader.h>
 #include <prism/memorystack.h>
+#include <prism/stlutil.h>
 
 typedef enum {
 	MUGEN_ASSIGNMENT_TYPE_FIXED_BOOLEAN,
