@@ -1611,6 +1611,10 @@ void setDreamBarInvisibleForOneFrame()
 		setSingleUIComponentInvisibleForOneFrame(gData.mFaces[i].mFaceAnimationID);
 
 		setSingleUIComponentInvisibleForOneFrame(gData.mDisplayName[i].mBGAnimationID);
+
+		for (int j = 0; j < gData.mWinIcons[i].mIconAmount; j++) {
+			setSingleUIComponentInvisibleForOneFrame(gData.mWinIcons[i].mIconAnimationIDs[j]);
+		}
 		setSingleUITextInvisibleForOneFrame(gData.mDisplayName[i].mTextID);
 	}
 
