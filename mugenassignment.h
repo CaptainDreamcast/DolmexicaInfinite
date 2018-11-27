@@ -7,6 +7,20 @@
 #include <prism/stlutil.h>
 
 typedef enum {
+	MUGEN_ASSIGNMENT_RETURN_TYPE_STRING,
+	MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER,
+	MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT,
+	MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN,
+	MUGEN_ASSIGNMENT_RETURN_TYPE_BOTTOM,
+
+} AssignmentReturnType;
+
+typedef struct {
+	AssignmentReturnType mType;
+	char mData[100];
+} AssignmentReturnValue;
+
+typedef enum {
 	MUGEN_ASSIGNMENT_TYPE_FIXED_BOOLEAN,
 	MUGEN_ASSIGNMENT_TYPE_AND,
 	MUGEN_ASSIGNMENT_TYPE_OR,
@@ -19,6 +33,7 @@ typedef enum {
 	MUGEN_ASSIGNMENT_TYPE_NULL,
 	MUGEN_ASSIGNMENT_TYPE_NEGATION,
 	MUGEN_ASSIGNMENT_TYPE_VARIABLE,
+	MUGEN_ASSIGNMENT_TYPE_RAW_VARIABLE,
 	MUGEN_ASSIGNMENT_TYPE_NUMBER,
 	MUGEN_ASSIGNMENT_TYPE_FLOAT,
 	MUGEN_ASSIGNMENT_TYPE_STRING,
@@ -61,8 +76,14 @@ typedef struct {
 
 typedef struct {
 	uint8_t mType;
-	char* mName;
+	void* mFunc;
 } DreamMugenVariableAssignment;
+
+typedef struct {
+	uint8_t mType;
+	char* mName;
+} DreamMugenRawVariableAssignment;
+
 
 typedef struct {
 	uint8_t mType;
@@ -86,6 +107,12 @@ typedef struct {
 	uint8_t mType;
 	DreamMugenAssignment* a;
 } DreamMugenDependOnOneAssignment;
+
+typedef struct {
+	uint8_t mType;
+	void* mFunc;
+	DreamMugenAssignment* mIndex;
+} DreamMugenArrayAssignment;
 
 void setupDreamAssignmentReader(MemoryStack* tMemoryStack);
 void shutdownDreamAssignmentReader();

@@ -508,6 +508,7 @@ int getPlayerProjectileTimeSinceCancel(DreamPlayer* p, int tID);
 int getPlayerProjectileTimeSinceContact(DreamPlayer* p, int tID);
 int getPlayerProjectileTimeSinceGuarded(DreamPlayer* p, int tID);
 int getPlayerProjectileTimeSinceHit(DreamPlayer* p, int tID);
+int getPlayerProjectileHit(DreamPlayer* p, int tID);
 
 int getPlayerTimeLeftInHitPause(DreamPlayer* p);
 

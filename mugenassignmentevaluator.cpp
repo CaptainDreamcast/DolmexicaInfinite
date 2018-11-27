@@ -12,6 +12,7 @@
 #include <prism/log.h>
 #include <prism/system.h>
 #include <prism/math.h>
+#include <prism/stlutil.h>
 
 #include "gamelogic.h"
 #include "stage.h"
@@ -19,19 +20,7 @@
 #include "mugenexplod.h"
 #include "dolmexicastoryscreen.h"
 
-typedef enum {
-	ASSIGNMENT_RETURN_TYPE_STRING,
-	ASSIGNMENT_RETURN_TYPE_NUMBER,
-	ASSIGNMENT_RETURN_TYPE_FLOAT,
-	ASSIGNMENT_RETURN_TYPE_BOOLEAN,
-	ASSIGNMENT_RETURN_TYPE_BOTTOM,
-
-} AssignmentReturnType;
-
-typedef struct {
-	AssignmentReturnType mType;
-	char mData[100];
-} AssignmentReturnValue;
+using namespace std;
 
 typedef struct {
 	AssignmentReturnType mType;
@@ -66,6 +55,25 @@ typedef struct {
 typedef struct {
 	AssignmentReturnType mType;
 } AssignmentReturnBottom;
+
+
+typedef AssignmentReturnValue(*VariableFunction)(DreamPlayer*);
+typedef AssignmentReturnValue(*ArrayFunction)(DreamMugenAssignment**, DreamPlayer*, int*);
+typedef AssignmentReturnValue(*ComparisonFunction)(char*, AssignmentReturnValue, DreamPlayer*, int*);
+
+static struct {
+	map<string, VariableFunction> mVariables;
+	map<string, ArrayFunction> mArrays;
+	StringMap mComparisons; // contains ComparisonFunction
+} gVariableHandler;
+
+std::map<string, AssignmentReturnValue(*)(DreamPlayer*)>& getActiveMugenAssignmentVariableMap() {
+	return gVariableHandler.mVariables;
+}
+
+std::map<string, AssignmentReturnValue(*)(DreamMugenAssignment**, DreamPlayer*, int*)>& getActiveMugenAssignmentArrayMap() {
+	return gVariableHandler.mArrays;
+}
 
 static AssignmentReturnValue evaluateAssignmentInternal(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* oIsStatic);
 
@@ -114,22 +122,22 @@ static char* convertAssignmentReturnToAllocatedString(AssignmentReturnValue tAss
 	int valueI;
 	double valueF;
 	switch (tAssignmentReturn.mType) {
-	case ASSIGNMENT_RETURN_TYPE_STRING:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_STRING:
 		string = getStringAssignmentReturnValue(&tAssignmentReturn);
 		ret = copyToAllocatedString(string);
 		break;
-	case ASSIGNMENT_RETURN_TYPE_NUMBER:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER:
 		valueI = getNumberAssignmentReturnValue(tAssignmentReturn);
 		sprintf(buffer, "%d", valueI);
 		ret = copyToAllocatedString(buffer);
 		break;
-	case ASSIGNMENT_RETURN_TYPE_FLOAT:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT:
 		valueF = getFloatAssignmentReturnValue(tAssignmentReturn);
 		sprintf(buffer, "%f", valueF);
 		ret = copyToAllocatedString(buffer);
 		break;
 		ret = copyToAllocatedString(buffer);
-	case ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN:
 		valueI = getBooleanAssignmentReturnValue(tAssignmentReturn);
 		sprintf(buffer, "%d", valueI);
 		ret = copyToAllocatedString(buffer);
@@ -152,20 +160,20 @@ static int convertAssignmentReturnToBool(AssignmentReturnValue tAssignmentReturn
 	int valueI;
 	double valueF;
 	switch (tAssignmentReturn.mType) {
-	case ASSIGNMENT_RETURN_TYPE_STRING:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_STRING:
 		string = getStringAssignmentReturnValue(&tAssignmentReturn);
 		ret = strcmp("", string);
 		ret &= strcmp("0", string);
 		break;
-	case ASSIGNMENT_RETURN_TYPE_NUMBER:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER:
 		valueI = getNumberAssignmentReturnValue(tAssignmentReturn);
 		ret = valueI;
 		break;
-	case ASSIGNMENT_RETURN_TYPE_FLOAT:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT:
 		valueF = getFloatAssignmentReturnValue(tAssignmentReturn);
 		ret = (int)valueF;
 		break;
-	case ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN:
 		valueI = getBooleanAssignmentReturnValue(tAssignmentReturn);
 		ret = valueI;
 		break;
@@ -187,19 +195,19 @@ static int convertAssignmentReturnToNumber(AssignmentReturnValue tAssignmentRetu
 	int valueI;
 	double valueF;
 	switch (tAssignmentReturn.mType) {
-	case ASSIGNMENT_RETURN_TYPE_STRING:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_STRING:
 		string = getStringAssignmentReturnValue(&tAssignmentReturn);
 		ret = atoi(string);
 		break;
-	case ASSIGNMENT_RETURN_TYPE_NUMBER:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER:
 		valueI = getNumberAssignmentReturnValue(tAssignmentReturn);
 		ret = valueI;
 		break;
-	case ASSIGNMENT_RETURN_TYPE_FLOAT:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT:
 		valueF = getFloatAssignmentReturnValue(tAssignmentReturn);
 		ret = (int)valueF;
 		break;
-	case ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN:
 		valueI = getBooleanAssignmentReturnValue(tAssignmentReturn);
 		ret = valueI;
 		break;
@@ -220,19 +228,19 @@ static double convertAssignmentReturnToFloat(AssignmentReturnValue tAssignmentRe
 	int valueI;
 	double valueF;
 	switch (tAssignmentReturn.mType) {
-	case ASSIGNMENT_RETURN_TYPE_STRING:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_STRING:
 		string = getStringAssignmentReturnValue(&tAssignmentReturn);
 		ret = atof(string);
 		break;
-	case ASSIGNMENT_RETURN_TYPE_NUMBER:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER:
 		valueI = getNumberAssignmentReturnValue(tAssignmentReturn);
 		ret = valueI;
 		break;
-	case ASSIGNMENT_RETURN_TYPE_FLOAT:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT:
 		valueF = getFloatAssignmentReturnValue(tAssignmentReturn);
 		ret = valueF;
 		break;
-	case ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN:
 		valueI = getBooleanAssignmentReturnValue(tAssignmentReturn);
 		ret = valueI;
 		break;
@@ -250,7 +258,7 @@ static double convertAssignmentReturnToFloat(AssignmentReturnValue tAssignmentRe
 static AssignmentReturnValue makeBooleanAssignmentReturn(int tValue) {
 	AssignmentReturnValue val;
 	AssignmentReturnBoolean* ret = (AssignmentReturnBoolean*)&val;
-	ret->mType = ASSIGNMENT_RETURN_TYPE_BOOLEAN;
+	ret->mType = MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN;
 	ret->mBoolean = tValue;
 	return val;
 }
@@ -258,7 +266,7 @@ static AssignmentReturnValue makeBooleanAssignmentReturn(int tValue) {
 static AssignmentReturnValue makeNumberAssignmentReturn(int tValue) {
 	AssignmentReturnValue val;
 	AssignmentReturnNumber* ret = (AssignmentReturnNumber*)&val;
-	ret->mType = ASSIGNMENT_RETURN_TYPE_NUMBER;
+	ret->mType = MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER;
 	ret->mNumber = tValue;
 	return val;
 }
@@ -266,7 +274,7 @@ static AssignmentReturnValue makeNumberAssignmentReturn(int tValue) {
 static AssignmentReturnValue makeFloatAssignmentReturn(double tValue) {
 	AssignmentReturnValue val;
 	AssignmentReturnFloat* ret = (AssignmentReturnFloat*)&val;
-	ret->mType = ASSIGNMENT_RETURN_TYPE_FLOAT;
+	ret->mType = MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT;
 	ret->mFloat = tValue;
 	return val;
 }
@@ -274,7 +282,7 @@ static AssignmentReturnValue makeFloatAssignmentReturn(double tValue) {
 static AssignmentReturnValue makeStringAssignmentReturn(char* tValue) {
 	AssignmentReturnValue val;
 	AssignmentReturnString* ret = (AssignmentReturnString*)&val;
-	ret->mType = ASSIGNMENT_RETURN_TYPE_STRING;
+	ret->mType = MUGEN_ASSIGNMENT_RETURN_TYPE_STRING;
 	strcpy(ret->mString, tValue);
 	return val;
 }
@@ -282,7 +290,7 @@ static AssignmentReturnValue makeStringAssignmentReturn(char* tValue) {
 static AssignmentReturnValue makeBottomAssignmentReturn() {
 	AssignmentReturnValue val;
 	AssignmentReturnBottom* ret = (AssignmentReturnBottom*)&val;
-	ret->mType = ASSIGNMENT_RETURN_TYPE_BOTTOM;
+	ret->mType = MUGEN_ASSIGNMENT_RETURN_TYPE_BOTTOM;
 	return val;
 }
 
@@ -455,7 +463,7 @@ static AssignmentReturnValue evaluateAnimElemNumberAssignment(AssignmentReturnVa
 
 static AssignmentReturnValue evaluateAnimElemAssignment(AssignmentReturnValue tCommand, DreamPlayer* tPlayer, int* tIsStatic) {
 
-	if (tCommand.mType == ASSIGNMENT_RETURN_TYPE_STRING && strchr(getStringAssignmentReturnValue(&tCommand), ',')) {
+	if (tCommand.mType == MUGEN_ASSIGNMENT_RETURN_TYPE_STRING && strchr(getStringAssignmentReturnValue(&tCommand), ',')) {
 		return evaluateAnimElemVectorAssignment(tCommand, tPlayer, tIsStatic);
 	}
 	else {
@@ -490,7 +498,7 @@ static AssignmentReturnValue evaluateTimeModAssignment(AssignmentReturnValue tCo
 }
 
 static DreamPlayer* getPlayerFromFirstVectorPartOrNullIfNonexistant(AssignmentReturnValue a, DreamPlayer* tPlayer) {
-	if (a.mType != ASSIGNMENT_RETURN_TYPE_STRING) return NULL;
+	if (a.mType != MUGEN_ASSIGNMENT_RETURN_TYPE_STRING) return NULL;
 	char* test = getStringAssignmentReturnValue(&a);
 
 	char firstWord[100];
@@ -556,7 +564,7 @@ static AssignmentReturnValue evaluateTeamModeAssignment(AssignmentReturnValue tC
 }
 
 static int isRangeAssignmentReturn(AssignmentReturnValue ret) {
-	if (ret.mType != ASSIGNMENT_RETURN_TYPE_STRING) return 0;
+	if (ret.mType != MUGEN_ASSIGNMENT_RETURN_TYPE_STRING) return 0;
 	char* test = getStringAssignmentReturnValue(&ret);
 
 	return test[0] == '[' && test[1] == ' ';
@@ -582,9 +590,13 @@ static AssignmentReturnValue evaluateRangeComparisonAssignment(AssignmentReturnV
 }
 
 static int isFloatReturn(AssignmentReturnValue tReturn) {
-	return tReturn.mType == ASSIGNMENT_RETURN_TYPE_FLOAT;
+	return tReturn.mType == MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT;
 }
 
+static AssignmentReturnValue varFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic);
+static AssignmentReturnValue sysVarFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic);
+static AssignmentReturnValue fVarFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic); 
+static AssignmentReturnValue sysFVarFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic);
 
 static AssignmentReturnValue evaluateSetVariableAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* tIsStatic) {
 	DreamMugenDependOnTwoAssignment* varSetAssignment = (DreamMugenDependOnTwoAssignment*)*tAssignment;
@@ -593,40 +605,35 @@ static AssignmentReturnValue evaluateSetVariableAssignment(DreamMugenAssignment*
 		logWarningFormat("Incorrect varset type %d. Defaulting to bottom.", varSetAssignment->a->mType);
 		return makeBottomAssignmentReturn(); 
 	}
-	DreamMugenDependOnTwoAssignment* varArrayAccess = (DreamMugenDependOnTwoAssignment*)varSetAssignment->a;
-	AssignmentReturnValue a = evaluateAssignmentDependency(&varArrayAccess->a, tPlayer, tIsStatic);
-	int index = evaluateDreamAssignmentAndReturnAsInteger(&varArrayAccess->b, tPlayer);
+	DreamMugenArrayAssignment* varArrayAccess = (DreamMugenArrayAssignment*)varSetAssignment->a;
+	int index = evaluateDreamAssignmentAndReturnAsInteger(&varArrayAccess->mIndex, tPlayer);
 
-	char* test = convertAssignmentReturnToAllocatedString(a);
-	turnStringLowercase(test);
-
+	ArrayFunction func = (ArrayFunction)varArrayAccess->mFunc;
 	AssignmentReturnValue ret;
-	if (!strcmp("var", test)) {
+	if (func == varFunction) {
 		int value = evaluateDreamAssignmentAndReturnAsInteger(&varSetAssignment->b, tPlayer);
 		setPlayerVariable(tPlayer, index, value);
 		ret = makeNumberAssignmentReturn(value);
 	}
-	else if (!strcmp("fvar", test)) {
+	else if (func == fVarFunction) {
 		double value = evaluateDreamAssignmentAndReturnAsFloat(&varSetAssignment->b, tPlayer);
 		setPlayerFloatVariable(tPlayer, index, value);
 		ret = makeFloatAssignmentReturn(value);
 	}
-	else if (!strcmp("sysvar", test)) {
+	else if (func == sysVarFunction) {
 		int value = evaluateDreamAssignmentAndReturnAsInteger(&varSetAssignment->b, tPlayer);
 		setPlayerSystemVariable(tPlayer, index, value);
 		ret = makeNumberAssignmentReturn(value);
 	}
-	else if (!strcmp("sysfvar", test)) {
+	else if (func == sysFVarFunction) {
 		double value = evaluateDreamAssignmentAndReturnAsFloat(&varSetAssignment->b, tPlayer);
 		setPlayerSystemFloatVariable(tPlayer, index, value);
 		ret = makeFloatAssignmentReturn(value);
 	}
 	else {
-		logWarningFormat("Unrecognized varset name %s. Returning bottom.", a.mValue);
+		logWarningFormat("Unrecognized varset function %X. Returning bottom.", (void*)func);
 		ret = makeBottomAssignmentReturn(); 
 	}
-
-	freeMemory(test);
 
 	*tIsStatic = 0;
 	return ret;
@@ -820,7 +827,7 @@ int getProjectileIDFromAssignmentName(char* tName, char* tBaseName) {
 static AssignmentReturnValue evaluateProjAssignment(char* tName, char* tBaseName, AssignmentReturnValue tCommand, DreamPlayer* tPlayer, int(*tTimeFunc)(DreamPlayer*, int), int* tIsStatic) {
 	int projID = getProjectileIDFromAssignmentName(tName, tBaseName);
 
-	if (tCommand.mType == ASSIGNMENT_RETURN_TYPE_STRING && strchr(getStringAssignmentReturnValue(&tCommand), ',')) {
+	if (tCommand.mType == MUGEN_ASSIGNMENT_RETURN_TYPE_STRING && strchr(getStringAssignmentReturnValue(&tCommand), ',')) {
 		return evaluateProjVectorAssignment(tCommand, tPlayer, projID, tTimeFunc, tIsStatic);
 	}
 	else {
@@ -833,18 +840,7 @@ static int isProjAssignment(char* tName, char* tBaseName) {
 
 }
 
-typedef AssignmentReturnValue(*VariableFunction)(DreamPlayer*);
-typedef AssignmentReturnValue(*ArrayFunction)(DreamMugenDependOnTwoAssignment*, DreamPlayer*, int*);
-typedef AssignmentReturnValue(*ComparisonFunction)(char*, AssignmentReturnValue, DreamPlayer*, int*);
-
-static struct {
-	StringMap mVariables; // contains VariableFunction
-	StringMap mConstants; // contains VariableFunction
-	StringMap mArrays; // contains ArrayFunction
-	StringMap mComparisons; // contains ComparisonFunction
-} gVariableHandler;
-
-static int tryEvaluateVariableComparison(DreamMugenVariableAssignment* tVariableAssignment, AssignmentReturnValue* oRet, AssignmentReturnValue b, DreamPlayer* tPlayer, int* tIsStatic) {
+static int tryEvaluateVariableComparison(DreamMugenRawVariableAssignment* tVariableAssignment, AssignmentReturnValue* oRet, AssignmentReturnValue b, DreamPlayer* tPlayer, int* tIsStatic) {
 	char name[MUGEN_DEF_STRING_LENGTH];
 	strcpy(name, tVariableAssignment->mName);
 	turnStringLowercase(name);
@@ -852,7 +848,7 @@ static int tryEvaluateVariableComparison(DreamMugenVariableAssignment* tVariable
 	int hasReturn = 0;
 	if(!strcmp("command", name)) {
 		hasReturn = 1;
-		if(b.mType != ASSIGNMENT_RETURN_TYPE_STRING) {
+		if(b.mType != MUGEN_ASSIGNMENT_RETURN_TYPE_STRING) {
 			*oRet = makeBooleanAssignmentReturn(0);
 		} else {
 			char* comp = getStringAssignmentReturnValue(&b);
@@ -884,16 +880,16 @@ static int tryEvaluateVariableComparison(DreamMugenVariableAssignment* tVariable
 static AssignmentReturnValue evaluateComparisonAssignmentInternal(DreamMugenAssignment** mAssignment, AssignmentReturnValue b, DreamPlayer* tPlayer, int* tIsStatic) {
 	if ((*mAssignment)->mType == MUGEN_ASSIGNMENT_TYPE_NEGATION) {
 		DreamMugenDependOnOneAssignment* neg = (DreamMugenDependOnOneAssignment*)(*mAssignment);
-		if (neg->a->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE) {
-			DreamMugenVariableAssignment* negVar = (DreamMugenVariableAssignment*)neg->a;
+		if (neg->a->mType == MUGEN_ASSIGNMENT_TYPE_RAW_VARIABLE) {
+			DreamMugenRawVariableAssignment* negVar = (DreamMugenRawVariableAssignment*)neg->a;
 			AssignmentReturnValue retVal;
 			if (tryEvaluateVariableComparison(negVar, &retVal, b, tPlayer, tIsStatic)) {
 				return makeBooleanAssignmentReturn(!convertAssignmentReturnToBool(retVal));
 			}
 		}
 	}
-	else if ((*mAssignment)->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE) {
-		DreamMugenVariableAssignment* var = (DreamMugenVariableAssignment*)*mAssignment;
+	else if ((*mAssignment)->mType == MUGEN_ASSIGNMENT_TYPE_RAW_VARIABLE) {
+		DreamMugenRawVariableAssignment* var = (DreamMugenRawVariableAssignment*)*mAssignment;
 		AssignmentReturnValue retVal;
 		if (tryEvaluateVariableComparison(var, &retVal, b, tPlayer, tIsStatic)) {
 			return retVal;
@@ -1154,7 +1150,7 @@ static AssignmentReturnValue evaluateDivisionAssignment(DreamMugenAssignment** t
 }
 
 static int isSparkFileReturn(AssignmentReturnValue a) {
-	if (a.mType != ASSIGNMENT_RETURN_TYPE_STRING) return 0;
+	if (a.mType != MUGEN_ASSIGNMENT_RETURN_TYPE_STRING) return 0;
 
 	char* test = getStringAssignmentReturnValue(&a);
 	char firstW[200];
@@ -1292,7 +1288,7 @@ static AssignmentReturnValue evaluatePlayerVectorAssignment(AssignmentReturnValu
 		logWarning("Unable to evaluate player vector assignment with NULL. Defaulting to bottom."); // TODO: debug
 		return makeBottomAssignmentReturn(); 
 	}
-	if (tVectorAssignment->b->mType != MUGEN_ASSIGNMENT_TYPE_VARIABLE && tVectorAssignment->b->mType != MUGEN_ASSIGNMENT_TYPE_ARRAY) {
+	if (tVectorAssignment->b->mType != MUGEN_ASSIGNMENT_TYPE_VARIABLE && tVectorAssignment->b->mType != MUGEN_ASSIGNMENT_TYPE_RAW_VARIABLE && tVectorAssignment->b->mType != MUGEN_ASSIGNMENT_TYPE_ARRAY) {
 		logWarningFormat("Invalid player vector assignment type %d. Defaulting to bottom.", tVectorAssignment->b->mType);
 		return makeBottomAssignmentReturn();
 	}
@@ -1472,121 +1468,6 @@ static AssignmentReturnValue velYFunction(DreamPlayer* tPlayer) { return makeFlo
 static AssignmentReturnValue winFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(hasPlayerWon(tPlayer)); }
 
 
-
-static void setupVariableAssignments() {
-	gVariableHandler.mVariables = new_string_map();
-	string_map_push(&gVariableHandler.mVariables, "ailevel", (void*)aiLevelFunction);
-	string_map_push(&gVariableHandler.mVariables, "alive", (void*)aliveFunction);
-	string_map_push(&gVariableHandler.mVariables, "anim", (void*)animFunction);
-	string_map_push(&gVariableHandler.mVariables, "animtime", (void*)animTimeFunction);
-	string_map_push(&gVariableHandler.mVariables, "authorname", (void*)authorNameFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "backedge", (void*)backEdgeFunction);
-	string_map_push(&gVariableHandler.mVariables, "backedgebodydist", (void*)backEdgeBodyDistFunction);
-	string_map_push(&gVariableHandler.mVariables, "backedgedist", (void*)backEdgeDistFunction);
-	string_map_push(&gVariableHandler.mVariables, "bottomedge", (void*)bottomEdgeFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "camerapos x", (void*)cameraPosXFunction);
-	string_map_push(&gVariableHandler.mVariables, "camerapos y", (void*)cameraPosYFunction);
-	string_map_push(&gVariableHandler.mVariables, "camerazoom", (void*)cameraZoomFunction);
-	string_map_push(&gVariableHandler.mVariables, "canrecover", (void*)canRecoverFunction);
-	string_map_push(&gVariableHandler.mVariables, "ctrl", (void*)ctrlFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "drawgame", (void*)drawGameFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "e", (void*)eFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "facing", (void*)facingFunction);
-	string_map_push(&gVariableHandler.mVariables, "frontedge", (void*)frontEdgeFunction);
-	string_map_push(&gVariableHandler.mVariables, "frontedgebodydist", (void*)frontEdgeBodyDistFunction);
-	string_map_push(&gVariableHandler.mVariables, "frontedgedist", (void*)frontEdgeDistFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "gameheight", (void*)gameHeightFunction);
-	string_map_push(&gVariableHandler.mVariables, "gametime", (void*)gameTimeFunction);
-	string_map_push(&gVariableHandler.mVariables, "gamewidth", (void*)gameWidthFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "hitcount", (void*)hitCountFunction);
-	string_map_push(&gVariableHandler.mVariables, "hitfall", (void*)hitFallFunction);
-	string_map_push(&gVariableHandler.mVariables, "hitover", (void*)hitOverFunction);
-	string_map_push(&gVariableHandler.mVariables, "hitpausetime", (void*)hitPauseTimeFunction);
-	string_map_push(&gVariableHandler.mVariables, "hitshakeover", (void*)hitShakeOverFunction);
-	string_map_push(&gVariableHandler.mVariables, "hitvel x", (void*)hitVelXFunction);
-	string_map_push(&gVariableHandler.mVariables, "hitvel y", (void*)hitVelYFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "id", (void*)idFunction);
-	string_map_push(&gVariableHandler.mVariables, "inguarddist", (void*)inGuardDistFunction);
-	string_map_push(&gVariableHandler.mVariables, "ishelper", (void*)isHelperFunction);
-	string_map_push(&gVariableHandler.mVariables, "ishometeam", (void*)isHomeTeamFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "leftedge", (void*)leftEdgeFunction);
-	string_map_push(&gVariableHandler.mVariables, "life", (void*)lifeFunction);
-	string_map_push(&gVariableHandler.mVariables, "lifemax", (void*)lifeMaxFunction);
-	string_map_push(&gVariableHandler.mVariables, "lose", (void*)loseFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "matchno", (void*)matchNoFunction);
-	string_map_push(&gVariableHandler.mVariables, "matchover", (void*)matchOverFunction);
-	string_map_push(&gVariableHandler.mVariables, "movecontact", (void*)moveContactFunction);
-	string_map_push(&gVariableHandler.mVariables, "moveguarded", (void*)moveGuardedFunction);
-	string_map_push(&gVariableHandler.mVariables, "movehit", (void*)moveHitFunction);
-	string_map_push(&gVariableHandler.mVariables, "movereversed", (void*)moveReversedFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "name", (void*)nameFunction);
-	string_map_push(&gVariableHandler.mVariables, "numenemy", (void*)numEnemyFunction);
-	string_map_push(&gVariableHandler.mVariables, "numexplod", (void*)numExplodFunction);
-	string_map_push(&gVariableHandler.mVariables, "numhelper", (void*)numHelperFunction);
-	string_map_push(&gVariableHandler.mVariables, "numpartner", (void*)numPartnerFunction);
-	string_map_push(&gVariableHandler.mVariables, "numproj", (void*)numProjFunction);
-	string_map_push(&gVariableHandler.mVariables, "numtarget", (void*)numTargetFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "p1name", (void*)p1NameFunction);
-	string_map_push(&gVariableHandler.mVariables, "p2bodydist x", (void*)p2BodyDistFunctionX);
-	string_map_push(&gVariableHandler.mVariables, "p2bodydist y", (void*)p2BodyDistFunctionY);
-	string_map_push(&gVariableHandler.mVariables, "p2dist x", (void*)p2DistFunctionX);
-	string_map_push(&gVariableHandler.mVariables, "p2dist y", (void*)p2DistFunctionY);
-	string_map_push(&gVariableHandler.mVariables, "p2life", (void*)p2LifeFunction);
-	string_map_push(&gVariableHandler.mVariables, "p2name", (void*)p2NameFunction);
-	string_map_push(&gVariableHandler.mVariables, "p2stateno", (void*)p2StateNoFunction);
-	string_map_push(&gVariableHandler.mVariables, "p3name", (void*)p3NameFunction);
-	string_map_push(&gVariableHandler.mVariables, "p4name", (void*)p4NameFunction);
-	string_map_push(&gVariableHandler.mVariables, "palno", (void*)palNoFunction);
-	string_map_push(&gVariableHandler.mVariables, "parentdist x", (void*)parentDistXFunction);
-	string_map_push(&gVariableHandler.mVariables, "parentdist y", (void*)parentDistYFunction);
-	string_map_push(&gVariableHandler.mVariables, "pi", (void*)piFunction);
-	string_map_push(&gVariableHandler.mVariables, "pos x", (void*)posXFunction);
-	string_map_push(&gVariableHandler.mVariables, "pos y", (void*)posYFunction);
-	string_map_push(&gVariableHandler.mVariables, "power", (void*)powerFunction);
-	string_map_push(&gVariableHandler.mVariables, "powermax", (void*)powerMaxFunction);
-	string_map_push(&gVariableHandler.mVariables, "prevstateno", (void*)prevStateNoFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "random", (void*)randomFunction);
-	string_map_push(&gVariableHandler.mVariables, "rightedge", (void*)rightEdgeFunction);
-	string_map_push(&gVariableHandler.mVariables, "rootdist x", (void*)rootDistXFunction);
-	string_map_push(&gVariableHandler.mVariables, "rootdist y", (void*)rootDistYFunction);
-	string_map_push(&gVariableHandler.mVariables, "roundno", (void*)roundNoFunction);
-	string_map_push(&gVariableHandler.mVariables, "roundsexisted", (void*)roundsExistedFunction);
-	string_map_push(&gVariableHandler.mVariables, "roundstate", (void*)roundStateFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "screenpos x", (void*)screenPosXFunction);
-	string_map_push(&gVariableHandler.mVariables, "screenpos y", (void*)screenPosYFunction);
-	string_map_push(&gVariableHandler.mVariables, "screenheight", (void*)screenHeightFunction);
-	string_map_push(&gVariableHandler.mVariables, "screenwidth", (void*)screenWidthFunction);
-	string_map_push(&gVariableHandler.mVariables, "stateno", (void*)stateNoFunction);
-	string_map_push(&gVariableHandler.mVariables, "statetime", (void*)timeFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "teamside", (void*)teamSideFunction);
-	string_map_push(&gVariableHandler.mVariables, "tickspersecond", (void*)ticksPerSecondFunction);
-	string_map_push(&gVariableHandler.mVariables, "time", (void*)timeFunction);
-	string_map_push(&gVariableHandler.mVariables, "topedge", (void*)topEdgeFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "uniquehitcount", (void*)uniqHitCountFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "vel x", (void*)velXFunction);
-	string_map_push(&gVariableHandler.mVariables, "vel y", (void*)velYFunction);
-
-	string_map_push(&gVariableHandler.mVariables, "win", (void*)winFunction);
-}
-
-
 static AssignmentReturnValue dataLifeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerDataLife(tPlayer)); }
 static AssignmentReturnValue dataPowerFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerPowerMax(tPlayer)); }
 static AssignmentReturnValue dataAttackFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerDataAttack(tPlayer)); }
@@ -1665,93 +1546,237 @@ static AssignmentReturnValue movementDownBounceYAccelFunction(DreamPlayer* tPlay
 static AssignmentReturnValue movementDownBounceGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceGroundLevel(tPlayer, getPlayerCoordinateP(tPlayer))); }
 static AssignmentReturnValue movementDownFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerLyingDownFrictionThreshold(tPlayer)); }
 
-static void setupConstantAssignments() { 
-	gVariableHandler.mConstants = new_string_map();
-	string_map_push(&gVariableHandler.mConstants, "data.life", (void*)dataLifeFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.power", (void*)dataPowerFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.attack", (void*)dataAttackFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.defence", (void*)dataDefenceFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.fall.defence_mul", (void*)dataFallDefenceMultiplierFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.liedown.time", (void*)dataLiedownTimeFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.airjuggle", (void*)dataAirjuggleFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.sparkno", (void*)dataSparkNoFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.guard.sparkno", (void*)dataGuardSparkNoFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.ko.echo", (void*)dataKOEchoFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.intpersistindex", (void*)dataIntPersistIndexFunction);
-	string_map_push(&gVariableHandler.mConstants, "data.floatpersistindex", (void*)dataFloatPersistIndexFunction);
-	
-	string_map_push(&gVariableHandler.mConstants, "size.xscale", (void*)sizeXScaleFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.yscale", (void*)sizeYScaleFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.ground.back", (void*)sizeGroundBackFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.ground.front", (void*)sizeGroundFrontFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.air.back", (void*)sizeAirBackFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.air.front", (void*)sizeAirFrontFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.height", (void*)sizeHeightFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.attack.dist", (void*)sizeAttackDistFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.proj.attack.dist", (void*)sizeProjAttackDistFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.proj.doscale", (void*)sizeProjDoScaleFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.head.pos.x", (void*)sizeHeadPosXFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.head.pos.y", (void*)sizeHeadPosYFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.mid.pos.x", (void*)sizeMidPosXFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.mid.pos.y", (void*)sizeMidPosYFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.shadowoffset", (void*)sizeShadowOffsetFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.draw.offset.x", (void*)sizeDrawOffsetXFunction);
-	string_map_push(&gVariableHandler.mConstants, "size.draw.offset.y", (void*)sizeDrawOffsetYFunction);
 
-	string_map_push(&gVariableHandler.mConstants, "velocity.walk.fwd.x", (void*)velocityWalkFwdXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.walk.back.x", (void*)velocityWalkBackXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.run.fwd.x", (void*)velocityRunFwdXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.run.fwd.y", (void*)velocityRunFwdYFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.run.back.x", (void*)velocityRunBackXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.run.back.y", (void*)velocityRunBackYFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.jump.y", (void*)velocityJumpYFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.jump.neu.x", (void*)velocityJumpNeuXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.jump.back.x", (void*)velocityJumpBackXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.jump.fwd.x", (void*)velocityJumpFwdXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.runjump.back.x", (void*)velocityRunJumpBackXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.runjump.fwd.x", (void*)velocityRunJumpFwdXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.y", (void*)velocityAirJumpYFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.neu.x", (void*)velocityAirJumpNeuXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.back.x", (void*)velocityAirJumpBackXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.airjump.fwd.x", (void*)velocityAirJumpFwdXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.groundrecover.x", (void*)velocityAirGetHitGroundRecoverXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.groundrecover.y", (void*)velocityAirGetHitGroundRecoverYFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.mul.x", (void*)velocityAirGetHitAirRecoverMulXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.mul.y", (void*)velocityAirGetHitAirRecoverMulYFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.add.x", (void*)velocityAirGetHitAirRecoverAddXFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.add.y", (void*)velocityAirGetHitAirRecoverAddYFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.back", (void*)velocityAirGetHitAirRecoverBackFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.fwd", (void*)velocityAirGetHitAirRecoverFwdFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.up", (void*)velocityAirGetHitAirRecoverUpFunction);
-	string_map_push(&gVariableHandler.mConstants, "velocity.air.gethit.airrecover.down", (void*)velocityAirGetHitAirRecoverDownFunction);
+static AssignmentReturnValue getHitVarAnimtypeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getActiveHitDataAnimationType(tPlayer)); }
+static AssignmentReturnValue getHitVarGroundtypeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getActiveHitDataGroundType(tPlayer)); }
+static AssignmentReturnValue getHitVarAirtypeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getActiveHitDataAirType(tPlayer)); }
+static AssignmentReturnValue getHitVarXvelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getActiveHitDataVelocityX(tPlayer)); }
+static AssignmentReturnValue getHitVarYvelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getActiveHitDataVelocityY(tPlayer)); }
+static AssignmentReturnValue getHitVarYaccelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getActiveHitDataYAccel(tPlayer)); }
+static AssignmentReturnValue getHitVarFallFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(getActiveHitDataFall(tPlayer)); }
+static AssignmentReturnValue getHitVarFallRecoverFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(getActiveHitDataFallRecovery(tPlayer)); }
+static AssignmentReturnValue getHitVarFallYvelFunction(DreamPlayer* tPlayer) {	return makeFloatAssignmentReturn(getActiveHitDataFallYVelocity(tPlayer));}
+static AssignmentReturnValue getHitVarSlidetimeFunction(DreamPlayer* tPlayer) {	return makeBooleanAssignmentReturn(getPlayerSlideTime(tPlayer));}
+static AssignmentReturnValue getHitVarHitshaketimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(getActiveHitDataPlayer2PauseTime(tPlayer));}
+static AssignmentReturnValue getHitVarHitcountFunction(DreamPlayer* tPlayer) {	return makeNumberAssignmentReturn(getPlayerHitCount(tPlayer));}
+static AssignmentReturnValue getHitVarDamageFunction(DreamPlayer* tPlayer) {return makeNumberAssignmentReturn(getActiveHitDataDamage(tPlayer));}
+static AssignmentReturnValue getHitVarFallcountFunction(DreamPlayer* tPlayer) {	return makeNumberAssignmentReturn(getPlayerFallAmountInCombo(tPlayer));}
+static AssignmentReturnValue getHitVarCtrltimeFunction(DreamPlayer* tPlayer) {	return makeNumberAssignmentReturn(getPlayerControlTime(tPlayer));}
+static AssignmentReturnValue getHitVarIsboundFunction(DreamPlayer* tPlayer) {	return makeBooleanAssignmentReturn(isPlayerBound(tPlayer));}
 
-	string_map_push(&gVariableHandler.mConstants, "movement.airjump.num", (void*)movementAirJumpNumFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.airjump.height", (void*)movementAirJumpHeightFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.yaccel", (void*)movementYAccelFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.stand.friction", (void*)movementStandFrictionFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.crouch.friction", (void*)movementCrouchFrictionFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.stand.friction.threshold", (void*)movementStandFrictionThresholdFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.crouch.friction.threshold", (void*)movementCrouchFrictionThresholdFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.jump.changeanim.threshold", (void*)movementJumpChangeAnimThresholdFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.groundlevel", (void*)movementAirGetHitGroundLevelFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.groundrecover.ground.threshold", (void*)movementAirGetHitGroundRecoverGroundThresholdFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.groundrecover.groundlevel", (void*)movementAirGetHitGroundRecoverGroundLevelFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.airrecover.threshold", (void*)movementAirGetHitAirRecoverThresholdFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.airrecover.yaccel", (void*)movementAirGetHitAirRecoverYAccelFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.air.gethit.trip.groundlevel", (void*)movementAirGetHitTripGroundLevelFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.offset.x", (void*)movementDownBounceOffsetXFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.offset.y", (void*)movementDownBounceOffsetYFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.yaccel", (void*)movementDownBounceYAccelFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.down.bounce.groundlevel", (void*)movementDownBounceGroundLevelFunction);
-	string_map_push(&gVariableHandler.mConstants, "movement.down.friction.threshold", (void*)movementDownFrictionThresholdFunction);
+static void setupVariableAssignments() {
+	gVariableHandler.mVariables.clear();
+	gVariableHandler.mVariables["ailevel"] = aiLevelFunction;
+	gVariableHandler.mVariables["alive"] = aliveFunction;
+	gVariableHandler.mVariables["anim"] = animFunction;
+	gVariableHandler.mVariables["animtime"] = animTimeFunction;
+	gVariableHandler.mVariables["authorname"] = authorNameFunction;
+
+	gVariableHandler.mVariables["backedge"] = backEdgeFunction;
+	gVariableHandler.mVariables["backedgebodydist"] = backEdgeBodyDistFunction;
+	gVariableHandler.mVariables["backedgedist"] = backEdgeDistFunction;
+	gVariableHandler.mVariables["bottomedge"] = bottomEdgeFunction;
+
+	gVariableHandler.mVariables["camerapos x"] = cameraPosXFunction;
+	gVariableHandler.mVariables["camerapos y"] = cameraPosYFunction;
+	gVariableHandler.mVariables["camerazoom"] = cameraZoomFunction;
+	gVariableHandler.mVariables["canrecover"] = canRecoverFunction;
+	gVariableHandler.mVariables["ctrl"] = ctrlFunction;
+
+	gVariableHandler.mVariables["drawgame"] = drawGameFunction;
+
+	gVariableHandler.mVariables["e"] = eFunction;
+
+	gVariableHandler.mVariables["facing"] = facingFunction;
+	gVariableHandler.mVariables["frontedge"] = frontEdgeFunction;
+	gVariableHandler.mVariables["frontedgebodydist"] = frontEdgeBodyDistFunction;
+	gVariableHandler.mVariables["frontedgedist"] = frontEdgeDistFunction;
+
+	gVariableHandler.mVariables["gameheight"] = gameHeightFunction;
+	gVariableHandler.mVariables["gametime"] = gameTimeFunction;
+	gVariableHandler.mVariables["gamewidth"] = gameWidthFunction;
+
+	gVariableHandler.mVariables["hitcount"] = hitCountFunction;
+	gVariableHandler.mVariables["hitfall"] = hitFallFunction;
+	gVariableHandler.mVariables["hitover"] = hitOverFunction;
+	gVariableHandler.mVariables["hitpausetime"] = hitPauseTimeFunction;
+	gVariableHandler.mVariables["hitshakeover"] = hitShakeOverFunction;
+	gVariableHandler.mVariables["hitvel x"] = hitVelXFunction;
+	gVariableHandler.mVariables["hitvel y"] = hitVelYFunction;
+
+	gVariableHandler.mVariables["id"] = idFunction;
+	gVariableHandler.mVariables["inguarddist"] = inGuardDistFunction;
+	gVariableHandler.mVariables["ishelper"] = isHelperFunction;
+	gVariableHandler.mVariables["ishometeam"] = isHomeTeamFunction;
+
+	gVariableHandler.mVariables["leftedge"] = leftEdgeFunction;
+	gVariableHandler.mVariables["life"] = lifeFunction;
+	gVariableHandler.mVariables["lifemax"] = lifeMaxFunction;
+	gVariableHandler.mVariables["lose"] = loseFunction;
+
+	gVariableHandler.mVariables["matchno"] = matchNoFunction;
+	gVariableHandler.mVariables["matchover"] = matchOverFunction;
+	gVariableHandler.mVariables["movecontact"] = moveContactFunction;
+	gVariableHandler.mVariables["moveguarded"] = moveGuardedFunction;
+	gVariableHandler.mVariables["movehit"] = moveHitFunction;
+	gVariableHandler.mVariables["movereversed"] = moveReversedFunction;
+
+	gVariableHandler.mVariables["name"] = nameFunction;
+	gVariableHandler.mVariables["numenemy"] = numEnemyFunction;
+	gVariableHandler.mVariables["numexplod"] = numExplodFunction;
+	gVariableHandler.mVariables["numhelper"] = numHelperFunction;
+	gVariableHandler.mVariables["numpartner"] = numPartnerFunction;
+	gVariableHandler.mVariables["numproj"] = numProjFunction;
+	gVariableHandler.mVariables["numtarget"] = numTargetFunction;
+
+	gVariableHandler.mVariables["p1name"] = p1NameFunction;
+	gVariableHandler.mVariables["p2bodydist x"] = p2BodyDistFunctionX;
+	gVariableHandler.mVariables["p2bodydist y"] = p2BodyDistFunctionY;
+	gVariableHandler.mVariables["p2dist x"] = p2DistFunctionX;
+	gVariableHandler.mVariables["p2dist y"] = p2DistFunctionY;
+	gVariableHandler.mVariables["p2life"] = p2LifeFunction;
+	gVariableHandler.mVariables["p2name"] = p2NameFunction;
+	gVariableHandler.mVariables["p2stateno"] = p2StateNoFunction;
+	gVariableHandler.mVariables["p3name"] = p3NameFunction;
+	gVariableHandler.mVariables["p4name"] = p4NameFunction;
+	gVariableHandler.mVariables["palno"] = palNoFunction;
+	gVariableHandler.mVariables["parentdist x"] = parentDistXFunction;
+	gVariableHandler.mVariables["parentdist y"] = parentDistYFunction;
+	gVariableHandler.mVariables["pi"] = piFunction;
+	gVariableHandler.mVariables["pos x"] = posXFunction;
+	gVariableHandler.mVariables["pos y"] = posYFunction;
+	gVariableHandler.mVariables["power"] = powerFunction;
+	gVariableHandler.mVariables["powermax"] = powerMaxFunction;
+	gVariableHandler.mVariables["prevstateno"] = prevStateNoFunction;
+
+	gVariableHandler.mVariables["random"] = randomFunction;
+	gVariableHandler.mVariables["rightedge"] = rightEdgeFunction;
+	gVariableHandler.mVariables["rootdist x"] = rootDistXFunction;
+	gVariableHandler.mVariables["rootdist y"] = rootDistYFunction;
+	gVariableHandler.mVariables["roundno"] = roundNoFunction;
+	gVariableHandler.mVariables["roundsexisted"] = roundsExistedFunction;
+	gVariableHandler.mVariables["roundstate"] = roundStateFunction;
+
+	gVariableHandler.mVariables["screenpos x"] = screenPosXFunction;
+	gVariableHandler.mVariables["screenpos y"] = screenPosYFunction;
+	gVariableHandler.mVariables["screenheight"] = screenHeightFunction;
+	gVariableHandler.mVariables["screenwidth"] = screenWidthFunction;
+	gVariableHandler.mVariables["stateno"] = stateNoFunction;
+	gVariableHandler.mVariables["statetime"] = timeFunction;
+
+	gVariableHandler.mVariables["teamside"] = teamSideFunction;
+	gVariableHandler.mVariables["tickspersecond"] = ticksPerSecondFunction;
+	gVariableHandler.mVariables["time"] = timeFunction;
+	gVariableHandler.mVariables["topedge"] = topEdgeFunction;
+
+	gVariableHandler.mVariables["uniquehitcount"] = uniqHitCountFunction;
+
+	gVariableHandler.mVariables["vel x"] = velXFunction;
+	gVariableHandler.mVariables["vel y"] = velYFunction;
+
+	gVariableHandler.mVariables["win"] = winFunction;
+
+	gVariableHandler.mVariables["const(data.life)"] = dataLifeFunction;
+	gVariableHandler.mVariables["const(data.power)"] = dataPowerFunction;
+	gVariableHandler.mVariables["const(data.attack)"] = dataAttackFunction;
+	gVariableHandler.mVariables["const(data.defence)"] = dataDefenceFunction;
+	gVariableHandler.mVariables["const(data.fall.defence_mul)"] = dataFallDefenceMultiplierFunction;
+	gVariableHandler.mVariables["const(data.liedown.time)"] = dataLiedownTimeFunction;
+	gVariableHandler.mVariables["const(data.airjuggle)"] = dataAirjuggleFunction;
+	gVariableHandler.mVariables["const(data.sparkno)"] = dataSparkNoFunction;
+	gVariableHandler.mVariables["const(data.guard.sparkno)"] = dataGuardSparkNoFunction;
+	gVariableHandler.mVariables["const(data.ko.echo)"] = dataKOEchoFunction;
+	gVariableHandler.mVariables["const(data.intpersistindex)"] = dataIntPersistIndexFunction;
+	gVariableHandler.mVariables["const(data.floatpersistindex)"] = dataFloatPersistIndexFunction;
+
+	gVariableHandler.mVariables["const(size.xscale)"] = sizeXScaleFunction;
+	gVariableHandler.mVariables["const(size.yscale)"] = sizeYScaleFunction;
+	gVariableHandler.mVariables["const(size.ground.back)"] = sizeGroundBackFunction;
+	gVariableHandler.mVariables["const(size.ground.front)"] = sizeGroundFrontFunction;
+	gVariableHandler.mVariables["const(size.air.back)"] = sizeAirBackFunction;
+	gVariableHandler.mVariables["const(size.air.front)"] = sizeAirFrontFunction;
+	gVariableHandler.mVariables["const(size.height)"] = sizeHeightFunction;
+	gVariableHandler.mVariables["const(size.attack.dist)"] = sizeAttackDistFunction;
+	gVariableHandler.mVariables["const(size.proj.attack.dist)"] = sizeProjAttackDistFunction;
+	gVariableHandler.mVariables["const(size.proj.doscale)"] = sizeProjDoScaleFunction;
+	gVariableHandler.mVariables["const(size.head.pos.x)"] = sizeHeadPosXFunction;
+	gVariableHandler.mVariables["const(size.head.pos.y)"] = sizeHeadPosYFunction;
+	gVariableHandler.mVariables["const(size.mid.pos.x)"] = sizeMidPosXFunction;
+	gVariableHandler.mVariables["const(size.mid.pos.y)"] = sizeMidPosYFunction;
+	gVariableHandler.mVariables["const(size.shadowoffset)"] = sizeShadowOffsetFunction;
+	gVariableHandler.mVariables["const(size.draw.offset.x)"] = sizeDrawOffsetXFunction;
+	gVariableHandler.mVariables["const(size.draw.offset.y)"] = sizeDrawOffsetYFunction;
+
+	gVariableHandler.mVariables["const(velocity.walk.fwd.x)"] = velocityWalkFwdXFunction;
+	gVariableHandler.mVariables["const(velocity.walk.back.x)"] = velocityWalkBackXFunction;
+	gVariableHandler.mVariables["const(velocity.run.fwd.x)"] = velocityRunFwdXFunction;
+	gVariableHandler.mVariables["const(velocity.run.fwd.y)"] = velocityRunFwdYFunction;
+	gVariableHandler.mVariables["const(velocity.run.back.x)"] = velocityRunBackXFunction;
+	gVariableHandler.mVariables["const(velocity.run.back.y)"] = velocityRunBackYFunction;
+	gVariableHandler.mVariables["const(velocity.jump.y)"] = velocityJumpYFunction;
+	gVariableHandler.mVariables["const(velocity.jump.neu.x)"] = velocityJumpNeuXFunction;
+	gVariableHandler.mVariables["const(velocity.jump.back.x)"] = velocityJumpBackXFunction;
+	gVariableHandler.mVariables["const(velocity.jump.fwd.x)"] = velocityJumpFwdXFunction;
+	gVariableHandler.mVariables["const(velocity.runjump.back.x)"] = velocityRunJumpBackXFunction;
+	gVariableHandler.mVariables["const(velocity.runjump.fwd.x)"] = velocityRunJumpFwdXFunction;
+	gVariableHandler.mVariables["const(velocity.airjump.y)"] = velocityAirJumpYFunction;
+	gVariableHandler.mVariables["const(velocity.airjump.neu.x)"] = velocityAirJumpNeuXFunction;
+	gVariableHandler.mVariables["const(velocity.airjump.back.x)"] = velocityAirJumpBackXFunction;
+	gVariableHandler.mVariables["const(velocity.airjump.fwd.x)"] = velocityAirJumpFwdXFunction;
+	gVariableHandler.mVariables["const(velocity.air.gethit.groundrecover.x)"] = velocityAirGetHitGroundRecoverXFunction;
+	gVariableHandler.mVariables["const(velocity.air.gethit.groundrecover.y)"] = velocityAirGetHitGroundRecoverYFunction;
+	gVariableHandler.mVariables["const(velocity.air.gethit.airrecover.mul.x)"] = velocityAirGetHitAirRecoverMulXFunction;
+	gVariableHandler.mVariables["const(velocity.air.gethit.airrecover.mul.y)"] = velocityAirGetHitAirRecoverMulYFunction;
+	gVariableHandler.mVariables["const(velocity.air.gethit.airrecover.add.x)"] = velocityAirGetHitAirRecoverAddXFunction;
+	gVariableHandler.mVariables["const(velocity.air.gethit.airrecover.add.y)"] = velocityAirGetHitAirRecoverAddYFunction;
+	gVariableHandler.mVariables["const(velocity.air.gethit.airrecover.back)"] = velocityAirGetHitAirRecoverBackFunction;
+	gVariableHandler.mVariables["const(velocity.air.gethit.airrecover.fwd)"] = velocityAirGetHitAirRecoverFwdFunction;
+	gVariableHandler.mVariables["const(velocity.air.gethit.airrecover.up)"] = velocityAirGetHitAirRecoverUpFunction;
+	gVariableHandler.mVariables["const(velocity.air.gethit.airrecover.down)"] = velocityAirGetHitAirRecoverDownFunction;
+
+	gVariableHandler.mVariables["const(movement.airjump.num)"] = movementAirJumpNumFunction;
+	gVariableHandler.mVariables["const(movement.airjump.height)"] = movementAirJumpHeightFunction;
+	gVariableHandler.mVariables["const(movement.yaccel)"] = movementYAccelFunction;
+	gVariableHandler.mVariables["const(movement.stand.friction)"] = movementStandFrictionFunction;
+	gVariableHandler.mVariables["const(movement.crouch.friction)"] = movementCrouchFrictionFunction;
+	gVariableHandler.mVariables["const(movement.stand.friction.threshold)"] = movementStandFrictionThresholdFunction;
+	gVariableHandler.mVariables["const(movement.crouch.friction.threshold)"] = movementCrouchFrictionThresholdFunction;
+	gVariableHandler.mVariables["const(movement.jump.changeanim.threshold)"] = movementJumpChangeAnimThresholdFunction;
+	gVariableHandler.mVariables["const(movement.air.gethit.groundlevel)"] = movementAirGetHitGroundLevelFunction;
+	gVariableHandler.mVariables["const(movement.air.gethit.groundrecover.ground.threshold)"] = movementAirGetHitGroundRecoverGroundThresholdFunction;
+	gVariableHandler.mVariables["const(movement.air.gethit.groundrecover.groundlevel)"] = movementAirGetHitGroundRecoverGroundLevelFunction;
+	gVariableHandler.mVariables["const(movement.air.gethit.airrecover.threshold)"] = movementAirGetHitAirRecoverThresholdFunction;
+	gVariableHandler.mVariables["const(movement.air.gethit.airrecover.yaccel)"] = movementAirGetHitAirRecoverYAccelFunction;
+	gVariableHandler.mVariables["const(movement.air.gethit.trip.groundlevel)"] = movementAirGetHitTripGroundLevelFunction;
+	gVariableHandler.mVariables["const(movement.down.bounce.offset.x)"] = movementDownBounceOffsetXFunction;
+	gVariableHandler.mVariables["const(movement.down.bounce.offset.y)"] = movementDownBounceOffsetYFunction;
+	gVariableHandler.mVariables["const(movement.down.bounce.yaccel)"] = movementDownBounceYAccelFunction;
+	gVariableHandler.mVariables["const(movement.down.bounce.groundlevel)"] = movementDownBounceGroundLevelFunction;
+	gVariableHandler.mVariables["const(movement.down.friction.threshold)"] = movementDownFrictionThresholdFunction;
+
+
+	gVariableHandler.mVariables["gethitvar(animtype)"] = getHitVarAnimtypeFunction;
+	gVariableHandler.mVariables["gethitvar(groundtype)"] = getHitVarGroundtypeFunction;
+	gVariableHandler.mVariables["gethitvar(airtype)"] = getHitVarAirtypeFunction;
+	gVariableHandler.mVariables["gethitvar(xvel)"] = getHitVarXvelFunction;
+	gVariableHandler.mVariables["gethitvar(yvel)"] = getHitVarYvelFunction;
+	gVariableHandler.mVariables["gethitvar(yaccel)"] = getHitVarYaccelFunction;
+	gVariableHandler.mVariables["gethitvar(fall)"] = getHitVarFallFunction;
+	gVariableHandler.mVariables["gethitvar(fall.recover)"] = getHitVarFallRecoverFunction;
+	gVariableHandler.mVariables["gethitvar(fall.yvel)"] = getHitVarFallYvelFunction;
+	gVariableHandler.mVariables["gethitvar(slidetime)"] = getHitVarSlidetimeFunction;
+	gVariableHandler.mVariables["gethitvar(hitshaketime)"] = getHitVarHitshaketimeFunction;
+	gVariableHandler.mVariables["gethitvar(hitcount)"] = getHitVarHitcountFunction;
+	gVariableHandler.mVariables["gethitvar(damage)"] = getHitVarDamageFunction;
+	gVariableHandler.mVariables["gethitvar(fallcount)"] = getHitVarFallcountFunction;
+	gVariableHandler.mVariables["gethitvar(ctrltime)"] = getHitVarCtrltimeFunction;
+	gVariableHandler.mVariables["gethitvar(isbound)"] = getHitVarIsboundFunction;
 }
-
 
 static void setupArrayAssignments();
 
 void setupDreamAssignmentEvaluator() {
 	setupVariableAssignments();
-	setupConstantAssignments();
 	setupArrayAssignments();
 	setupComparisons();
 }
@@ -1780,20 +1805,23 @@ static AssignmentReturnValue makeExternalFileAssignmentReturn(char tIdentifierCh
 
 static AssignmentReturnValue evaluateVariableAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* tIsStatic) {
 	DreamMugenVariableAssignment* variable = (DreamMugenVariableAssignment*)*tAssignment;
+	*tIsStatic = 0;
+	AssignmentReturnValue(*func)(DreamPlayer*) = (AssignmentReturnValue(*)(DreamPlayer*))variable->mFunc;
+
+	return func(tPlayer);
+}
+
+static AssignmentReturnValue evaluateRawVariableAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* tIsStatic) {
+	DreamMugenRawVariableAssignment* variable = (DreamMugenRawVariableAssignment*)*tAssignment;
 	char testString[100];
 	strcpy(testString, variable->mName);
 	turnStringLowercase(testString);
 	*tIsStatic = 0;
 
-	if (string_map_contains(&gVariableHandler.mVariables, testString)) {
-		VariableFunction func = (VariableFunction)string_map_get(&gVariableHandler.mVariables, testString);
-		return func(tPlayer);
-	}
-	
 	if (isIsInOtherFileVariable(testString)) { // TODO: fix
 		return makeExternalFileAssignmentReturn(testString[0], testString + 1);
 	}
-	
+
 	return makeStringAssignmentReturn(testString);
 }
 
@@ -1942,91 +1970,6 @@ static AssignmentReturnValue evaluateCeilArrayAssignment(AssignmentReturnValue t
 	}
 }
 
-static AssignmentReturnValue evaluateConstArrayAssignment(AssignmentReturnValue tIndex, DreamPlayer* tPlayer, int* tIsStatic) {
-	char* var = convertAssignmentReturnToAllocatedString(tIndex);
-
-	if(!string_map_contains(&gVariableHandler.mConstants, var)) {
-		logWarningFormat("Unrecognized constant %s. Returning bottom.", var);
-		freeMemory(var);
-		return makeBottomAssignmentReturn(); 
-	}
-
-	VariableFunction func = (VariableFunction)string_map_get(&gVariableHandler.mConstants, var);
-	freeMemory(var);
-
-	*tIsStatic = 0;
-	return func(tPlayer);
-}
-
-static AssignmentReturnValue evaluateGetHitVarArrayAssignment(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) {
-	if ((*tIndexAssignment)->mType != MUGEN_ASSIGNMENT_TYPE_VARIABLE) {
-		logWarningFormat("Unable to parse get hit var array assignment of type %d. Defaulting to bottom.", (*tIndexAssignment)->mType);
-		return makeBottomAssignmentReturn(); 
-	}
-
-	*tIsStatic = 0;
-
-	DreamMugenVariableAssignment* variableAssignment = (DreamMugenVariableAssignment*)*tIndexAssignment;
-	char var[100];
-	strcpy(var, variableAssignment->mName);
-	turnStringLowercase(var);
-
-	if (!strcmp("animtype", var)) {
-		return makeNumberAssignmentReturn(getActiveHitDataAnimationType(tPlayer));
-	}
-	else if (!strcmp("groundtype", var)) {
-		return makeNumberAssignmentReturn(getActiveHitDataGroundType(tPlayer));
-	}
-	else if (!strcmp("airtype", var)) {
-		return makeNumberAssignmentReturn(getActiveHitDataAirType(tPlayer));
-	}
-	else if (!strcmp("xvel", var)) {
-		return makeFloatAssignmentReturn(getActiveHitDataVelocityX(tPlayer));
-	}
-	else if (!strcmp("yvel", var)) {
-		return makeFloatAssignmentReturn(getActiveHitDataVelocityY(tPlayer));
-	}
-	else if (!strcmp("yaccel", var)) {
-		return makeFloatAssignmentReturn(getActiveHitDataYAccel(tPlayer));
-	}
-	else if (!strcmp("fall", var)) {
-		return makeBooleanAssignmentReturn(getActiveHitDataFall(tPlayer));
-	}
-	else if (!strcmp("fall.recover", var)) {
-		return makeBooleanAssignmentReturn(getActiveHitDataFallRecovery(tPlayer));
-	}
-	else if (!strcmp("fall.yvel", var)) {
-		return makeFloatAssignmentReturn(getActiveHitDataFallYVelocity(tPlayer));
-	}
-	else if (!strcmp("slidetime", var)) {
-		return makeBooleanAssignmentReturn(getPlayerSlideTime(tPlayer));
-	}
-	else if (!strcmp("hitshaketime", var)) {
-		return makeBooleanAssignmentReturn(getActiveHitDataPlayer2PauseTime(tPlayer));
-	}
-	else if (!strcmp("hitcount", var)) {
-		return makeNumberAssignmentReturn(getPlayerHitCount(tPlayer));
-	}
-	else if (!strcmp("damage", var)) {
-		return makeNumberAssignmentReturn(getActiveHitDataDamage(tPlayer));
-	}
-	else if (!strcmp("fallcount", var)) {
-		return makeNumberAssignmentReturn(getPlayerFallAmountInCombo(tPlayer));
-	}
-	else if (!strcmp("ctrltime", var)) {
-		return makeNumberAssignmentReturn(getPlayerControlTime(tPlayer));
-	}
-	else if (!strcmp("isbound", var)) {
-		return makeBooleanAssignmentReturn(isPlayerBound(tPlayer));
-	}
-	else {
-		logWarningFormat("Unrecognized GetHitVar Constant %s. Returning bottom.", var);
-		return makeBottomAssignmentReturn(); 
-	}
-
-
-}
-
 static AssignmentReturnValue evaluateAnimationElementTimeArrayAssignment(AssignmentReturnValue tIndex, DreamPlayer* tPlayer, int* tIsStatic) {
 	int id = convertAssignmentReturnToNumber(tIndex);
 	int ret = getPlayerTimeFromAnimationElement(tPlayer, id);
@@ -2117,11 +2060,9 @@ static AssignmentReturnValue evaluateConstCoordinatesArrayAssignment(AssignmentR
 }
 
 
-static AssignmentReturnValue evaluateExternalFileAnimationArrayAssignment(AssignmentReturnValue a, AssignmentReturnValue b) {
-	char* val1 = convertAssignmentReturnToAllocatedString(a);
+static AssignmentReturnValue evaluateExternalFileAnimationArrayAssignment(char tIdentifierCharacter, AssignmentReturnValue b) {
 	char* val2 = convertAssignmentReturnToAllocatedString(b);
-	AssignmentReturnValue ret = makeExternalFileAssignmentReturn(val1[0], val2);
-	freeMemory(val1);
+	AssignmentReturnValue ret = makeExternalFileAssignmentReturn(tIdentifierCharacter, val2);
 	freeMemory(val2);
 	return ret;
 }
@@ -2203,124 +2144,116 @@ static AssignmentReturnValue evaluateProjectileHitTimeArrayAssignment(Assignment
 	return makeNumberAssignmentReturn(getPlayerProjectileTimeSinceHit(tPlayer, id));
 }
 
+static AssignmentReturnValue evaluateProjectileHitArrayAssignment(AssignmentReturnValue tIndex, DreamPlayer* tPlayer, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeNumberAssignmentReturn(getPlayerProjectileHit(tPlayer, id));
+}
 
 
 
 
-static AssignmentReturnValue varFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateVarArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue sysVarFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateSysVarArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue fVarFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateFVarArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue sysFVarFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateSysFVarArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue stageVarFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateStageVarArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue absFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAbsArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic)); }
-static AssignmentReturnValue expFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateExpArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic)); }
-static AssignmentReturnValue lnFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNaturalLogArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic)); }
-static AssignmentReturnValue logFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateLogArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic)); }
-static AssignmentReturnValue cosFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCosineArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic)); }
-static AssignmentReturnValue acosFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAcosineArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic)); }
-static AssignmentReturnValue sinFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateSineArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic)); }
-static AssignmentReturnValue asinFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAsineArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic)); }
-static AssignmentReturnValue tanFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTangentArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic)); }
-static AssignmentReturnValue atanFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAtangentArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic)); }
-static AssignmentReturnValue floorFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateFloorArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic)); }
-static AssignmentReturnValue ceilFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCeilArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic)); }
-static AssignmentReturnValue constFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateConstArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue getHitVarFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateGetHitVarArrayAssignment(&tArrays->b, tPlayer, tIsStatic); }
-static AssignmentReturnValue animElemTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimationElementTimeArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue animElemNoFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimationElementNumberArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue ifElseFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateIfElseArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic)); }
-static AssignmentReturnValue condFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCondArrayAssignment(&tArrays->b, tPlayer, tIsStatic); }
-static AssignmentReturnValue animExistFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimationExistArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue selfAnimExistFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateSelfAnimationExistArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue const240pFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), 240); }
-static AssignmentReturnValue const480pFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), 480); }
-static AssignmentReturnValue const720pFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), 720); }
-static AssignmentReturnValue externalFileFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateExternalFileAnimationArrayAssignment(evaluateAssignmentDependency(&tArrays->a, tPlayer, tIsStatic), evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic)); }
-static AssignmentReturnValue numTargetArrayFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNumTargetArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue numHelperArrayFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNumHelperArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue numExplodArrayFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNumExplodArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue isHelperArrayFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateIsHelperArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue helperFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTargetArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), "helper"); }
-static AssignmentReturnValue enemyNearFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTargetArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), "enemynear"); }
-static AssignmentReturnValue playerIDFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTargetArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), "playerid"); }
-static AssignmentReturnValue playerIDExistFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluatePlayerIDExistArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue numProjIDFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNumberOfProjectilesWithIDArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue projCancelTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateProjectileCancelTimeArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue projContactTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateProjectileContactTimeArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue projGuardedTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateProjectileGuardedTimeArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue projHitTimeFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateProjectileHitTimeArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+
+static AssignmentReturnValue varFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateVarArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue sysVarFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateSysVarArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue fVarFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateFVarArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue sysFVarFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateSysFVarArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue stageVarFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateStageVarArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue absFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAbsArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue expFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateExpArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue lnFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNaturalLogArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue logFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateLogArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue cosFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCosineArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue acosFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAcosineArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue sinFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateSineArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue asinFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAsineArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue tanFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTangentArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue atanFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAtangentArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue floorFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateFloorArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue ceilFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCeilArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue animElemTimeFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimationElementTimeArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue animElemNoFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimationElementNumberArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue ifElseFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateIfElseArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue condFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCondArrayAssignment(tIndexAssignment, tPlayer, tIsStatic); }
+static AssignmentReturnValue animExistFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimationExistArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue selfAnimExistFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateSelfAnimationExistArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue const240pFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), 240); }
+static AssignmentReturnValue const480pFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), 480); }
+static AssignmentReturnValue const720pFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), 720); }
+static AssignmentReturnValue externalFileFunctionF(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateExternalFileAnimationArrayAssignment('f', evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue externalFileFunctionS(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateExternalFileAnimationArrayAssignment('s', evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
+static AssignmentReturnValue numTargetArrayFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNumTargetArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue numHelperArrayFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNumHelperArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue numExplodArrayFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNumExplodArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue isHelperArrayFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateIsHelperArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue helperFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTargetArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), "helper"); }
+static AssignmentReturnValue enemyNearFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTargetArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), "enemynear"); }
+static AssignmentReturnValue playerIDFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTargetArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), "playerid"); }
+static AssignmentReturnValue playerIDExistFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluatePlayerIDExistArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue numProjIDFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNumberOfProjectilesWithIDArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue projCancelTimeFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateProjectileCancelTimeArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue projContactTimeFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateProjectileContactTimeArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue projGuardedTimeFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateProjectileGuardedTimeArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue projHitTimeFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateProjectileHitTimeArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
+static AssignmentReturnValue projHitArrayFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateProjectileHitArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
 
 
 static void setupArrayAssignments() {
-	gVariableHandler.mArrays = new_string_map();
+	gVariableHandler.mArrays.clear();
 
-	string_map_push(&gVariableHandler.mArrays, "var", (void*)varFunction);
-	string_map_push(&gVariableHandler.mArrays, "sysvar", (void*)sysVarFunction);
-	string_map_push(&gVariableHandler.mArrays, "fvar", (void*)fVarFunction);
-	string_map_push(&gVariableHandler.mArrays, "sysfvar", (void*)sysFVarFunction);
-	string_map_push(&gVariableHandler.mArrays, "stagevar", (void*)stageVarFunction);
-	string_map_push(&gVariableHandler.mArrays, "abs", (void*)absFunction);
-	string_map_push(&gVariableHandler.mArrays, "exp", (void*)expFunction);
-	string_map_push(&gVariableHandler.mArrays, "ln", (void*)lnFunction);
-	string_map_push(&gVariableHandler.mArrays, "log", (void*)logFunction);
-	string_map_push(&gVariableHandler.mArrays, "cos", (void*)cosFunction);
-	string_map_push(&gVariableHandler.mArrays, "acos", (void*)acosFunction);
-	string_map_push(&gVariableHandler.mArrays, "sin", (void*)sinFunction);
-	string_map_push(&gVariableHandler.mArrays, "asin", (void*)asinFunction);
-	string_map_push(&gVariableHandler.mArrays, "tan", (void*)tanFunction);
-	string_map_push(&gVariableHandler.mArrays, "atan", (void*)atanFunction);
-	string_map_push(&gVariableHandler.mArrays, "floor", (void*)floorFunction);
-	string_map_push(&gVariableHandler.mArrays, "ceil", (void*)ceilFunction);
-	string_map_push(&gVariableHandler.mArrays, "const", (void*)constFunction);
-	string_map_push(&gVariableHandler.mArrays, "gethitvar", (void*)getHitVarFunction);
-	string_map_push(&gVariableHandler.mArrays, "animelemtime", (void*)animElemTimeFunction);
-	string_map_push(&gVariableHandler.mArrays, "animelemno", (void*)animElemNoFunction);
-	string_map_push(&gVariableHandler.mArrays, "ifelse", (void*)ifElseFunction);
-	string_map_push(&gVariableHandler.mArrays, "sifelse", (void*)ifElseFunction);
-	string_map_push(&gVariableHandler.mArrays, "cond", (void*)condFunction);
-	string_map_push(&gVariableHandler.mArrays, "animexist", (void*)animExistFunction);
-	string_map_push(&gVariableHandler.mArrays, "selfanimexist", (void*)selfAnimExistFunction);
-	string_map_push(&gVariableHandler.mArrays, "const240p", (void*)const240pFunction);
-	string_map_push(&gVariableHandler.mArrays, "const480p", (void*)const480pFunction);
-	string_map_push(&gVariableHandler.mArrays, "const720p", (void*)const720pFunction);
-	string_map_push(&gVariableHandler.mArrays, "f", (void*)externalFileFunction);
-	string_map_push(&gVariableHandler.mArrays, "s", (void*)externalFileFunction);
-	string_map_push(&gVariableHandler.mArrays, "numtarget", (void*)numTargetArrayFunction);
-	string_map_push(&gVariableHandler.mArrays, "numhelper", (void*)numHelperArrayFunction);
-	string_map_push(&gVariableHandler.mArrays, "numexplod", (void*)numExplodArrayFunction);
-	string_map_push(&gVariableHandler.mArrays, "ishelper", (void*)isHelperArrayFunction);
-	string_map_push(&gVariableHandler.mArrays, "helper", (void*)helperFunction);
-	string_map_push(&gVariableHandler.mArrays, "enemynear", (void*)enemyNearFunction);
-	string_map_push(&gVariableHandler.mArrays, "playerid", (void*)playerIDFunction);
-	string_map_push(&gVariableHandler.mArrays, "playeridexist", (void*)playerIDExistFunction);
-	string_map_push(&gVariableHandler.mArrays, "numprojid", (void*)numProjIDFunction);
-	string_map_push(&gVariableHandler.mArrays, "projcanceltime", (void*)projCancelTimeFunction);
-	string_map_push(&gVariableHandler.mArrays, "projcontacttime", (void*)projContactTimeFunction);
-	string_map_push(&gVariableHandler.mArrays, "projguardedtime", (void*)projGuardedTimeFunction);
-	string_map_push(&gVariableHandler.mArrays, "projhittime", (void*)projHitTimeFunction);
+	gVariableHandler.mArrays["var"] = varFunction;
+	gVariableHandler.mArrays["sysvar"] = sysVarFunction;
+	gVariableHandler.mArrays["fvar"] = fVarFunction;
+	gVariableHandler.mArrays["sysfvar"] = sysFVarFunction;
+	gVariableHandler.mArrays["stagevar"] = stageVarFunction;
+	gVariableHandler.mArrays["abs"] = absFunction;
+	gVariableHandler.mArrays["exp"] = expFunction;
+	gVariableHandler.mArrays["ln"] = lnFunction;
+	gVariableHandler.mArrays["log"] = logFunction;
+	gVariableHandler.mArrays["cos"] = cosFunction;
+	gVariableHandler.mArrays["acos"] = acosFunction;
+	gVariableHandler.mArrays["sin"] = sinFunction;
+	gVariableHandler.mArrays["asin"] = asinFunction;
+	gVariableHandler.mArrays["tan"] = tanFunction;
+	gVariableHandler.mArrays["atan"] = atanFunction;
+	gVariableHandler.mArrays["floor"] = floorFunction;
+	gVariableHandler.mArrays["ceil"] = ceilFunction;
+	gVariableHandler.mArrays["animelemtime"] = animElemTimeFunction;
+	gVariableHandler.mArrays["animelemno"] = animElemNoFunction;
+	gVariableHandler.mArrays["ifelse"] = ifElseFunction;
+	gVariableHandler.mArrays["sifelse"] = ifElseFunction;
+	gVariableHandler.mArrays["cond"] = condFunction;
+	gVariableHandler.mArrays["animexist"] = animExistFunction;
+	gVariableHandler.mArrays["selfanimexist"] = selfAnimExistFunction;
+	gVariableHandler.mArrays["const240p"] = const240pFunction;
+	gVariableHandler.mArrays["const480p"] = const480pFunction;
+	gVariableHandler.mArrays["const720p"] = const720pFunction;
+	gVariableHandler.mArrays["f"] = externalFileFunctionF;
+	gVariableHandler.mArrays["s"] = externalFileFunctionS;
+	gVariableHandler.mArrays["numtarget"] = numTargetArrayFunction;
+	gVariableHandler.mArrays["target"] = numTargetArrayFunction; // TODO: check?
+	gVariableHandler.mArrays["enemy"] = numTargetArrayFunction; // TODO: check?
+	gVariableHandler.mArrays["numhelper"] = numHelperArrayFunction;
+	gVariableHandler.mArrays["numexplod"] = numExplodArrayFunction;
+	gVariableHandler.mArrays["ishelper"] = isHelperArrayFunction;
+	gVariableHandler.mArrays["helper"] = helperFunction;
+	gVariableHandler.mArrays["enemynear"] = enemyNearFunction;
+	gVariableHandler.mArrays["playerid"] = playerIDFunction;
+	gVariableHandler.mArrays["playeridexist"] = playerIDExistFunction;
+	gVariableHandler.mArrays["numprojid"] = numProjIDFunction;
+	gVariableHandler.mArrays["projcanceltime"] = projCancelTimeFunction;
+	gVariableHandler.mArrays["projcontacttime"] = projContactTimeFunction;
+	gVariableHandler.mArrays["projguardedtime"] = projGuardedTimeFunction;
+	gVariableHandler.mArrays["projhittime"] = projHitTimeFunction;
+	gVariableHandler.mArrays["projhit"] = projHitArrayFunction;
 }
 
 
 static AssignmentReturnValue evaluateArrayAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* tIsStatic) {
-	DreamMugenDependOnTwoAssignment* arrays = (DreamMugenDependOnTwoAssignment*)*tAssignment;
+	DreamMugenArrayAssignment* arrays = (DreamMugenArrayAssignment*)*tAssignment;
 
-	char test[100];
-	if (arrays->a->mType != MUGEN_ASSIGNMENT_TYPE_VARIABLE) {
-		logWarningFormat("Invalid array type %d. Defaulting to bottom.", arrays->a->mType);
-		return makeBottomAssignmentReturn(); 
-	}
-	DreamMugenVariableAssignment* arrayName = (DreamMugenVariableAssignment*)arrays->a;
-	strcpy(test, arrayName->mName);
-	turnStringLowercase(test);
-
-	
-	if(!string_map_contains(&gVariableHandler.mArrays, test)) {
-		logWarningFormat("Unknown array %s. Returning bottom.", test); 
-		return makeBottomAssignmentReturn(); 
-	}
-
-	ArrayFunction func = (ArrayFunction)string_map_get(&gVariableHandler.mArrays, test);
-	return func(arrays, tPlayer, tIsStatic);
+	ArrayFunction func = (ArrayFunction)arrays->mFunc;
+	return func(&arrays->mIndex, tPlayer, tIsStatic);
 }
 
 static AssignmentReturnValue evaluateUnaryMinusAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* tIsStatic) {
@@ -2383,6 +2316,7 @@ static void* gEvaluationFunctions[] = {
 	(void*)evaluateBooleanAssignment,
 	(void*)evaluateNegationAssignment,
 	(void*)evaluateVariableAssignment,
+	(void*)evaluateRawVariableAssignment,
 	(void*)evaluateNumberAssignment,
 	(void*)evaluateFloatAssignment,
 	(void*)evaluateStringAssignment,
@@ -2416,6 +2350,7 @@ static void setAssignmentStatic(DreamMugenAssignment** tAssignment, AssignmentRe
 	case MUGEN_ASSIGNMENT_TYPE_RANGE:
 	case MUGEN_ASSIGNMENT_TYPE_NEGATION:
 	case MUGEN_ASSIGNMENT_TYPE_VARIABLE:
+	case MUGEN_ASSIGNMENT_TYPE_RAW_VARIABLE:
 	case MUGEN_ASSIGNMENT_TYPE_ARRAY:
 	case MUGEN_ASSIGNMENT_TYPE_LESS:
 	case MUGEN_ASSIGNMENT_TYPE_GREATER:
@@ -2464,17 +2399,13 @@ static AssignmentReturnValue evaluateAssignmentInternal(DreamMugenAssignment** t
 static AssignmentReturnValue timeStoryFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getDolmexicaStoryTimeInState()); }
 
 static void setupStoryVariableAssignments() {
-	gVariableHandler.mVariables = new_string_map();
-	string_map_push(&gVariableHandler.mVariables, "time", (void*)timeStoryFunction);
+	gVariableHandler.mVariables.clear();
+	gVariableHandler.mVariables["time"] = timeStoryFunction;
 
-	string_map_push(&gVariableHandler.mVariables, "random", (void*)randomFunction);
+	gVariableHandler.mVariables["random"] = randomFunction;
 }
 
 //static AssignmentReturnValue movementDownFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerLyingDownFrictionThreshold(tPlayer)); }
-
-static void setupStoryConstantAssignments() {
-	gVariableHandler.mConstants = new_string_map();
-}
 
 static AssignmentReturnValue evaluateAnimTimeStoryArrayAssignment(AssignmentReturnValue tIndex, int* tIsStatic) {
 	int id = convertAssignmentReturnToNumber(tIndex);
@@ -2488,21 +2419,20 @@ static AssignmentReturnValue evaluateAnimPosXStoryArrayAssignment(AssignmentRetu
 	return makeFloatAssignmentReturn(getDolmexicaStoryAnimationPositionX(id));
 }
 
-static AssignmentReturnValue animTimeStoryFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tIsStatic); }
-static AssignmentReturnValue animPosXStoryFunction(DreamMugenDependOnTwoAssignment* tArrays, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimPosXStoryArrayAssignment(evaluateAssignmentDependency(&tArrays->b, tPlayer, tIsStatic), tIsStatic); }
+static AssignmentReturnValue animTimeStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tIsStatic); }
+static AssignmentReturnValue animPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tIsStatic); }
 
 static void setupStoryArrayAssignments() {
-	gVariableHandler.mArrays = new_string_map();
+	gVariableHandler.mArrays.clear();
 
-	string_map_push(&gVariableHandler.mArrays, "animtime", (void*)animTimeStoryFunction);
-	string_map_push(&gVariableHandler.mArrays, "x", (void*)animPosXStoryFunction);
-	string_map_push(&gVariableHandler.mArrays, "ifelse", (void*)ifElseFunction);
+	gVariableHandler.mArrays["animtime"] = animTimeStoryFunction;
+	gVariableHandler.mArrays["x"] = animPosXStoryFunction;
+	gVariableHandler.mArrays["ifelse"] = ifElseFunction;
 }
 
 void setupDreamStoryAssignmentEvaluator()
 {
 	setupStoryVariableAssignments();
-	setupStoryConstantAssignments();
 	setupStoryArrayAssignments();
 	setupComparisons();
 }
@@ -2510,9 +2440,8 @@ void setupDreamStoryAssignmentEvaluator()
 void shutdownDreamAssignmentEvaluator()
 {
 	delete_string_map(&gVariableHandler.mComparisons);
-	delete_string_map(&gVariableHandler.mArrays);
-	delete_string_map(&gVariableHandler.mConstants);
-	delete_string_map(&gVariableHandler.mVariables);
+	gVariableHandler.mArrays.clear();
+	gVariableHandler.mVariables.clear();
 }
 
 int evaluateDreamAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer)

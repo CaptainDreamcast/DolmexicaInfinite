@@ -2918,6 +2918,14 @@ int getPlayerProjectileTimeSinceHit(DreamPlayer * p, int tID)
 	return 0; // TODO
 }
 
+int getPlayerProjectileHit(DreamPlayer * p, int tID)
+{
+	(void)p;
+	(void)tID;
+	return 0; // TODO
+}
+
+
 int getPlayerTimeLeftInHitPause(DreamPlayer* p)
 {
 	if (!p->mIsHitPaused) return 0;

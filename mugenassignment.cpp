@@ -15,6 +15,8 @@
 #include "playerhitdata.h"
 #include "gamelogic.h"
 
+using namespace std;
+
 int gDebugAssignmentAmount;
 
 static struct {
@@ -82,6 +84,11 @@ static void unloadDreamMugenAssignmentString(DreamMugenAssignment * tAssignment)
 
 static void unloadDreamMugenAssignmentVariable(DreamMugenAssignment * tAssignment) {
 	DreamMugenVariableAssignment* e = (DreamMugenVariableAssignment*)tAssignment;
+	(void)e;
+}
+
+static void unloadDreamMugenAssignmentRawVariable(DreamMugenAssignment * tAssignment) {
+	DreamMugenRawVariableAssignment* e = (DreamMugenRawVariableAssignment*)tAssignment;
 	freeMemory(e->mName);
 }
 
@@ -123,6 +130,9 @@ void destroyDreamMugenAssignment(DreamMugenAssignment * tAssignment)
 		break;
 	case MUGEN_ASSIGNMENT_TYPE_VARIABLE:
 		unloadDreamMugenAssignmentVariable(tAssignment);
+		break;
+	case MUGEN_ASSIGNMENT_TYPE_RAW_VARIABLE:
+		unloadDreamMugenAssignmentRawVariable(tAssignment);
 		break;
 	case MUGEN_ASSIGNMENT_TYPE_NUMBER:
 		unloadDreamMugenAssignmentNumber(tAssignment);
@@ -169,6 +179,27 @@ static DreamMugenAssignment * makeMugenTwoElementAssignment(DreamMugenAssignment
 	data->a = a;
 	data->b = b;
 	data->mType = tType;
+	return (DreamMugenAssignment*)data;
+}
+
+extern std::map<string, AssignmentReturnValue(*)(DreamMugenAssignment**, DreamPlayer*, int*)>& getActiveMugenAssignmentArrayMap();
+
+static DreamMugenAssignment * makeMugenArrayAssignment(char* tName, DreamMugenAssignment * tIndex)
+{
+	std::map<string, AssignmentReturnValue(*)(DreamMugenAssignment**, DreamPlayer*, int*)>& m = getActiveMugenAssignmentArrayMap();
+
+	string s = string(tName);
+	if (!stl_map_contains(m, s)) {
+		logWarningFormat("Unrecognized array %s\n. Defaulting to bottom.", tName);
+		return makeDreamFalseMugenAssignment(); // TODO: proper bottom
+	}
+	AssignmentReturnValue(*func)(DreamMugenAssignment**, DreamPlayer*, int*) = m[s];
+
+	DreamMugenArrayAssignment* data = (DreamMugenArrayAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenArrayAssignment));
+	gDebugAssignmentAmount++;
+	data->mFunc = (void*)func;
+	data->mIndex = tIndex;
+	data->mType = MUGEN_ASSIGNMENT_TYPE_ARRAY;
 	return (DreamMugenAssignment*)data;
 }
 
@@ -683,14 +714,72 @@ int doDreamAssignmentStringsBeginsWithPattern(char* tPattern, char* tText) {
 	return 1;
 }
 
+extern std::map<std::string, AssignmentReturnValue(*)(DreamPlayer*)>& getActiveMugenAssignmentVariableMap();
+
+static int isMugenVariable(char* tText) {
+	char* text = (char*)allocMemory(strlen(tText) + 2);
+	strcpy(text, tText);
+	turnStringLowercase(text);
+
+	auto m = getActiveMugenAssignmentVariableMap();
+	
+	int ret = m.find(text) != m.end();
+	freeMemory(text);
+
+	return ret;
+}
+
 static DreamMugenAssignment* parseMugenVariableFromString(char* tText) {
+	char* text = (char*)allocMemory(strlen(tText) + 2);
+	strcpy(text, tText);
+	turnStringLowercase(text);
+	
 	DreamMugenVariableAssignment* data = (DreamMugenVariableAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenVariableAssignment));
 	gDebugAssignmentAmount++;
-	data->mName = (char*)allocMemoryOnMemoryStackOrMemory(strlen(tText)+2);
-	strcpy(data->mName, tText);
+	auto m = getActiveMugenAssignmentVariableMap();
+	data->mFunc = m[text];
 	data->mType = MUGEN_ASSIGNMENT_TYPE_VARIABLE;
+	freeMemory(text);
 	return (DreamMugenAssignment*)data;
 }
+
+static DreamMugenAssignment* parseMugenRawVariableFromString(char* tText) {
+	DreamMugenRawVariableAssignment* data = (DreamMugenRawVariableAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenRawVariableAssignment));
+	gDebugAssignmentAmount++;
+	data->mName = (char*)allocMemoryOnMemoryStackOrMemory(strlen(tText) + 2);
+	strcpy(data->mName, tText);
+	data->mType = MUGEN_ASSIGNMENT_TYPE_RAW_VARIABLE;
+	return (DreamMugenAssignment*)data;
+}
+
+static void sanitizeTextFront(char** tText) {
+	int n = strlen(*tText);
+	int i;
+	for (i = 0; i < n; i++) {
+		if (**tText != ' ') {
+			return;
+		}
+
+		(*tText)++;
+	}
+}
+
+static void sanitizeTextBack(char* tText) {
+	int n = strlen(tText);
+
+	int i;
+	for (i = n - 1; i >= 0; i--) {
+		if (tText[i] == ' ') tText[i] = '\0';
+		else if (tText[i] == ',') tText[i] = '\0'; // TODO: think about trailing commas
+		else return;
+	}
+}
+
+static void sanitizeText(char** tText) {
+	sanitizeTextFront(tText);
+	sanitizeTextBack(*tText);
+}
+
 
 static int isArray(char* tText) {
 
@@ -714,14 +803,16 @@ static DreamMugenAssignment* parseArrayFromString(char* tText) {
 	strcpy(text1, tText);
 	text1[posOpen] = '\0';
 
+	char* saneText1 = text1;
+	sanitizeText(&saneText1);
+	turnStringLowercase(saneText1);
+
 	strcpy(text2, &tText[posOpen+1]);
 	char* text2End = strrchr(text2, ')');
 	*text2End = '\0';
 
-	DreamMugenAssignment* a = parseDreamMugenAssignmentFromString(text1);
 	DreamMugenAssignment* b = parseDreamMugenAssignmentFromString(text2);
-
-	return makeMugenTwoElementAssignment(MUGEN_ASSIGNMENT_TYPE_ARRAY, a, b);
+	return makeMugenArrayAssignment(saneText1, b);
 }
 
 static int isVectorAssignment(char* tText) {
@@ -892,34 +983,6 @@ static DreamMugenAssignment* parseMugenOperatorArgumentFromString(char* tText) {
 	return parseTwoElementMugenAssignmentFromString(text, MUGEN_ASSIGNMENT_TYPE_OPERATOR_ARGUMENT, "$$");
 }
 
-static void sanitizeTextFront(char** tText) {
-	int n = strlen(*tText);
-	int i;
-	for (i = 0; i < n; i++) {
-		if (**tText != ' ') {
-			return;
-		}
-
-		(*tText)++;
-	}
-}
-
-static void sanitizeTextBack(char* tText) {
-	int n = strlen(tText);
-
-	int i;
-	for (i = n - 1; i >= 0; i--) {
-		if (tText[i] == ' ') tText[i] = '\0';
-		else if (tText[i] == ',') tText[i] = '\0'; // TODO: think about trailing commas
-		else return;
-	}
-}
-
-static void sanitizeText(char** tText) {
-	sanitizeTextFront(tText);
-	sanitizeTextBack(*tText);
-}
-
 DreamMugenAssignment * parseDreamMugenAssignmentFromString(char * tText)
 {
 	sanitizeText(&tText);
@@ -1008,11 +1071,14 @@ DreamMugenAssignment * parseDreamMugenAssignmentFromString(char * tText)
 	else if (isVectorInsideAssignmentOrTargetAccess(tText)) {
 		return parseMugenVectorFromString(tText);
 	}
+	else if (isMugenVariable(tText)) {
+		return parseMugenVariableFromString(tText);
+	}
 	else if (isArray(tText)) {
 		return parseArrayFromString(tText);
 	}
 	else {
-		return parseMugenVariableFromString(tText);
+		return parseMugenRawVariableFromString(tText);
 	}
 }
 
