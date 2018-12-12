@@ -32,7 +32,7 @@ typedef struct {
 
 static struct {
 	IntMap mRegisteredStates;
-
+	int mIsInStoryMode;
 } gData;
 
 static void loadStateHandler(void* tData) {
@@ -61,7 +61,7 @@ static void updateSingleController(void* tCaller, void* tData) {
 	MugenStateControllerCaller* caller = (MugenStateControllerCaller*)tCaller;
 	DreamMugenStateController* controller = (DreamMugenStateController*)tData;
 	
-	if (caller->mRegisteredState->mPlayer && isPlayerDestroyed(caller->mRegisteredState->mPlayer)) return;
+	if (!gData.mIsInStoryMode && caller->mRegisteredState->mPlayer && isPlayerDestroyed(caller->mRegisteredState->mPlayer)) return;
 	if (caller->mHasChangedState) return;
 	if (!evaluateTrigger(&controller->mTrigger, caller->mRegisteredState->mPlayer)) return;
 
@@ -87,7 +87,7 @@ static DreamMugenStates* getCurrentStateMachineStates(RegisteredState* tRegister
 }
 
 static void updateSingleState(RegisteredState* tRegisteredState, int tState, DreamMugenStates* tStates) {
-	if (!isPlayer(tRegisteredState->mPlayer) || isPlayerDestroyed(tRegisteredState->mPlayer)) return;
+	if (!gData.mIsInStoryMode && tRegisteredState->mPlayer && (!isPlayer(tRegisteredState->mPlayer) || isPlayerDestroyed(tRegisteredState->mPlayer))) return;
 
 	IntMap visitedStates = new_int_map();
 	
@@ -130,7 +130,7 @@ static int updateSingleStateMachineByReference(RegisteredState* tRegisteredState
 	}
 	updateSingleState(tRegisteredState, tRegisteredState->mState, activeStates);
 
-	return tRegisteredState->mPlayer && isPlayerDestroyed(tRegisteredState->mPlayer);
+	return !gData.mIsInStoryMode && tRegisteredState->mPlayer && isPlayerDestroyed(tRegisteredState->mPlayer);
 }
 
 static int updateSingleStateMachine(void* tCaller, void* tData) {
@@ -166,9 +166,9 @@ int registerDreamMugenStateMachine(DreamMugenStates * tStates, DreamPlayer* tPla
 	return int_map_push_back_owned(&gData.mRegisteredStates, e);
 }
 
-int registerDreamMugenStoryStateMachine(DreamMugenStates * tStates)
+int registerDreamMugenStoryStateMachine(DreamMugenStates * tStates, StoryInstance* tInstance)
 {
-	int id = registerDreamMugenStateMachine(tStates, NULL);
+	int id = registerDreamMugenStateMachine(tStates, (DreamPlayer*)tInstance);
 	setDreamRegisteredStateToHelperMode(id);
 	setDreamRegisteredStateDisableCommandState(id);
 
@@ -308,7 +308,7 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 	DreamMugenState* newState = &states->mStates[e->mState];
 	resetStateControllers(newState);
 	
-	if (!e->mPlayer) return;
+	if (!e->mPlayer || gData.mIsInStoryMode) return;
 
 	resetPlayerMoveContactCounter(e->mPlayer);
 	setPlayerStateType(e->mPlayer, newState->mType);
@@ -394,4 +394,14 @@ void updateDreamSingleStateMachineByID(int tID) {
 	assert(int_map_contains(&gData.mRegisteredStates, tID));
 	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	updateSingleStateMachineByReference(e);
+}
+
+void setStateMachineHandlerToStory()
+{
+	gData.mIsInStoryMode = 1;
+}
+
+void setStateMachineHandlerToFight()
+{
+	gData.mIsInStoryMode = 0;
 }

@@ -6,7 +6,7 @@
 #include "mugencommandreader.h"
 #include "playerdefinition.h"
 
-int registerDreamMugenCommands(DreamPlayer* tPlayer, DreamMugenCommands* tCommands);
+int registerDreamMugenCommands(int tControllerID, DreamMugenCommands* tCommands);
 
 int isDreamCommandActive(int tID, const char* tCommandName);
 void setDreamPlayerCommandActiveForAI(int tID, const char* tCommandName, Duration tBufferTime);

@@ -17,7 +17,7 @@ typedef enum {
 
 typedef struct {
 	AssignmentReturnType mType;
-	char mData[100];
+	char mData[200];
 } AssignmentReturnValue;
 
 typedef enum {

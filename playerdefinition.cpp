@@ -183,7 +183,7 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	malloc_stats();
 
 	setPlayerExternalDependencies(tPlayer);
-	tPlayer->mCommandID = registerDreamMugenCommands(tPlayer, &tPlayer->mHeader->mFiles.mCommands);
+	tPlayer->mCommandID = registerDreamMugenCommands(tPlayer->mControllerID, &tPlayer->mHeader->mFiles.mCommands);
 	malloc_stats();
 
 	if (getPlayerAILevel(tPlayer)) {
@@ -1633,6 +1633,10 @@ DreamPlayer * getPlayerRoot(DreamPlayer * p)
 
 DreamPlayer * getPlayerParent(DreamPlayer * p)
 {
+	if (!p->mParent) {
+		logWarningFormat("%d %d trying to access parents as root. Returning self.\n", p->mRootID, p->mID);
+		return p;
+	}
 	return p->mParent;
 }
 

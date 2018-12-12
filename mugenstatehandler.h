@@ -4,11 +4,12 @@
 
 #include "mugenstatereader.h"
 #include "playerdefinition.h"
+#include "dolmexicastoryscreen.h"
 
 ActorBlueprint getDreamMugenStateHandler();
 
 int registerDreamMugenStateMachine(DreamMugenStates* tStates, DreamPlayer* tPlayer);
-int registerDreamMugenStoryStateMachine(DreamMugenStates* tStates);
+int registerDreamMugenStoryStateMachine(DreamMugenStates * tStates, StoryInstance* tInstance);
 void removeDreamRegisteredStateMachine(int tID);
 int getDreamRegisteredStateState(int tID);
 int getDreamRegisteredStatePreviousState(int tID);
@@ -32,4 +33,5 @@ void changeDreamHandledStateMachineStateToOwnStateMachineWithoutChangingState(in
 
 
 void updateDreamSingleStateMachineByID(int tID);
-
+void setStateMachineHandlerToStory();
+void setStateMachineHandlerToFight();
