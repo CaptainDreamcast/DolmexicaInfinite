@@ -424,6 +424,7 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 	char file[200];
 	char path[1024];
 	char scriptPath[1024];
+	char scriptPathPreloaded[1024];
 	char name[100];
 	char palettePath[1024];
 
@@ -448,7 +449,13 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 	getMugenDefStringOrDefault(file, &script, "Files", "sprite", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
-	e->mSprites = loadMugenSpriteFilePortraits(scriptPath, preferredPalette, hasPalettePath, palettePath);
+	sprintf(scriptPathPreloaded, "%s.portraits.preloaded", scriptPath);
+	if (isFile(scriptPathPreloaded)) {
+		e->mSprites = loadMugenSpriteFilePortraits(scriptPathPreloaded, preferredPalette, hasPalettePath, palettePath);
+	}
+	else {
+		e->mSprites = loadMugenSpriteFilePortraits(scriptPath, preferredPalette, hasPalettePath, palettePath);
+	}
 
 	strcpy(e->mCharacterName, tCharacterName);
 	e->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "Info", "displayname");

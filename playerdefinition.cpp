@@ -1309,6 +1309,7 @@ static int isPlayerInCorner(DreamPlayer* p, int tIsCheckingRightCorner);
 
 static void handlePlayerCornerPush(DreamPlayer* p, DreamPlayer* tOtherPlayer) {
 	if (isPlayerHelper(tOtherPlayer) || isPlayerProjectile(tOtherPlayer)) return;
+	if (getPlayerStateType(tOtherPlayer) == MUGEN_STATE_TYPE_AIR) return;
 	if (!isPlayerInCorner(p, getActiveHitDataIsFacingRight(p))) return;
 
 	double pushOffsetX;
