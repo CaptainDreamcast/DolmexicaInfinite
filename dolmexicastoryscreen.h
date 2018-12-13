@@ -62,6 +62,9 @@ typedef struct {
 	std::map<int, double> mFloatVars;
 	std::map<int, std::string> mStringVars;
 
+	std::map<std::string, int> mTextNames;
+
+
 	int mStateMachineID;
 } StoryInstance;
 
@@ -99,6 +102,8 @@ void setDolmexicaStoryTextNextState(StoryInstance* tInstance, int tID, int tNext
 void setDolmexicaStoryTextLockToCharacter(StoryInstance* tInstance, int tID, int tCharacterID, Position tOffset);
 void setDolmexicaStoryTextLockToCharacter(StoryInstance* tInstance, int tID, int tCharacterID, Position tOffset, int tHelperID);
 void setDolmexicaStoryTextInactive(StoryInstance* tInstance, int tID);
+void setDolmexicaStoryTextName(StoryInstance* tInstance, int tID, std::string tName);
+int getDolmexicaStoryTextIDFromName(StoryInstance* tInstance, std::string tName);
 
 void changeDolmexicaStoryState(StoryInstance* tInstance, int tNextState);
 void endDolmexicaStoryboard(StoryInstance* tInstance, int tNextStoryState);

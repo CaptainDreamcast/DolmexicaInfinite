@@ -91,6 +91,7 @@ static void initStoryInstance(StoryInstance& e){
 	e.mIntVars.clear();
 	e.mFloatVars.clear();
 	e.mStringVars.clear();
+	e.mTextNames.clear();
 }
 
 static void loadStoryScreen() {
@@ -624,6 +625,16 @@ void setDolmexicaStoryTextInactive(StoryInstance * tInstance, int tID)
 	}
 
 	e->mIsDisabled = 1;
+}
+
+void setDolmexicaStoryTextName(StoryInstance * tInstance, int tID, std::string tName)
+{
+	tInstance->mTextNames[tName] = tID;
+}
+
+int getDolmexicaStoryTextIDFromName(StoryInstance * tInstance, std::string tName)
+{
+	return tInstance->mTextNames[tName];
 }
 
 void changeDolmexicaStoryState(StoryInstance* tInstance, int tNextState)
