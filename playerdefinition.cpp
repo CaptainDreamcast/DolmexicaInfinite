@@ -1262,10 +1262,6 @@ static void setPlayerHitStatesNonPlayer(DreamPlayer* p, DreamPlayer* tOtherPlaye
 }
 
 static void setPlayerHitStates(DreamPlayer* p, DreamPlayer* tOtherPlayer) {
-	if (p->mID == 21001) {
-		printf("start\n");
-	}
-
 	if (isPlayerHelper(p) || isPlayerProjectile(p)) {
 		setPlayerHitStatesNonPlayer(p, tOtherPlayer);
 	}
@@ -1931,8 +1927,7 @@ double getPlayerPositionX(DreamPlayer* p, int tCoordinateP)
 
 double getPlayerPositionBasedOnStageFloorY(DreamPlayer * p, int tCoordinateP)
 {
-	Position pos = getDreamStageCenterOfScreenBasedOnPlayer(tCoordinateP);
-	Position ret = vecSub(getPlayerPosition(p, tCoordinateP), pos);
+	Position ret = getPlayerPosition(p, tCoordinateP);
 	return ret.y;
 }
 
@@ -4062,6 +4057,11 @@ static void copyOverCleanFlag2(char* tDst, char* tSrc) {
 void addPlayerNotHitByFlag2(DreamPlayer * p, int tSlot, char * tFlag)
 {
 
+	if (p->mNotHitBy[tSlot].mFlag2Amount >= MAXIMUM_HITSLOT_FLAG_2_AMOUNT) {
+		logWarningFormat("Too many nothitby flags. Ignoring flag %s.", tFlag);
+		return;
+	}
+
 	char* nFlag = (char*)allocMemory(strlen(tFlag) + 5);
 	copyOverCleanFlag2(nFlag, tFlag);
 	if (strlen(nFlag) != 2) {
@@ -4070,8 +4070,6 @@ void addPlayerNotHitByFlag2(DreamPlayer * p, int tSlot, char * tFlag)
 		return;
 	}
 	turnStringLowercase(nFlag);
-
-	assert(p->mNotHitBy[tSlot].mFlag2Amount < MAXIMUM_HITSLOT_FLAG_2_AMOUNT);
 
 	strcpy(p->mNotHitBy[tSlot].mFlag2[p->mNotHitBy[tSlot].mFlag2Amount], nFlag);
 	p->mNotHitBy[tSlot].mFlag2Amount++;
