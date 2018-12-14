@@ -818,7 +818,7 @@ typedef enum {
 } VarSetType;
 
 typedef struct {
-	int mID;
+	DreamMugenAssignment* mID;
 	DreamMugenAssignment* mAssignment;
 
 	uint8_t mType;
@@ -872,7 +872,7 @@ static void parseSingleVarSetControllerEntry(void* tCaller, char* tName, void* t
 		e->mType = VAR_SET_TYPE_INTEGER;
 	}
 
-	e->mID = atoi(value);
+	e->mID = makeDreamNumberMugenAssignment(atoi(value));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tName, caller->mGroup, &e->mAssignment));
 
@@ -882,7 +882,7 @@ static void parseSingleVarSetControllerEntry(void* tCaller, char* tName, void* t
 static void loadSingleOriginalVarSetController(Vector* tDst, MugenDefScriptGroup* tGroup, MugenDefScriptGroupElement* tIDElement, VarSetType tType) {
 	VarSetControllerEntry* e = (VarSetControllerEntry*)allocMemoryOnMemoryStackOrMemory(sizeof(VarSetControllerEntry));
 	e->mType = tType;
-	e->mID = getMugenDefNumberVariableAsElement(tIDElement);
+	fetchDreamAssignmentFromGroupAsElement(tIDElement, &e->mID);
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mAssignment));
 
 	vector_push_back_owned(tDst, e);
@@ -2744,7 +2744,12 @@ static void handleHitDefinitionSingleHitFlag(DreamMugenAssignment** tFlagAssignm
 
 static void handleHitDefinitionAffectTeam(DreamMugenAssignment** tAffectAssignment, DreamPlayer* tPlayer) {
 	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAffectAssignment, tPlayer);
-	assert(strlen(flag) == 1);
+	if (strlen(flag) != 1) {
+		logWarningFormat("Unable to parse hitdef affectteam %s. Set to enemy.", flag);
+		setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_ENEMY);
+		freeMemory(flag);
+		return;
+	}
 	turnStringLowercase(flag);
 
 	if (*flag == 'b') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_BOTH);
@@ -3421,21 +3426,23 @@ static void handleSettingSingleVariable(void* tCaller, void* tData) {
 	VarSetHandlingCaller* caller = (VarSetHandlingCaller*)tCaller;
 	VarSetControllerEntry* e = (VarSetControllerEntry*)tData;
 
+	int id = evaluateDreamAssignmentAndReturnAsInteger(&e->mID, caller->mPlayer);
+
 	if (e->mType == VAR_SET_TYPE_SYSTEM) {
 		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, caller->mPlayer);
-		setPlayerSystemVariable(caller->mTarget, e->mID, val);
+		setPlayerSystemVariable(caller->mTarget, id, val);
 	}
 	else if (e->mType == VAR_SET_TYPE_INTEGER) {
 		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, caller->mPlayer);
-		setPlayerVariable(caller->mTarget, e->mID, val);
+		setPlayerVariable(caller->mTarget, id, val);
 	}
 	else if (e->mType == VAR_SET_TYPE_SYSTEM_FLOAT) {
 		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mAssignment, caller->mPlayer);
-		setPlayerSystemFloatVariable(caller->mTarget, e->mID, val);
+		setPlayerSystemFloatVariable(caller->mTarget, id, val);
 	}
 	else if (e->mType == VAR_SET_TYPE_FLOAT) {
 		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mAssignment, caller->mPlayer);
-		setPlayerFloatVariable(caller->mTarget, e->mID, val);
+		setPlayerFloatVariable(caller->mTarget, id, val);
 	}
 	else {
 		logWarningFormat("Unrecognized variable type %d. Ignoring.", e->mType);
@@ -3458,22 +3465,24 @@ static int handleSettingVariable(DreamMugenStateController* tController, DreamPl
 static void handleAddingSingleVariable(void* tCaller, void* tData) {
 	VarSetHandlingCaller* caller = (VarSetHandlingCaller*)tCaller;
 	VarSetControllerEntry* e = (VarSetControllerEntry*)tData;
+	
+	int id = evaluateDreamAssignmentAndReturnAsInteger(&e->mID, caller->mPlayer);
 
 	if (e->mType == VAR_SET_TYPE_SYSTEM) {
 		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, caller->mPlayer);
-		addPlayerSystemVariable(caller->mTarget, e->mID, val);
+		addPlayerSystemVariable(caller->mTarget, id, val);
 	}
 	else if (e->mType == VAR_SET_TYPE_INTEGER) {
 		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, caller->mPlayer);
-		addPlayerVariable(caller->mTarget, e->mID, val);
+		addPlayerVariable(caller->mTarget, id, val);
 	}
 	else if (e->mType == VAR_SET_TYPE_SYSTEM_FLOAT) {
 		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mAssignment, caller->mPlayer);
-		addPlayerSystemFloatVariable(caller->mTarget, e->mID, val);
+		addPlayerSystemFloatVariable(caller->mTarget, id, val);
 	}
 	else if (e->mType == VAR_SET_TYPE_FLOAT) {
 		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mAssignment, caller->mPlayer);
-		addPlayerFloatVariable(caller->mTarget, e->mID, val);
+		addPlayerFloatVariable(caller->mTarget, id, val);
 	}
 	else {
 		logWarningFormat("Unrecognized variable type %d. Ignoring.", e->mType);

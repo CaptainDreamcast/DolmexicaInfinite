@@ -1085,11 +1085,16 @@ DreamMugenAssignment * parseDreamMugenAssignmentFromString(char * tText)
 
 int fetchDreamAssignmentFromGroupAndReturnWhetherItExists(char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tOutput) {
 	if (!string_map_contains(&tGroup->mElements, tName)) return 0;
-
 	MugenDefScriptGroupElement* e = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tName);
-	char* text = getAllocatedMugenDefStringVariableForAssignmentAsElement(e);
-	*tOutput = parseDreamMugenAssignmentFromString(text);
-	freeMemory(text);
+	fetchDreamAssignmentFromGroupAsElement(e, tOutput);
 
 	return 1;
 }
+
+void fetchDreamAssignmentFromGroupAsElement(MugenDefScriptGroupElement * tElement, DreamMugenAssignment ** tOutput)
+{
+	char* text = getAllocatedMugenDefStringVariableForAssignmentAsElement(tElement);
+	*tOutput = parseDreamMugenAssignmentFromString(text);
+	freeMemory(text);
+}
+
