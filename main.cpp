@@ -67,14 +67,10 @@ int main(int argc, char** argv) {
 	
 	initPrismWrapperWithMugenFlags();
 	
-    printf("inited\n");
-
 	setMainFileSystem();	
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
 	loadMugenTextHandler();
-    printf("inited\n");
 	loadMugenSystemFonts();
-    printf("inited fonts\n");	
 	logg("Check framerate");
 	FramerateSelectReturnType framerateReturnType = selectFramerate();
 	if (framerateReturnType == FRAMERATE_SCREEN_RETURN_ABORT) {
@@ -92,7 +88,6 @@ int main(int argc, char** argv) {
 	setMinimumLogType(LOG_TYPE_NORMAL);
 	setScreenEffectZ(99);
 	loadMugenConfig();
-    printf("inited config\n");	
 	setScreenAfterWrapperLogoScreen(getDreamTitleScreen());
 
 	startScreenHandling(getDreamWarningScreen());
