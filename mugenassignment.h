@@ -132,7 +132,7 @@ DreamMugenAssignment* makeDreamOrMugenAssignment(DreamMugenAssignment* a, DreamM
 
 DreamMugenAssignment*  parseDreamMugenAssignmentFromString(char* tText);
 
-int fetchDreamAssignmentFromGroupAndReturnWhetherItExists(char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tOutput);
+int fetchDreamAssignmentFromGroupAndReturnWhetherItExists(const char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tOutput);
 void fetchDreamAssignmentFromGroupAsElement(MugenDefScriptGroupElement* tElement, DreamMugenAssignment** tOutput);
 
 int doDreamAssignmentStringsBeginsWithPattern(char* tPattern, char* tText);

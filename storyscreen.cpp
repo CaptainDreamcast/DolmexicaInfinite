@@ -70,7 +70,7 @@ static void loadScriptAndSprites() {
 
 static int isSceneGroup(MugenDefScriptGroup* tGroup) {
 	char firstW[100];
-	int items = sscanf(tGroup->mName, "%s", firstW);
+	int items = sscanf(tGroup->mName.data(), "%s", firstW);
 	if (items != 1) return 0;
 
 	return !strcmp("Scene", firstW);

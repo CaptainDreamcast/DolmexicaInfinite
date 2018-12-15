@@ -13,7 +13,7 @@
 
 using namespace std;
 
-static int isMugenStateDef(char* tName) {
+static int isMugenStateDef(const char* tName) {
 	char firstW[100];
 	sscanf(tName, "%s", firstW);
 	turnStringLowercase(firstW);
@@ -24,7 +24,7 @@ static MugenDefScriptGroup* getFirstStateDefGroup(MugenDefScript* tScript) {
 	MugenDefScriptGroup* cur = tScript->mFirstGroup;
 
 	while (cur != NULL) {
-		if (isMugenStateDef(cur->mName)) return cur;
+		if (isMugenStateDef(cur->mName.data())) return cur;
 		cur = cur->mNext;
 	}
 
@@ -114,32 +114,32 @@ static void handleMugenStateDefPhysics(DreamMugenState* tState, MugenDefScriptGr
 
 static void handleMugenStateDefAnimation(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
 	tState->mIsChangingAnimation = 1;
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName, tGroup, &tState->mAnimation));
+	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mAnimation));
 } 
 
 static void handleMugenStateDefVelocitySetting(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
 	tState->mIsSettingVelocity = 1;
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName, tGroup, &tState->mVelocity));
+	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mVelocity));
 }
 
 static void handleMugenStateDefControl(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
 	tState->mIsChangingControl = 1;
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName, tGroup, &tState->mControl));
+	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mControl));
 }
 
 static void handleMugenStateSpritePriority(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
 	tState->mIsChangingSpritePriority = 1;
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName, tGroup, &tState->mSpritePriority));
+	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mSpritePriority));
 }
 
 static void handleMugenStatePowerAdd(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
 	tState->mIsAddingPower = 1;
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName, tGroup, &tState->mPowerAdd));
+	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mPowerAdd));
 }
 
 static void handleMugenStateJuggle(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
 	tState->mDoesRequireJuggle = 1;
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName, tGroup, &tState->mJuggleRequired));
+	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mJuggleRequired));
 }
 
 static void handleMugenStateHitDefPersistence(DreamMugenState* tState, MugenDefScriptGroupElement* tElement) {
@@ -156,12 +156,12 @@ static void handleMugenStateHitCountPersistence(DreamMugenState* tState, MugenDe
 
 static void handleMugenStateFacePlayer2(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
 	tState->mHasFacePlayer2Info = 1;
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName, tGroup, &tState->mDoesFacePlayer2));
+	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mDoesFacePlayer2));
 }
 
 static void handleMugenStatePriority(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
 	tState->mHasPriority = 1;
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName, tGroup, &tState->mPriority));
+	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mPriority));
 }
 
 typedef struct {
@@ -170,53 +170,53 @@ typedef struct {
 } MugenStateDefCaller;
 
 
-static void handleSingleMugenStateDefElement(void* tCaller, char* tKey, void* tData) {
+static void handleSingleMugenStateDefElement(MugenStateDefCaller* tCaller, const string& tKey, MugenDefScriptGroupElement& tData) {
 	(void)tKey;
 	MugenStateDefCaller* caller = (MugenStateDefCaller*)tCaller;
 	DreamMugenState* state = caller->mState;
 	MugenDefScriptGroup* group = caller->mGroup;
 
-	MugenDefScriptGroupElement* e = (MugenDefScriptGroupElement*)tData;
+	MugenDefScriptGroupElement* e = &tData;
 
-	if (!strcmp("type", e->mName)) {
+	if (e->mName == "type") {
 		handleMugenStateDefType(state, e);
-	} else if (!strcmp("movetype", e->mName)) {
+	} else if (e->mName == "movetype") {
 		handleMugenStateDefMoveType(state, e);
 	}
-	else if (!strcmp("physics", e->mName)) {
+	else if (e->mName == "physics") {
 		handleMugenStateDefPhysics(state, e);
 	}
-	else if (!strcmp("anim", e->mName)) {
+	else if (e->mName == "anim") {
 		handleMugenStateDefAnimation(state, e, group);
 	}
-	else if (!strcmp("velset", e->mName)) {
+	else if (e->mName == "velset") {
 		handleMugenStateDefVelocitySetting(state, e, group);
 	}
-	else if (!strcmp("ctrl", e->mName)) {
+	else if (e->mName == "ctrl") {
 		handleMugenStateDefControl(state, e, group);
 	}
-	else if (!strcmp("sprpriority", e->mName)) {
+	else if (e->mName == "sprpriority") {
 		handleMugenStateSpritePriority(state, e, group);
 	}
-	else if (!strcmp("poweradd", e->mName)) {
+	else if (e->mName == "poweradd") {
 		handleMugenStatePowerAdd(state, e, group);
 	}
-	else if (!strcmp("juggle", e->mName)) {
+	else if (e->mName == "juggle") {
 		handleMugenStateJuggle(state, e, group);
 	}
-	else if (!strcmp("hitdefpersist", e->mName)) {
+	else if (e->mName == "hitdefpersist") {
 		handleMugenStateHitDefPersistence(state, e);
 	}
-	else if (!strcmp("movehitpersist", e->mName)) {
+	else if (e->mName == "movehitpersist") {
 		handleMugenStateMoveHitPersistence(state, e);
 	}
-	else if (!strcmp("hitcountpersist", e->mName)) {
+	else if (e->mName == "hitcountpersist") {
 		handleMugenStateHitCountPersistence(state, e);
 	}
-	else if (!strcmp("facep2", e->mName)) {
+	else if (e->mName == "facep2") {
 		handleMugenStateFacePlayer2(state, e, group);
 	}
-	else if (!strcmp("priority", e->mName)) {
+	else if (e->mName == "priority") {
 		handleMugenStatePriority(state, e, group);
 	}
 	else {
@@ -236,7 +236,7 @@ static void handleMugenStateDef(DreamMugenStates* tStates, MugenDefScriptGroup* 
 	DreamMugenState state;
 
 	char dummy[100];
-	sscanf(tGroup->mName, "%s %d", dummy, &state.mID);
+	sscanf(tGroup->mName.data(), "%s %d", dummy, &state.mID);
 	gMugenStateDefParseState.mCurrentGroup = state.mID;
 
 	state.mType = MUGEN_STATE_TYPE_STANDING;
@@ -259,7 +259,7 @@ static void handleMugenStateDef(DreamMugenStates* tStates, MugenDefScriptGroup* 
 	MugenStateDefCaller caller;
 	caller.mState = &state;
 	caller.mGroup = tGroup;
-	string_map_map(&tGroup->mElements, handleSingleMugenStateDefElement, &caller);
+	stl_string_map_map(tGroup->mElements, handleSingleMugenStateDefElement, &caller);
 
 	if (stl_map_contains(tStates->mStates, state.mID)) {
 		removeState(tStates, state.mID); // TODO
@@ -267,7 +267,7 @@ static void handleMugenStateDef(DreamMugenStates* tStates, MugenDefScriptGroup* 
 	tStates->mStates[state.mID] = state;
 }
 
-static int isMugenStateController(char* tName) {
+static int isMugenStateController(const char* tName) {
 	char firstW[100];
 	sscanf(tName, "%s", firstW);
 	return !strcmp("State", firstW) || !strcmp("state", firstW);
@@ -283,9 +283,9 @@ static void handleMugenStateControllerInDefGroup(DreamMugenStates* tStates, Muge
 
 static void handleSingleMugenStateDefGroup(DreamMugenStates* tStates, MugenDefScriptGroup* tGroup) {
 
-	if (isMugenStateDef(tGroup->mName)) {
+	if (isMugenStateDef(tGroup->mName.data())) {
 		handleMugenStateDef(tStates, tGroup);
-	} else if (isMugenStateController(tGroup->mName)) {
+	} else if (isMugenStateController(tGroup->mName.data())) {
 		handleMugenStateControllerInDefGroup(tStates, tGroup);
 	}
 	else {

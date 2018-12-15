@@ -373,7 +373,7 @@ static void loadBackgroundStateControllerDef(MugenDefScriptGroup* tGroup) {
 
 static void loadBackgroundStatesFromGroup(MugenDefScriptGroup* tGroup) {
 	char firstW[100];
-	int items = sscanf(tGroup->mName, "%s", firstW); // TODO: remove firstW
+	int items = sscanf(tGroup->mName.data(), "%s", firstW); // TODO: remove firstW
 	if (!items) return;
 	turnStringLowercase(firstW);
 

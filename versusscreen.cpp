@@ -47,10 +47,10 @@ static struct {
 	MugenAnimations mAnimations;
 
 	void(*mCB)();
-} gData;
+} gVersusScreenData;
 
 static void loadPlayerAnimationsAndName(int i) {
-	VersusPlayer* player = &gData.mHeader.mPlayers[i];
+	VersusPlayer* player = &gVersusScreenData.mHeader.mPlayers[i];
 
 	char file[200];
 	char path[1024];
@@ -92,7 +92,7 @@ static void loadPlayerAnimationsAndName(int i) {
 }
 
 static void loadVersusPlayer(int i) {
-	VersusPlayer* player = &gData.mHeader.mPlayers[i];
+	VersusPlayer* player = &gVersusScreenData.mHeader.mPlayers[i];
 
 	char playerName[100];
 	sprintf(playerName, "p%d", i + 1);
@@ -100,30 +100,30 @@ static void loadVersusPlayer(int i) {
 	char fullVariableName[200];
 
 	sprintf(fullVariableName, "%s.pos", playerName);
-	player->mPosition = getMugenDefVectorOrDefault(&gData.mScript, "VS Screen", fullVariableName, makePosition(0, 0, 0));
+	player->mPosition = getMugenDefVectorOrDefault(&gVersusScreenData.mScript, "VS Screen", fullVariableName, makePosition(0, 0, 0));
 
 	sprintf(fullVariableName, "%s.facing", playerName);
-	int faceDirection = getMugenDefIntegerOrDefault(&gData.mScript, "VS Screen", fullVariableName, 1);
+	int faceDirection = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "VS Screen", fullVariableName, 1);
 	player->mIsFacingRight = faceDirection == 1;
 
 	sprintf(fullVariableName, "%s.scale", playerName);
-	player->mScale = getMugenDefVectorOrDefault(&gData.mScript, "VS Screen", fullVariableName, makePosition(1, 1, 1));
+	player->mScale = getMugenDefVectorOrDefault(&gVersusScreenData.mScript, "VS Screen", fullVariableName, makePosition(1, 1, 1));
 
 	sprintf(fullVariableName, "%s.name.pos", playerName);
-	player->mNamePosition = getMugenDefVectorOrDefault(&gData.mScript, "VS Screen", fullVariableName, makePosition(0, 0, 0));
+	player->mNamePosition = getMugenDefVectorOrDefault(&gVersusScreenData.mScript, "VS Screen", fullVariableName, makePosition(0, 0, 0));
 
 	sprintf(fullVariableName, "%s.name.font", playerName);
-	player->mNameFont = getMugenDefVectorIOrDefault(&gData.mScript, "VS Screen", fullVariableName, makeVector3DI(1, 0, 0));
+	player->mNameFont = getMugenDefVectorIOrDefault(&gVersusScreenData.mScript, "VS Screen", fullVariableName, makeVector3DI(1, 0, 0));
 
 
 	loadPlayerAnimationsAndName(i);
 }
 
 static void loadVersusHeader() {
-	gData.mHeader.mTime = getMugenDefIntegerOrDefault(&gData.mScript, "VS Screen", "time", 60);
+	gVersusScreenData.mHeader.mTime = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "VS Screen", "time", 60);
 
-	gData.mHeader.mFadeInTime = getMugenDefIntegerOrDefault(&gData.mScript, "VS Screen", "fadein.time", 10);
-	gData.mHeader.mFadeOutTime = getMugenDefIntegerOrDefault(&gData.mScript, "VS Screen", "fadeout.time", 10);
+	gVersusScreenData.mHeader.mFadeInTime = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "VS Screen", "fadein.time", 10);
+	gVersusScreenData.mHeader.mFadeOutTime = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "VS Screen", "fadeout.time", 10);
 
 	int i;
 	for (i = 0; i < 2; i++) {
@@ -132,8 +132,8 @@ static void loadVersusHeader() {
 }
 
 static void loadVersusMusic() {
-	char* path = getAllocatedMugenDefStringOrDefault(&gData.mScript, "Music", "vs.bgm", " ");
-	int isLooping = getMugenDefIntegerOrDefault(&gData.mScript, "Music", "vs.bgm.loop", 1);
+	char* path = getAllocatedMugenDefStringOrDefault(&gVersusScreenData.mScript, "Music", "vs.bgm", " ");
+	int isLooping = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "Music", "vs.bgm.loop", 1);
 
 	if (isMugenBGMMusicPath(path)) {
 		playMugenBGMMusicPath(path, isLooping);
@@ -148,44 +148,44 @@ static void loadVersusScreen() {
 
 	// TODO: properly
 	char folder[1024];
-	gData.mScript = loadMugenDefScript("assets/data/system.def");
-	gData.mAnimations = loadMugenAnimationFile("assets/data/system.def");
+	gVersusScreenData.mScript = loadMugenDefScript("assets/data/system.def");
+	gVersusScreenData.mAnimations = loadMugenAnimationFile("assets/data/system.def");
 	getPathToFile(folder, "assets/data/system.def");
 	setWorkingDirectory(folder);
 
-	char* text = getAllocatedMugenDefStringVariable(&gData.mScript, "Files", "spr");
-	gData.mSprites = loadMugenSpriteFileWithoutPalette(text);
+	char* text = getAllocatedMugenDefStringVariable(&gVersusScreenData.mScript, "Files", "spr");
+	gVersusScreenData.mSprites = loadMugenSpriteFileWithoutPalette(text);
 	freeMemory(text);
 
 	setWorkingDirectory("/");
 
 	loadVersusHeader();
-	loadMenuBackground(&gData.mScript, &gData.mSprites, &gData.mAnimations, "VersusBGdef", "VersusBG");
+	loadMenuBackground(&gVersusScreenData.mScript, &gVersusScreenData.mSprites, &gVersusScreenData.mAnimations, "VersusBGdef", "VersusBG");
 	loadVersusMusic();
 
-	addFadeIn(gData.mHeader.mFadeInTime, NULL, NULL);
-	addTimerCB(gData.mHeader.mTime, screenTimeFinishedCB, NULL);
+	addFadeIn(gVersusScreenData.mHeader.mFadeInTime, NULL, NULL);
+	addTimerCB(gVersusScreenData.mHeader.mTime, screenTimeFinishedCB, NULL);
 }
 
 static void unloadVersusScreen() {
-	unloadMugenDefScript(gData.mScript);
-	unloadMugenSpriteFile(&gData.mSprites);
-	unloadMugenAnimationFile(&gData.mAnimations);
+	unloadMugenDefScript(gVersusScreenData.mScript);
+	unloadMugenSpriteFile(&gVersusScreenData.mSprites);
+	unloadMugenAnimationFile(&gVersusScreenData.mAnimations);
 
 	int i;
 	for (i = 0; i < 2; i++) {
-		destroyMugenAnimation(gData.mHeader.mPlayers[i].mAnimation);
-		unloadMugenSpriteFile(&gData.mHeader.mPlayers[i].mSprites);
-		freeMemory(gData.mHeader.mPlayers[i].mDisplayCharacterName);
+		destroyMugenAnimation(gVersusScreenData.mHeader.mPlayers[i].mAnimation);
+		unloadMugenSpriteFile(&gVersusScreenData.mHeader.mPlayers[i].mSprites);
+		freeMemory(gVersusScreenData.mHeader.mPlayers[i].mDisplayCharacterName);
 	}
 }
 
 static void gotoNextScreenCB(void* tCaller) {
-	gData.mCB();
+	gVersusScreenData.mCB();
 }
 
 static void screenTimeFinishedCB(void* tCaller) {
-	addFadeOut(gData.mHeader.mFadeOutTime, gotoNextScreenCB, NULL);
+	addFadeOut(gVersusScreenData.mHeader.mFadeOutTime, gotoNextScreenCB, NULL);
 }
 
 static void updateVersusScreen() {
@@ -203,5 +203,5 @@ Screen* getVersusScreen() {
 
 void setVersusScreenFinishedCB(void(*tCB)())
 {
-	gData.mCB = tCB;
+	gVersusScreenData.mCB = tCB;
 }

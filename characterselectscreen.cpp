@@ -328,7 +328,7 @@ static void addSingleSelectStage(char* tPath) {
 static void loadExtraStages() {
 	if (!gData.mStageSelect.mIsUsing) return;
 
-	MugenDefScriptGroup* group = (MugenDefScriptGroup*)string_map_get(&gData.mCharacterScript.mGroups, "ExtraStages");
+	MugenDefScriptGroup* group = &gData.mCharacterScript.mGroups["ExtraStages"];
 	ListIterator iterator = list_iterator_begin(&group->mOrderedElementList);
 	int hasElements = 1;
 	while (hasElements) {
@@ -557,7 +557,7 @@ static void loadSingleMenuCharacter(void* tCaller, void* tData) {
 }
 
 static void loadMenuCharacters() {
-	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&gData.mCharacterScript.mGroups, "Characters");
+	MugenDefScriptGroup* e = &gData.mCharacterScript.mGroups["Characters"];
 
 	MenuCharacterLoadCaller caller;
 	caller.i = 0;
@@ -628,7 +628,7 @@ static void loadSingleMenuStory(void* tCaller, void* tData) {
 }
 
 static void loadMenuStories() {
-	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&gData.mCharacterScript.mGroups, "Stories");
+	MugenDefScriptGroup* e = &gData.mCharacterScript.mGroups["Stories"];
 
 	MenuCharacterLoadCaller caller;
 	caller.i = 0;
@@ -1501,7 +1501,7 @@ static void loadSingleRandomCharacter(void* tCaller, void* tData) {
 
 void setCharacterRandom(MugenDefScript * tScript, int i)
 {
-	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, "Characters");
+	MugenDefScriptGroup* e = &tScript->mGroups["Characters"];
 
 	RandomCharacterCaller caller;
 	caller.mElements = new_vector();
@@ -1568,10 +1568,10 @@ void setStageRandom(MugenDefScript * tScript)
 	caller.mElements = new_vector();
 	caller.mAllElements = new_string_map();
 
-	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, "Characters");
+	MugenDefScriptGroup* e = &tScript->mGroups["Characters"];
 	list_map(&e->mOrderedElementList, loadSingleRandomCharacterStage, &caller);
 
-	e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, "ExtraStages");
+	e = &tScript->mGroups["ExtraStages"];
 	list_map(&e->mOrderedElementList, loadSingleRandomStageStage, &caller);
 
 

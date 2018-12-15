@@ -244,9 +244,9 @@ static void loadStageMusic(MugenDefScript* s) {
 static MugenDefScriptGroup* loadStageBackgroundDefinitionAndReturnGroup(MugenDefScript* s) {
 	MugenDefScriptGroup* bgdef;
 	char name[100];
-	if (string_map_contains(&s->mGroups, "BGDef")) {	
+	if (stl_string_map_contains_array(s->mGroups, "BGDef")) {
 		strcpy(name, "BGDef");
-	} else if(string_map_contains(&s->mGroups, "BGdef")) {
+	} else if(stl_string_map_contains_array(s->mGroups, "BGdef")) {
 		strcpy(name, "BGdef");
 	}
 	else {
@@ -255,7 +255,7 @@ static MugenDefScriptGroup* loadStageBackgroundDefinitionAndReturnGroup(MugenDef
 		return NULL;
 	}
 
-	bgdef = (MugenDefScriptGroup*)string_map_get(&s->mGroups, name);
+	bgdef = &s->mGroups[name];
 
 	getMugenDefStringOrDefault(gData.mBackgroundDefinition.mSpritePath, s, name, "spr", "");
 	gData.mBackgroundDefinition.mDebugBG = getMugenDefIntegerOrDefault(s, name, "debugbg", 0);
@@ -269,7 +269,7 @@ static int isBackgroundElementGroup(MugenDefScriptGroup* tGroup) {
 
 static int isActionGroup(MugenDefScriptGroup* tGroup) {
 	char firstW[100], secondW[100];
-	int items = sscanf(tGroup->mName, "%s %s", firstW, secondW);
+	int items = sscanf(tGroup->mName.data(), "%s %s", firstW, secondW);
 	if (items < 2) return 0;
 
 	turnStringLowercase(firstW);

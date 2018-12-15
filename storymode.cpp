@@ -172,12 +172,12 @@ static void characterSelectFinishedCB() {
 void startStoryMode()
 {
 	MugenDefScript selectScript = loadMugenDefScript("assets/data/select.def");
-	if (!string_map_contains(&selectScript.mGroups, "Stories")) {
+	if (!stl_string_map_contains_array(selectScript.mGroups, "Stories")) {
 		setNewScreen(getDreamTitleScreen());
 		return;
 	}
 	
-	MugenDefScriptGroup* stories = (MugenDefScriptGroup*)string_map_get(&selectScript.mGroups, "Stories");
+	MugenDefScriptGroup* stories = &selectScript.mGroups["Stories"];
 	if (!list_size(&stories->mOrderedElementList)) {
 		setNewScreen(getDreamTitleScreen());
 		return;

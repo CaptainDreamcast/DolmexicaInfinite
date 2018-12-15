@@ -52,9 +52,9 @@ static void handleSingleDefault(void* tCaller, void* tData) {
 
 	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)tData;
 
-	if (!strcmp("command.time", element->mName)) {
+	if (element->mName == "command.time") {
 		setDefaultInteger(&gCommandReader.mDefaultTime, element);
-	} else if (!strcmp("command.buffer.time", element->mName)) {
+	} else if (element->mName == "command.buffer.time") {
 		setDefaultInteger(&gCommandReader.mDefaultBufferTime, element);
 	}
 	else {
@@ -298,14 +298,14 @@ static void handleSingleCommandEntry(void* tCaller, void* tData) {
 	CommandCaller* command = (CommandCaller*)tCaller;
 	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)tData;
 
-	if (!strcmp("name", element->mName)) {
+	if (element->mName == "name") {
 		handleCommandNameEntry(command, element);
-	} else if (!strcmp("command", element->mName)) {
+	} else if (element->mName == "command") {
 		handleCommandInputEntry(command, element);
-	} else if (!strcmp("time", element->mName)) {
+	} else if (element->mName == "time") {
 		handleCommandTimeEntry(&command->mInput.mTime, element);
 	}
-	else if (!strcmp("buffer.time", element->mName)) {
+	else if (element->mName == "buffer.time") {
 		handleCommandTimeEntry(&command->mInput.mBufferTime, element);
 	}
 	else {
@@ -367,7 +367,7 @@ static void loadMugenCommandsFromDefScript(DreamMugenCommands* tCommands, MugenD
 
 	while (current != NULL) {
 		char lowercase[200];
-		copyStringLowercase(lowercase, current->mName);
+		copyStringLowercase(lowercase, current->mName.data());
 
 		if (isCommand(lowercase)) {
 			handleCommand(tCommands, current);

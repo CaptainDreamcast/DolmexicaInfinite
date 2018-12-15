@@ -172,7 +172,7 @@ static void generateEnemies() {
 
 	MugenStringVector enemyTypeAmountVector = getMugenDefStringVectorVariable(&script, "Options", "arcade.maxmatches");
 
-	MugenDefScriptGroup* group = (MugenDefScriptGroup*)string_map_get(&script.mGroups, "Characters");
+	MugenDefScriptGroup* group = &script.mGroups["Characters"];
 	AddEnemyCaller caller;
 	caller.mOrders = new_int_map();
 	list_map(&group->mOrderedElementList, addSingleEnemyToSelection, &caller);

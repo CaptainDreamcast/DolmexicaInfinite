@@ -52,7 +52,7 @@ static void checkSingleElementForTrigger(void* tCaller, void* tData) {
 	TriggerParseCaller* caller = (TriggerParseCaller*)tCaller;
 	MugenDefScriptGroupElement* e = (MugenDefScriptGroupElement*)tData;
 
-	if (strcmp(e->mName, caller->mName)) return;
+	if (strcmp(e->mName.data(), caller->mName)) return;
 
 	char* text = getAllocatedMugenDefStringVariableAsElement(e);
 
@@ -63,7 +63,7 @@ static void checkSingleElementForTrigger(void* tCaller, void* tData) {
 }
 
 static int parseTriggerAndReturnIfFound(char* tName, DreamMugenAssignment** tRoot, MugenDefScriptGroup* tGroup) {
-	if (!string_map_contains(&tGroup->mElements, tName)) return 0;
+	if (!stl_string_map_contains_array(tGroup->mElements, tName)) return 0;
 
 	DreamMugenAssignment* triggerRoot = NULL;
 	TriggerParseCaller caller;
@@ -833,17 +833,16 @@ typedef struct {
 	MugenDefScriptGroup* mGroup;
 } VarSetControllerCaller;
 
-static void parseSingleVarSetControllerEntry(void* tCaller, char* tName, void* tData) {
+static void parseSingleVarSetControllerEntry(VarSetControllerCaller* tCaller, const string& tName, MugenDefScriptGroupElement& tElement) {
 	VarSetControllerCaller* caller = (VarSetControllerCaller*)tCaller;
-	(void)tData;
 
-	int isEntry = strchr(tName, '(') != NULL;
+	int isEntry = tName.find('(') != string::npos;
 	if (!isEntry) return;
 
 	VarSetControllerEntry* e = (VarSetControllerEntry*)allocMemoryOnMemoryStackOrMemory(sizeof(VarSetControllerEntry));
 
 	char name[100];
-	strcpy(name, tName);
+	strcpy(name, tName.data());
 	char* start = strchr(name, '(');
 	assert(start != NULL);
 	*start = '\0';
@@ -874,7 +873,7 @@ static void parseSingleVarSetControllerEntry(void* tCaller, char* tName, void* t
 
 	e->mID = makeDreamNumberMugenAssignment(atoi(value));
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tName, caller->mGroup, &e->mAssignment));
+	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tName.data(), caller->mGroup, &e->mAssignment));
 
 	vector_push_back_owned(&caller->mController->mVarSets, e);
 }
@@ -895,24 +894,24 @@ static void unloadSingleVarSetEntry(void* tCaller, void* tData) {
 }
 
 static void parseVarSetController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
-	int isIntegerVersion = string_map_contains(&tGroup->mElements, "v");
-	int isFloatVersion = string_map_contains(&tGroup->mElements, "fv");
+	int isIntegerVersion = stl_string_map_contains_array(tGroup->mElements, "v");
+	int isFloatVersion = stl_string_map_contains_array(tGroup->mElements, "fv");
 
 	VarSetController* e = (VarSetController*)allocMemoryOnMemoryStackOrMemory(sizeof(VarSetController));
 	e->mVarSets = new_vector();
 
 	if (isIntegerVersion) {
-		loadSingleOriginalVarSetController(&e->mVarSets, tGroup, (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, "v"), VAR_SET_TYPE_INTEGER);
+		loadSingleOriginalVarSetController(&e->mVarSets, tGroup, &tGroup->mElements["v"], VAR_SET_TYPE_INTEGER);
 	}
 	else if (isFloatVersion) {
-		loadSingleOriginalVarSetController(&e->mVarSets, tGroup, (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, "fv"), VAR_SET_TYPE_FLOAT);
+		loadSingleOriginalVarSetController(&e->mVarSets, tGroup, &tGroup->mElements["fv"], VAR_SET_TYPE_FLOAT);
 	}
 	else {
 		VarSetControllerCaller caller;
 		caller.mController = e;
 		caller.mGroup = tGroup;
 
-		string_map_map(&tGroup->mElements, parseSingleVarSetControllerEntry, &caller);
+		stl_string_map_map(tGroup->mElements, parseSingleVarSetControllerEntry, &caller);
 	}
 
 	if (vector_size(&e->mVarSets) != 1) {
@@ -948,7 +947,7 @@ typedef struct {
 static void parseVarRangeSetController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	VarRangeSetController* e = (VarRangeSetController*)allocMemoryOnMemoryStackOrMemory(sizeof(VarRangeSetController));
 
-	int isIntegerVersion = string_map_contains(&tGroup->mElements, "value");
+	int isIntegerVersion = stl_string_map_contains_array(tGroup->mElements, "value");
 
 	if (isIntegerVersion) {
 		e->mType = VAR_SET_TYPE_INTEGER;
@@ -1104,7 +1103,7 @@ static void parseExplodController(DreamMugenStateController* tController, MugenD
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mHorizontalFacing, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("vfacing", tGroup, &e->mVerticalFacing, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("bindtime", tGroup, &e->mBindTime, "");
-	if (string_map_contains(&tGroup->mElements, "vel")) {
+	if (stl_string_map_contains_array(tGroup->mElements, "vel")) {
 		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("vel", tGroup, &e->mVelocity, "");
 	}
 	else {
@@ -1225,8 +1224,8 @@ typedef struct {
 } NotHitByController;
 
 static void readMugenDefStringVector(MugenStringVector* tDst, MugenDefScriptGroup* tGroup, char* tName, uint8_t* oHasValue) {
-	if (string_map_contains(&tGroup->mElements, tName)) {
-		MugenDefScriptGroupElement* elem = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tName);
+	if (stl_string_map_contains_array(tGroup->mElements, tName)) {
+		MugenDefScriptGroupElement* elem = &tGroup->mElements[tName];
 		*oHasValue = 1;
 		if (isMugenDefStringVectorVariableAsElement(elem)) {
 			*tDst = copyMugenDefStringVectorVariableAsElement(elem);
@@ -1452,12 +1451,12 @@ typedef struct {
 } HelperController;
 
 static void parseHelpeControllerName(HelperController* e, MugenDefScriptGroup* tGroup) {
-	if (!string_map_contains(&tGroup->mElements, "name")) {
+	if (!stl_string_map_contains_array(tGroup->mElements, "name")) {
 		e->mName = (char*)allocMemoryOnMemoryStackOrMemory(2);
 		e->mName[0] = '\0';
 		return;
 	}
-	MugenDefScriptGroupElement* elem = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, "name");
+	MugenDefScriptGroupElement* elem = &tGroup->mElements["name"];
 	if (!isMugenDefStringVariableAsElement(elem)) {
 		e->mName = (char*)allocMemoryOnMemoryStackOrMemory(2);
 		e->mName[0] = '\0';
@@ -2426,8 +2425,8 @@ static void unloadVictoryQuoteController(DreamMugenStateController* tController)
 }
 
 static void parseStateControllerType(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	assert(string_map_contains(&tGroup->mElements, "type"));
-	MugenDefScriptGroupElement* e = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, "type");
+	assert(stl_string_map_contains_array(tGroup->mElements, "type"));
+	MugenDefScriptGroupElement* e = &tGroup->mElements["type"];
 	tController->mData = NULL;
 
 	char* type = getAllocatedMugenDefStringVariableAsElement(e);
@@ -5851,17 +5850,17 @@ typedef struct {
 	MugenDefScriptGroup* mGroup;
 } StoryVarSetControllerCaller;
 
-static void parseSingleStoryVarSetControllerEntry(void* tCaller, char* tName, void* tData) {
+static void parseSingleStoryVarSetControllerEntry(StoryVarSetControllerCaller* tCaller, const string& tName, MugenDefScriptGroupElement& tData) {
 	StoryVarSetControllerCaller* caller = (StoryVarSetControllerCaller*)tCaller;
 	(void)tData;
 
-	int isEntry = strchr(tName, '(') != NULL;
+	int isEntry = tName.find('(') != string::npos;
 	if (!isEntry) return;
 
 	StoryVarSetControllerEntry* e = (StoryVarSetControllerEntry*)allocMemoryOnMemoryStackOrMemory(sizeof(StoryVarSetControllerEntry));
 
 	char name[100];
-	strcpy(name, tName);
+	strcpy(name, tName.data());
 	char* start = strchr(name, '(');
 	assert(start != NULL);
 	*start = '\0';
@@ -5889,7 +5888,7 @@ static void parseSingleStoryVarSetControllerEntry(void* tCaller, char* tName, vo
 
 	e->mID = atoi(value);
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tName, caller->mGroup, &e->mAssignment));
+	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tName.data(), caller->mGroup, &e->mAssignment));
 
 	vector_push_back_owned(&caller->mController->mStoryVarSets, e);
 }
@@ -5910,28 +5909,28 @@ static void unloadSingleStoryVarSetEntry(void* tCaller, void* tData) {
 }
 
 static void parseStoryVarSetController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	int isIntegerVersion = string_map_contains(&tGroup->mElements, "v");
-	int isFloatVersion = string_map_contains(&tGroup->mElements, "fv");
-	int isStringVersion = string_map_contains(&tGroup->mElements, "sv");
+	int isIntegerVersion = stl_string_map_contains_array(tGroup->mElements, "v");
+	int isFloatVersion = stl_string_map_contains_array(tGroup->mElements, "fv");
+	int isStringVersion = stl_string_map_contains_array(tGroup->mElements, "sv");
 
 	StoryVarSetController* e = (StoryVarSetController*)allocMemoryOnMemoryStackOrMemory(sizeof(StoryVarSetController));
 	e->mStoryVarSets = new_vector();
 
 	if (isIntegerVersion) {
-		loadSingleOriginalStoryVarSetController(&e->mStoryVarSets, tGroup, (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, "v"), STORY_VAR_SET_TYPE_INTEGER);
+		loadSingleOriginalStoryVarSetController(&e->mStoryVarSets, tGroup, &tGroup->mElements["v"], STORY_VAR_SET_TYPE_INTEGER);
 	}
 	else if (isFloatVersion) {
-		loadSingleOriginalStoryVarSetController(&e->mStoryVarSets, tGroup, (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, "fv"), STORY_VAR_SET_TYPE_FLOAT);
+		loadSingleOriginalStoryVarSetController(&e->mStoryVarSets, tGroup, &tGroup->mElements["fv"], STORY_VAR_SET_TYPE_FLOAT);
 	}
 	else if (isStringVersion) {
-		loadSingleOriginalStoryVarSetController(&e->mStoryVarSets, tGroup, (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, "sv"), STORY_VAR_SET_TYPE_STRING);
+		loadSingleOriginalStoryVarSetController(&e->mStoryVarSets, tGroup, &tGroup->mElements["sv"], STORY_VAR_SET_TYPE_STRING);
 	}
 	else {
 		StoryVarSetControllerCaller caller;
 		caller.mController = e;
 		caller.mGroup = tGroup;
 
-		string_map_map(&tGroup->mElements, parseSingleStoryVarSetControllerEntry, &caller);
+		stl_string_map_map(tGroup->mElements, parseSingleStoryVarSetControllerEntry, &caller);
 	}
 
 	if (vector_size(&e->mStoryVarSets) != 1) {

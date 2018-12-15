@@ -1083,9 +1083,9 @@ DreamMugenAssignment * parseDreamMugenAssignmentFromString(char * tText)
 }
 
 
-int fetchDreamAssignmentFromGroupAndReturnWhetherItExists(char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tOutput) {
-	if (!string_map_contains(&tGroup->mElements, tName)) return 0;
-	MugenDefScriptGroupElement* e = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tName);
+int fetchDreamAssignmentFromGroupAndReturnWhetherItExists(const char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tOutput) {
+	if (!stl_string_map_contains_array(tGroup->mElements, tName)) return 0;
+	MugenDefScriptGroupElement* e = &tGroup->mElements[tName];
 	fetchDreamAssignmentFromGroupAsElement(e, tOutput);
 
 	return 1;
