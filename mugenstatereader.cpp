@@ -221,7 +221,7 @@ static void handleSingleMugenStateDefElement(MugenStateDefCaller* tCaller, const
 	}
 	else {
 		logWarning("Unable to determine state def element.");
-		logWarningString(e->mName);
+		logWarningString(e->mName.data());
 	}
 }
 
@@ -289,7 +289,7 @@ static void handleSingleMugenStateDefGroup(DreamMugenStates* tStates, MugenDefSc
 		handleMugenStateControllerInDefGroup(tStates, tGroup);
 	}
 	else {
-		logWarningFormat("Unable to determine state def group type %s. Ignoring.", tGroup->mName);
+		logWarningFormat("Unable to determine state def group type %s. Ignoring.", tGroup->mName.data());
 	}
 
 }

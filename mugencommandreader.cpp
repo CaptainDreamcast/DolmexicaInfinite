@@ -58,7 +58,7 @@ static void handleSingleDefault(void* tCaller, void* tData) {
 		setDefaultInteger(&gCommandReader.mDefaultBufferTime, element);
 	}
 	else {
-		logWarningFormat("Unable to parse default state %s.", element->mName);
+		logWarningFormat("Unable to parse default state %s.", element->mName.data());
 	}
 
 }
@@ -276,7 +276,7 @@ static void handleCommandInputEntry(CommandCaller* tCaller, MugenDefScriptGroupE
 		handleCommandInputEntryAsString(tCaller, tElement);
 	}
 	else {
-		logWarningFormat("Unable to parse input entry %s.", tElement->mName);
+		logWarningFormat("Unable to parse input entry %s.", tElement->mName.data());
 	}
 }
 
@@ -309,7 +309,7 @@ static void handleSingleCommandEntry(void* tCaller, void* tData) {
 		handleCommandTimeEntry(&command->mInput.mBufferTime, element);
 	}
 	else {
-		logWarningFormat("Unable to determine type %s.", element->mName);
+		logWarningFormat("Unable to determine type %s.", element->mName.data());
 	}
 }
 
@@ -380,7 +380,7 @@ static void loadMugenCommandsFromDefScript(DreamMugenCommands* tCommands, MugenD
 			handleDefaults(current);
 		}
 		else {
-			logWarningFormat("Unrecognized type %s.", current->mName);
+			logWarningFormat("Unrecognized type %s.", current->mName.data());
 		}
 
 		current = current->mNext;

@@ -343,7 +343,7 @@ static Vector3DI getTimeFromControllerGroup(MugenDefScriptGroup* tGroup) {
 
 static void loadBackgroundStateController(MugenDefScriptGroup* tGroup) {
 	if (!vector_size(&gData.mStates.mBackgroundStateGroups)) {
-		logErrorFormat("Unable to add background state %s, no state group defined. Ignoring.", tGroup->mName);
+		logErrorFormat("Unable to add background state %s, no state group defined. Ignoring.", tGroup->mName.data());
 		return;
 	}
 	BackgroundStateGroup* group = (BackgroundStateGroup*)vector_get_back(&gData.mStates.mBackgroundStateGroups);
