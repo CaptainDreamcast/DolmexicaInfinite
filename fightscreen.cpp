@@ -60,19 +60,19 @@ static void loadFightScreen() {
 	
 	malloc_stats();
 	printf("init evaluators\n");
-
+	
 	gDebugAssignmentAmount = 0;
 	gDebugStateControllerAmount = 0;
 	gDebugStringMapAmount = 0;
 	gPruneAmount = 0;
-
+	
 	setupDreamGameCollisions();
 	setupDreamAssignmentReader(&gData.mMemoryStack);
 	setupDreamAssignmentEvaluator();
 	setupDreamMugenStateControllerHandler(&gData.mMemoryStack);
-
+	
 	setStateMachineHandlerToFight();
-
+	
 	malloc_stats();
 	printf("init custom handlers\n");
 	
@@ -112,7 +112,7 @@ static void loadFightScreen() {
 	
 	loadPlayerSprites();
 	setUIFaces();
-
+	
 	playDreamStageMusic();
 	
 	malloc_stats();

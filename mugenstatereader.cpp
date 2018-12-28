@@ -142,16 +142,19 @@ static void handleMugenStateJuggle(DreamMugenState* tState, MugenDefScriptGroupE
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mJuggleRequired));
 }
 
-static void handleMugenStateHitDefPersistence(DreamMugenState* tState, MugenDefScriptGroupElement* tElement) {
-	tState->mDoHitDefinitionsPersist = getMugenDefNumberVariableAsElement(tElement);
+static void handleMugenStateHitDefPersistence(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
+	tState->mDoesHaveHitDefinitionsPersist = 1;
+	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mDoHitDefinitionsPersist));
 }
 
-static void handleMugenStateMoveHitPersistence(DreamMugenState* tState, MugenDefScriptGroupElement* tElement) {
-	tState->mDoMoveHitInfosPersist = getMugenDefNumberVariableAsElement(tElement);
+static void handleMugenStateMoveHitPersistence(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
+	tState->mDoesHaveMoveHitInfosPersist = 1;
+	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mDoMoveHitInfosPersist));
 }
 
-static void handleMugenStateHitCountPersistence(DreamMugenState* tState, MugenDefScriptGroupElement* tElement) {
-	tState->mDoesHitCountPersist = getMugenDefNumberVariableAsElement(tElement);
+static void handleMugenStateHitCountPersistence(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
+	tState->mDoesHaveHitCountPersist = 1;
+	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mDoesHitCountPersist));
 }
 
 static void handleMugenStateFacePlayer2(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
@@ -205,13 +208,13 @@ static void handleSingleMugenStateDefElement(MugenStateDefCaller* tCaller, const
 		handleMugenStateJuggle(state, e, group);
 	}
 	else if (e->mName == "hitdefpersist") {
-		handleMugenStateHitDefPersistence(state, e);
+		handleMugenStateHitDefPersistence(state, e, group);
 	}
 	else if (e->mName == "movehitpersist") {
-		handleMugenStateMoveHitPersistence(state, e);
+		handleMugenStateMoveHitPersistence(state, e, group);
 	}
 	else if (e->mName == "hitcountpersist") {
-		handleMugenStateHitCountPersistence(state, e);
+		handleMugenStateHitCountPersistence(state, e, group);
 	}
 	else if (e->mName == "facep2") {
 		handleMugenStateFacePlayer2(state, e, group);
@@ -248,9 +251,9 @@ static void handleMugenStateDef(DreamMugenStates* tStates, MugenDefScriptGroup* 
 	state.mIsChangingSpritePriority = 0;
 	state.mIsAddingPower = 0;
 	state.mDoesRequireJuggle = 0;
-	state.mDoHitDefinitionsPersist = 0;
-	state.mDoMoveHitInfosPersist = 0;
-	state.mDoesHitCountPersist = 0;
+	state.mDoesHaveHitDefinitionsPersist = 0;
+	state.mDoesHaveMoveHitInfosPersist = 0;
+	state.mDoesHaveHitCountPersist = 0;
 	state.mHasFacePlayer2Info = 0;
 	state.mHasPriority = 0;
 

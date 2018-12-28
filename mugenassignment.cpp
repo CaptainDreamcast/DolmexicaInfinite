@@ -313,7 +313,9 @@ static DreamMugenAssignment* parseTwoElementMugenAssignmentFromStringWithFixedPo
 	int m = strlen(tPattern);
 
 	assert(tPosition != -1);
-	assert(tPosition < n - m);
+	if (tPosition >= n - m) {
+		logWarningFormat("Parsing error: Incorrect two element assignment: text %s with pattern %s", tText, tPattern);
+	}
 
 	int start = tPosition;
 	int end = tPosition + m;

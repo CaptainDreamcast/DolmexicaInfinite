@@ -259,7 +259,7 @@ static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, in
 	else if (tTile == 1) {
 		*tStart = (int)tMinCam - tSize - (int)(tCoordinates / 2);
 		int length = (int)(((tMaxCam - (tMinCam - tSize)) + tCoordinates)*tDeltaScale);
-		*tAmount = length / (tSize + tSpacing) + 1;
+		*tAmount = length / (tSize + tSpacing) + 1; 
 	}
 	else {
 		*tStart = 0;
@@ -284,7 +284,14 @@ static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement
 	int startY;
 	int amountX;
 	int amountY;
-	Vector3DI size = getAnimationFirstElementSpriteSize(e->mAnimation, tSprites);
+	int stepAmount = vector_size(&e->mAnimation->mSteps);
+	Vector3DI size;
+	if (stepAmount > 1) {
+		size = makeVector3DI(0,0,0);
+	}
+	else {
+		size = getAnimationFirstElementSpriteSize(e->mAnimation, tSprites);
+	}
 
 	double deltaScaleX = e->mDelta.x ? (1 / e->mDelta.x) : 1;
 	double deltaScaleY = e->mDelta.y ? (1 / e->mDelta.y) : 1;

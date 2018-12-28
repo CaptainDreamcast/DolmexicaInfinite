@@ -1,6 +1,7 @@
 #include "characterselectscreen.h"
 
 #include <assert.h>
+#include <algorithm>
 
 #include <prism/mugendefreader.h>
 #include <prism/mugenanimationhandler.h>
@@ -21,6 +22,9 @@
 #include "gamelogic.h"
 #include "stage.h"
 #include "storymode.h"
+
+
+using namespace std;
 
 typedef struct {
 	Vector3DI mCursorStartCell;
@@ -432,7 +436,6 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 	MugenDefScript script;
 	getCharacterSelectNamePath(tCharacterName, scriptPath);
 	if (!isFile(scriptPath)) {
-		logWarningFormat("Unable to find file %s. Cannot load character %s. Ignoring.", scriptPath, tCharacterName);
 		return 0;
 	}
 	script = loadMugenDefScript(scriptPath);
@@ -486,8 +489,6 @@ static void showMenuSelectableAnimations(MenuCharacterLoadCaller* tCaller, Selec
 		pos.z = 30;
 		e->mBackgroundAnimationID = addMugenAnimation(gData.mHeader.mCellBackgroundAnimation, &gData.mSprites, pos);
 	}
-
-	tCaller->i++;
 }
 
 static void loadSingleRealMenuCharacter(MenuCharacterLoadCaller* tCaller, MugenDefScriptVectorElement* tVectorElement) {
@@ -500,6 +501,8 @@ static void loadSingleRealMenuCharacter(MenuCharacterLoadCaller* tCaller, MugenD
 
 	SelectCharacter* e = (SelectCharacter*)vector_get((Vector*)vector_get(&gData.mSelectCharacters, row), column);
 	strcpy(e->mStageName, stageName);
+
+	tCaller->i++;
 	if (!loadMenuCharacterSpritesAndNameAndReturnWhetherExists(e, characterName)) {
 		return;
 	}
@@ -574,7 +577,6 @@ static int loadSingleStoryFileAndReturnWhetherItExists(SelectCharacter* e, char*
 	sprintf(scriptPath, "assets/%s", tPath);
 	MugenDefScript script;
 	if (!isFile(scriptPath)) {
-		logWarningFormat("Unable to find file %s. Cannot load story %s. Ignoring.", scriptPath, tPath);
 		return 0;
 	}
 	script = loadMugenDefScript(scriptPath);
@@ -605,6 +607,7 @@ static void loadSingleStory(MenuCharacterLoadCaller* tCaller, char* tPath) {
 
 	int row = tCaller->i / gData.mHeader.mColumns;
 	int column = tCaller->i % gData.mHeader.mColumns;
+	tCaller->i++;
 	SelectCharacter* e = (SelectCharacter*)vector_get((Vector*)vector_get(&gData.mSelectCharacters, row), column);
 	strcpy(e->mStageName, "");
 	if (!loadSingleStoryFileAndReturnWhetherItExists(e, tPath)) {
@@ -697,6 +700,7 @@ static void loadSingleSelector(int i, int tOwner) {
 	player->mBigPortraitOffset.z = 30;
 	gData.mSelectors[i].mBigPortraitAnimationID = addMugenAnimation(player->mBigPortraitAnimation, &character->mSprites, player->mBigPortraitOffset);
 	setMugenAnimationFaceDirection(gData.mSelectors[i].mBigPortraitAnimationID, player->mBigPortraitIsFacingRight);
+	setMugenAnimationDrawScale(gData.mSelectors[i].mBigPortraitAnimationID, makePosition(player->mBigPortraitScale.x, player->mBigPortraitScale.y, 1));
 
 	player->mNameOffset.z = 40;
 	gData.mSelectors[i].mNameTextID = addMugenText(character->mDisplayCharacterName, player->mNameOffset, player->mNameFont.x);
@@ -908,17 +912,26 @@ static void handleSingleWrapping(int* tPosition, int tSize) {
 	}
 }
 
-static Vector3DI sanitizeCellPosition(int i, Vector3DI tCellPosition) {
+static Vector3DI findTargetCellPosition(int i, Vector3DI tDelta) {
 	
-	handleSingleWrapping(&tCellPosition.x, gData.mHeader.mColumns);
-	handleSingleWrapping(&tCellPosition.y, gData.mHeader.mRows);
+	Vector3DI startPos = gData.mSelectors[i].mSelectedCharacter;
+	Vector3DI pos = vecAddI(startPos, tDelta);
+	Vector3DI prevPos = startPos;
 
-	int index = tCellPosition.y * gData.mHeader.mColumns + tCellPosition.x;
-	if (index >= gData.mCharacterAmount && !gData.mHeader.mCanMoveOverEmptyBoxes) {
-		return gData.mSelectors[i].mSelectedCharacter;
+
+	int maxLength = max(gData.mHeader.mRows, gData.mHeader.mColumns);
+	for (int i = 0; i < maxLength; i++) {
+		handleSingleWrapping(&pos.x, gData.mHeader.mColumns);
+		handleSingleWrapping(&pos.y, gData.mHeader.mRows);
+		SelectCharacter* selectChar = getCellCharacter(pos);
+		if (gData.mHeader.mCanMoveOverEmptyBoxes || selectChar->mType != SELECT_CHARACTER_TYPE_EMPTY) return pos;
+
+		if (vecEqualsI(pos, prevPos) || vecEqualsI(pos, startPos)) return startPos;
+		prevPos = pos;
+		pos = vecAddI(pos, tDelta);
 	}
 
-	return tCellPosition;	
+	return startPos;	
 }
 
 static void updateCharacterSelectionCredits(SelectCharacter* character) {
@@ -980,10 +993,11 @@ static void moveSelectionToTarget(int i, Vector3DI tTarget, int tDoesPlaySound) 
 	}
 }
 
-static int hasCreditSelectionMovedToStage(Vector3DI tTarget) {
+static int hasCreditSelectionMovedToStage(int i, Vector3DI tDelta) {
 	if (gData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return 0;
 
-	return (tTarget.y == -1 || tTarget.y == gData.mHeader.mRows);
+	Vector3DI target = vecAddI(gData.mSelectors[i].mSelectedCharacter, tDelta);
+	return (target.y == -1 || target.y == gData.mHeader.mRows);
 }
 
 static void setStageSelectActive(int i);
@@ -994,27 +1008,30 @@ static void moveCreditSelectionToStage(int i) {
 }
 
 static void updateSingleSelectionInput(int i) {
-	Vector3DI target = gData.mSelectors[i].mSelectedCharacter;
+	Vector3DI delta = makeVector3DI(0, 0, 0);
 	if (hasPressedRightFlankSingle(gData.mSelectors[i].mOwner)) {
-		target = vecAddI(target, makeVector3DI(1, 0, 0));
+		delta = makeVector3DI(1, 0, 0);
 	}
 	else if (hasPressedLeftFlankSingle(gData.mSelectors[i].mOwner)) {
-		target = vecAddI(target, makeVector3DI(-1, 0, 0));
+		delta = makeVector3DI(-1, 0, 0);
 	}
 
 	if (hasPressedDownFlankSingle(gData.mSelectors[i].mOwner)) {
-		target = vecAddI(target, makeVector3DI(0, 1, 0));
+		delta = makeVector3DI(0, 1, 0);
 	}
 	else if (hasPressedUpFlankSingle(gData.mSelectors[i].mOwner)) {
-		target = vecAddI(target, makeVector3DI(0, -1, 0));
+		delta = makeVector3DI(0, -1, 0);
 	}
 
-	if (hasCreditSelectionMovedToStage(target)) {
+	if (hasCreditSelectionMovedToStage(i, delta)) {
 		moveCreditSelectionToStage(i);
 		return;
 	}
 
-	target = sanitizeCellPosition(i, target);
+	Vector3DI target = findTargetCellPosition(i, delta);
+	
+
+	
 	if (vecEqualsI(gData.mSelectors[i].mSelectedCharacter, target)) return;
 
 	moveSelectionToTarget(i, target, 1);
@@ -1485,6 +1502,10 @@ typedef struct {
 static void loadRandomCharacter(RandomCharacterCaller* tCaller, MugenDefScriptVectorElement* tVectorElement) {
 	PossibleRandomCharacterElement* e = (PossibleRandomCharacterElement*)allocMemory(sizeof(PossibleRandomCharacterElement));
 	getCharacterSelectNamePath(tVectorElement->mVector.mElement[0], e->mPath);
+	if (!isFile(e->mPath)) {
+		freeMemory(e);
+		return;
+	}
 
 	vector_push_back_owned(&tCaller->mElements, e);
 }

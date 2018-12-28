@@ -315,15 +315,18 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 	setPlayerStateMoveType(e->mPlayer, newState->mMoveType);
 	setPlayerPhysics(e->mPlayer, newState->mPhysics);
 
-	if (!newState->mDoMoveHitInfosPersist) {
+	int moveHitInfosPersist = newState->mDoesHaveMoveHitInfosPersist ? evaluateDreamAssignmentAndReturnAsInteger(&newState->mDoMoveHitInfosPersist, e->mPlayer) : 0;
+	if (!moveHitInfosPersist) {
 		setPlayerMoveHitReset(e->mPlayer);
 	}
 
-	if (!newState->mDoesHitCountPersist) {
+	int hitCountPersists = newState->mDoesHaveHitCountPersist ? evaluateDreamAssignmentAndReturnAsInteger(&newState->mDoesHitCountPersist, e->mPlayer) : 0;
+	if (!hitCountPersists) {
 		resetPlayerHitCount(e->mPlayer);
 	}
 
-	if (!newState->mDoHitDefinitionsPersist) {
+	int hitDefinitionsPersist = newState->mDoesHaveHitDefinitionsPersist ? evaluateDreamAssignmentAndReturnAsInteger(&newState->mDoHitDefinitionsPersist, e->mPlayer) : 0;
+	if (!hitDefinitionsPersist) {
 		setHitDataInactive(e->mPlayer);
 	}
 
