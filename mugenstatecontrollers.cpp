@@ -4193,7 +4193,7 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 }
 
 static int handleDestroySelf(DreamPlayer* tPlayer) {
-	printf("%d %d destroying self\n", tPlayer->mRootID, tPlayer->mID);
+	logFormat("%d %d destroying self\n", tPlayer->mRootID, tPlayer->mID);
 
 	destroyPlayer(tPlayer);
 

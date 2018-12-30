@@ -59,6 +59,12 @@ static void fightFinishedCB() {
 	else storyModeOverCB(gData.mNextStateAfterWin);
 }
 
+static void internCharacterSelectOverCB() {
+	setGameModeStory();
+	setFightScreenFinishedCBs(fightFinishedCB, NULL);
+	startFightScreen();
+}
+
 static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	char path[1024];
 	char folder[1024];
@@ -67,12 +73,15 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	getPathToFile(folder, gData.mStoryPath);
 
 	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "player1");
-	sprintf(path, "assets/chars/%s/%s.def", file, file); 
-	setPlayerDefinitionPath(0, path);
-
+	int isSelectingFirstCharacter = !strcmp("select", file);
+	if (!isSelectingFirstCharacter) {
+		sprintf(path, "assets/chars/%s/%s.def", file, file);
+		setPlayerDefinitionPath(0, path);
+	}
 	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "player2");
-	sprintf(path, "assets/chars/%s/%s.def", file, file); 
+	sprintf(path, "assets/chars/%s/%s.def", file, file);
 	setPlayerDefinitionPath(1, path);
+
 
 	int palette1 = getMugenDefIntegerOrDefaultAsGroup(tGroup, "palette1", 1);
 	setPlayerPreferredPalette(0, palette1);
@@ -98,9 +107,17 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	}
 	freeMemory(afterLoseState);
 
-	setGameModeStory();
-	setFightScreenFinishedCBs(fightFinishedCB, NULL);
-	startFightScreen();
+	if (isSelectingFirstCharacter) {
+		char* selectName = getAllocatedMugenDefStringOrDefaultAsGroup(tGroup, "selectname", "Select your fighter");
+		setCharacterSelectScreenModeName(selectName);
+		setCharacterSelectOnePlayer();
+		setCharacterSelectStageInactive();
+		setCharacterSelectFinishedCB(internCharacterSelectOverCB);
+		setNewScreen(getCharacterSelectScreen());
+	}
+	else {
+		internCharacterSelectOverCB();
+	}
 }
 
 static void loadTitleGroup() {
@@ -110,7 +127,8 @@ static void loadTitleGroup() {
 static void loadStoryModeScreen() {
 	char path[1024];
 	sprintf(path, "assets/%s", gData.mStoryPath);
-	MugenDefScript script = loadMugenDefScript(path);
+	MugenDefScript script; 
+	loadMugenDefScript(&script, path);
 
 	MugenDefScriptGroup* group = getMugenDefStoryScriptGroupByIndex(&script, gData.mCurrentState);
 	if (!group || !isMugenDefStringVariableAsGroup(group, "type")) {
@@ -145,7 +163,8 @@ static void loadStoryHeader() {
 
 	char path[1024];
 	sprintf(path, "assets/%s", gData.mStoryPath);
-	MugenDefScript storyScript = loadMugenDefScript(path);
+	MugenDefScript storyScript;
+	loadMugenDefScript(&storyScript, path);
 
 	gData.mCurrentState = getMugenDefIntegerOrDefault(&storyScript, "Info", "startstate", 0);
 }
@@ -171,7 +190,8 @@ static void characterSelectFinishedCB() {
 
 void startStoryMode()
 {
-	MugenDefScript selectScript = loadMugenDefScript("assets/data/select.def");
+	MugenDefScript selectScript; 
+	loadMugenDefScript(&selectScript, "assets/data/select.def");
 	if (!stl_string_map_contains_array(selectScript.mGroups, "Stories")) {
 		setNewScreen(getDreamTitleScreen());
 		return;

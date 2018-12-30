@@ -344,7 +344,8 @@ static void loadPlayerDebug(DreamPlayer* p) {
 
 static void loadSinglePlayerFromMugenDefinition(DreamPlayer* p)
 {
-	MugenDefScript script = loadMugenDefScript(p->mHeader->mFiles.mDefinitionPath);
+	MugenDefScript script; 
+	loadMugenDefScript(&script, p->mHeader->mFiles.mDefinitionPath);
 
 	loadPlayerState(p);
 	loadPlayerHeaderFromScript(p->mHeader, &script);
@@ -3664,7 +3665,7 @@ void destroyPlayer(DreamPlayer * p) // TODO: rename
 	assert(p->mParent);
 	assert(p->mHelperIDInParent != -1);
 
-	printf("destroy %d %d\n", p->mRootID, p->mID);
+	logFormat("destroy %d %d\n", p->mRootID, p->mID);
 
 	list_remove(&gPlayerDefinition.mAllPlayers, p->mHelperIDInRoot);
 	removePlayerBoundHelpers(p);
@@ -3679,7 +3680,7 @@ int getPlayerID(DreamPlayer * p)
 
 void setPlayerID(DreamPlayer * p, int tID)
 {
-	printf("%d add helper %d\n", p->mRootID, tID);
+	logFormat("%d add helper %d\n", p->mRootID, tID);
 	p->mID = tID;
 }
 

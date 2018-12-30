@@ -1,6 +1,7 @@
 assets/*
 assets_normal/*
 assets_*/*
+webbuild.bat
 
 *.o
 *.BIN

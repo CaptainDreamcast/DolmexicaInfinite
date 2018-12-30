@@ -168,7 +168,8 @@ static int unloadSingleOrder(void* tCaller, void* tData) {
 }
 
 static void generateEnemies() {
-	MugenDefScript script = loadMugenDefScript("assets/data/select.def");
+	MugenDefScript script; 
+	loadMugenDefScript(&script, "assets/data/select.def");
 
 	MugenStringVector enemyTypeAmountVector = getMugenDefStringVectorVariable(&script, "Options", "arcade.maxmatches");
 
@@ -211,7 +212,8 @@ static void startEnding() {
 	char path[1024];
 	getPlayerDefinitionPath(path, 0);
 	getPathToFile(folder, path);
-	MugenDefScript script = loadMugenDefScript(path);
+	MugenDefScript script;
+	loadMugenDefScript(&script, path);
 	char* endingDefinitionFile;
 
 	if (gData.mHasEnding) {
@@ -246,7 +248,8 @@ static void fightFinishedCB() {
 	setPlayerDefinitionPath(1, gData.mEnemies[gData.mCurrentEnemy].mDefinitionPath);
 
 	if (!strcmp("random", gData.mEnemies[gData.mCurrentEnemy].mStagePath)) {
-		MugenDefScript script = loadMugenDefScript("assets/data/select.def");
+		MugenDefScript script; 
+		loadMugenDefScript(&script, "assets/data/select.def");
 		setStageRandom(&script);
 	}
 	else {
@@ -268,7 +271,8 @@ static void characterSelectFinishedCB() {
 	char path[1024];
 	getPlayerDefinitionPath(path, 0);
 	getPathToFile(folder, path);
-	MugenDefScript script = loadMugenDefScript(path);
+	MugenDefScript script; 
+	loadMugenDefScript(&script, path);
 	int hasIntro;
 	char* introDefinitionFile;
 	hasIntro = isMugenDefStringVariable(&script, "Arcade", "intro.storyboard");
@@ -338,7 +342,8 @@ static void loadArcadeModeHeaderFromScript() {
 	strcpy(scriptPath, "assets/data/system.def");
 	getPathToFile(folder, scriptPath);
 
-	MugenDefScript script = loadMugenDefScript(scriptPath);
+	MugenDefScript script;
+	loadMugenDefScript(&script, scriptPath);
 
 	loadWinScreenFromScript(&script);
 	loadStoryboardsFromScript(&script, folder);

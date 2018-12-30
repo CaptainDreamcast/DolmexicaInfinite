@@ -62,6 +62,12 @@ int main(int argc, char** argv) {
 	(void)argc;
 	(void)argv;
 
+#ifdef DEVELOP	
+	setMinimumLogType(LOG_TYPE_NORMAL);
+#else
+	setMinimumLogType(LOG_TYPE_NONE);
+#endif
+
 	setGameName("DOLMEXICA INFINITE");
 	setScreenSize(320, 240);
 	
@@ -77,15 +83,14 @@ int main(int argc, char** argv) {
 		exitGame();
 	}
 	
-#ifdef DEVELOP
+#ifdef DEVELOP	
 	setVolume(0);
 	// setDisplayedScreenSize(320, 240);
-	disableWrapperErrorRecovery();
+	 disableWrapperErrorRecovery();
 #endif
 
 	setMemoryHandlerCompressionActive();
 	initClipboardForGame();
-	setMinimumLogType(LOG_TYPE_NORMAL);
 	setScreenEffectZ(99);
 	loadMugenConfig();
 	setScreenAfterWrapperLogoScreen(getDreamTitleScreen());

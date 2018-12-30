@@ -15,7 +15,8 @@ static struct {
 } gData;
 
 static void loadLogoAndIntroStoryboards() {
-	MugenDefScript script = loadMugenDefScript("assets/data/system.def");
+	MugenDefScript script; 
+	loadMugenDefScript(&script, "assets/data/system.def");
 
 	char* logoStoryboard = getAllocatedMugenDefStringOrDefault(&script, "Files", "logo.storyboard", " ");
 	gData.mHasLogoStoryboard = isFile(logoStoryboard);
@@ -62,7 +63,8 @@ static void logoStoryboardFinishedCB() {
 
 void playLogoStoryboard()
 {
-	MugenDefScript script = loadMugenDefScript("assets/data/system.def");
+	MugenDefScript script; 
+	loadMugenDefScript(&script, "assets/data/system.def");
 	char* logoStoryboard = getAllocatedMugenDefStringOrDefault(&script, "Files", "logo.storyboard", " ");
 	
 	setStoryDefinitionFile(logoStoryboard);
@@ -92,7 +94,8 @@ static void introStoryboardFinishedCB() {
 
 void playIntroStoryboard()
 {
-	MugenDefScript script = loadMugenDefScript("assets/data/system.def");
+	MugenDefScript script; 
+	loadMugenDefScript(&script, "assets/data/system.def");
 	char* introStoryboard = getAllocatedMugenDefStringOrDefault(&script, "Files", "intro.storyboard", " ");
 
 	setStoryDefinitionFile(introStoryboard);

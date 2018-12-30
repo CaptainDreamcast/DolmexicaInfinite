@@ -5,6 +5,7 @@
 #include <prism/datastructures.h>
 #include <prism/system.h>
 #include <prism/stlutil.h>
+#include <prism/log.h>
 
 #include "playerdefinition.h"
 #include "pausecontrollers.h"
@@ -297,7 +298,7 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 	RegisteredState* e = (RegisteredState*)int_map_get(&gData.mRegisteredStates, tID);
 	e->mTimeInState = 0;
 
-	printf("%d %d %d->%d\n", e->mPlayer->mRootID, e->mPlayer->mID, e->mState, tNewState);
+	logFormat("%d %d->%d\n", tID, e->mState, tNewState);
 
 	e->mPreviousState = e->mState;
 	e->mState = tNewState;

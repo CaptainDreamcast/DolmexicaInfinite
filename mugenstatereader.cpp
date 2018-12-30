@@ -308,7 +308,8 @@ static void loadMugenStateDefinitionsFromScript(DreamMugenStates* tStates, Mugen
 }
 
 void loadDreamMugenStateDefinitionsFromFile(DreamMugenStates* tStates, char* tPath) {
-	MugenDefScript script = loadMugenDefScript(tPath);
+	MugenDefScript script; 
+	loadMugenDefScript(&script, tPath);
 	loadMugenStateDefinitionsFromScript(tStates, &script);
 	unloadMugenDefScript(script);
 }
@@ -455,7 +456,8 @@ static void loadMugenConstantsFromScript(DreamMugenConstants* tConstants, MugenD
 
 DreamMugenConstants loadDreamMugenConstantsFile(char * tPath)
 {
-	MugenDefScript script = loadMugenDefScript(tPath);
+	MugenDefScript script; 
+	loadMugenDefScript(&script, tPath);
 	DreamMugenConstants ret = makeEmptyMugenConstants();
 	loadMugenConstantsFromScript(&ret, &script);
 	unloadMugenDefScript(script);

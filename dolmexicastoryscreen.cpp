@@ -82,7 +82,6 @@ static void loadStoryFilesFromScript(MugenDefScript* tScript) {
 
 		loadDreamMugenStateDefinitionsFromFile(&gDolmexicaStoryScreenData.mStoryStates, fullPath);
 	}
-
 }
 
 static void initStoryInstance(StoryInstance& e){
@@ -109,7 +108,8 @@ static void loadStoryScreen() {
 	gDolmexicaStoryScreenData.mStoryStates = createEmptyMugenStates();
 	loadDreamMugenStateDefinitionsFromFile(&gDolmexicaStoryScreenData.mStoryStates, gDolmexicaStoryScreenData.mPath);
 
-	MugenDefScript script = loadMugenDefScript(gDolmexicaStoryScreenData.mPath);
+	MugenDefScript script;
+	loadMugenDefScript(&script, gDolmexicaStoryScreenData.mPath);
 	loadStoryFilesFromScript(&script);
 	unloadMugenDefScript(script);
 
@@ -123,6 +123,8 @@ static void loadStoryScreen() {
 		instantiateActor(getDreamStageBP());
 		setDreamStageNoAutomaticCameraMovement();
 	}
+
+	updateDreamSingleStateMachineByID(gDolmexicaStoryScreenData.mHelperInstances[-1].mStateMachineID);
 }
 
 static void unloadStoryScreen() {
@@ -758,7 +760,8 @@ void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, char* tName, 
 	char name[100];
 	getCharacterSelectNamePath(tName, fullPath);
 	getPathToFile(path, fullPath);
-	MugenDefScript script = loadMugenDefScript(fullPath);
+	MugenDefScript script;
+	loadMugenDefScript(&script, fullPath);
 	
 
 	char palettePath[1024];
@@ -947,4 +950,5 @@ void addDolmexicaStoryHelper(int tID, int tState)
 	initStoryInstance(gDolmexicaStoryScreenData.mHelperInstances[tID]);
 
 	changeDolmexicaStoryStateOutsideStateHandler(&gDolmexicaStoryScreenData.mHelperInstances[tID], tState);
+	updateDreamSingleStateMachineByID(gDolmexicaStoryScreenData.mHelperInstances[tID].mStateMachineID);
 }

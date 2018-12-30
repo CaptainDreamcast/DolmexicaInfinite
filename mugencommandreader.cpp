@@ -396,7 +396,8 @@ static DreamMugenCommands makeEmptyMugenCommands() {
 
 DreamMugenCommands loadDreamMugenCommandFile(char * tPath)
 {
-	MugenDefScript script = loadMugenDefScript(tPath);
+	MugenDefScript script; 
+	loadMugenDefScript(&script, tPath);
 	DreamMugenCommands ret = makeEmptyMugenCommands();
 
     loadMugenCommandsFromDefScript(&ret, &script);

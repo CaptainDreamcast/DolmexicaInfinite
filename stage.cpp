@@ -411,7 +411,8 @@ static void loadStage(void* tData)
 
 	gData.mAnimations = loadMugenAnimationFile(gData.mDefinitionPath);
 
-	MugenDefScript s = loadMugenDefScript(gData.mDefinitionPath);
+	MugenDefScript s; 
+	loadMugenDefScript(&s, gData.mDefinitionPath);
 
 	loadStageInfo(&s);
 	loadStageCamera(&s);

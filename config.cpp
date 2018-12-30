@@ -2,6 +2,7 @@
 
 #include <prism/mugendefreader.h>
 #include <prism/memoryhandler.h>
+#include <prism/system.h>
 
 static struct {
 	double mDefaultAttackDamageDoneToPowerMultiplier;
@@ -31,10 +32,22 @@ static void loadDebug(MugenDefScript* tScript) {
 	freeMemory(text);
 }
 
+static void loadWindowTitle(MugenDefScript* tScript) {
+	if (isOnDreamcast()) return;
+	if (!isMugenDefStringVariable(tScript, "Misc", "title")) return;
+
+	char* text = getAllocatedMugenDefStringOrDefault(tScript, "Misc", "title", "DOLMEXICA INFINITE");
+	updateGameName(text);
+	freeMemory(text);
+}
+
+
 void loadMugenConfig() {
-	MugenDefScript script = loadMugenDefScript("assets/data/mugen.cfg"); 
+	MugenDefScript script; 
+	loadMugenDefScript(&script, "assets/data/mugen.cfg");
 	loadRules(&script);
 	loadDebug(&script);
+	loadWindowTitle(&script);
 	unloadMugenDefScript(script);
 }
 

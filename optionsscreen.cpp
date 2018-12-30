@@ -164,7 +164,7 @@ static void loadOptionsScreen() {
 	gData.mWhiteTexture = getEmptyWhiteTexture();
 
 	char folder[1024];
-	gData.mScript = loadMugenDefScript("assets/data/system.def");
+	loadMugenDefScript(&gData.mScript, "assets/data/system.def");
 	getPathToFile(folder, "assets/data/system.def");
 	setWorkingDirectory(folder);
 

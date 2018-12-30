@@ -54,7 +54,7 @@ static struct {
 } gData;
 
 static void loadScriptAndSprites() {
-	gData.mScript = loadMugenDefScript(gData.mDefinitionPath);
+	loadMugenDefScript(&gData.mScript, gData.mDefinitionPath);
 	gData.mAnimations = loadMugenAnimationFile(gData.mDefinitionPath);
 
 	char folder[1024];

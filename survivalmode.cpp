@@ -55,7 +55,8 @@ static void updateSurvivalResultIsShowingWinPose() {
 }
 
 static void updateSurvivalEnemy() {
-	MugenDefScript script = loadMugenDefScript("assets/data/select.def");
+	MugenDefScript script;
+	loadMugenDefScript(&script, "assets/data/select.def");
 	setCharacterRandom(&script, 1);
 }
 
@@ -97,7 +98,8 @@ static void loadSurvivalModeHeaderFromScript() {
 
 	strcpy(scriptPath, "assets/data/system.def");
 
-	MugenDefScript script = loadMugenDefScript(scriptPath);
+	MugenDefScript script; 
+	loadMugenDefScript(&script, scriptPath);
 
 	loadResultScreenFromScript(&script);
 

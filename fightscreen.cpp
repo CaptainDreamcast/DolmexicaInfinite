@@ -55,11 +55,11 @@ static void loadFightScreen() {
 	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
 	
 	malloc_stats();
-	printf("create mem stack\n");
+	logg("create mem stack\n");
 	gData.mMemoryStack = createMemoryStack(1024 * 1024 * 5); // should be 3
 	
 	malloc_stats();
-	printf("init evaluators\n");
+	logg("init evaluators\n");
 	
 	gDebugAssignmentAmount = 0;
 	gDebugStateControllerAmount = 0;
@@ -74,7 +74,7 @@ static void loadFightScreen() {
 	setStateMachineHandlerToFight();
 	
 	malloc_stats();
-	printf("init custom handlers\n");
+	logg("init custom handlers\n");
 	
 	instantiateActor(getMugenAnimationUtilityHandler());
 	instantiateActor(getDreamAIHandler());
@@ -87,12 +87,12 @@ static void loadFightScreen() {
 	instantiateActor(getDreamExplodHandler());
 	
 	malloc_stats();
-	printf("init stage\n");
+	logg("init stage\n");
 	
 	instantiateActor(getDreamStageBP());
 	
 	malloc_stats();
-	printf("init players\n");
+	logg("init players\n");
 	
 	loadPlayers(&gData.mMemoryStack);
 	
@@ -106,7 +106,7 @@ static void loadFightScreen() {
 	}
 	
 	malloc_stats();
-	printf("shrinking memory stack\n");
+	logg("shrinking memory stack\n");
 	resizeMemoryStackToCurrentSize(&gData.mMemoryStack); // TODO: test extensively
 	malloc_stats();
 	
@@ -117,11 +117,11 @@ static void loadFightScreen() {
 	
 	malloc_stats();
 	
-	printf("assignments: %d\n", gDebugAssignmentAmount);
-	printf("controllers: %d\n", gDebugStateControllerAmount);
-	printf("maps: %d\n", gDebugStringMapAmount);
-	printf("memory blocks: %d\n", getAllocatedMemoryBlockAmount());
-	printf("memory stack used: %d\n", (int)gData.mMemoryStack.mOffset);
+	logFormat("assignments: %d\n", gDebugAssignmentAmount);
+	logFormat("controllers: %d\n", gDebugStateControllerAmount);
+	logFormat("maps: %d\n", gDebugStringMapAmount);
+	logFormat("memory blocks: %d\n", getAllocatedMemoryBlockAmount());
+	logFormat("memory stack used: %d\n", (int)gData.mMemoryStack.mOffset);
 }
 
 static void unloadFightScreen() {

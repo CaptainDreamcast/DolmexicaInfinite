@@ -62,7 +62,7 @@ static void loadPlayerAnimationsAndName(int i) {
 	getPathToFile(path, scriptPath);
 
 	MugenDefScript script;
-	script = loadMugenDefScript(scriptPath);
+	loadMugenDefScript(&script, scriptPath);
 
 	int preferredPalette = 0;
 	sprintf(name, "pal%d", preferredPalette + 1);
@@ -148,7 +148,7 @@ static void loadVersusScreen() {
 
 	// TODO: properly
 	char folder[1024];
-	gVersusScreenData.mScript = loadMugenDefScript("assets/data/system.def");
+	loadMugenDefScript(&gVersusScreenData.mScript, "assets/data/system.def");
 	gVersusScreenData.mAnimations = loadMugenAnimationFile("assets/data/system.def");
 	getPathToFile(folder, "assets/data/system.def");
 	setWorkingDirectory(folder);

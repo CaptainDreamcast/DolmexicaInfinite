@@ -342,7 +342,7 @@ static void loadTitleScreen() {
 	gTitleScreenData.mWhiteTexture = getEmptyWhiteTexture();
 
 	char folder[1024];
-	gTitleScreenData.mScript = loadMugenDefScript("assets/data/system.def");
+	loadMugenDefScript(&gTitleScreenData.mScript, "assets/data/system.def");
 	getPathToFile(folder, "assets/data/system.def");
 	setWorkingDirectory(folder);
 

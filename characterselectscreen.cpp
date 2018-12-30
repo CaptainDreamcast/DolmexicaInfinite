@@ -321,7 +321,8 @@ static void addSingleSelectStage(char* tPath) {
 	SelectStage* e = (SelectStage*)allocMemory(sizeof(SelectStage));
 	strcpy(e->mPath, path);
 	
-	MugenDefScript script = loadMugenDefScript(path);
+	MugenDefScript script; 
+	loadMugenDefScript(&script, path);
 	e->mName = getAllocatedMugenDefStringVariable(&script, "Info", "name");
 	loadSelectStageCredits(e, &script);
 	unloadMugenDefScript(script);
@@ -433,12 +434,12 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 	char palettePath[1024];
 
 
-	MugenDefScript script;
 	getCharacterSelectNamePath(tCharacterName, scriptPath);
 	if (!isFile(scriptPath)) {
 		return 0;
 	}
-	script = loadMugenDefScript(scriptPath);
+	MugenDefScript script;
+	loadMugenDefScript(&script, scriptPath);
 
 	getPathToFile(path, scriptPath);
 
@@ -447,7 +448,6 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 	getMugenDefStringOrDefault(file, &script, "Files", name, "");
 	int hasPalettePath = strcmp("", file);
 	sprintf(palettePath, "%s%s", path, file);
-	printf("%s\n", palettePath);
 
 	getMugenDefStringOrDefault(file, &script, "Files", "sprite", "");
 	assert(strcmp("", file));
@@ -575,11 +575,11 @@ static int loadSingleStoryFileAndReturnWhetherItExists(SelectCharacter* e, char*
 	char scriptPath[1024];
 
 	sprintf(scriptPath, "assets/%s", tPath);
-	MugenDefScript script;
 	if (!isFile(scriptPath)) {
 		return 0;
 	}
-	script = loadMugenDefScript(scriptPath);
+	MugenDefScript script;
+	loadMugenDefScript(&script, scriptPath);
 
 	getPathToFile(path, scriptPath);
 
@@ -772,10 +772,10 @@ static void loadSelectMusic() {
 
 static void loadCharacterSelectScreen() {
 
-	gData.mCharacterScript = loadMugenDefScript("assets/data/select.def");
+	loadMugenDefScript(&gData.mCharacterScript, "assets/data/select.def");
 
 	char folder[1024];
-	gData.mScript = loadMugenDefScript("assets/data/system.def");
+	loadMugenDefScript(&gData.mScript, "assets/data/system.def");
 	gData.mAnimations = loadMugenAnimationFile("assets/data/system.def");
 	getPathToFile(folder, "assets/data/system.def");
 	setWorkingDirectory(folder);

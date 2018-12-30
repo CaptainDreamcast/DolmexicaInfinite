@@ -739,7 +739,7 @@ static DreamMugenAssignment* parseMugenVariableFromString(char* tText) {
 	DreamMugenVariableAssignment* data = (DreamMugenVariableAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenVariableAssignment));
 	gDebugAssignmentAmount++;
 	auto m = getActiveMugenAssignmentVariableMap();
-	data->mFunc = m[text];
+	data->mFunc = (void*)m[text];
 	data->mType = MUGEN_ASSIGNMENT_TYPE_VARIABLE;
 	freeMemory(text);
 	return (DreamMugenAssignment*)data;

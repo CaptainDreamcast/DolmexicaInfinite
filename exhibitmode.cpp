@@ -49,7 +49,8 @@ static void loadExhibitHeader(MugenDefScript* tScript) {
 }
 
 static void loadRandomCharacters() {
-	MugenDefScript script = loadMugenDefScript("assets/data/select.def");
+	MugenDefScript script;
+	loadMugenDefScript(&script, "assets/data/select.def");
 	setCharacterRandom(&script, 0);
 	setCharacterRandom(&script, 1);
 	setStageRandom(&script);
@@ -60,7 +61,8 @@ void startExhibitMode()
 	char scriptPath[1000];
 	strcpy(scriptPath, "assets/data/system.def");
 
-	MugenDefScript script = loadMugenDefScript(scriptPath);
+	MugenDefScript script; 
+	loadMugenDefScript(&script, scriptPath);
 	loadExhibitHeader(&script);
 	unloadMugenDefScript(script);
 

@@ -853,7 +853,8 @@ static void loadFightUI(void* tData) {
 
 	char defPath[1024];
 	strcpy(defPath, "assets/data/fight.def"); // TODO
-	MugenDefScript script = loadMugenDefScript(defPath);
+	MugenDefScript script; 
+	loadMugenDefScript(&script, defPath);
 	
 	loadFightDefFilesFromScript(&script, defPath);
 	loadPlayerUIs(&script);

@@ -19,7 +19,8 @@ static void versusScreenFinishedCB() {
 }
 
 static void fightFinishedCB() {
-	MugenDefScript script = loadMugenDefScript("assets/data/select.def");
+	MugenDefScript script; 
+	loadMugenDefScript(&script, "assets/data/select.def");
 
 	setCharacterRandom(&script, 0);
 	setCharacterRandom(&script, 1);
