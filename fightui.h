@@ -54,4 +54,4 @@ void stopFightAndRoundAnimation();
 void setUIFaces();
 void setComboUIDisplay(int i, int tAmount);
 
-extern ActorBlueprint DreamFightUIBP;
+ActorBlueprint getDreamFightUIBP();

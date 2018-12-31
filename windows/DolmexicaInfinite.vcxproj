@@ -149,54 +149,62 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\ai.c" />
-    <ClCompile Include="..\arcademode.c" />
-    <ClCompile Include="..\boxcursorhandler.c" />
-    <ClCompile Include="..\characterselectscreen.c" />
-    <ClCompile Include="..\collision.c" />
-    <ClCompile Include="..\config.c" />
-    <ClCompile Include="..\creditsmode.c" />
-    <ClCompile Include="..\dolmexicastoryscreen.c" />
-    <ClCompile Include="..\exhibitmode.c" />
-    <ClCompile Include="..\fightdebug.c" />
-    <ClCompile Include="..\fightresultdisplay.c" />
-    <ClCompile Include="..\fightscreen.c" />
-    <ClCompile Include="..\fightui.c" />
-    <ClCompile Include="..\freeplaymode.c" />
-    <ClCompile Include="..\gamelogic.c" />
-    <ClCompile Include="..\intro.c" />
-    <ClCompile Include="..\menubackground.c" />
-    <ClCompile Include="..\mugenanimationutilities.c" />
-    <ClCompile Include="..\mugenassignment.c" />
-    <ClCompile Include="..\mugenassignmentevaluator.c" />
-    <ClCompile Include="..\mugenbackgroundstatehandler.c" />
-    <ClCompile Include="..\mugencommandhandler.c" />
-    <ClCompile Include="..\mugencommandreader.c" />
-    <ClCompile Include="..\mugenexplod.c" />
-    <ClCompile Include="..\mugenlog.c" />
-    <ClCompile Include="..\mugensound.c" />
-    <ClCompile Include="..\mugenstagehandler.c" />
-    <ClCompile Include="..\mugenstatecontrollers.c" />
-    <ClCompile Include="..\mugenstatehandler.c" />
-    <ClCompile Include="..\mugenstatereader.c" />
-    <ClCompile Include="..\optionsscreen.c" />
-    <ClCompile Include="..\pausecontrollers.c" />
-    <ClCompile Include="..\playerdefinition.c" />
-    <ClCompile Include="..\playerhitdata.c" />
-    <ClCompile Include="..\projectile.c" />
-    <ClCompile Include="..\randomwatchmode.c" />
-    <ClCompile Include="..\stage.c" />
-    <ClCompile Include="..\storymode.c" />
-    <ClCompile Include="..\storyscreen.c" />
-    <ClCompile Include="..\superwatchmode.c" />
-    <ClCompile Include="..\survivalmode.c" />
-    <ClCompile Include="..\titlescreen.c" />
-    <ClCompile Include="..\trainingmode.c" />
-    <ClCompile Include="..\versusmode.c" />
-    <ClCompile Include="..\versusscreen.c" />
-    <ClCompile Include="..\warningscreen.c" />
-    <ClCompile Include="..\main.c" />
-    <ClCompile Include="..\watchmode.c" />
+    <ProjectReference Include="..\..\addons\prism\windows\vs17\prism.vcxproj">
+      <Project>{3572e463-893d-4815-8ecc-e65f3b8c6d90}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DolmexicaInfinite.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\ai.cpp" />
+    <ClCompile Include="..\arcademode.cpp" />
+    <ClCompile Include="..\boxcursorhandler.cpp" />
+    <ClCompile Include="..\characterselectscreen.cpp" />
+    <ClCompile Include="..\collision.cpp" />
+    <ClCompile Include="..\config.cpp" />
+    <ClCompile Include="..\creditsmode.cpp" />
+    <ClCompile Include="..\dolmexicastoryscreen.cpp" />
+    <ClCompile Include="..\exhibitmode.cpp" />
+    <ClCompile Include="..\fightdebug.cpp" />
+    <ClCompile Include="..\fightresultdisplay.cpp" />
+    <ClCompile Include="..\fightscreen.cpp" />
+    <ClCompile Include="..\fightui.cpp" />
+    <ClCompile Include="..\freeplaymode.cpp" />
+    <ClCompile Include="..\gamelogic.cpp" />
+    <ClCompile Include="..\intro.cpp" />
+    <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\menubackground.cpp" />
+    <ClCompile Include="..\mugenanimationutilities.cpp" />
+    <ClCompile Include="..\mugenassignment.cpp" />
+    <ClCompile Include="..\mugenassignmentevaluator.cpp" />
+    <ClCompile Include="..\mugenbackgroundstatehandler.cpp" />
+    <ClCompile Include="..\mugencommandhandler.cpp" />
+    <ClCompile Include="..\mugencommandreader.cpp" />
+    <ClCompile Include="..\mugenexplod.cpp" />
+    <ClCompile Include="..\mugenlog.cpp" />
+    <ClCompile Include="..\mugensound.cpp" />
+    <ClCompile Include="..\mugenstagehandler.cpp" />
+    <ClCompile Include="..\mugenstatecontrollers.cpp" />
+    <ClCompile Include="..\mugenstatehandler.cpp" />
+    <ClCompile Include="..\mugenstatereader.cpp" />
+    <ClCompile Include="..\optionsscreen.cpp" />
+    <ClCompile Include="..\pausecontrollers.cpp" />
+    <ClCompile Include="..\playerdefinition.cpp" />
+    <ClCompile Include="..\playerhitdata.cpp" />
+    <ClCompile Include="..\projectile.cpp" />
+    <ClCompile Include="..\randomwatchmode.cpp" />
+    <ClCompile Include="..\stage.cpp" />
+    <ClCompile Include="..\storymode.cpp" />
+    <ClCompile Include="..\storyscreen.cpp" />
+    <ClCompile Include="..\superwatchmode.cpp" />
+    <ClCompile Include="..\survivalmode.cpp" />
+    <ClCompile Include="..\titlescreen.cpp" />
+    <ClCompile Include="..\trainingmode.cpp" />
+    <ClCompile Include="..\versusmode.cpp" />
+    <ClCompile Include="..\versusscreen.cpp" />
+    <ClCompile Include="..\warningscreen.cpp" />
+    <ClCompile Include="..\watchmode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ai.h" />
@@ -246,15 +254,6 @@
     <ClInclude Include="..\versusscreen.h" />
     <ClInclude Include="..\warningscreen.h" />
     <ClInclude Include="..\watchmode.h" />
-    <ClInclude Include="resource.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\addons\prism\windows\vs17\prism.vcxproj">
-      <Project>{3572e463-893d-4815-8ecc-e65f3b8c6d90}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="DolmexicaInfinite.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

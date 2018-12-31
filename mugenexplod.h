@@ -53,7 +53,7 @@ int getExplodAmount(DreamPlayer* tPlayer);
 int getExplodAmountWithID(DreamPlayer* tPlayer, int tID);
 
 
-extern ActorBlueprint DreamExplodHandler;
+ActorBlueprint getDreamExplodHandler();
 
 Position getFinalExplodPositionFromPositionType(DreamExplodPositionType tPositionType, Position mOffset, DreamPlayer* tPlayer);
 

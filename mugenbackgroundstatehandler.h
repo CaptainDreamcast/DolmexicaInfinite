@@ -6,7 +6,7 @@
 #include "mugenstatecontrollers.h"
 #include "mugenassignment.h"
 
-extern ActorBlueprint BackgroundStateHandler;
+ActorBlueprint getBackgroundStateHandler();
 
 // TODO: make faster by mixing with stage loading
 void setBackgroundStatesFromScript(MugenDefScript* tScript);

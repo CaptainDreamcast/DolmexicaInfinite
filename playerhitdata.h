@@ -49,7 +49,7 @@ typedef enum {
 	MUGEN_HIT_PRIORITY_MISS,
 } MugenHitPriorityType;
 
-extern ActorBlueprint HitDataHandler;
+ActorBlueprint getHitDataHandler();
 
 int initPlayerHitDataAndReturnID(DreamPlayer* tPlayer);
 void removePlayerHitData(DreamPlayer* tPlayer);

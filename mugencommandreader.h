@@ -1,5 +1,8 @@
 #pragma once
 
+#include <map>
+#include <string>
+
 #include <prism/datastructures.h>
 #include <prism/animation.h>
 
@@ -65,7 +68,7 @@ typedef struct {
 } DreamMugenCommand;
 
 typedef struct {
-	StringMap mCommands;
+	std::map<std::string, DreamMugenCommand> mCommands;
 } DreamMugenCommands;
 
 DreamMugenCommands loadDreamMugenCommandFile(char* tPath);

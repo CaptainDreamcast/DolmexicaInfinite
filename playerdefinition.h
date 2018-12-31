@@ -261,7 +261,7 @@ void resetPlayersEntirely();
 void updatePlayers();
 void drawPlayers();
 
-extern ActorBlueprint PreStateMachinePlayersBlueprint;
+ActorBlueprint getPreStateMachinePlayersBlueprint();
 
 void playerHitCB(void* tData, void* tHitData);
 
@@ -508,6 +508,7 @@ int getPlayerProjectileTimeSinceCancel(DreamPlayer* p, int tID);
 int getPlayerProjectileTimeSinceContact(DreamPlayer* p, int tID);
 int getPlayerProjectileTimeSinceGuarded(DreamPlayer* p, int tID);
 int getPlayerProjectileTimeSinceHit(DreamPlayer* p, int tID);
+int getPlayerProjectileHit(DreamPlayer* p, int tID);
 
 int getPlayerTimeLeftInHitPause(DreamPlayer* p);
 
@@ -586,6 +587,7 @@ double getPlayerFallDefenseMultiplier(DreamPlayer* p);
 
 void setPlayerHuman(int i);
 void setPlayerArtificial(int i);
+void setPlayerAILevel(int i, int tValue);
 int isPlayerHuman(DreamPlayer* p);
 int getPlayerAILevel(DreamPlayer* p);
 

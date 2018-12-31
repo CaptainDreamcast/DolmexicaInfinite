@@ -2,7 +2,7 @@
 
 #include <prism/wrapper.h>
 
-extern Screen StoryScreen;
+Screen* getStoryScreen();
 
 void setStoryDefinitionFile(char* tPath);
 void setStoryScreenFinishedCB(void(*tCB)());

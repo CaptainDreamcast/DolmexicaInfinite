@@ -6,4 +6,4 @@
 
 void setDreamAIActive(DreamPlayer* p);
 
-extern ActorBlueprint DreamAIHandler;
+ActorBlueprint getDreamAIHandler();
