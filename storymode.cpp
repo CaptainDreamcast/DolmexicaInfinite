@@ -60,7 +60,6 @@ static void fightFinishedCB() {
 }
 
 static void internCharacterSelectOverCB() {
-	setGameModeStory();
 	setFightScreenFinishedCBs(fightFinishedCB, NULL);
 	startFightScreen();
 }
@@ -94,6 +93,8 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	*dummyMusicPath = '\0';
 	setDreamStageMugenDefinition(path, dummyMusicPath);
 
+
+
 	gData.mNextStateAfterWin = getMugenDefIntegerOrDefaultAsGroup(tGroup, "win", gData.mCurrentState + 1);
 	char* afterLoseState = getAllocatedMugenDefStringOrDefaultAsGroup(tGroup, "lose", "continue");
 	turnStringLowercase(afterLoseState);
@@ -106,6 +107,11 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 		setFightContinueInactive();
 	}
 	freeMemory(afterLoseState);
+
+	setGameModeStory();
+	int ailevel = getMugenDefIntegerOrDefaultAsGroup(tGroup, "ailevel", 8);
+	setPlayerAILevel(1, ailevel);
+
 
 	if (isSelectingFirstCharacter) {
 		char* selectName = getAllocatedMugenDefStringOrDefaultAsGroup(tGroup, "selectname", "Select your fighter");

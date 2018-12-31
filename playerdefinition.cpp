@@ -3375,6 +3375,12 @@ void setPlayerArtificial(int i)
 	p->mAILevel = 8; // TODO: properly
 }
 
+void setPlayerAILevel(int i, int tValue)
+{
+	DreamPlayer* p = getRootPlayer(i);
+	p->mAILevel = tValue;
+}
+
 int isPlayerHuman(DreamPlayer* p) {
 	return !getPlayerAILevel(p);
 }

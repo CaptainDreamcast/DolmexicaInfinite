@@ -587,6 +587,7 @@ double getPlayerFallDefenseMultiplier(DreamPlayer* p);
 
 void setPlayerHuman(int i);
 void setPlayerArtificial(int i);
+void setPlayerAILevel(int i, int tValue);
 int isPlayerHuman(DreamPlayer* p);
 int getPlayerAILevel(DreamPlayer* p);
 
