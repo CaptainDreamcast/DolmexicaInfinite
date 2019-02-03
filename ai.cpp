@@ -13,6 +13,7 @@ using  namespace std;
 typedef struct {
 	DreamPlayer* mPlayer;
 
+	double mDifficultyFactor;
 	int mRandomInputNow;
 	int mRandomInputDuration;
 
@@ -74,7 +75,10 @@ static void updateAIGuarding(PlayerAI* e) {
 	if (isPlayerBeingAttacked(e->mPlayer) && isPlayerInGuardDistance(e->mPlayer)) {
 		if (!e->mIsGuardingLogicActive) {
 			double rand = randfrom(0, 1);
-			e->mWasGuardingSuccessful = (rand < 0.2);
+			double guardPossibilityMin = 0.2;
+			double guardPossibilityMax = 0.7;
+			double guardPossibility = guardPossibilityMin + (guardPossibilityMax - guardPossibilityMin) * e->mDifficultyFactor;
+			e->mWasGuardingSuccessful = (rand < guardPossibility);
 			e->mIsGuardingLogicActive = 1;
 		}
 	
@@ -92,7 +96,14 @@ static void updateAICommands(PlayerAI* e) {
 	e->mRandomInputNow++;
 	if (e->mRandomInputNow >= e->mRandomInputDuration) {
 		e->mRandomInputNow = 0;
-		e->mRandomInputDuration = randfromInteger(30, 45);
+
+		int lowerDurationMin = 30;
+		int lowerDurationMax = 1;
+		int upperDurationMin = 45;
+		int upperDurationMax = 7;
+		int lowerDuration = (int)(lowerDurationMin + (lowerDurationMax - lowerDurationMin) * e->mDifficultyFactor);
+		int upperDuration = (int)(upperDurationMin + (upperDurationMax - upperDurationMin) * e->mDifficultyFactor);
+		e->mRandomInputDuration = randfromInteger(lowerDuration, upperDuration);
 
 		setRandomPlayerCommandActive(e);
 	}
@@ -129,6 +140,7 @@ void setDreamAIActive(DreamPlayer * p)
 	e.mIsMoving = 0;
 	e.mIsGuardingLogicActive = 0;
 	e.mCommandNames.clear();
+	e.mDifficultyFactor = (getPlayerAILevel(p) - 1) / 7.0;
 
 	DreamMugenCommands* commands = &p->mHeader->mFiles.mCommands;
 	stl_string_map_map(commands->mCommands, insertSingleCommandName, &e.mCommandNames);

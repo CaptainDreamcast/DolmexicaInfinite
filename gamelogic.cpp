@@ -17,6 +17,7 @@
 #include "fightscreen.h"
 #include "fightresultdisplay.h"
 #include "mugenexplod.h"
+#include "config.h"
 
 typedef enum {
 	ROUND_STATE_FADE_IN = 0,
@@ -464,7 +465,7 @@ void setGameModeArcade() {
 	setTimerFinite();
 	setPlayersToRealFightMode();
 	setPlayerHuman(0);
-	setPlayerArtificial(1);
+	setPlayerArtificial(1, getDifficulty());
 	setPlayerPreferredPalette(0, 1);
 	setPlayerPreferredPalette(1, 2);
 	setPlayerStartLifePercentage(0, 1);
@@ -482,7 +483,7 @@ void setGameModeFreePlay()
 	setTimerFinite();
 	setPlayersToRealFightMode();
 	setPlayerHuman(0);
-	setPlayerArtificial(1);
+	setPlayerArtificial(1, getDifficulty());
 	setPlayerPreferredPalette(0, 1);
 	setPlayerPreferredPalette(1, 2);
 	setPlayerStartLifePercentage(0, 1);
@@ -518,7 +519,7 @@ void setGameModeSurvival(double tLifePercentage, int tRound) {
 	setTimerFinite();
 	setPlayersToRealFightMode();
 	setPlayerHuman(0);
-	setPlayerArtificial(1);
+	setPlayerArtificial(1, getDifficulty());
 	setPlayerPreferredPalette(0, 1);
 	setPlayerPreferredPalette(1, 2);
 	setPlayerStartLifePercentage(0, tLifePercentage);
@@ -554,8 +555,8 @@ void setGameModeWatch()
 	setFightContinueInactive();
 	setTimerFinite();
 	setPlayersToRealFightMode();
-	setPlayerArtificial(0);
-	setPlayerArtificial(1);
+	setPlayerArtificial(0, getDifficulty());
+	setPlayerArtificial(1, getDifficulty());
 	setPlayerPreferredPalette(0, 1);
 	setPlayerPreferredPalette(1, 2);
 	setPlayerStartLifePercentage(0, 1);
@@ -573,8 +574,8 @@ void setGameModeSuperWatch()
 	setFightContinueInactive();
 	setTimerInfinite();
 	setPlayersToTrainingMode();
-	setPlayerArtificial(0);
-	setPlayerArtificial(1);
+	setPlayerArtificial(0, getDifficulty());
+	setPlayerArtificial(1, getDifficulty());
 	setPlayerPreferredPalette(0, 1);
 	setPlayerPreferredPalette(1, 2);
 	setPlayerStartLifePercentage(0, 1);
@@ -592,8 +593,8 @@ void setGameModeExhibit(int tEndTime, int tIsDisplayingBars)
 	setFightContinueInactive();
 	setTimerInfinite();
 	setPlayersToTrainingMode();
-	setPlayerArtificial(0);
-	setPlayerArtificial(1);
+	setPlayerArtificial(0, getDifficulty());
+	setPlayerArtificial(1, getDifficulty());
 	setPlayerPreferredPalette(0, 1);
 	setPlayerPreferredPalette(1, 2);
 	setPlayerStartLifePercentage(0, 1);
@@ -614,7 +615,7 @@ void setGameModeStory() {
 	setTimerFinite();
 	setPlayersToRealFightMode();
 	setPlayerHuman(0);
-	setPlayerArtificial(1);
+	setPlayerArtificial(1, getDifficulty());
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
 

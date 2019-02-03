@@ -44,15 +44,30 @@ static struct {
 	MemoryStack mMemoryStack;
 } gData;
 
+static void setFightScreenGameSpeed() {
+	int gameSpeed = getGlobalGameSpeed();
+	if (gameSpeed < 0) {
+		double baseFactor = (-gameSpeed) / 9.0;
+		double speedFactor = 1 - 0.75 * baseFactor;
+		setWrapperTimeDilatation(speedFactor);
+	}
+	else if (gameSpeed > 0) {
+		double baseFactor = gameSpeed / 9.0;
+		double speedFactor = 1 + baseFactor;
+		setWrapperTimeDilatation(speedFactor);
+	}
+
+}
+
 extern int gDebugAssignmentAmount;
 extern int gDebugStateControllerAmount;
 extern int gDebugStringMapAmount;
 extern int gPruneAmount;
 
-static void loadSystemFonts(void* tCaller);
+static void exitFightScreenCB(void* tCaller);
 
 static void loadFightScreen() {
-	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
+	setWrapperBetweenScreensCB(exitFightScreenCB, NULL);
 	
 	malloc_stats();
 	logg("create mem stack\n");
@@ -115,6 +130,8 @@ static void loadFightScreen() {
 	
 	playDreamStageMusic();
 	
+	setFightScreenGameSpeed();
+
 	malloc_stats();
 	
 	logFormat("assignments: %d\n", gDebugAssignmentAmount);
@@ -152,7 +169,8 @@ static void loadFightFonts(void* tCaller) {
 	loadMugenFightFonts();
 }
 
-static void loadSystemFonts(void* tCaller) {
+static void exitFightScreenCB(void* tCaller) {
+	setWrapperTimeDilatation(1);
 	unloadMugenFonts();
 	loadMugenSystemFonts();
 }
@@ -163,7 +181,7 @@ void startFightScreen() {
 }
 
 void stopFightScreenWin() {
-	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
+	setWrapperBetweenScreensCB(exitFightScreenCB, NULL);
 	if (!gData.mWinCB) return;
 
 	gData.mWinCB();
@@ -171,7 +189,7 @@ void stopFightScreenWin() {
 
 void stopFightScreenLose()
 {
-	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
+	setWrapperBetweenScreensCB(exitFightScreenCB, NULL);
 	if (!gData.mLoseCB) {
 		setNewScreen(getDreamTitleScreen());
 		return;
@@ -182,7 +200,7 @@ void stopFightScreenLose()
 
 
 void stopFightScreenToFixedScreen(Screen* tNextScreen) {
-	setWrapperBetweenScreensCB(loadSystemFonts, NULL);
+	setWrapperBetweenScreensCB(exitFightScreenCB, NULL);
 	setNewScreen(tNextScreen);
 }
 

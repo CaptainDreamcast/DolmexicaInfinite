@@ -14,6 +14,7 @@
 #include "storymode.h"
 #include "stage.h"
 #include "fightresultdisplay.h"
+#include "config.h"
 
 static struct {
 	char mStoryPath[1024];
@@ -109,8 +110,8 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	freeMemory(afterLoseState);
 
 	setGameModeStory();
-	int ailevel = getMugenDefIntegerOrDefaultAsGroup(tGroup, "ailevel", 8);
-	setPlayerAILevel(1, ailevel);
+	int ailevel = getMugenDefIntegerOrDefaultAsGroup(tGroup, "ailevel", getDifficulty());
+	setPlayerArtificial(1, ailevel);
 
 
 	if (isSelectingFirstCharacter) {

@@ -257,8 +257,8 @@ static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, in
 		*tAmount = 1;
 	}
 	else if (tTile == 1) {
-		*tStart = (int)tMinCam - tSize - (int)(tCoordinates / 2);
-		int length = (int)(((tMaxCam - (tMinCam - tSize)) + tCoordinates)*tDeltaScale);
+		*tStart = (int)tMinCam - (tSize + tSpacing) - (int)(tCoordinates / 2);
+		int length = (int)(((tMaxCam - (tMinCam - (tSize + tSpacing))) + tCoordinates)*tDeltaScale);
 		*tAmount = length / (tSize + tSpacing) + 1; 
 	}
 	else {

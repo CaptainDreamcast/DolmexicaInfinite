@@ -16,6 +16,7 @@
 #include "playerdefinition.h"
 #include "mugenstagehandler.h"
 #include "mugenanimationutilities.h"
+#include "config.h"
 
 using namespace std;
 
@@ -734,9 +735,6 @@ static void loadTimer(MugenDefScript* tScript) {
 
 	playDisplayText(&gData.mTime.mTextID, "99", gData.mTime.mPosition, gData.mTime.mFont);
 	
-	gData.mTime.mIsFinished = 0;
-	gData.mTime.mValue = 99;
-	gData.mTime.mNow = 0;
 	gData.mTime.mTimerFreezeFlag = 0;
 	resetDreamTimer();
 }
@@ -1431,7 +1429,7 @@ void disableDreamTimer()
 void resetDreamTimer()
 {
 	gData.mTime.mNow = 0;
-	gData.mTime.mValue = 99;
+	gData.mTime.mValue = getGlobalTimerDuration();
 	gData.mTime.mIsFinished = 0;
 	updateTimeDisplayText();
 }
@@ -1640,7 +1638,8 @@ void setTimerInfinite()
 
 void setTimerFinite()
 {
-	gData.mTime.mIsInfinite = 0;
+	if (isGlobalTimerInfinite()) setTimerInfinite();
+	else gData.mTime.mIsInfinite = 0;
 }
 
 int isTimerFinished()

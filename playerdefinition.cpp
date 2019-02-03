@@ -34,6 +34,7 @@
 #include "mugenanimationutilities.h"
 #include "mugenexplod.h"
 #include "pausecontrollers.h"
+#include "config.h"
 
 using namespace std;
 
@@ -119,7 +120,6 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	sprintf(scriptPath, "%s%s", path, file);
 	tPlayer->mHeader->mFiles.mConstants = loadDreamMugenConstantsFile(scriptPath);
 	malloc_stats();
-
 	
 	getMugenDefStringOrDefault(file, tScript, "Files", "stcommon", "");
 	sprintf(scriptPath, "%s%s", path, file);
@@ -173,7 +173,7 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	tPlayer->mHeader->mFiles.mSpritePath = copyToAllocatedString(scriptPath);
 
 	getMugenDefStringOrDefault(file, tScript, "Files", "sound", "");
-	if (strcmp("", file) && !isOnDreamcast()) {
+	if (strcmp("", file) && !isOnDreamcast() && !isOnWeb()) {
 		sprintf(scriptPath, "%s%s", path, file);
 		tPlayer->mHeader->mFiles.mSounds = loadMugenSoundFile(scriptPath);
 	}
@@ -299,6 +299,7 @@ static void loadPlayerState(DreamPlayer* p) {
 }
 
 static void loadPlayerStateWithConstantsLoaded(DreamPlayer* p) {
+	p->mHeader->mFiles.mConstants.mHeader.mLife = (int)(p->mHeader->mFiles.mConstants.mHeader.mLife * getLifeStartPercentage());
 	p->mLife = (int)(p->mHeader->mFiles.mConstants.mHeader.mLife * p->mStartLifePercentage);
 	setPlayerDrawOffsetX(p, 0, getPlayerCoordinateP(p));
 	setPlayerDrawOffsetY(p, 0, getPlayerCoordinateP(p));
@@ -3369,13 +3370,7 @@ void setPlayerHuman(int i)
 	p->mAILevel = 0;
 }
 
-void setPlayerArtificial(int i)
-{
-	DreamPlayer* p = getRootPlayer(i);
-	p->mAILevel = 8; // TODO: properly
-}
-
-void setPlayerAILevel(int i, int tValue)
+void setPlayerArtificial(int i, int tValue)
 {
 	DreamPlayer* p = getRootPlayer(i);
 	p->mAILevel = tValue;

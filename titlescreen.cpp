@@ -373,7 +373,7 @@ static void loadTitleScreen() {
 	addMenuPoint("menu.itemname.watch", watchCB);
 	addMenuPoint("menu.itemname.superwatch", superWatchCB);
 	addMenuPoint("menu.itemname.randomwatch", randomWatchCB);
-	addMenuPoint("menu.itemname.options", arcadeCB); // TODO: readd
+	addMenuPoint("menu.itemname.options", optionsCB);
 	addMenuPoint("menu.itemname.credits", creditsCB);
 	addMenuPoint("menu.itemname.exit", exitCB);
 

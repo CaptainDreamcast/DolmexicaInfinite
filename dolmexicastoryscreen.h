@@ -34,6 +34,10 @@ typedef struct {
 	MugenAnimation* mFaceAnimation;
 	int mFaceAnimationID;
 
+	int mHasName;
+	Position mNameOffset;
+	int mNameID;
+
 	int mGoesToNextState;
 	int mNextState;
 
@@ -94,6 +98,7 @@ void addDolmexicaStoryText(StoryInstance* tInstance, int tID, char* tText, Vecto
 void removeDolmexicaStoryText(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryTextBackground(StoryInstance* tInstance, int tID, Vector3DI tSprite, Position tOffset);
 void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, Vector3DI tSprite, Position tOffset);
+void setDolmexicaStoryTextName(StoryInstance* tInstance, int tID, char* tText, Vector3DI tFont, Position tOffset);
 void setDolmexicaStoryTextBasePosition(StoryInstance* tInstance, int tID, Position tPosition);
 void setDolmexicaStoryTextText(StoryInstance* tInstance, int tID, char* tText);
 void setDolmexicaStoryTextTextOffset(StoryInstance* tInstance, int tID, Position tOffset);
@@ -101,6 +106,9 @@ void setDolmexicaStoryTextBackgroundSprite(StoryInstance* tInstance, int tID, Ve
 void setDolmexicaStoryTextBackgroundOffset(StoryInstance* tInstance, int tID, Position tOffset);
 void setDolmexicaStoryTextFaceSprite(StoryInstance* tInstance, int tID, Vector3DI tSprite);
 void setDolmexicaStoryTextFaceOffset(StoryInstance* tInstance, int tID, Position tOffset);
+void setDolmexicaStoryTextNameText(StoryInstance* tInstance, int tID, char* tText);
+void setDolmexicaStoryTextNameOffset(StoryInstance* tInstance, int tID, Position tOffset);
+
 void setDolmexicaStoryTextNextState(StoryInstance* tInstance, int tID, int tNextState);
 void setDolmexicaStoryTextLockToCharacter(StoryInstance* tInstance, int tID, int tCharacterID, Position tOffset);
 void setDolmexicaStoryTextLockToCharacter(StoryInstance* tInstance, int tID, int tCharacterID, Position tOffset, int tHelperID);
@@ -109,7 +117,7 @@ void setDolmexicaStoryTextBuiltUp(StoryInstance* tInstance, int tID);
 void addDolmexicaStoryTextPositionX(StoryInstance* tInstance, int tID, double tX);
 void addDolmexicaStoryTextPositionY(StoryInstance* tInstance, int tID, double tY);
 
-void setDolmexicaStoryTextName(StoryInstance* tInstance, int tID, std::string tName);
+void setDolmexicaStoryIDName(StoryInstance* tInstance, int tID, std::string tName);
 int getDolmexicaStoryTextIDFromName(StoryInstance* tInstance, std::string tName);
 
 void changeDolmexicaStoryState(StoryInstance* tInstance, int tNextState);

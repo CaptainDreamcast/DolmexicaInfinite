@@ -5635,6 +5635,11 @@ typedef struct {
 	DreamMugenAssignment* mFaceSprite;
 	DreamMugenAssignment* mFaceOffset;
 
+	int mHasName;
+	DreamMugenAssignment* mName;
+	DreamMugenAssignment* mNameFont;
+	DreamMugenAssignment* mNameOffset;
+
 	DreamMugenAssignment* mText;
 	DreamMugenAssignment* mFont;
 	DreamMugenAssignment* mWidth;
@@ -5659,6 +5664,11 @@ static void parseCreateTextStoryController(DreamMugenStateController* tControlle
 
 	e->mHasFaceSprite = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("face.spr", tGroup, &e->mFaceSprite);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("face.offset", tGroup, &e->mFaceOffset, "");
+
+	e->mHasName = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name", tGroup, &e->mName);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("name.font", tGroup, &e->mNameFont, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("name.offset", tGroup, &e->mNameOffset, "");
+
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("text", tGroup, &e->mText, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("font", tGroup, &e->mFont, "1 , 0 , 0");
@@ -5701,6 +5711,11 @@ typedef struct {
 	int mDoesChangeFaceOffset;
 	DreamMugenAssignment* mFaceOffset;
 
+	int mDoesChangeName;
+	DreamMugenAssignment* mName;
+	int mDoesChangeNameOffset;
+	DreamMugenAssignment* mNameOffset;
+
 	int mDoesChangeText;
 	DreamMugenAssignment* mText;
 
@@ -5724,6 +5739,9 @@ static void parseChangeTextStoryController(DreamMugenStateController* tControlle
 
 	e->mDoesChangeFaceSprite = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("face.spr", tGroup, &e->mFaceSprite);
 	e->mDoesChangeFaceOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("face.offset", tGroup, &e->mFaceOffset);
+
+	e->mDoesChangeName = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name", tGroup, &e->mName);
+	e->mDoesChangeNameOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name.offset", tGroup, &e->mName);
 
 	e->mDoesChangeText = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("text", tGroup, &e->mText);
 	e->mDoesChangeTextOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("text.offset", tGroup, &e->mTextOffset);
@@ -5857,13 +5875,13 @@ typedef struct {
 	DreamMugenAssignment* mName;
 } NameTextStoryController;
 
-static void parseNameTextStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
+static void parseNameIDStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	NameTextStoryController* e = (NameTextStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(NameTextStoryController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("name", tGroup, &e->mName, "");
 
-	tController->mType = MUGEN_STORY_STATE_CONTROLLER_TYPE_NAME_TEXT;
+	tController->mType = MUGEN_STORY_STATE_CONTROLLER_TYPE_NAME_ID;
 	tController->mData = e;
 }
 
@@ -5996,7 +6014,7 @@ void removeTextStoryParseFunction(DreamMugenStateController* tController, MugenD
 void changeTextStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseChangeTextStoryController(tController, tGroup); }
 void lockTextToCharacterStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseLockTextToCharacterStoryController(tController, tGroup); }
 void textPositionAddStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_TEXT_ADD_POSITION); }
-void nameTextStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseNameTextStoryController(tController, tGroup); }
+void nameIDStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseNameIDStoryController(tController, tGroup); }
 void changeStateStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseSingleRequiredValueController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_STATE); }
 void fadeInStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseFadeStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_FADE_IN); }
 void fadeOutStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseFadeStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_FADE_OUT); }
@@ -6034,7 +6052,7 @@ static void setupStoryStateControllerParsers() {
 	string_map_push(&gVariableHandler.mStateControllerParsers, "changetext", (void*)changeTextStoryParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "locktext", (void*)lockTextToCharacterStoryParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "textposadd", (void*)textPositionAddStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "nameid", (void*)nameTextStoryParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "nameid", (void*)nameIDStoryParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "changestate", (void*)changeStateStoryParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "fadein", (void*)fadeInStoryParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "fadeout", (void*)fadeOutStoryParseFunction);
@@ -6133,7 +6151,7 @@ static void handleSingleStoryTextSprite(int id, int tHasSprite, DreamMugenAssign
 	Vector3DI sprite = makeVector3DI(0, 0, 0);
 	Position offset = makePosition(0, 0, 0);
 	getTwoIntegerValuesWithDefaultValues(tSprite, (DreamPlayer*)tInstance, &sprite.x, &sprite.y, 0, 0);
-	getTwoFloatValuesWithDefaultValues(tOffset, (DreamPlayer*)tInstance, &offset.x, &offset.y, 0, 0);
+	getTwoFloatValuesWithDefaultValues(tOffset, (DreamPlayer*)tInstance, &offset.x, &offset.y, 0, 0); 
 	tFunc(tInstance, id, sprite, offset);
 }
 
@@ -6143,6 +6161,18 @@ static int isStringEmptyOrWhitespace(char * tString)
 		if (*tString != ' ') return 0;
 	}
 	return 1;
+}
+
+static void handleSingleStoryTextName(int id, int tHasName, DreamMugenAssignment** tText, DreamMugenAssignment** tFont, DreamMugenAssignment** tOffset, StoryInstance* tInstance) {
+	if (!tHasName) return;
+
+	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(tText, (DreamPlayer*)tInstance);
+	Vector3DI font = evaluateDreamAssignmentAndReturnAsVector3DI(tFont, (DreamPlayer*)tInstance);
+	double x, y;
+	getTwoFloatValuesWithDefaultValues(tOffset, (DreamPlayer*)tInstance, &x, &y, 0, 0);
+	setDolmexicaStoryTextName(tInstance, id, text, font, makePosition(x, y, 0));
+
+	freeMemory(text);
 }
 
 static int handleCreateTextStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
@@ -6166,6 +6196,7 @@ static int handleCreateTextStoryController(DreamMugenStateController* tControlle
 
 	handleSingleStoryTextSprite(id, e->mHasBackgroundSprite, &e->mBackgroundSprite, &e->mBackgroundOffset, setDolmexicaStoryTextBackground, tInstance);
 	handleSingleStoryTextSprite(id, e->mHasFaceSprite, &e->mFaceSprite, &e->mFaceOffset, setDolmexicaStoryTextFace, tInstance);
+	handleSingleStoryTextName(id, e->mHasName, &e->mName, &e->mNameFont, &e->mNameOffset, tInstance);
 
 	int buildUp;
 	getSingleIntegerValueOrDefault(&e->mIsBuildingUp, (DreamPlayer*)tInstance, &buildUp, 1);
@@ -6231,10 +6262,20 @@ static int handleChangeTextStoryController(DreamMugenStateController* tControlle
 		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mFaceOffset, (DreamPlayer*)tInstance);
 		setDolmexicaStoryTextFaceOffset(tInstance, id, offset);
 	}
+	if (e->mDoesChangeName) {
+		char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mName, (DreamPlayer*)tInstance);
+		setDolmexicaStoryTextNameText(tInstance, id, text);
+		freeMemory(text);
+	}
+	if (e->mDoesChangeNameOffset) {
+		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mNameOffset, (DreamPlayer*)tInstance);
+		setDolmexicaStoryTextNameOffset(tInstance, id, offset);
+	}
 	if (e->mDoesChangeNextState) {
 		int nextState = evaluateDreamAssignmentAndReturnAsInteger(&e->mNextState, (DreamPlayer*)tInstance);
 		setDolmexicaStoryTextNextState(tInstance, id, nextState);
 	}
+
 
 	int buildUp;
 	getSingleIntegerValueOrDefault(&e->mIsBuildingUp, (DreamPlayer*)tInstance, &buildUp, 1);
@@ -6597,14 +6638,14 @@ static int handleTextAddPositionStoryController(DreamMugenStateController* tCont
 	return 0;
 }
 
-static int handleNameTextStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
+static int handleNameIDStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
 	NameTextStoryController* e = (NameTextStoryController*)tController->mData;
 
 	int id;
 	id = getStoryIDFromAssignment(&e->mID, tInstance);
 
 	char* name = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mName, (DreamPlayer*)tInstance);
-	setDolmexicaStoryTextName(tInstance, id, name);
+	setDolmexicaStoryIDName(tInstance, id, name);
 	freeMemory(name);
 
 	return 0;
@@ -6706,7 +6747,7 @@ int removeTextStoryHandleFunction(DreamMugenStateController* tController, DreamP
 int changeTextStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleChangeTextStoryController(tController, (StoryInstance*)tPlayer); }
 int lockTextToCharacterStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleLockTextToCharacterStoryController(tController, (StoryInstance*)tPlayer); }
 int textAddPositionStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleTextAddPositionStoryController(tController, (StoryInstance*)tPlayer); }
-int nameTextStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleNameTextStoryController(tController, (StoryInstance*)tPlayer); }
+int nameIDStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleNameIDStoryController(tController, (StoryInstance*)tPlayer); }
 int changeStateStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleChangeStateStoryController(tController, (StoryInstance*)tPlayer); }
 int fadeInStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleFadeInStoryController(tController, (StoryInstance*)tPlayer); }
 int fadeOutStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleFadeOutStoryController(tController, (StoryInstance*)tPlayer); }
@@ -6744,7 +6785,7 @@ static void setupStoryStateControllerHandlers() {
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_TEXT, (void*)changeTextStoryHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_LOCK_TEXT_TO_CHARACTER, (void*)lockTextToCharacterStoryHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_TEXT_ADD_POSITION, (void*)textAddPositionStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_NAME_TEXT, (void*)nameTextStoryHandleFunction);
+	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_NAME_ID, (void*)nameIDStoryHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_STATE, (void*)changeStateStoryHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_FADE_IN, (void*)fadeInStoryHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_FADE_OUT, (void*)fadeOutStoryHandleFunction);
