@@ -35,6 +35,14 @@ KOS_INIT_ROMDISK(romdisk);
 
 #endif
 
+int isInDevelopMode() {
+#ifdef DEVELOP
+    return 1;
+#else
+    return 0;
+#endif
+}
+
 void exitGame() {
 	shutdownPrismWrapper();
 
