@@ -21,6 +21,7 @@
 #include "dolmexicastoryscreen.h"
 #include "stage.h"
 #include "config.h"
+#include "..\addons\prism\include\prism\debug.h"
 
 char romdisk_buffer[1];
 int romdisk_buffer_length;
