@@ -162,4 +162,6 @@ void addDolmexicaStoryStringVariable(StoryInstance* tInstance, int tID, int tVal
 
 
 StoryInstance* getDolmexicaStoryRootInstance();
+StoryInstance* getDolmexicaStoryHelperInstance(int tID);
 void addDolmexicaStoryHelper(int tID, int tState);
+int getDolmexicaStoryIDFromString(char* tString, StoryInstance* tInstance);

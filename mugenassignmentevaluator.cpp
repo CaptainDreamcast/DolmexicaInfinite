@@ -2426,7 +2426,9 @@ static AssignmentReturnValue evaluateCharAnimStoryArrayAssignment(AssignmentRetu
 }
 
 static AssignmentReturnValue evaluateCharAnimTimeStoryArrayAssignment(AssignmentReturnValue tIndex, StoryInstance* tInstance, int* tIsStatic) {
-	int id = convertAssignmentReturnToNumber(tIndex);
+	char* val = convertAssignmentReturnToAllocatedString(tIndex);
+	int id = getDolmexicaStoryIDFromString(val, tInstance);
+	freeMemory(val);
 	*tIsStatic = 0;
 	return makeNumberAssignmentReturn(getDolmexicaStoryCharacterTimeLeft(tInstance, id));
 }
