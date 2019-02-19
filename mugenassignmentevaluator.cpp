@@ -57,16 +57,28 @@ typedef struct {
 } AssignmentReturnBottom;
 
 
+
 static struct {
-	AssignmentReturnValue mStack[100];
+	int mStackSize;
+	AssignmentReturnValue* mStack;
 	int mFreePointer;
 
 } gAssignmentEvaluator;
 
+static void initEvaluationStack() {
+	gAssignmentEvaluator.mStackSize = 100;
+	gAssignmentEvaluator.mStack = (AssignmentReturnValue*)allocMemory(gAssignmentEvaluator.mStackSize * sizeof(AssignmentReturnValue));
+}
+
+
+static void increaseEvaluationStack() {
+	gAssignmentEvaluator.mStackSize += 100;
+	gAssignmentEvaluator.mStack = (AssignmentReturnValue*)reallocMemory(gAssignmentEvaluator.mStack, gAssignmentEvaluator.mStackSize * sizeof(AssignmentReturnValue));
+}
+
 static AssignmentReturnValue& getFreeAssignmentReturnValue() {
-	if (gAssignmentEvaluator.mFreePointer >= 100) {
-		logError("errrr");
-		abortSystem();
+	if (gAssignmentEvaluator.mFreePointer >= gAssignmentEvaluator.mStackSize) {
+		increaseEvaluationStack();
 	}
 	return gAssignmentEvaluator.mStack[gAssignmentEvaluator.mFreePointer++];
 }
@@ -1797,6 +1809,7 @@ static void setupVariableAssignments() {
 static void setupArrayAssignments();
 
 void setupDreamAssignmentEvaluator() {
+	initEvaluationStack();
 	setupVariableAssignments();
 	setupArrayAssignments();
 	setupComparisons();
@@ -2520,6 +2533,7 @@ static void setupStoryComparisons() {
 
 void setupDreamStoryAssignmentEvaluator()
 {
+	initEvaluationStack();
 	setupStoryVariableAssignments();
 	setupStoryArrayAssignments();
 	setupStoryComparisons();
