@@ -182,18 +182,18 @@ static DreamMugenAssignment * makeMugenTwoElementAssignment(DreamMugenAssignment
 	return (DreamMugenAssignment*)data;
 }
 
-extern std::map<string, AssignmentReturnValue(*)(DreamMugenAssignment**, DreamPlayer*, int*)>& getActiveMugenAssignmentArrayMap();
+extern std::map<string, AssignmentReturnValue&(*)(DreamMugenAssignment**, DreamPlayer*, int*)>& getActiveMugenAssignmentArrayMap();
 
 static DreamMugenAssignment * makeMugenArrayAssignment(char* tName, DreamMugenAssignment * tIndex)
 {
-	std::map<string, AssignmentReturnValue(*)(DreamMugenAssignment**, DreamPlayer*, int*)>& m = getActiveMugenAssignmentArrayMap();
+	std::map<string, AssignmentReturnValue&(*)(DreamMugenAssignment**, DreamPlayer*, int*)>& m = getActiveMugenAssignmentArrayMap();
 
 	string s = string(tName);
 	if (!stl_map_contains(m, s)) {
 		logWarningFormat("Unrecognized array %s\n. Defaulting to bottom.", tName);
 		return makeDreamFalseMugenAssignment(); // TODO: proper bottom
 	}
-	AssignmentReturnValue(*func)(DreamMugenAssignment**, DreamPlayer*, int*) = m[s];
+	AssignmentReturnValue&(*func)(DreamMugenAssignment**, DreamPlayer*, int*) = m[s];
 
 	DreamMugenArrayAssignment* data = (DreamMugenArrayAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenArrayAssignment));
 	gDebugAssignmentAmount++;
@@ -716,7 +716,7 @@ int doDreamAssignmentStringsBeginsWithPattern(char* tPattern, char* tText) {
 	return 1;
 }
 
-extern std::map<std::string, AssignmentReturnValue(*)(DreamPlayer*)>& getActiveMugenAssignmentVariableMap();
+extern std::map<std::string, AssignmentReturnValue&(*)(DreamPlayer*)>& getActiveMugenAssignmentVariableMap();
 
 static int isMugenVariable(char* tText) {
 	char* text = (char*)allocMemory(strlen(tText) + 2);
