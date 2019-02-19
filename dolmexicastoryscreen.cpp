@@ -978,6 +978,11 @@ StoryInstance * getDolmexicaStoryRootInstance()
 	return &gDolmexicaStoryScreenData.mHelperInstances[-1];
 }
 
+StoryInstance * getDolmexicaStoryHelperInstance(int tID)
+{
+	return &gDolmexicaStoryScreenData.mHelperInstances[tID];
+}
+
 void addDolmexicaStoryHelper(int tID, int tState)
 {
 	StoryInstance e;
@@ -986,4 +991,20 @@ void addDolmexicaStoryHelper(int tID, int tState)
 
 	changeDolmexicaStoryStateOutsideStateHandler(&gDolmexicaStoryScreenData.mHelperInstances[tID], tState);
 	updateDreamSingleStateMachineByID(gDolmexicaStoryScreenData.mHelperInstances[tID].mStateMachineID);
+}
+
+int getDolmexicaStoryIDFromString(char * tString, StoryInstance * tInstance)
+{
+	int id;
+	if (!strcmp("", tString)) {
+		id = 1;
+	}
+	else {
+		char* p;
+		id = (int)strtol(tString, &p, 10);
+		if (p == tString) {
+			id = getDolmexicaStoryTextIDFromName(tInstance, tString);
+		}
+	}
+	return id;
 }

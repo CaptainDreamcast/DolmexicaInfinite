@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 
-
 #include <prism/input.h>
 #include <prism/stagehandler.h>
 #include <prism/collisionhandler.h>
@@ -14,7 +13,6 @@
 #include <prism/memorystack.h>
 
 #include <prism/log.h>
-
 
 #include "stage.h"
 #include "mugencommandreader.h"
@@ -56,7 +54,6 @@ static void setFightScreenGameSpeed() {
 		double speedFactor = 1 + baseFactor;
 		setWrapperTimeDilatation(speedFactor);
 	}
-
 }
 
 extern int gDebugAssignmentAmount;
@@ -68,49 +65,49 @@ static void exitFightScreenCB(void* tCaller);
 
 static void loadFightScreen() {
 	setWrapperBetweenScreensCB(exitFightScreenCB, NULL);
-	
+
 	malloc_stats();
 	logg("create mem stack\n");
 	gData.mMemoryStack = createMemoryStack(1024 * 1024 * 5); // should be 3
-	
+
 	malloc_stats();
 	logg("init evaluators\n");
-	
+
 	gDebugAssignmentAmount = 0;
 	gDebugStateControllerAmount = 0;
 	gDebugStringMapAmount = 0;
 	gPruneAmount = 0;
-	
+
 	setupDreamGameCollisions();
 	setupDreamAssignmentReader(&gData.mMemoryStack);
 	setupDreamAssignmentEvaluator();
 	setupDreamMugenStateControllerHandler(&gData.mMemoryStack);
-	
+
 	setStateMachineHandlerToFight();
-	
+
 	malloc_stats();
 	logg("init custom handlers\n");
-	
+
 	instantiateActor(getMugenAnimationUtilityHandler());
 	instantiateActor(getDreamAIHandler());
 	instantiateActor(getHitDataHandler());
 	instantiateActor(getProjectileHandler());
-	
+
 	instantiateActor(getPreStateMachinePlayersBlueprint());
 	instantiateActor(getDreamMugenCommandHandler());
 	instantiateActor(getDreamMugenStateHandler());
 	instantiateActor(getDreamExplodHandler());
-	
+
 	malloc_stats();
 	logg("init stage\n");
-	
+
 	instantiateActor(getDreamStageBP());
-	
+
 	malloc_stats();
 	logg("init players\n");
-	
+
 	loadPlayers(&gData.mMemoryStack);
-	
+
 	instantiateActor(getDreamFightUIBP());
 	instantiateActor(getDreamGameLogic());
 
@@ -119,21 +116,21 @@ static void loadFightScreen() {
 	if (isMugenDebugActive()) {
 		instantiateActor(getFightDebug());
 	}
-	
+
 	malloc_stats();
 	logg("shrinking memory stack\n");
 	resizeMemoryStackToCurrentSize(&gData.mMemoryStack); // TODO: test extensively
 	malloc_stats();
-	
+
 	loadPlayerSprites();
 	setUIFaces();
-	
+
 	playDreamStageMusic();
-	
+
 	setFightScreenGameSpeed();
 
 	malloc_stats();
-	
+
 	logFormat("assignments: %d\n", gDebugAssignmentAmount);
 	logFormat("controllers: %d\n", gDebugStateControllerAmount);
 	logFormat("maps: %d\n", gDebugStringMapAmount);
@@ -185,7 +182,7 @@ void stopFightScreenWin() {
 	if (!gData.mWinCB) return;
 
 	gData.mWinCB();
- }
+}
 
 void stopFightScreenLose()
 {
@@ -197,7 +194,6 @@ void stopFightScreenLose()
 
 	gData.mLoseCB();
 }
-
 
 void stopFightScreenToFixedScreen(Screen* tNextScreen) {
 	setWrapperBetweenScreensCB(exitFightScreenCB, NULL);

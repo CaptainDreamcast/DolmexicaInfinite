@@ -5606,8 +5606,10 @@ static void parseRemoveAnimationStoryController(DreamMugenStateController* tCont
 
 typedef struct {
 	DreamMugenAssignment* mID;
-
 	DreamMugenAssignment* mAnimation;
+
+	int mHasTarget;
+	DreamMugenAssignment* mTarget;
 } ChangeAnimationStoryController;
 
 static void parseChangeAnimationStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
@@ -5615,6 +5617,7 @@ static void parseChangeAnimationStoryController(DreamMugenStateController* tCont
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mAnimation, "");
+	e->mHasTarget = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("target", tGroup, &e->mTarget);
 
 	tController->mType = tType;
 	tController->mData = e;
@@ -6079,20 +6082,10 @@ static void setupStoryStateControllerParsers() {
 	string_map_push(&gVariableHandler.mStateControllerParsers, "varadd", (void*)varAddStoryParseFunction);
 }
 
-static int getStoryIDFromAssignment(DreamMugenAssignment** tAssignment, StoryInstance* tInstance) {
+static int getDolmexicaStoryIDFromAssignment(DreamMugenAssignment** tAssignment, StoryInstance* tInstance) {
 
 	char* val = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, (DreamPlayer*)tInstance);
-	int id;
-	if (!strcmp("", val)) {
-		id = 1;
-	}
-	else {
-		char* p;
-		id = (int)strtol(val, &p, 10);
-		if (p == val) {
-			id = getDolmexicaStoryTextIDFromName(tInstance, val);
-		}
-	}
+	int id = getDolmexicaStoryIDFromString(val, tInstance);
 	freeMemory(val);
 	return id;
 }
@@ -6103,7 +6096,7 @@ static int handleCreateAnimationStoryController(DreamMugenStateController* tCont
 	int id, animation, isLooping, isBoundToStage;
 	Position position = makePosition(0, 0, 0);
 
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	getSingleIntegerValueOrDefault(&e->mAnimation, (DreamPlayer*)tInstance, &animation, 0);
 	getSingleIntegerValueOrDefault(&e->mIsLooping, (DreamPlayer*)tInstance, &isLooping, 1);
 	getSingleIntegerValueOrDefault(&e->mIsBoundToStage, (DreamPlayer*)tInstance, &isBoundToStage, 0);
@@ -6126,7 +6119,7 @@ static int handleRemoveAnimationStoryController(DreamMugenStateController* tCont
 	RemoveAnimationStoryController* e = (RemoveAnimationStoryController*)tController->mData;
 
 	int id;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
 	removeDolmexicaStoryAnimation(tInstance, id);
 
@@ -6137,7 +6130,7 @@ static int handleChangeAnimationStoryController(DreamMugenStateController* tCont
 	ChangeAnimationStoryController* e = (ChangeAnimationStoryController*)tController->mData;
 
 	int id, animation;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	getSingleIntegerValueOrDefault(&e->mAnimation, (DreamPlayer*)tInstance, &animation, 0);
 
 	changeDolmexicaStoryAnimation(tInstance, id, animation);
@@ -6182,7 +6175,7 @@ static int handleCreateTextStoryController(DreamMugenStateController* tControlle
 	Position basePosition = makePosition(0, 0, 0);
 	Position textOffset = makePosition(0, 0, 0);
 
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	getTwoFloatValuesWithDefaultValues(&e->mPosition, (DreamPlayer*)tInstance, &basePosition.x, &basePosition.y, 0, 0);
 	getTwoFloatValuesWithDefaultValues(&e->mTextOffset, (DreamPlayer*)tInstance, &textOffset.x, &textOffset.y, 0, 0);
 
@@ -6221,7 +6214,7 @@ static int handleRemoveTextStoryController(DreamMugenStateController* tControlle
 	RemoveElementStoryController* e = (RemoveElementStoryController*)tController->mData;
 
 	int id;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	removeDolmexicaStoryText(tInstance, id);
 
 	return 0;
@@ -6231,7 +6224,7 @@ static int handleChangeTextStoryController(DreamMugenStateController* tControlle
 	ChangeTextStoryController* e = (ChangeTextStoryController*)tController->mData;
 
 	int id;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
 	if (e->mDoesChangePosition) {
 		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mPosition, (DreamPlayer*)tInstance);
@@ -6331,7 +6324,7 @@ static int handleAnimationSetPositionStoryController(DreamMugenStateController* 
 	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	int id;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, (DreamPlayer*)tInstance);
@@ -6349,7 +6342,7 @@ static int handleAnimationAddPositionStoryController(DreamMugenStateController* 
 	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	int id;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, (DreamPlayer*)tInstance);
@@ -6367,7 +6360,7 @@ static int handleAnimationSetScaleStoryController(DreamMugenStateController* tCo
 	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	int id;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, (DreamPlayer*)tInstance);
@@ -6385,7 +6378,7 @@ static int handleAnimationSetFaceDirectionStoryController(DreamMugenStateControl
 	AnimationSetFaceDirectionStoryController* e = (AnimationSetFaceDirectionStoryController*)tController->mData;
 
 	int id, faceDirection;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	getSingleIntegerValueOrDefault(&e->mFacing, (DreamPlayer*)tInstance, &faceDirection, 1);
 
 	if (!faceDirection) return 0;
@@ -6400,7 +6393,7 @@ static int handleAnimationSetColorStoryController(DreamMugenStateController* tCo
 
 	int id;
 	Vector3D color;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	color = evaluateDreamAssignmentAndReturnAsVector3D(&e->mValue, (DreamPlayer*)tInstance);
 
 	setDolmexicaStoryAnimationColor(tInstance, id, color);
@@ -6413,7 +6406,7 @@ static int handleAnimationSetOpacityStoryController(DreamMugenStateController* t
 
 	int id;
 	double opacity;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	opacity = evaluateDreamAssignmentAndReturnAsFloat(&e->mValue, (DreamPlayer*)tInstance);
 
 	setDolmexicaStoryAnimationOpacity(tInstance, id, opacity);
@@ -6452,7 +6445,7 @@ static int handleCreateCharacterStoryController(DreamMugenStateController* tCont
 
 	int id, animation, isBoundToStage;
 	Position position = makePosition(0, 0, 0);
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	getSingleIntegerValueOrDefault(&e->mStartAnimationNumber, (DreamPlayer*)tInstance, &animation, 0);
 	getSingleIntegerValueOrDefault(&e->mIsBoundToStage, (DreamPlayer*)tInstance, &isBoundToStage, 0);
 	getTwoFloatValuesWithDefaultValues(&e->mPosition, (DreamPlayer*)tInstance, &position.x, &position.y, 0, 0);
@@ -6475,7 +6468,7 @@ static int handleRemoveCharacterStoryController(DreamMugenStateController* tCont
 	RemoveElementStoryController* e = (RemoveElementStoryController*)tController->mData;
 	
 	int id;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
 	removeDolmexicaStoryCharacter(tInstance, id);
 
@@ -6486,8 +6479,14 @@ static int handleChangeCharacterAnimStoryController(DreamMugenStateController* t
 	ChangeAnimationStoryController* e = (ChangeAnimationStoryController*)tController->mData;
 
 	int id, animation;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	getSingleIntegerValueOrDefault(&e->mAnimation, (DreamPlayer*)tInstance, &animation, 0);
+
+	if (e->mHasTarget) {
+		int target;
+		getSingleIntegerValueOrDefault(&e->mTarget, (DreamPlayer*)tInstance, &target, -1);
+		tInstance = getDolmexicaStoryHelperInstance(target);
+	}
 
 	changeDolmexicaStoryCharacterAnimation(tInstance, id, animation);
 
@@ -6498,7 +6497,7 @@ static int handleSetCharacterPosStoryController(DreamMugenStateController* tCont
 	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	int id;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, (DreamPlayer*)tInstance);
@@ -6516,7 +6515,7 @@ static int handleAddCharacterPosStoryController(DreamMugenStateController* tCont
 	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	int id;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, (DreamPlayer*)tInstance);
@@ -6534,7 +6533,7 @@ static int handleSetCharacterScaleStoryController(DreamMugenStateController* tCo
 	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	int id;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, (DreamPlayer*)tInstance);
@@ -6552,7 +6551,7 @@ static int handleSetCharacterFaceDirectionStoryController(DreamMugenStateControl
 	AnimationSetFaceDirectionStoryController* e = (AnimationSetFaceDirectionStoryController*)tController->mData;
 
 	int id, faceDirection;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	getSingleIntegerValueOrDefault(&e->mFacing, (DreamPlayer*)tInstance, &faceDirection, 1);
 
 	if (!faceDirection) return 0;
@@ -6567,7 +6566,7 @@ static int handleSetCharacterColorStoryController(DreamMugenStateController* tCo
 
 	int id;
 	Vector3D color;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	color = evaluateDreamAssignmentAndReturnAsVector3D(&e->mValue, (DreamPlayer*)tInstance);
 
 	setDolmexicaStoryCharacterColor(tInstance, id, color);
@@ -6580,7 +6579,7 @@ static int handleSetCharacterOpacityStoryController(DreamMugenStateController* t
 
 	int id;
 	double opacity;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	opacity = evaluateDreamAssignmentAndReturnAsFloat(&e->mValue, (DreamPlayer*)tInstance);
 
 	setDolmexicaStoryCharacterOpacity(tInstance, id, opacity);
@@ -6592,7 +6591,7 @@ static int handleCreateHelperStoryController(DreamMugenStateController* tControl
 	CreateHelperStoryController* e = (CreateHelperStoryController*)tController->mData;
 
 	int id, state;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	getSingleIntegerValueOrDefault(&e->mState, (DreamPlayer*)tInstance, &state, 0);
 
 	addDolmexicaStoryHelper(id, state);
@@ -6606,7 +6605,7 @@ static int handleLockTextToCharacterStoryController(DreamMugenStateController* t
 	int id;
 	int character, helper;
 	double dX, dY;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	getTwoIntegerValuesWithDefaultValues(&e->mCharacterID, (DreamPlayer*)tInstance, &character, &helper, 1, -1);
 	getTwoFloatValuesWithDefaultValues(&e->mOffset, (DreamPlayer*)tInstance, &dX, &dY, 0, 0);
 
@@ -6624,7 +6623,7 @@ static int handleTextAddPositionStoryController(DreamMugenStateController* tCont
 	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	int id;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, (DreamPlayer*)tInstance);
@@ -6642,7 +6641,7 @@ static int handleNameIDStoryController(DreamMugenStateController* tController, S
 	NameTextStoryController* e = (NameTextStoryController*)tController->mData;
 
 	int id;
-	id = getStoryIDFromAssignment(&e->mID, tInstance);
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
 	char* name = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mName, (DreamPlayer*)tInstance);
 	setDolmexicaStoryIDName(tInstance, id, name);
