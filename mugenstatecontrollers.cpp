@@ -5776,6 +5776,9 @@ static void parseFadeStoryController(DreamMugenStateController* tController, Mug
 typedef struct {
 	DreamMugenAssignment* mID;
 	DreamMugenAssignment* mFacing;
+	
+	int mHasTarget;
+	DreamMugenAssignment* mTarget;
 
 } AnimationSetFaceDirectionStoryController;
 
@@ -5784,6 +5787,7 @@ static void parseAnimationSetFaceDirectionStoryController(DreamMugenStateControl
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mFacing, "");
+	e->mHasTarget = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("target", tGroup, &e->mTarget);
 
 	tController->mType = tType;
 	tController->mData = e;
@@ -6006,6 +6010,30 @@ static void parseStoryVarSetController(DreamMugenStateController* tController, M
 	tController->mData = e;
 }
 
+typedef struct {
+	DreamMugenAssignment* mID;
+
+	int mHasTarget;
+	DreamMugenAssignment* mTarget;
+	DreamMugenAssignment* x;
+	DreamMugenAssignment* y;
+
+	uint8_t mIsSettingX;
+	uint8_t mIsSettingY;
+} StoryTarget2DPhysicsController;
+
+static void parseStoryTarget2DPhysicsController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
+	StoryTarget2DPhysicsController* e = (StoryTarget2DPhysicsController*)allocMemoryOnMemoryStackOrMemory(sizeof(StoryTarget2DPhysicsController));
+
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
+	e->mIsSettingX = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("x", tGroup, &e->x);
+	e->mIsSettingY = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("y", tGroup, &e->y);
+	e->mHasTarget = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("target", tGroup, &e->mTarget);
+
+	tController->mType = tType;
+	tController->mData = e;
+}
+
 
 
 void nullStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseNullController(tController, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_NULL); }
@@ -6033,9 +6061,9 @@ void moveStageStoryParseFunction(DreamMugenStateController* tController, MugenDe
 void createCharStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseCreateCharStoryController(tController, tGroup); }
 void removeCharStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseRemoveElementStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_CHARACTER);  }
 void charChangeAnimStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseChangeAnimationStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_CHANGE_ANIMATION); }
-void charSetPosStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_POSITION); }
-void charAddPosStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_ADD_POSITION); }
-void charSetScaleStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_SCALE); }
+void charSetPosStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_POSITION); }
+void charAddPosStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_ADD_POSITION); }
+void charSetScaleStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_SCALE); }
 void charSetFaceDirectionStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationSetFaceDirectionStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_FACEDIRECTION); }
 void charSetColorStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationSetColorStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_COLOR); }
 void charSetOpacityStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationSetOpacityStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_OPACITY); }
@@ -6494,55 +6522,76 @@ static int handleChangeCharacterAnimStoryController(DreamMugenStateController* t
 }
 
 static int handleSetCharacterPosStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
-	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
+	StoryTarget2DPhysicsController* e = (StoryTarget2DPhysicsController*)tController->mData;
 
 	int id;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
+	StoryInstance* targetInstance = tInstance;
+	if (e->mHasTarget) {
+		int target;
+		getSingleIntegerValueOrDefault(&e->mTarget, (DreamPlayer*)tInstance, &target, -1);
+		targetInstance = getDolmexicaStoryHelperInstance(target);
+	}
+
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, (DreamPlayer*)tInstance);
-		setDolmexicaStoryCharacterPositionX(tInstance, id, x);
+		setDolmexicaStoryCharacterPositionX(targetInstance, id, x);
 	}
 
 	if (e->mIsSettingY) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, (DreamPlayer*)tInstance);
-		setDolmexicaStoryCharacterPositionY(tInstance, id, y);
+		setDolmexicaStoryCharacterPositionY(targetInstance, id, y);
 	}
 	return 0;
 }
 
 static int handleAddCharacterPosStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
-	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
+	StoryTarget2DPhysicsController* e = (StoryTarget2DPhysicsController*)tController->mData;
 
 	int id;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
+	StoryInstance* targetInstance = tInstance;
+	if (e->mHasTarget) {
+		int target;
+		getSingleIntegerValueOrDefault(&e->mTarget, (DreamPlayer*)tInstance, &target, -1);
+		targetInstance = getDolmexicaStoryHelperInstance(target);
+	}
+
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, (DreamPlayer*)tInstance);
-		addDolmexicaStoryCharacterPositionX(tInstance, id, x);
+		addDolmexicaStoryCharacterPositionX(targetInstance, id, x);
 	}
 
 	if (e->mIsSettingY) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, (DreamPlayer*)tInstance);
-		addDolmexicaStoryCharacterPositionY(tInstance, id, y);
+		addDolmexicaStoryCharacterPositionY(targetInstance, id, y);
 	}
 	return 0;
 }
 
 static int handleSetCharacterScaleStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
-	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
+	StoryTarget2DPhysicsController* e = (StoryTarget2DPhysicsController*)tController->mData;
 
 	int id;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
+	StoryInstance* targetInstance = tInstance;
+	if (e->mHasTarget) {
+		int target;
+		getSingleIntegerValueOrDefault(&e->mTarget, (DreamPlayer*)tInstance, &target, -1);
+		targetInstance = getDolmexicaStoryHelperInstance(target);
+	}
+
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, (DreamPlayer*)tInstance);
-		setDolmexicaStoryCharacterScaleX(tInstance, id, x);
+		setDolmexicaStoryCharacterScaleX(targetInstance, id, x);
 	}
 
 	if (e->mIsSettingY) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, (DreamPlayer*)tInstance);
-		setDolmexicaStoryCharacterScaleY(tInstance, id, y);
+		setDolmexicaStoryCharacterScaleY(targetInstance, id, y);
 	}
 	return 0;
 }
@@ -6556,7 +6605,14 @@ static int handleSetCharacterFaceDirectionStoryController(DreamMugenStateControl
 
 	if (!faceDirection) return 0;
 
-	setDolmexicaStoryCharacterIsFacingRight(tInstance, id, faceDirection == 1);
+	StoryInstance* targetInstance = tInstance;
+	if (e->mHasTarget) {
+		int target;
+		getSingleIntegerValueOrDefault(&e->mTarget, (DreamPlayer*)tInstance, &target, -1);
+		targetInstance = getDolmexicaStoryHelperInstance(target);
+	}
+
+	setDolmexicaStoryCharacterIsFacingRight(targetInstance, id, faceDirection == 1);
 	
 	return 0;
 }
