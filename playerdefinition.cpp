@@ -1343,6 +1343,7 @@ static void setPlayerHit(DreamPlayer* p, DreamPlayer* tOtherPlayer, void* tHitDa
 	setPlayerControl(p, 0);
 
 	copyHitDataToActive(p, tHitData);
+	setReceivedHitDataInactive(tHitData);
 
 	setPlayerIsFacingRight(p, !getActiveHitDataIsFacingRight(p));
 
@@ -1581,7 +1582,6 @@ void playerHitCB(void* tData, void* tHitData)
 	if (isIgnoredBecauseOfJuggle(p, otherPlayer)) return;
 
 	setPlayerHit(p, otherPlayer, tHitData);
-	setReceivedHitDataInactive(tHitData);
 	
 	if (isPlayerGuarding(p)) {
 		playPlayerHitSound(p, getActiveHitDataGuardSound);
@@ -2885,11 +2885,29 @@ int getPlayerProjectileAmount(DreamPlayer* p)
 	return int_map_size(&p->mProjectiles);
 }
 
+typedef struct {
+	int mAmount;
+	int mSearchID;
+} ProjectileSearchCaller;
+
+static void playerProjectileSearchCB(void* tCaller, void* tData) {
+	DreamPlayer* projectile = (DreamPlayer*)tData;
+	ProjectileSearchCaller* caller = (ProjectileSearchCaller*)tCaller;
+
+	int id = getProjectileID(projectile);
+	if (id == caller->mSearchID) {
+		caller->mAmount++;
+	}
+}
+
 int getPlayerProjectileAmountWithID(DreamPlayer * p, int tID)
 {
-	(void)p;
-	(void)tID;
-	return 0; // TODO
+	DreamPlayer* root = p->mRoot;
+	ProjectileSearchCaller caller;
+	caller.mAmount = 0;
+	caller.mSearchID = tID;
+	int_map_map(&root->mProjectiles, playerProjectileSearchCB, &caller);
+	return caller.mAmount;
 }
 
 int getPlayerProjectileTimeSinceCancel(DreamPlayer * p, int tID)

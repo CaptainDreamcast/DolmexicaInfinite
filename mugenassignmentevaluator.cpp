@@ -60,20 +60,20 @@ typedef struct {
 
 static struct {
 	int mStackSize;
-	AssignmentReturnValue* mStack;
+	AssignmentReturnValue mStack[500]; // TODO: dynamic
 	int mFreePointer;
 
 } gAssignmentEvaluator;
 
 static void initEvaluationStack() {
-	gAssignmentEvaluator.mStackSize = 100;
-	gAssignmentEvaluator.mStack = (AssignmentReturnValue*)allocMemory(gAssignmentEvaluator.mStackSize * sizeof(AssignmentReturnValue));
+	gAssignmentEvaluator.mStackSize = 500;
+	//gAssignmentEvaluator.mStack = (AssignmentReturnValue*)allocMemory(gAssignmentEvaluator.mStackSize * sizeof(AssignmentReturnValue));
 }
 
 
 static void increaseEvaluationStack() {
 	gAssignmentEvaluator.mStackSize += 100;
-	gAssignmentEvaluator.mStack = (AssignmentReturnValue*)reallocMemory(gAssignmentEvaluator.mStack, gAssignmentEvaluator.mStackSize * sizeof(AssignmentReturnValue));
+	//gAssignmentEvaluator.mStack = (AssignmentReturnValue*)reallocMemory(gAssignmentEvaluator.mStack, gAssignmentEvaluator.mStackSize * sizeof(AssignmentReturnValue));
 }
 
 static AssignmentReturnValue& getFreeAssignmentReturnValue() {

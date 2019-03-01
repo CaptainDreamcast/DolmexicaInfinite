@@ -107,12 +107,12 @@ static void loadFightScreen() {
 	logg("init players\n");
 
 	loadPlayers(&gData.mMemoryStack);
-
+	
 	instantiateActor(getDreamFightUIBP());
 	instantiateActor(getDreamGameLogic());
 
 	instantiateActor(getFightResultDisplay());
-
+	
 	if (isMugenDebugActive()) {
 		instantiateActor(getFightDebug());
 	}
@@ -121,10 +121,10 @@ static void loadFightScreen() {
 	logg("shrinking memory stack\n");
 	resizeMemoryStackToCurrentSize(&gData.mMemoryStack); // TODO: test extensively
 	malloc_stats();
-
+	
 	loadPlayerSprites();
 	setUIFaces();
-
+	
 	playDreamStageMusic();
 
 	setFightScreenGameSpeed();

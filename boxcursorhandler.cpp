@@ -8,7 +8,7 @@
 typedef struct {
 	int mAnimationID;
 	int mTweenID;
-
+	int mIsPaused;
 	Position mBasePosition;
 } BoxCursor;
 
@@ -61,6 +61,7 @@ int addBoxCursor(Position tStartPosition, Position tOffset, GeoRectangle tRectan
 	setAnimationColor(e->mAnimationID, 0, 1, 1);
 	setAnimationTransparency(e->mAnimationID, 1);
 	boxCursorCB1(e);
+	e->mIsPaused = 0;
 	
 	return int_map_push_back_owned(&gData.mBoxCursors, e);
 }
@@ -72,7 +73,7 @@ void removeBoxCursor(int tID)
 		return;
 	}
 	BoxCursor* e = (BoxCursor*)int_map_get(&gData.mBoxCursors, tID);
-	removeTween(e->mTweenID);
+	if(!e->mIsPaused) removeTween(e->mTweenID);
 	removeHandledAnimation(e->mAnimationID);
 
 	int_map_remove(&gData.mBoxCursors, tID);
@@ -87,4 +88,33 @@ void setBoxCursorPosition(int tID, Position tPosition)
 
 	BoxCursor* e = (BoxCursor*)int_map_get(&gData.mBoxCursors, tID);
 	e->mBasePosition = tPosition;
+}
+
+void pauseBoxCursor(int tID)
+{
+	if (!int_map_contains(&gData.mBoxCursors, tID)) {
+		logWarningFormat("Attempting to pause non-existant box cursor %d. Abort.", tID);
+		return;
+	}
+	BoxCursor* e = (BoxCursor*)int_map_get(&gData.mBoxCursors, tID);
+	if (e->mIsPaused) return;
+
+	setAnimationColor(e->mAnimationID, 0, 0.6, 0.6);
+	removeTween(e->mTweenID);
+	setAnimationTransparency(e->mAnimationID, 0.2);
+	e->mIsPaused = 1;
+}
+
+void resumeBoxCursor(int tID)
+{
+	if (!int_map_contains(&gData.mBoxCursors, tID)) {
+		logWarningFormat("Attempting to resume non-existant box cursor %d. Abort.", tID);
+		return;
+	}
+	BoxCursor* e = (BoxCursor*)int_map_get(&gData.mBoxCursors, tID);
+	if (!e->mIsPaused) return;
+
+	setAnimationColor(e->mAnimationID, 0, 1, 1);
+	boxCursorCB1(e);
+	e->mIsPaused = 0;
 }

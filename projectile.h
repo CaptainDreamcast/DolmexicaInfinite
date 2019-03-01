@@ -11,6 +11,7 @@ void removeAdditionalProjectileData(DreamPlayer* tProjectile);
 void handleProjectileHit(DreamPlayer* tProjectile);
 
 void setProjectileID(DreamPlayer* p, int tID);
+int getProjectileID(DreamPlayer* p);
 
 void setProjectileAnimation(DreamPlayer* p, int tAnimation);
 int getProjectileHitAnimation(DreamPlayer* p);

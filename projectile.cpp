@@ -164,6 +164,13 @@ void setProjectileID(DreamPlayer * tProjectile, int tID)
 	e->mID = tID;
 }
 
+int getProjectileID(DreamPlayer * tProjectile)
+{
+	assert(int_map_contains(&gData.mProjectileList, tProjectile->mProjectileDataID));
+	Projectile* e = (Projectile*)int_map_get(&gData.mProjectileList, tProjectile->mProjectileDataID);
+	return e->mID;
+}
+
 void setProjectileAnimation(DreamPlayer * p, int tAnimation)
 {
 	changePlayerAnimation(p, tAnimation);

@@ -25,6 +25,7 @@ typedef struct {
 	double mScaleDeltaY;
 
 	Vector3DI mTileSize;
+	Vector3DI mTileSpacing;
 	int mLayerNo;
 
 	int mIsEnabled;

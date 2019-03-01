@@ -310,9 +310,9 @@ static void loadCredits() {
 	setAnimationSize(gTitleScreenData.mCreditBGAnimationID, makePosition(320, 20, 1), makePosition(0, 0, 0));
 	setAnimationColor(gTitleScreenData.mCreditBGAnimationID, 0, 0, 0.5);
 
-	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 6", makePosition(0, 240, 51), 1);
+	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 7", makePosition(0, 240, 51), 1);
 	
-	gTitleScreenData.mRightCreditTextID = addMugenText("12/31/18 Presented by Dogma", makePosition(320, 240, 51), 1);
+	gTitleScreenData.mRightCreditTextID = addMugenText("03/01/18 Presented by Dogma", makePosition(320, 240, 51), 1);
 	setMugenTextAlignment(gTitleScreenData.mRightCreditTextID, MUGEN_TEXT_ALIGNMENT_RIGHT);
 }
 
