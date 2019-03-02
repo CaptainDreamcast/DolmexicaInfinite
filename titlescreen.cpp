@@ -312,7 +312,7 @@ static void loadCredits() {
 
 	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 7", makePosition(0, 240, 51), 1);
 	
-	gTitleScreenData.mRightCreditTextID = addMugenText("03/01/18 Presented by Dogma", makePosition(320, 240, 51), 1);
+	gTitleScreenData.mRightCreditTextID = addMugenText("03/01/19 Presented by Dogma", makePosition(320, 240, 51), 1);
 	setMugenTextAlignment(gTitleScreenData.mRightCreditTextID, MUGEN_TEXT_ALIGNMENT_RIGHT);
 }
 
