@@ -566,7 +566,7 @@ static DreamMugenAssignment* parseMugenAdditionFromString(char* tText) {
 }
 
 static int isOperatorCharacter(char tChar) {
-	return tChar == '-' || tChar == '+' || tChar == '|' || tChar == '&' || tChar == '*' || tChar == '/';
+	return tChar == '-' || tChar == '+' || tChar == '|' || tChar == '&' || tChar == '*' || tChar == '/' || tChar == '!';
 }
 
 static int isBinaryOperator(char* tText, int tPosition) {
