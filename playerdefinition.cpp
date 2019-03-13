@@ -35,6 +35,7 @@
 #include "mugenexplod.h"
 #include "pausecontrollers.h"
 #include "config.h"
+#include "mugenassignmentevaluator.h"
 
 using namespace std;
 
@@ -687,7 +688,7 @@ static void updateBindingPosition(DreamPlayer* p) {
 	}
 }
 
-static void removePlayerBinding(DreamPlayer* tPlayer) {
+static void removePlayerBindingInternal(DreamPlayer* tPlayer) {
 	tPlayer->mIsBound = 0;
 
 	DreamPlayer* boundTo = tPlayer->mBoundTarget;
@@ -701,7 +702,7 @@ static void updateBinding(DreamPlayer* p) {
 
 	p->mBoundNow++;
 	if (p->mBoundNow >= p->mBoundDuration) {
-		removePlayerBinding(p);
+		removePlayerBindingInternal(p);
 		return;
 	}
 
@@ -764,7 +765,7 @@ static void updateGuardingOver(DreamPlayer* p) {
 	if (isPlayerPaused(p)) return;
 	if (!p->mIsInControl) return;
 	if (getPlayerState(p) != 140) return;
-	if (getRemainingPlayerAnimationTime(p)) return;
+	if (getPlayerAnimationTimeDeltaUntilFinished(p)) return;
 
 	setPlayerUnguarding(p);
 }
@@ -1878,9 +1879,9 @@ int getPlayerAnimationStepDuration(DreamPlayer * p)
 	return getMugenAnimationAnimationStepDuration(p->mAnimationID);
 }
 
-int getRemainingPlayerAnimationTime(DreamPlayer* p)
+int getPlayerAnimationTimeDeltaUntilFinished(DreamPlayer* p)
 {
-	return getMugenAnimationRemainingAnimationTime(p->mAnimationID);
+	return -getMugenAnimationRemainingAnimationTime(p->mAnimationID);
 }
 
 int getPlayerAnimationDuration(DreamPlayer* p) {
@@ -2795,8 +2796,10 @@ void addPlayerDamage(DreamPlayer* p, int tDamage)
 	}
 	p->mLife = min(p->mLife, getPlayerLifeMax(p));
 
-	double perc = p->mLife / (double)p->mHeader->mFiles.mConstants.mHeader.mLife;
-	setDreamLifeBarPercentage(p, perc);
+	if (!isPlayerHelper(p) && !isPlayerProjectile(p)) {
+		double perc = p->mLife / (double)p->mHeader->mFiles.mConstants.mHeader.mLife;
+		setDreamLifeBarPercentage(p, perc);
+	}
 
 }
 
@@ -3655,7 +3658,7 @@ static void movePlayerHelpersToParent(DreamPlayer* p) {
 static void removePlayerBindingCB(void* tCaller, void* tData) {
 	(void)tCaller;
 	DreamPlayer* p = (DreamPlayer*)tData;
-	removePlayerBinding(p);
+	removePlayerBindingInternal(p);
 }
 
 static void removePlayerBoundHelpers(DreamPlayer* p) {
@@ -3791,6 +3794,11 @@ void setPlayerFixedDrawAngle(DreamPlayer * p, double tAngle)
 	setMugenAnimationDrawAngle(p->mAnimationID, tAngle); // TODO: one frame only and fixed
 }
 
+static int isHelperBoundToPlayer(DreamPlayer* tHelper, DreamPlayer* tTestBind) {
+	if (!tHelper->mIsBound) return 0;
+	return tHelper->mBoundTarget == tTestBind;
+}
+
 static void bindHelperToPlayer(DreamPlayer* tHelper, DreamPlayer* tBind, int tTime, int tFacing, Vector3D tOffset, DreamPlayerBindPositionType tType) {
 	tHelper->mIsBound = 1;
 	tHelper->mBoundNow = 0;
@@ -3799,6 +3807,10 @@ static void bindHelperToPlayer(DreamPlayer* tHelper, DreamPlayer* tBind, int tTi
 	tHelper->mBoundOffset = tOffset;
 	tHelper->mBoundPositionType = tType;
 	tHelper->mBoundTarget = tBind;
+
+	if (isHelperBoundToPlayer(tBind, tHelper)) { // TODO: check if correct
+		removePlayerBindingInternal(tBind);
+	}
 
 	updateBindingPosition(tHelper);
 
@@ -3857,7 +3869,6 @@ int isPlayerBound(DreamPlayer * p)
 {
 	return p->mIsBound;
 }
-
 
 static void bindSingleTargetToPlayer(DreamPlayer* tBindRoot, DreamPlayer* tTarget, BindPlayerTargetsCaller* tCaller);
 

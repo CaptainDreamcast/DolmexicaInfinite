@@ -470,7 +470,8 @@ int getActiveHitDataDamage(DreamPlayer * tPlayer)
 {
 	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = (PlayerHitData*)int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
-	return e->mDamage;
+	if (!e->mIsActive) return 0;
+	else return e->mDamage;
 }
 
 int getActiveHitDataGuardDamage(DreamPlayer * tPlayer)

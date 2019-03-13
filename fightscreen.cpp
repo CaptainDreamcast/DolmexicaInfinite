@@ -84,7 +84,7 @@ static void loadFightScreen() {
 	setupDreamMugenStateControllerHandler(&gData.mMemoryStack);
 
 	setStateMachineHandlerToFight();
-
+	
 	malloc_stats();
 	logg("init custom handlers\n");
 

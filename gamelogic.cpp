@@ -304,7 +304,7 @@ static void updateWinPose() {
 	if (!gData.mIsDisplayingWinPose) return;
 
 	int hasSkipped = hasPressedStartFlankSingle(0) || hasPressedStartFlankSingle(1);
-	int isTimeOver = !getRemainingPlayerAnimationTime(gData.mRoundWinner);
+	int isTimeOver = !getPlayerAnimationTimeDeltaUntilFinished(gData.mRoundWinner);
 	int isStepInfinite = isMugenAnimationStepDurationInfinite(getPlayerAnimationStepDuration(gData.mRoundWinner)); 
 	int isOver = isTimeOver || isStepInfinite;
 	if (isOver || hasSkipped) {

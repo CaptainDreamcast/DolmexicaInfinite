@@ -105,7 +105,11 @@ static void updateSingleState(RegisteredState* tRegisteredState, int tState, Dre
 		
 		if (!caller.mHasChangedState) break;
 		else {
-			if (tState < 0 || int_map_contains(&visitedStates, tRegisteredState->mState)) break;
+			if (tState < 0) break;
+			if (int_map_contains(&visitedStates, tRegisteredState->mState)) {
+				tRegisteredState->mTimeInState--; // TODO: proper fix for state starting time
+				break;
+			}
 			tState = tRegisteredState->mState;
 		}
 	}
@@ -360,7 +364,7 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 		int spritePriority = evaluateDreamAssignmentAndReturnAsInteger(&newState->mSpritePriority, e->mPlayer);
 		setPlayerSpritePriority(e->mPlayer, spritePriority);
 	}
-
+	
 	setPlayerPositionUnfrozen(e->mPlayer); // TODO: check if correct
 
 }

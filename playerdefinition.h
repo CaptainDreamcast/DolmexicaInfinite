@@ -311,7 +311,7 @@ int getPlayerAnimationNumber(DreamPlayer* p);
 int getPlayerAnimationStep(DreamPlayer* p);
 int getPlayerAnimationStepAmount(DreamPlayer* p);
 int getPlayerAnimationStepDuration(DreamPlayer* p);
-int getRemainingPlayerAnimationTime(DreamPlayer* p);
+int getPlayerAnimationTimeDeltaUntilFinished(DreamPlayer* p);
 int getPlayerAnimationDuration(DreamPlayer* p);
 int getPlayerAnimationTime(DreamPlayer* p);
 int getPlayerSpriteGroup(DreamPlayer* p);
