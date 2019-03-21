@@ -5744,7 +5744,7 @@ static void parseChangeTextStoryController(DreamMugenStateController* tControlle
 	e->mDoesChangeFaceOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("face.offset", tGroup, &e->mFaceOffset);
 
 	e->mDoesChangeName = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name", tGroup, &e->mName);
-	e->mDoesChangeNameOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name.offset", tGroup, &e->mName);
+	e->mDoesChangeNameOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name.offset", tGroup, &e->mNameOffset);
 
 	e->mDoesChangeText = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("text", tGroup, &e->mText);
 	e->mDoesChangeTextOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("text.offset", tGroup, &e->mTextOffset);
@@ -5787,6 +5787,17 @@ static void parseAnimationSetFaceDirectionStoryController(DreamMugenStateControl
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mFacing, "");
+	e->mHasTarget = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("target", tGroup, &e->mTarget);
+
+	tController->mType = tType;
+	tController->mData = e;
+}
+
+static void parseAnimationAngleStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
+	AnimationSetFaceDirectionStoryController* e = (AnimationSetFaceDirectionStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(AnimationSetFaceDirectionStoryController));
+
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("angle", tGroup, &e->mFacing, "");
 	e->mHasTarget = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("target", tGroup, &e->mTarget);
 
 	tController->mType = tType;
@@ -6054,6 +6065,8 @@ void animationSetPositionStoryParseFunction(DreamMugenStateController* tControll
 void animationAddPositionStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_ADD_POSITION); }
 void animationSetScaleStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_SCALE); }
 void animationSetFaceDirectionStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationSetFaceDirectionStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_FACEDIRECTION); }
+void animationSetAngleStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationAngleStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_ANGLE); }
+void animationAddAngleStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationAngleStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_ADD_ANGLE); }
 void animationSetColorStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationSetColorStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_COLOR); }
 void animationSetOpacityStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationSetOpacityStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_OPACITY); }
 void endStoryboardStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseSingleRequiredValueController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_END_STORYBOARD); }
@@ -6092,6 +6105,8 @@ static void setupStoryStateControllerParsers() {
 	string_map_push(&gVariableHandler.mStateControllerParsers, "animposadd", (void*)animationAddPositionStoryParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "animscaleset", (void*)animationSetScaleStoryParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "animsetfacing", (void*)animationSetFaceDirectionStoryParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "animsetangle", (void*)animationSetAngleStoryParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "animaddangle", (void*)animationAddAngleStoryParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "animsetcolor", (void*)animationSetColorStoryParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "animsetopacity", (void*)animationSetOpacityStoryParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "endstoryboard", (void*)endStoryboardStoryParseFunction);
@@ -6416,6 +6431,32 @@ static int handleAnimationSetFaceDirectionStoryController(DreamMugenStateControl
 	return 0;
 }
 
+static int handleAnimationSetAngleStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
+	AnimationSetFaceDirectionStoryController* e = (AnimationSetFaceDirectionStoryController*)tController->mData;
+
+	int id;
+	double angle;
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
+	getSingleFloatValueOrDefault(&e->mFacing, (DreamPlayer*)tInstance, &angle, 0);
+
+	setDolmexicaStoryAnimationAngle(tInstance, id, angle);
+
+	return 0;
+}
+
+static int handleAnimationAddAngleStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
+	AnimationSetFaceDirectionStoryController* e = (AnimationSetFaceDirectionStoryController*)tController->mData;
+
+	int id;
+	double angle;
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
+	getSingleFloatValueOrDefault(&e->mFacing, (DreamPlayer*)tInstance, &angle, 0);
+
+	addDolmexicaStoryAnimationAngle(tInstance, id, angle);
+
+	return 0;
+}
+
 static int handleAnimationSetColorStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
 	AnimationSetSingleValueStoryController* e = (AnimationSetSingleValueStoryController*)tController->mData;
 
@@ -6655,6 +6696,23 @@ static int handleCreateHelperStoryController(DreamMugenStateController* tControl
 	return 0;
 }
 
+static void getStoryCharacterAndHelperFromAssignment(DreamMugenAssignment** tCharacterAssignment, StoryInstance* tInstance, int& oCharacter, int& oHelper) {
+	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(tCharacterAssignment, (DreamPlayer*)tInstance);
+	char characterString[100], comma[20], helperString[100];
+	int items = sscanf(text, "%s %s %s", characterString, comma, helperString);
+	assert(items >= 1);
+
+	if (items == 3) {
+		oHelper = atoi(helperString);
+	}
+	else {
+		oHelper = -1;	
+	}
+
+	oCharacter = getDolmexicaStoryIDFromString(characterString, tInstance);
+	freeMemory(text);
+}
+
 static int handleLockTextToCharacterStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
 	LockTextToCharacterStoryController* e = (LockTextToCharacterStoryController*)tController->mData;
 
@@ -6662,7 +6720,7 @@ static int handleLockTextToCharacterStoryController(DreamMugenStateController* t
 	int character, helper;
 	double dX, dY;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
-	getTwoIntegerValuesWithDefaultValues(&e->mCharacterID, (DreamPlayer*)tInstance, &character, &helper, 1, -1);
+	getStoryCharacterAndHelperFromAssignment(&e->mCharacterID, tInstance, character, helper);
 	getTwoFloatValuesWithDefaultValues(&e->mOffset, (DreamPlayer*)tInstance, &dX, &dY, 0, 0);
 
 	if (helper == -1) {
@@ -6811,6 +6869,8 @@ int animationSetPositionStoryHandleFunction(DreamMugenStateController* tControll
 int animationAddPositionStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAnimationAddPositionStoryController(tController, (StoryInstance*)tPlayer); }
 int animationSetScaleStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAnimationSetScaleStoryController(tController, (StoryInstance*)tPlayer); }
 int animationSetFaceDirectionStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAnimationSetFaceDirectionStoryController(tController, (StoryInstance*)tPlayer); }
+int animationSetAngleStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAnimationSetAngleStoryController(tController, (StoryInstance*)tPlayer); }
+int animationAddAngleStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAnimationAddAngleStoryController(tController, (StoryInstance*)tPlayer); }
 int animationSetColorStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAnimationSetColorStoryController(tController, (StoryInstance*)tPlayer); }
 int animationSetOpacityStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAnimationSetOpacityStoryController(tController, (StoryInstance*)tPlayer); }
 int endStoryboardStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleEndStoryboardController(tController, (StoryInstance*)tPlayer); }
@@ -6849,6 +6909,8 @@ static void setupStoryStateControllerHandlers() {
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_ADD_POSITION, (void*)animationAddPositionStoryHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_SCALE, (void*)animationSetScaleStoryHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_FACEDIRECTION, (void*)animationSetFaceDirectionStoryHandleFunction);
+	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_ANGLE, (void*)animationSetAngleStoryHandleFunction);
+	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_ADD_ANGLE, (void*)animationAddAngleStoryHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_COLOR, (void*)animationSetColorStoryHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_OPACITY, (void*)animationSetOpacityStoryHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_END_STORYBOARD, (void*)endStoryboardStoryHandleFunction);

@@ -10,6 +10,7 @@ typedef struct {
 	int mID;
 	int mAnimationID;
 
+	int mIsBoundToStage;
 	int mHasShadow;
 	double mShadowBasePositionY;
 	int mShadowAnimationID;
@@ -44,6 +45,7 @@ typedef struct {
 	int mIsLockedOnToCharacter;
 	Position mLockOffset;
 	Position* mLockCharacterPositionReference;
+	int mLockCharacterIsBoundToStage;
 
 	int mHasFinished;
 	int mIsDisabled;
@@ -91,6 +93,8 @@ void addDolmexicaStoryAnimationPositionY(StoryInstance* tInstance, int tID, doub
 void setDolmexicaStoryAnimationScaleX(StoryInstance* tInstance, int tID, double tX);
 void setDolmexicaStoryAnimationScaleY(StoryInstance* tInstance, int tID, double tY);
 void setDolmexicaStoryAnimationIsFacingRight(StoryInstance* tInstance, int tID, int tIsFacingRight);
+void setDolmexicaStoryAnimationAngle(StoryInstance* tInstance, int tID, double tAngle);
+void addDolmexicaStoryAnimationAngle(StoryInstance* tInstance, int tID, double tAngle);
 void setDolmexicaStoryAnimationColor(StoryInstance* tInstance, int tID, Vector3D tColor);
 void setDolmexicaStoryAnimationOpacity(StoryInstance* tInstance, int tID, double tOpacity);
 

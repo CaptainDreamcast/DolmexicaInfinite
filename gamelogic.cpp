@@ -539,7 +539,7 @@ void setGameModeTraining() {
 	setPlayerHuman(0);
 	setPlayerHuman(1);
 	setPlayerPreferredPalette(0, 1);
-	setPlayerPreferredPalette(1, 2);
+	setPlayerPreferredPalette(1, 1);
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
 

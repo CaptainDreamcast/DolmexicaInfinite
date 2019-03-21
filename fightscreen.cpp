@@ -69,10 +69,10 @@ static void loadFightScreen() {
 	malloc_stats();
 	logg("create mem stack\n");
 	gData.mMemoryStack = createMemoryStack(1024 * 1024 * 5); // should be 3
-
+	
 	malloc_stats();
 	logg("init evaluators\n");
-
+	
 	gDebugAssignmentAmount = 0;
 	gDebugStateControllerAmount = 0;
 	gDebugStringMapAmount = 0;
@@ -82,7 +82,7 @@ static void loadFightScreen() {
 	setupDreamAssignmentReader(&gData.mMemoryStack);
 	setupDreamAssignmentEvaluator();
 	setupDreamMugenStateControllerHandler(&gData.mMemoryStack);
-
+	
 	setStateMachineHandlerToFight();
 	
 	malloc_stats();
@@ -97,7 +97,7 @@ static void loadFightScreen() {
 	instantiateActor(getDreamMugenCommandHandler());
 	instantiateActor(getDreamMugenStateHandler());
 	instantiateActor(getDreamExplodHandler());
-
+	
 	malloc_stats();
 	logg("init stage\n");
 
@@ -126,7 +126,7 @@ static void loadFightScreen() {
 	setUIFaces();
 	
 	playDreamStageMusic();
-
+	
 	setFightScreenGameSpeed();
 
 	malloc_stats();

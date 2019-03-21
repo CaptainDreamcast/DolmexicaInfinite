@@ -112,7 +112,7 @@ static void loadStoryScreen() {
 	loadMugenDefScript(&script, gDolmexicaStoryScreenData.mPath);
 	loadStoryFilesFromScript(&script);
 	unloadMugenDefScript(script);
-
+	
 
 	gDolmexicaStoryScreenData.mHelperInstances.clear();
 	StoryInstance root;
@@ -158,6 +158,10 @@ static void updateLockedTextPosition(StoryInstance* tInstance, StoryText* e) {
 	if (!e->mIsLockedOnToCharacter) return;
 
 	Position p = vecAdd(*e->mLockCharacterPositionReference, e->mLockOffset);
+	if (e->mLockCharacterIsBoundToStage)
+	{
+		p = vecSub(p, *getDreamMugenStageHandlerCameraPositionReference());
+	}
 	setDolmexicaStoryTextBasePosition(tInstance, e->mID, p);
 }
 
@@ -212,6 +216,7 @@ int isStoryCommandActive(char* tCommand)
 static void initDolmexicaStoryAnimation(StoryAnimation& e, int tID, int tAnimationNumber, Position tPosition, MugenSpriteFile* mSprites, MugenAnimations* tAnimations) {
 	e.mID = tID;
 	e.mAnimationID = addMugenAnimation(getMugenAnimation(tAnimations, tAnimationNumber), mSprites, tPosition);
+	e.mIsBoundToStage = 0;
 	e.mHasShadow = 0;
 	e.mIsDeleted = 0;
 }
@@ -272,7 +277,9 @@ static void setDolmexicaStoryAnimationBoundToStageInternal(StoryAnimation& e, in
 			*p = vecAdd(*p, makePosition(160, 0, 0));
 			setMugenAnimationCameraPositionReference(e.mShadowAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 		}
+		e.mIsBoundToStage = tIsBoundToStage;
 	}
+	
 }
 
 
@@ -450,6 +457,35 @@ void setDolmexicaStoryAnimationIsFacingRight(StoryInstance* tInstance, int tID, 
 {
 	StoryAnimation& e = tInstance->mStoryAnimations[tID];
 	setDolmexicaStoryAnimationIsFacingRightInternal(e, tIsFacingRight);
+}
+
+static void setDolmexicaStoryAnimationAngleInternal(StoryAnimation& e, double tAngle)
+{
+	setMugenAnimationDrawAngle(e.mAnimationID, tAngle);
+	if (e.mHasShadow) {
+		setMugenAnimationDrawAngle(e.mShadowAnimationID, tAngle);
+	}
+}
+
+void setDolmexicaStoryAnimationAngle(StoryInstance * tInstance, int tID, double tAngle)
+{
+	StoryAnimation& e = tInstance->mStoryAnimations[tID];
+	setDolmexicaStoryAnimationAngleInternal(e, tAngle);
+}
+
+static void addDolmexicaStoryAnimationAngleInternal(StoryAnimation& e, double tAngle)
+{
+	double newAngle = getMugenAnimationDrawAngle(e.mAnimationID) + tAngle;
+	setMugenAnimationDrawAngle(e.mAnimationID, newAngle);
+	if (e.mHasShadow) {
+		setMugenAnimationDrawAngle(e.mShadowAnimationID, newAngle);
+	}
+}
+
+void addDolmexicaStoryAnimationAngle(StoryInstance * tInstance, int tID, double tAngle)
+{
+	StoryAnimation& e = tInstance->mStoryAnimations[tID];
+	addDolmexicaStoryAnimationAngleInternal(e, tAngle);
 }
 
 static void setDolmexicaStoryAnimationColorInternal(StoryAnimation& e, Vector3D tColor)
@@ -652,7 +688,7 @@ void setDolmexicaStoryTextNameOffset(StoryInstance * tInstance, int tID, Positio
 {
 	StoryText* e = (StoryText*)int_map_get(&tInstance->mStoryTexts, tID);
 	e->mNameOffset = makePosition(tOffset.x, tOffset.y, e->mNameOffset.z);
-	setMugenTextPosition(e->mNameID, vecAdd(e->mPosition, e->mNameOffset));
+	setDolmexicaStoryTextBasePosition(tInstance, tID, e->mPosition);
 }
 
 void setDolmexicaStoryTextNextState(StoryInstance* tInstance, int tID, int tNextState)
@@ -667,6 +703,7 @@ static void setDolmexicaStoryTextLockToCharacterInternal(StoryInstance * tInstan
 	StoryCharacter& character = tCharacterInstance->mStoryCharacters[tCharacterID];
 
 	e->mLockCharacterPositionReference = getMugenAnimationPositionReference(character.mAnimation.mAnimationID);
+	e->mLockCharacterIsBoundToStage = character.mAnimation.mIsBoundToStage;
 	e->mLockOffset = tOffset;
 	e->mIsLockedOnToCharacter = 1;
 }
