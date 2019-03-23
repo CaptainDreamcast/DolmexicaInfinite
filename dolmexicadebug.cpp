@@ -37,6 +37,7 @@ static string fightCB(void* tCaller, string tCommand) {
 	setPlayerDefinitionPath(0, path);
 	getCharacterSelectNamePath(words[2].data(), path);
 	setPlayerDefinitionPath(1, path);
+	setDreamStageMugenDefinition("assets/stages/kfm.def", "");
 
 	if (words.size() >= 4) {
 		if (words[3] == "watch") {

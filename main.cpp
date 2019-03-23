@@ -81,10 +81,10 @@ int main(int argc, char** argv) {
 	setGameName("DOLMEXICA INFINITE");
 	setScreenSize(320, 240);
 
+	setMainFileSystem();	
 	loadMugenTextHandler();
 	initPrismWrapperWithMugenFlags();
-	
-	setMainFileSystem();	
+
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
 	loadMugenSystemFonts();
 	logg("Check framerate");
