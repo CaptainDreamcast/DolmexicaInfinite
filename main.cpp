@@ -22,6 +22,7 @@
 #include "dolmexicastoryscreen.h"
 #include "stage.h"
 #include "config.h"
+#include "dolmexicadebug.h"
 
 char romdisk_buffer[1];
 int romdisk_buffer_length;
@@ -79,12 +80,12 @@ int main(int argc, char** argv) {
 
 	setGameName("DOLMEXICA INFINITE");
 	setScreenSize(320, 240);
-	
+
+	loadMugenTextHandler();
 	initPrismWrapperWithMugenFlags();
 	
 	setMainFileSystem();	
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
-	loadMugenTextHandler();
 	loadMugenSystemFonts();
 	logg("Check framerate");
 	FramerateSelectReturnType framerateReturnType = selectFramerate();
@@ -96,6 +97,7 @@ int main(int argc, char** argv) {
 	setVolume(0);
 	// setDisplayedScreenSize(320, 240);
 	disableWrapperErrorRecovery();
+	initDolmexicaDebug();
 #endif
 
 	setMemoryHandlerCompressionActive();

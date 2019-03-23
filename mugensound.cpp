@@ -18,7 +18,7 @@ DreamMugenSound makeDreamMugenSound(int tGroup, int tItem)
 
 int isMugenBGMMusicPath(char* tPath) {
 	if (!strchr(tPath, '.')) return 0;
-	char* fileExtension = getFileExtension(tPath);
+	const char* fileExtension = getFileExtension(tPath);
 	if (!strcmp("da", fileExtension)) return 1;
 
 	char inFolderPath[1024];
@@ -52,7 +52,7 @@ static void playMugenBGMMusicCompletePath(char* tPath, int tIsLooping) {
 
 
 void playMugenBGMMusicPath(char* tPath, int tIsLooping) {
-	char* fileExtension = getFileExtension(tPath);
+	const char* fileExtension = getFileExtension(tPath);
 	if (!strcmp("da", fileExtension)) {
 		playMugenBGMTrack(tPath, tIsLooping);
 		return;

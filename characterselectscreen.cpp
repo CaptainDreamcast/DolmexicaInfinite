@@ -1478,7 +1478,7 @@ void parseOptionalCharacterSelectParameters(MugenStringVector tVector, int* oOrd
 	}
 }
 
-void getCharacterSelectNamePath(char* tName, char* oDst) {
+void getCharacterSelectNamePath(const char* tName, char* oDst) {
 	if (strchr(tName, '.')) {
 		if (strcmp("zip", getFileExtension(tName))) {
 			logWarningFormat("No support for zipped characters. Error loading %s.", tName);

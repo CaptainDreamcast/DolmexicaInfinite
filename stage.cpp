@@ -495,7 +495,7 @@ ActorBlueprint getDreamStageBP() {
 }
 
 
-void setDreamStageMugenDefinition(char * tPath, char* tCustomMusicPath)
+void setDreamStageMugenDefinition(const char * tPath, const char* tCustomMusicPath)
 {
 	strcpy(gData.mDefinitionPath, tPath);
 	strcpy(gData.mCustomMusicPath, tCustomMusicPath);

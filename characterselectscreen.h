@@ -16,7 +16,7 @@ void setCharacterSelectCredits();
 void setCharacterSelectStory();
 
 void parseOptionalCharacterSelectParameters(MugenStringVector tVector, int* oOrder, int* oDoesIncludeStage, char* oMusicPath);
-void getCharacterSelectNamePath(char* tName, char* oDst);
+void getCharacterSelectNamePath(const char* tName, char* oDst);
 
 void setCharacterRandom(MugenDefScript* tScript, int i);
 void setStageRandom(MugenDefScript* tScript);

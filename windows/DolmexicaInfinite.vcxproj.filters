@@ -164,6 +164,9 @@
     <ClCompile Include="..\watchmode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\dolmexicadebug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ai.h">
@@ -305,6 +308,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\watchmode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dolmexicadebug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

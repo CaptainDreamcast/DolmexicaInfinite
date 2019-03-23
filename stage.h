@@ -10,7 +10,7 @@
 // documentation at http://www.elecbyte.com/mugendocs-11b1/bgs.html
 
 
-void setDreamStageMugenDefinition(char* tPath, char* tCustomMusicPath);
+void setDreamStageMugenDefinition(const char* tPath, const char* tCustomMusicPath);
 ActorBlueprint getDreamStageBP();
 
 MugenAnimations* getStageAnimations();

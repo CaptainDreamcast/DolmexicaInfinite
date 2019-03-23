@@ -393,7 +393,7 @@ static void setSelectedKeyConfigOptionInactive() {
 	}
 }
 
-static string gKeyNames[52] = {
+static string gKeyNames[KEYBOARD_AMOUNT_PRISM] = {
 	"A",
 	"B",
 	"C",
@@ -443,9 +443,14 @@ static string gKeyNames[52] = {
 	"F6",
 	"ScrollLock",
 	"Pause",
+	"Caret",
 	"LeftCtrl",
 	"LeftShift",
 	"Enter",
+	"Backspace",
+	"Delete",
+	".",
+	"/",
 };
 
 static string gButtonNames[11] = {
