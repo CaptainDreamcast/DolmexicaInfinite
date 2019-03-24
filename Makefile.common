@@ -1,6 +1,6 @@
 OBJS = main.o \
 ai.o arcademode.o boxcursorhandler.o characterselectscreen.o collision.o config.o creditsmode.o \
-dolmexicadebug.o dolmexicastoryscreen.o \
+debugscreen.o dolmexicadebug.o dolmexicastoryscreen.o \
 exhibitmode.o fightdebug.o \
 fightresultdisplay.o fightscreen.o fightui.o freeplaymode.o \
 gamelogic.o intro.o menubackground.o mugenanimationutilities.o mugenassignment.o \
