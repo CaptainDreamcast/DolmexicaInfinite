@@ -1821,14 +1821,13 @@ void setupDreamAssignmentEvaluator() {
 }
 
 static int isIsInOtherFileVariable(char* tName) {
-	int len = strlen(tName);
-	if (len < 2) return 0;
+	if (tName[0] == '\0' || tName[1] == '\0') return 0;
 
 	int hasFlag = tName[0] == 's' || tName[0] == 'f' || tName[0] == 'S' || tName[0] == 'F';
 	if (!hasFlag) return 0;
 
 	int i;
-	for (i = 1; i < len; i++) {
+	for (i = 1; tName[i] != '\0'; i++) {
 		if (tName[i] < '0' || tName[i] > '9') return 0;
 	}
 

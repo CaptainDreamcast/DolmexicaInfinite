@@ -40,8 +40,8 @@ static struct {
 } gDebugScreenData;
 
 static void loadDebugScreen() {
-	setPlayerDefinitionPath(0, "assets/chars/kfm/kfm.def");
-	setPlayerDefinitionPath(1, "assets/chars/kfm/kfm.def");
+	setPlayerDefinitionPath(0, "assets/chars/baldhead/baldhead.def");
+	setPlayerDefinitionPath(1, "assets/chars/baldhead/baldhead.def");
 	setDreamStageMugenDefinition("assets/stages/kfm.def", "");
 	setGameModeTraining();
 
@@ -94,6 +94,9 @@ static void loadDebugScreen() {
 }
 
 static void updateDebugScreen() {
+	abortScreenHandling();
+	return;
+
 	DreamMugenAssignment* ass = parseDreamMugenAssignmentFromString("(command = \"b\" || command = \"holddown\") \
 		&& ((statetype = C && ctrl) || (stateno = 200 && movecontact) || (stateno = 200 && movecontact) || (stateno = 200 && movecontact) \
 		|| (stateno = 200 && movecontact) || (stateno = 225 && var(2) != 0) || (stateno = 200 && movecontact) || (stateno = 200 && movecontact) \
@@ -102,7 +105,6 @@ static void updateDebugScreen() {
 	for (int i = 0; i < 10000000; i++) {
 		evaluateDreamAssignment(&ass, getRootPlayer(0));
 	}
-
 
 	abortScreenHandling();
 }
