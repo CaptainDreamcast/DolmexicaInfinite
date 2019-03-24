@@ -164,6 +164,7 @@
     <ClCompile Include="..\collision.cpp" />
     <ClCompile Include="..\config.cpp" />
     <ClCompile Include="..\creditsmode.cpp" />
+    <ClCompile Include="..\debugscreen.cpp" />
     <ClCompile Include="..\dolmexicadebug.cpp" />
     <ClCompile Include="..\dolmexicastoryscreen.cpp" />
     <ClCompile Include="..\exhibitmode.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="..\collision.h" />
     <ClInclude Include="..\config.h" />
     <ClInclude Include="..\creditsmode.h" />
+    <ClInclude Include="..\debugscreen.h" />
     <ClInclude Include="..\dolmexicadebug.h" />
     <ClInclude Include="..\dolmexicastoryscreen.h" />
     <ClInclude Include="..\exhibitmode.h" />

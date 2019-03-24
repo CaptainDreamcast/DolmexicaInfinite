@@ -94,7 +94,7 @@ typedef AssignmentReturnValue*(*ComparisonFunction)(char*, AssignmentReturnValue
 static struct {
 	map<string, VariableFunction> mVariables;
 	map<string, ArrayFunction> mArrays;
-	StringMap mComparisons; // contains ComparisonFunction
+	map<string, ComparisonFunction> mComparisons; // contains ComparisonFunction
 } gVariableHandler;
 
 std::map<string, AssignmentReturnValue*(*)(DreamPlayer*)>& getActiveMugenAssignmentVariableMap() {
@@ -622,6 +622,10 @@ static int isFloatReturn(AssignmentReturnValue* tReturn) {
 	return tReturn->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT;
 }
 
+static int isStringReturn(AssignmentReturnValue* tReturn) {
+	return tReturn->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_STRING;
+}
+
 static AssignmentReturnValue* varFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic);
 static AssignmentReturnValue* sysVarFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic);
 static AssignmentReturnValue* fVarFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic); 
@@ -886,8 +890,8 @@ static int tryEvaluateVariableComparison(DreamMugenRawVariableAssignment* tVaria
 		}	
 		*tIsStatic = 0;
 	}
-	else if (string_map_contains(&gVariableHandler.mComparisons, name)) {
-		ComparisonFunction func = (ComparisonFunction)string_map_get(&gVariableHandler.mComparisons, name);
+	else if (stl_string_map_contains_array(gVariableHandler.mComparisons, name)) {
+		ComparisonFunction func = gVariableHandler.mComparisons[name];
 		hasReturn = 1;
 		*oRet = func(name, b, tPlayer, tIsStatic);
 	}
@@ -932,6 +936,10 @@ static AssignmentReturnValue* evaluateComparisonAssignmentInternal(DreamMugenAss
 	}
 	else if (isFloatReturn(a) || isFloatReturn(b)) {
 		int value = convertAssignmentReturnToFloat(a) == convertAssignmentReturnToFloat(b);
+		return makeBooleanAssignmentReturn(value);
+	}
+	else if (!isStringReturn(a) && !isStringReturn(b)) {
+		int value = convertAssignmentReturnToNumber(a) == convertAssignmentReturnToNumber(b);
 		return makeBooleanAssignmentReturn(value);
 	}
 	else {
@@ -1381,17 +1389,17 @@ static AssignmentReturnValue* hitDefAttributeComparisonFunction(char* tName, Ass
 
 
 static void setupComparisons() {
-	gVariableHandler.mComparisons = new_string_map();
+	gVariableHandler.mComparisons.clear();
 
-	string_map_push(&gVariableHandler.mComparisons, "command", (void*)commandComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "statetype", (void*)stateTypeComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "p2statetype", (void*)p2StateTypeComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "movetype", (void*)moveTypeComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "p2movetype", (void*)p2MoveTypeComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "animelem", (void*)animElemComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "timemod", (void*)timeModComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "teammode", (void*)teamModeComparisonFunction);
-	string_map_push(&gVariableHandler.mComparisons, "hitdefattr", (void*)hitDefAttributeComparisonFunction);
+	gVariableHandler.mComparisons["command"] = commandComparisonFunction;
+	gVariableHandler.mComparisons["statetype"] = stateTypeComparisonFunction;
+	gVariableHandler.mComparisons["p2statetype"] = p2StateTypeComparisonFunction;
+	gVariableHandler.mComparisons["movetype"] = moveTypeComparisonFunction;
+	gVariableHandler.mComparisons["p2movetype"] = p2MoveTypeComparisonFunction;
+	gVariableHandler.mComparisons["animelem"] = animElemComparisonFunction;
+	gVariableHandler.mComparisons["timemod"] = timeModComparisonFunction;
+	gVariableHandler.mComparisons["teammode"] = teamModeComparisonFunction;
+	gVariableHandler.mComparisons["hitdefattr"] = hitDefAttributeComparisonFunction;
 }
 
 static AssignmentReturnValue* aiLevelFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerAILevel(tPlayer)); }
@@ -1816,7 +1824,7 @@ static int isIsInOtherFileVariable(char* tName) {
 	int len = strlen(tName);
 	if (len < 2) return 0;
 
-	int hasFlag = tName[0] == 's' || tName[0] == 'f';
+	int hasFlag = tName[0] == 's' || tName[0] == 'f' || tName[0] == 'S' || tName[0] == 'F';
 	if (!hasFlag) return 0;
 
 	int i;
@@ -1844,16 +1852,13 @@ static AssignmentReturnValue* evaluateVariableAssignment(DreamMugenAssignment** 
 
 static AssignmentReturnValue* evaluateRawVariableAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* tIsStatic) {
 	DreamMugenRawVariableAssignment* variable = (DreamMugenRawVariableAssignment*)*tAssignment;
-	char testString[100];
-	strcpy(testString, variable->mName);
-	turnStringLowercase(testString);
 	*tIsStatic = 0;
 
-	if (isIsInOtherFileVariable(testString)) { // TODO: fix
-		return makeExternalFileAssignmentReturn(testString[0], testString + 1);
+	if (isIsInOtherFileVariable(variable->mName)) { // TODO: fix
+		return makeExternalFileAssignmentReturn(variable->mName[0], variable->mName + 1);
 	}
 
-	return makeStringAssignmentReturn(testString);
+	return makeStringAssignmentReturn(variable->mName);
 }
 
 static AssignmentReturnValue* evaluateVarArrayAssignment(AssignmentReturnValue* tIndex, DreamPlayer* tPlayer, int* tIsStatic) {
@@ -2550,9 +2555,9 @@ static AssignmentReturnValue* evaluateStoryCommandAssignment(AssignmentReturnVal
 static AssignmentReturnValue* commandComparisonStoryFunction(char* tName, AssignmentReturnValue* b, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateStoryCommandAssignment(b, (StoryInstance*)tPlayer, tIsStatic); }
 
 static void setupStoryComparisons() {
-	gVariableHandler.mComparisons = new_string_map();
+	gVariableHandler.mComparisons.clear();
 
-	string_map_push(&gVariableHandler.mComparisons, "storycommand", (void*)commandComparisonStoryFunction);
+	gVariableHandler.mComparisons["storycommand"] = commandComparisonStoryFunction;
 }
 
 void setupDreamStoryAssignmentEvaluator()
@@ -2565,7 +2570,7 @@ void setupDreamStoryAssignmentEvaluator()
 
 void shutdownDreamAssignmentEvaluator()
 {
-	delete_string_map(&gVariableHandler.mComparisons);
+	gVariableHandler.mComparisons.clear();
 	gVariableHandler.mArrays.clear();
 	gVariableHandler.mVariables.clear();
 }

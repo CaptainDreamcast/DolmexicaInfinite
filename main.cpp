@@ -23,6 +23,7 @@
 #include "stage.h"
 #include "config.h"
 #include "dolmexicadebug.h"
+#include "debugscreen.h"
 
 char romdisk_buffer[1];
 int romdisk_buffer_length;
@@ -105,8 +106,8 @@ int main(int argc, char** argv) {
 	setScreenEffectZ(99);
 	loadMugenConfig();
 	setScreenAfterWrapperLogoScreen(getDreamTitleScreen());
-
-	startScreenHandling(getDreamWarningScreen());
+	
+	startScreenHandling(getDebugScreen());
 	
 	exitGame();
 	
