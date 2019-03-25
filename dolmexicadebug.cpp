@@ -8,6 +8,7 @@
 #include "characterselectscreen.h"
 #include "stage.h"
 #include "fightscreen.h"
+#include "fightdebug.h"
 
 using namespace std;
 
@@ -59,6 +60,7 @@ static string fightCB(void* tCaller, string tCommand) {
 }
 
 static string stageCB(void* tCaller, string tCommand) {
+	(void)tCaller;
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 
@@ -71,8 +73,24 @@ static string stageCB(void* tCaller, string tCommand) {
 	return "";
 }
 
+static string fightdebugCB(void* tCaller, string tCommand) {
+	(void)tCaller;
+	(void)tCommand;
+	switchFightDebugTextActivity();
+	return "";
+}
+
+static string fightcollisionCB(void* tCaller, string tCommand) {
+	(void)tCaller;
+	(void)tCommand;
+	switchFightCollisionDebugActivity();
+	return "";
+}
+
 void initDolmexicaDebug()
 {
 	addPrismDebugConsoleCommand("fight", fightCB);
 	addPrismDebugConsoleCommand("stage", stageCB);
+	addPrismDebugConsoleCommand("fightdebug", fightdebugCB);
+	addPrismDebugConsoleCommand("fightcollision", fightcollisionCB);
 }

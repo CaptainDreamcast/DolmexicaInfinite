@@ -750,6 +750,7 @@ static DreamMugenAssignment* parseMugenRawVariableFromString(char* tText) {
 	gDebugAssignmentAmount++;
 	data->mName = (char*)allocMemoryOnMemoryStackOrMemory(strlen(tText) + 2);
 	strcpy(data->mName, tText);
+	turnStringLowercase(data->mName);
 	data->mType = MUGEN_ASSIGNMENT_TYPE_RAW_VARIABLE;
 	return (DreamMugenAssignment*)data;
 }
@@ -758,7 +759,7 @@ static void sanitizeTextFront(char** tText) {
 	int n = strlen(*tText);
 	int i;
 	for (i = 0; i < n; i++) {
-		if (**tText != ' ') {
+		if (**tText != ' ' && **tText != '\t') {
 			return;
 		}
 
@@ -771,7 +772,7 @@ static void sanitizeTextBack(char* tText) {
 
 	int i;
 	for (i = n - 1; i >= 0; i--) {
-		if (tText[i] == ' ') tText[i] = '\0';
+		if (tText[i] == ' ' || tText[i] == '\t') tText[i] = '\0';
 		else if (tText[i] == ',') tText[i] = '\0'; // TODO: think about trailing commas
 		else return;
 	}

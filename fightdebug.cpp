@@ -100,7 +100,7 @@ static void setTargetPlayer() {
 	gData.mPlayer.mTarget = getPlayerByIndex(gData.mPlayer.mTargetIndex);
 }
 
-static void switchDebugTextActivity() {
+void switchFightDebugTextActivity() {
 	if (gData.mPlayer.mActive) {
 		gData.mPlayer.mTargetIndex++;
 		if (gData.mPlayer.mTargetIndex >= getTotalPlayerAmount()) {
@@ -182,7 +182,7 @@ static void switchDebugTextColor() {
 	setDebugTextColor();
 }
 
-static void switchCollisionDebugActivity() {
+void switchFightCollisionDebugActivity() {
 	setPlayerCollisionDebug(!isPlayerCollisionDebugActive());
 }
 
@@ -190,14 +190,14 @@ static void switchCollisionDebugActivity() {
 
 static void updateDebugInputWindows() {
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_D_PRISM)) { // TODO: proper
-		switchDebugTextActivity();
+		switchFightDebugTextActivity();
 	} 
 	else if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_D_PRISM)) {
 		switchDebugTextColor();
 	}
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_C_PRISM)) {
-		switchCollisionDebugActivity();
+		switchFightCollisionDebugActivity();
 	} 
 	
 
@@ -255,7 +255,7 @@ static void updateDebugInputDreamcast() {
 	int wasStartPressed = hasPressedStartFlank(); // TODO: remove when fixed
 
 	if (wasStartPressed && hasPressedR()) { // TODO: proper
-		switchDebugTextActivity();
+		switchFightDebugTextActivity();
 	} 
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_D_PRISM)) {
@@ -263,7 +263,7 @@ static void updateDebugInputDreamcast() {
 	}
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_C_PRISM)) {
-		switchCollisionDebugActivity();
+		switchFightCollisionDebugActivity();
 	} 
 	
 	if (wasStartPressed && hasPressedL()) {

@@ -233,7 +233,8 @@ typedef struct Player_t{
 
 	int mRoundsWon;
 
-	int mIsBoundToScreen;
+	int mIsBoundToScreenForever;
+	int mIsBoundToScreenForTick;
 
 	double mStartLifePercentage;
 
@@ -671,7 +672,8 @@ int getPlayerRoundsExisted(DreamPlayer* p);
 
 int getPlayerPaletteNumber(DreamPlayer* p);
 
-void setPlayerScreenBound(DreamPlayer* p, int tIsBoundToScreen, int tIsCameraFollowingX, int tIsCameraFollowingY);
+void setPlayerScreenBoundForTick(DreamPlayer* p, int tIsBoundToScreen, int tIsCameraFollowingX, int tIsCameraFollowingY);
+void setPlayerScreenBoundForever(DreamPlayer* p, int tIsBoundToScreen);
 
 void resetPlayerHitBy(DreamPlayer* p, int tSlot);
 void resetPlayerNotHitBy(DreamPlayer* p, int tSlot);

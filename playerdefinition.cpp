@@ -296,7 +296,8 @@ static void loadPlayerState(DreamPlayer* p) {
 
 	p->mPower = 0; 
 	
-	p->mIsBoundToScreen = 1;
+	p->mIsBoundToScreenForever = 1;
+	p->mIsBoundToScreenForTick = 1;
 }
 
 static void loadPlayerStateWithConstantsLoaded(DreamPlayer* p) {
@@ -878,14 +879,14 @@ static int isPlayerInCorner(DreamPlayer* p, int tIsCheckingRightCorner) {
 	}
 }
 
-static void updateStageBorder(DreamPlayer* p) {
-	if (!p->mIsBoundToScreen) return;
+static void updateStageBorderPost(DreamPlayer* p) {
+	if (!p->mIsBoundToScreenForTick || !p->mIsBoundToScreenForever) return;
 
 	double left = getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(p));
 	double right = getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(p));
 	// int lx = getDreamStageLeftEdgeMinimumPlayerDistance(getPlayerCoordinateP(p));
 	// int rx = getDreamStageRightEdgeMinimumPlayerDistance(getPlayerCoordinateP(p));
-	
+
 	double back = getPlayerBackXStage(p, getPlayerCoordinateP(p));
 	double front = getPlayerFrontXStage(p, getPlayerCoordinateP(p));
 	double minX = min(back, front);
@@ -901,6 +902,15 @@ static void updateStageBorder(DreamPlayer* p) {
 		x -= maxX - right;
 		setPlayerPositionX(p, x, getPlayerCoordinateP(p));
 	}
+}
+
+static void updateStageBorderPre(DreamPlayer* p) {
+	if (!p->mIsBoundToScreenForTick || !p->mIsBoundToScreenForever) {
+		p->mIsBoundToScreenForTick = 1;
+		return;
+	}
+
+	updateStageBorderPost(p);
 }
 
 static void updateKOFlags(DreamPlayer* p) {
@@ -1032,7 +1042,7 @@ static int updateSinglePlayer(DreamPlayer* p) {
 	updatePlayerAirJuggle(p);
 	updatePlayerDisplayedCombo(p);
 	updatePush(p);
-	updateStageBorder(p);
+	updateStageBorderPost(p);
 	updateKOFlags(p);
 	updateTransparencyFlag(p);
 	updateShadow(p);
@@ -1080,7 +1090,7 @@ static int updateSinglePlayerPreStateMachine(DreamPlayer* p) {
 		return 1;
 	}
 
-	updateStageBorder(p);
+	updateStageBorderPre(p);
 	updateWidthFlag(p);
 	updateInvisibilityFlag(p);
 	updateNoJuggleCheckFlag(p);
@@ -4041,13 +4051,17 @@ int getPlayerPaletteNumber(DreamPlayer * p)
 	return p->mPreferredPalette;
 }
 
-void setPlayerScreenBound(DreamPlayer * p, int tIsBoundToScreen, int tIsCameraFollowingX, int tIsCameraFollowingY)
+void setPlayerScreenBoundForTick(DreamPlayer * p, int tIsBoundToScreen, int tIsCameraFollowingX, int tIsCameraFollowingY)
 {
-	p->mIsBoundToScreen = tIsBoundToScreen;
+	p->mIsBoundToScreenForTick = tIsBoundToScreen;
 	(void)tIsCameraFollowingX;
 	(void)tIsCameraFollowingY;
 	// TODO
+}
 
+void setPlayerScreenBoundForever(DreamPlayer * p, int tIsBoundToScreen)
+{
+	p->mIsBoundToScreenForever = tIsBoundToScreen;
 }
 
 static void resetPlayerHitBySlotGeneral(DreamPlayer * p, int tSlot) {

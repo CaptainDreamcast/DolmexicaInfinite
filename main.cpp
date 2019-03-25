@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
 	loadMugenConfig();
 	setScreenAfterWrapperLogoScreen(getDreamTitleScreen());
 	
-	startScreenHandling(getDebugScreen());
+	startScreenHandling(getDreamTitleScreen());
 	
 	exitGame();
 	

@@ -4177,10 +4177,10 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 	char* type = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mType, tPlayer);
 	turnStringLowercase(type);
 	if (!strcmp("player", type)) {
-		setPlayerScreenBound(helper, 1, 1, 1);
+		setPlayerScreenBoundForever(helper, 1);
 	}
 	else {
-		setPlayerScreenBound(helper, 0, 0, 0);
+		setPlayerScreenBoundForever(helper, 0);
 	}
 	freeMemory(type);
 
@@ -4471,7 +4471,7 @@ static int handleScreenBound(DreamMugenStateController* tController, DreamPlayer
 	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &val, 0);
 	getTwoIntegerValuesWithDefaultValues(&e->mMoveCameraFlags, tPlayer, &moveCameraX, &moveCameraY, 0, 0);
 
-	setPlayerScreenBound(tPlayer, val, moveCameraX, moveCameraY);
+	setPlayerScreenBoundForTick(tPlayer, val, moveCameraX, moveCameraY);
 
 	return 0;
 }
