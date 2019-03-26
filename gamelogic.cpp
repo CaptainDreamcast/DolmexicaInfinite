@@ -447,6 +447,13 @@ void reloadFight()
 	startFightScreen();
 }
 
+void skipFightIntroWithoutFading()
+{
+	skipFadeIn();
+	skipIntroCB(NULL);
+	skipFadeIn();
+}
+
 void setFightContinueActive()
 {
 	gData.mIsContinueActive = 1;

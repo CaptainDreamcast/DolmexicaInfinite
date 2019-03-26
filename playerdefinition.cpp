@@ -258,6 +258,7 @@ static void resetHelperState(DreamPlayer* p) {
 	p->mIsBound = 0;
 	p->mBoundHelpers = new_list();
 
+	p->mTargetID = 0;
 	p->mIsGuardingInternally = 0;
 
 	p->mIsBeingJuggled = 0;
@@ -1282,15 +1283,19 @@ static void setPlayerHitStates(DreamPlayer* p, DreamPlayer* tOtherPlayer) {
 		setPlayerHitStatesPlayer(p, tOtherPlayer);
 	}
 
+	int enemyStateBefore = getPlayerState(p);
 	if (getActiveHitDataPlayer1StateNumber(p) != -1) {
 		changePlayerState(tOtherPlayer, getActiveHitDataPlayer1StateNumber(p));
 	}
+	int enemyStateAfter = getPlayerState(p);
 
-	if (isPlayerHelper(p) || isPlayerProjectile(p)) {
-		setPlayerHitStatesNonPlayer(p, tOtherPlayer);
-	}
-	else {
-		setPlayerHitStatesPlayer(p, tOtherPlayer);
+	if (enemyStateBefore == enemyStateAfter) { // TODO: remove hack somehow
+		if (isPlayerHelper(p) || isPlayerProjectile(p)) {
+			setPlayerHitStatesNonPlayer(p, tOtherPlayer);
+		}
+		else {
+			setPlayerHitStatesPlayer(p, tOtherPlayer);
+		}
 	}
 }
 
@@ -1403,7 +1408,8 @@ static void setPlayerHit(DreamPlayer* p, DreamPlayer* tOtherPlayer, void* tHitDa
 
 	p->mIsHitShakeOver = 0;
 	p->mIsHitOver = 0;
-	
+	p->mTargetID = getActiveHitDataHitID(p);
+
 	p->mCanRecoverFromFall = getActiveHitDataFallRecovery(p); // TODO: add time
 
 	setPlayerHitStates(p, tOtherPlayer);
@@ -2815,15 +2821,36 @@ void addPlayerDamage(DreamPlayer* p, int tDamage)
 
 int getPlayerTargetAmount(DreamPlayer* p)
 {
-	(void)p;
-	return 1; // TODO
+	return getPlayerTargetAmountWithID(p, -1);
+}
+
+typedef struct {
+	int mAmount;
+	int mID;
+
+} FindPlayerTargetCaller;
+
+static void findPlayerTargetCB(void* tCaller, void* tData) {
+	FindPlayerTargetCaller* caller = (FindPlayerTargetCaller*)tCaller;
+	DreamPlayer* target = (DreamPlayer*)tData;
+	if (!isPlayer(target)) return; // TODO: fix player being in helper list even though destroyed
+
+	if (caller->mID == -1 || caller->mID == target->mTargetID) {
+		caller->mAmount++;
+	}
+
+	list_map(&target->mHelpers, findPlayerTargetCB, tCaller);
 }
 
 int getPlayerTargetAmountWithID(DreamPlayer* p, int tID)
 {
-	(void)p;
-	(void)tID;
-	return 0; // TODO
+	FindPlayerTargetCaller caller;
+	caller.mAmount = 0;
+	caller.mID = tID;
+
+	DreamPlayer* root = getPlayerOtherPlayer(p);
+	findPlayerTargetCB(&caller, root);
+	return caller.mAmount;
 }
 
 DreamPlayer* getPlayerByIndex(int i) {
@@ -3857,7 +3884,7 @@ static void bindPlayerTargetCB(void* tCaller, void* tData) {
 
 static void bindSinglePlayerToTarget(DreamPlayer* tBindRoot, DreamPlayer* tTarget, BindPlayerTargetsCaller* tCaller) {
 
-	if (tCaller->mID == -1 || tCaller->mID == getPlayerID(tTarget)) {
+	if (tCaller->mID == -1 || tCaller->mID == tTarget->mTargetID) {
 		bindHelperToPlayer(tBindRoot, tTarget, tCaller->mTime, 0, tCaller->mOffset, tCaller->mBindPositionType);
 	}
 
@@ -3892,7 +3919,7 @@ static void bindTargetToPlayerCB(void* tCaller, void* tData) {
 static void bindSingleTargetToPlayer(DreamPlayer* tBindRoot, DreamPlayer* tTarget, BindPlayerTargetsCaller* tCaller) {
 	if (!isPlayer(tTarget)) return; // TODO: fix player being in helper list even though destroyed
 
-	if (tCaller->mID == -1 || tCaller->mID == getPlayerID(tTarget)) {
+	if (tCaller->mID == -1 || tCaller->mID == tTarget->mTargetID) {
 		bindHelperToPlayer(tTarget, tBindRoot, tCaller->mTime, 0, tCaller->mOffset, tCaller->mBindPositionType);
 	}
 
@@ -3914,7 +3941,7 @@ void bindPlayerTargetToPlayer(DreamPlayer * p, int tTime, Vector3D tOffset, int 
 void addPlayerTargetLife(DreamPlayer * p, int tID, int tLife, int tCanKill, int tIsAbsolute)
 {
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
-	if (tID != -1 && getPlayerID(otherPlayer) != tID) return;
+	if (tID != -1 && otherPlayer->mTargetID != tID) return;
 
 	(void)tIsAbsolute; // TODO
 
@@ -3932,7 +3959,7 @@ void addPlayerTargetLife(DreamPlayer * p, int tID, int tLife, int tCanKill, int 
 void addPlayerTargetPower(DreamPlayer * p, int tID, int tPower)
 {
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
-	if (tID != -1 && getPlayerID(otherPlayer) != tID) return;
+	if (tID != -1 && otherPlayer->mTargetID != tID) return;
 
 	addPlayerPower(otherPlayer, tPower);
 }
@@ -3941,7 +3968,7 @@ void addPlayerTargetPower(DreamPlayer * p, int tID, int tPower)
 void addPlayerTargetVelocityX(DreamPlayer * p, int tID, double tValue, int tCoordinateP)
 {
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
-	if (tID != -1 && getPlayerID(otherPlayer) != tID) return;
+	if (tID != -1 && otherPlayer->mTargetID != tID) return;
 	
 	addPlayerVelocityX(otherPlayer, tValue, tCoordinateP);
 }
@@ -3950,7 +3977,7 @@ void addPlayerTargetVelocityX(DreamPlayer * p, int tID, double tValue, int tCoor
 void addPlayerTargetVelocityY(DreamPlayer * p, int tID, double tValue, int tCoordinateP)
 {
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
-	if (tID != -1 && getPlayerID(otherPlayer) != tID) return;
+	if (tID != -1 && otherPlayer->mTargetID != tID) return;
 
 	addPlayerVelocityY(otherPlayer, tValue, tCoordinateP);
 }
@@ -3959,7 +3986,7 @@ void addPlayerTargetVelocityY(DreamPlayer * p, int tID, double tValue, int tCoor
 void setPlayerTargetVelocityX(DreamPlayer * p, int tID, double tValue, int tCoordinateP)
 {
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
-	if (tID != -1 && getPlayerID(otherPlayer) != tID) return;
+	if (tID != -1 && otherPlayer->mTargetID != tID) return;
 
 	setPlayerVelocityX(otherPlayer, tValue, tCoordinateP);
 }
@@ -3968,7 +3995,7 @@ void setPlayerTargetVelocityX(DreamPlayer * p, int tID, double tValue, int tCoor
 void setPlayerTargetVelocityY(DreamPlayer * p, int tID, double tValue, int tCoordinateP)
 {
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
-	if (tID != -1 && getPlayerID(otherPlayer) != tID) return;
+	if (tID != -1 && otherPlayer->mTargetID != tID) return;
 
 	setPlayerVelocityY(otherPlayer, tValue, tCoordinateP);
 }
@@ -3976,7 +4003,7 @@ void setPlayerTargetVelocityY(DreamPlayer * p, int tID, double tValue, int tCoor
 void setPlayerTargetControl(DreamPlayer * p, int tID, int tControl)
 {
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
-	if (tID != -1 && getPlayerID(otherPlayer) != tID) return;
+	if (tID != -1 && otherPlayer->mTargetID != tID) return;
 
 	setPlayerControl(otherPlayer, tControl);
 }
@@ -3984,7 +4011,7 @@ void setPlayerTargetControl(DreamPlayer * p, int tID, int tControl)
 void setPlayerTargetFacing(DreamPlayer * p, int tID, int tFacing)
 {
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
-	if (tID != -1 && getPlayerID(otherPlayer) != tID) return;
+	if (tID != -1 && otherPlayer->mTargetID != tID) return;
 
 	if (tFacing == 1) {
 		setPlayerIsFacingRight(otherPlayer, getPlayerIsFacingRight(p));
@@ -3997,9 +4024,8 @@ void setPlayerTargetFacing(DreamPlayer * p, int tID, int tFacing)
 void changePlayerTargetState(DreamPlayer * p, int tID, int tNewState)
 {
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p)->mRoot;
-	if (tID != -1 && getPlayerID(otherPlayer) != tID) return;
-
-	changePlayerState(otherPlayer, tNewState);
+	if (tID != -1 && otherPlayer->mTargetID != tID) return;
+	changePlayerStateToOtherPlayerStateMachine(otherPlayer, p, tNewState);
 }
 
 typedef struct {

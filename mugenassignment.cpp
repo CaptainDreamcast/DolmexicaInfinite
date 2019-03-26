@@ -262,7 +262,48 @@ DreamMugenAssignment * makeDreamOrMugenAssignment(DreamMugenAssignment * a, Drea
 	return makeMugenTwoElementAssignment(MUGEN_ASSIGNMENT_TYPE_OR, a, b);
 }
 
-static int isOnHighestLevelWithStartPosition(char* tText, char* tPattern, int* tOptionalPosition, int tStart) {
+static int isEmpty(char* tChar) {
+	return !strcmp("", tChar);
+}
+
+static int isEmptyCharacter(char tChar) {
+	return tChar == ' ';
+}
+
+static int isOperatorCharacter(char tChar) {
+	return tChar == '-' || tChar == '+' || tChar == '|' || tChar == '&' || tChar == '*' || tChar == '/' || tChar == '!';
+}
+
+static int isBinaryOperator(char* tText, int tPosition) {
+	int p = tPosition - 1;
+	int poss = 0;
+	while (p >= 0) {
+		if (isEmptyCharacter(tText[p])) p--;
+		else if (isOperatorCharacter(tText[p])) return 0;
+		else {
+			poss = 1;
+			break;
+		}
+	}
+
+	if (!poss) return 0;
+
+	int n = strlen(tText);
+	p = tPosition + 1;
+	poss = 0;
+	while (p < n) {
+		if (isEmptyCharacter(tText[p])) p++;
+		else if (isOperatorCharacter(tText[p])) return 0;
+		else {
+			poss = 1;
+			break;
+		}
+	}
+
+	return poss;
+}
+
+static int isOnHighestLevelWithStartPosition(char* tText, char* tPattern, int* tOptionalPosition, int tStart, int isBinary) {
 	int n = strlen(tText);
 	int m = strlen(tPattern);
 
@@ -288,7 +329,7 @@ static int isOnHighestLevelWithStartPosition(char* tText, char* tPattern, int* t
 			}
 		}
 
-		if (isSame) {
+		if (isSame && (!isBinary || isBinaryOperator(tText, i))) {
 			if (tOptionalPosition) *tOptionalPosition = i;
 			return 1;
 		}
@@ -298,7 +339,11 @@ static int isOnHighestLevelWithStartPosition(char* tText, char* tPattern, int* t
 }
 
 static int isOnHighestLevel(char* tText, char* tPattern, int* tOptionalPosition) {
-	return isOnHighestLevelWithStartPosition(tText, tPattern, tOptionalPosition, 0);
+	return isOnHighestLevelWithStartPosition(tText, tPattern, tOptionalPosition, 0, 0);
+}
+
+static int isOnHighestLevelBinary(char* tText, char* tPattern, int* tOptionalPosition) {
+	return isOnHighestLevelWithStartPosition(tText, tPattern, tOptionalPosition, 0, 1);
 }
 
 static DreamMugenAssignment* parseOneElementMugenAssignmentFromString(char* tText, DreamMugenAssignmentType tType) {
@@ -340,13 +385,12 @@ static DreamMugenAssignment* parseTwoElementMugenAssignmentFromString(char* tTex
 	return parseTwoElementMugenAssignmentFromStringWithFixedPosition(tText, tType, tPattern, pos);
 }
 
-static int isEmpty(char* tChar) {
-	return !strcmp("", tChar);
+static DreamMugenAssignment* parseBinaryTwoElementMugenAssignmentFromString(char* tText, DreamMugenAssignmentType tType, char* tPattern) {
+	int pos = -1;
+	isOnHighestLevelBinary(tText, tPattern, &pos);
+	return parseTwoElementMugenAssignmentFromStringWithFixedPosition(tText, tType, tPattern, pos);
 }
 
-static int isEmptyCharacter(char tChar) {
-	return tChar == ' ';
-}
 
 static DreamMugenAssignment* parseMugenNullFromString() {
 	DreamMugenFixedBooleanAssignment* data = (DreamMugenFixedBooleanAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenFixedBooleanAssignment));
@@ -565,47 +609,12 @@ static DreamMugenAssignment* parseMugenAdditionFromString(char* tText) {
 	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_ADDITION, "+");
 }
 
-static int isOperatorCharacter(char tChar) {
-	return tChar == '-' || tChar == '+' || tChar == '|' || tChar == '&' || tChar == '*' || tChar == '/' || tChar == '!';
-}
-
-static int isBinaryOperator(char* tText, int tPosition) {
-	int p = tPosition - 1;
-	int poss = 0;
-	while (p >= 0) {
-		if (isEmptyCharacter(tText[p])) p--;
-		else if (isOperatorCharacter(tText[p])) return 0;
-		else {
-			poss = 1;
-			break;
-		}
-	}
-
-	if (!poss) return 0;
-
-	int n = strlen(tText);
-	p = tPosition + 1;
-	poss = 0;
-	while (p < n) {
-		if (isEmptyCharacter(tText[p])) p++;
-		else if (isOperatorCharacter(tText[p])) return 0;
-		else {
-			poss = 1;
-			break;
-		}
-	}
-
-	return poss;
-}
-
 static int isSubtraction(char* tText) {
-	int position;
-	if(!isOnHighestLevel(tText, "-", &position)) return 0;
-	return isBinaryOperator(tText, position);
+	return isOnHighestLevelBinary(tText, "-", NULL);
 }
 
 static DreamMugenAssignment* parseMugenSubtractionFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_SUBTRACTION, "-");
+	return parseBinaryTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_SUBTRACTION, "-");
 }
 
 static int isMultiplication(char* tText) {
@@ -895,7 +904,7 @@ static int hasContextFreeComma(char* tText, int* tPosition) {
 	int isRunning = 1;
 	int position = 0;
 	while (isRunning) {
-		if (!isOnHighestLevelWithStartPosition(tText, ",", &position, position)) return 0;
+		if (!isOnHighestLevelWithStartPosition(tText, ",", &position, position, 0)) return 0;
 		if (isCommaContextFree(tText, position)) {
 			if (tPosition) *tPosition = position;
 			return 1;

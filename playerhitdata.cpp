@@ -1394,6 +1394,13 @@ void setHitDataHitID(DreamPlayer* tPlayer, int tID)
 	e->mHitID = tID;
 }
 
+int getActiveHitDataHitID(DreamPlayer * tPlayer)
+{
+	assert(int_map_contains(&gData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = (PlayerHitData*)int_map_get(&gData.mActiveHitDataMap, tPlayer->mHitDataID);
+	return e->mHitID;
+}
+
 void setHitDataChainID(DreamPlayer* tPlayer, int tID)
 {
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));

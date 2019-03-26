@@ -238,6 +238,7 @@ typedef struct Player_t{
 
 	double mStartLifePercentage;
 
+	int mTargetID;
 	int mIsGuardingInternally;
 	int mIsBeingJuggled;
 	int mAirJugglePoints;

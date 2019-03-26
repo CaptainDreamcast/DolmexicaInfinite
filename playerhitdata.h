@@ -241,6 +241,7 @@ void setHitDataDownHitTime(DreamPlayer* tPlayer, int tHitTime);
 void setHitDataDownBounce(DreamPlayer* tPlayer, int tDoesBounce);
 
 void setHitDataHitID(DreamPlayer* tPlayer, int tID);
+int getActiveHitDataHitID(DreamPlayer* tPlayer);
 void setHitDataChainID(DreamPlayer* tPlayer, int tID);
 void setHitDataNoChainID(DreamPlayer* tPlayer, int tID1, int tID2);
 

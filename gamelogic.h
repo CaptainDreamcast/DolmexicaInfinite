@@ -36,6 +36,7 @@ int getDreamMatchWinnerIndex();
 
 void resetRound();
 void reloadFight();
+void skipFightIntroWithoutFading();
 
 void setFightContinueActive();
 void setFightContinueInactive();
