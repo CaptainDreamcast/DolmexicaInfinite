@@ -136,6 +136,18 @@ static string rootctrlCB(void* tCaller, string tCommand) {
 	return "";
 }
 
+static string fullpowerCB(void* tCaller, string tCommand) {
+	(void)tCaller;
+	vector<string> words = splitCommandString(tCommand);
+	if (words.size() < 2) return "Too few arguments";
+
+	int id = stoi(words[1]);
+	DreamPlayer* p = getRootPlayer(id);
+	setPlayerPower(p, getPlayerPowerMax(p));
+
+	return "";
+}
+
 static string commandCB(void* tCaller, string tCommand) {
 	(void)tCaller;
 	vector<string> words = splitCommandString(tCommand);
@@ -178,6 +190,7 @@ void initDolmexicaDebug()
 	addPrismDebugConsoleCommand("rootpos", rootposCB);
 	addPrismDebugConsoleCommand("rootposclose", rootposcloseCB);
 	addPrismDebugConsoleCommand("rootctrl", rootctrlCB);
+	addPrismDebugConsoleCommand("fullpower", fullpowerCB);
 	addPrismDebugConsoleCommand("command", commandCB);
 	addPrismDebugConsoleCommand("eval", evalCB);
 }

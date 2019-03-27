@@ -485,7 +485,7 @@ static AssignmentReturnValue* evaluateAnimElemNumberAssignment(AssignmentReturnV
 
 	int elem = convertAssignmentReturnToNumber(tCommand);
 	int ret = isPlayerStartingAnimationElementWithID(tPlayer, elem);
-
+	
 	*tIsStatic = 0;
 	return makeBooleanAssignmentReturn(ret);
 }
@@ -511,7 +511,7 @@ static AssignmentReturnValue* evaluateTimeModAssignment(AssignmentReturnValue* t
 		logWarningFormat("Unable to parse timemod assignment %s. Defaulting to bottom.", tCommand.mValue);
 		return makeBottomAssignmentReturn(); 
 	}
-
+	
 	int divisorValue = atoi(divisor);
 	int compareValue = atoi(compareNumber);
 	int stateTime = getPlayerTimeInState(tPlayer);

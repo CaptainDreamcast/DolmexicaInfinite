@@ -657,10 +657,15 @@ static void updateGettingUp(DreamPlayer* p) {
 }
 
 static void updateHitPause(DreamPlayer* p) {
-	if (!p->mIsHitPaused) return;
-
+	if (!p->mIsHitPaused) {
+		p->mMoveContactCounter = 0;	
+		return;
+	}
+	
+	if (p->mMoveContactCounter) p->mMoveContactCounter++;
 	if (handleDurationAndCheckIfOver(&p->mHitPauseNow, p->mHitPauseDuration)) {
 		setPlayerUnHitPaused(p);
+		p->mMoveContactCounter = 0;
 	}
 }
 
