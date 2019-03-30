@@ -131,6 +131,21 @@ void setDreamPlayerCommandActiveForAI(int tID, const char * tCommandName, Durati
 	setCommandStateActive(e, tCommandName, tBufferTime);
 }
 
+void setDreamPlayerCommandNumberActiveForDebug(int tID, int tCommandNumber)
+{
+	RegisteredMugenCommand* e = &gMugenCommandHandler.mRegisteredCommands[tID];
+	if (tCommandNumber >= (int)e->tCommands->mCommands.size()) return;
+	auto command = stl_map_get_pair_by_index(e->tCommands->mCommands, tCommandNumber);
+
+	setDreamPlayerCommandActiveForAI(tID, command->first.data(), 2);
+}
+
+int getDreamPlayerCommandAmount(int tID)
+{
+	RegisteredMugenCommand* e = &gMugenCommandHandler.mRegisteredCommands[tID];
+	return e->tCommands->mCommands.size();
+}
+
 void setDreamMugenCommandFaceDirection(int tID, FaceDirection tDirection)
 {
 	RegisteredMugenCommand* e = &gMugenCommandHandler.mRegisteredCommands[tID];

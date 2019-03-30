@@ -964,14 +964,14 @@ static int isOperatorAndReturnType(char* tText, char* tDst) {
 
 	isThere = isOnHighestLevel(tText, "<", &position);
 	isDifferent = strcmp("<", tText);
-	if (isThere && isDifferent && position == 0) {
+	if (isThere && isDifferent && position == 0 && tText[1] != '=') {
 		strcpy(tDst, "<");
 		return 1;
 	}
 
 	isThere = isOnHighestLevel(tText, ">", &position);
 	isDifferent = strcmp(">", tText);
-	if (isThere && isDifferent && position == 0) {
+	if (isThere && isDifferent && position == 0 && tText[1] != '=') {
 		strcpy(tDst, ">");
 		return 1;
 	}
@@ -1008,11 +1008,12 @@ DreamMugenAssignment * parseDreamMugenAssignmentFromString(char * tText)
 	else if (isOperatorArgument(tText)) {
 		return parseMugenOperatorArgumentFromString(tText);
 	}
-	else if (isOr(tText)) {
-		return parseMugenOrFromString(tText);
-	}
+
 	else if (isAnd(tText)) {
 		return parseMugenAndFromString(tText);
+	}
+	else if (isOr(tText)) {
+		return parseMugenOrFromString(tText);
 	}
 	else if (isBitwiseOr(tText)) {
 		return parseMugenBitwiseOrFromString(tText);
@@ -1041,6 +1042,7 @@ DreamMugenAssignment * parseDreamMugenAssignmentFromString(char * tText)
 	else if (isGreaterThan(tText)) {
 		return parseMugenGreaterFromString(tText);
 	}
+
 	else if (isAddition(tText)) {
 		return parseMugenAdditionFromString(tText);
 	}

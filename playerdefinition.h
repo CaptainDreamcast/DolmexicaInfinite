@@ -296,6 +296,7 @@ void resetPlayerMoveContactCounter(DreamPlayer* p);
 void setPlayerMoveContactCounterActive(DreamPlayer* p);
 
 int getPlayerVariable(DreamPlayer* p, int tIndex);
+int* getPlayerVariableReference(DreamPlayer* p, int tIndex);
 void setPlayerVariable(DreamPlayer* p, int tIndex, int tValue);
 void addPlayerVariable(DreamPlayer* p, int tIndex, int tValue);
 int getPlayerSystemVariable(DreamPlayer* p, int tIndex);

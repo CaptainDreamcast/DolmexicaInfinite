@@ -1017,6 +1017,12 @@ static void updatePlayerDisplayedCombo(DreamPlayer* p) {
 	}
 }
 
+static void updateBeingTarget(DreamPlayer* p) {
+	if (getPlayerControl(p) && p->mTargetID) {
+		p->mTargetID = 0;
+	}
+}
+
 static void updatePlayerDestruction(DreamPlayer* p) {
 	freeMemory(p);
 }
@@ -1053,6 +1059,7 @@ static int updateSinglePlayer(DreamPlayer* p) {
 	updateTransparencyFlag(p);
 	updateShadow(p);
 	updateReflection(p);
+	updateBeingTarget(p);
 	updatePlayerTrainingMode(p);
 	updatePlayerDebug(p);
 
@@ -1805,6 +1812,11 @@ int getPlayerVariable(DreamPlayer* p, int tIndex)
 {
 	// assert(tIndex < 100); // TODO: figure out
 	return p->mVars[tIndex];
+}
+
+int * getPlayerVariableReference(DreamPlayer * p, int tIndex)
+{
+	return &p->mVars[tIndex];
 }
 
 void setPlayerVariable(DreamPlayer* p, int tIndex, int tValue)

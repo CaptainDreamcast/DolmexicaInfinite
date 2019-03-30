@@ -10,6 +10,8 @@ int registerDreamMugenCommands(int tControllerID, DreamMugenCommands* tCommands)
 
 int isDreamCommandActive(int tID, const char* tCommandName);
 void setDreamPlayerCommandActiveForAI(int tID, const char* tCommandName, Duration tBufferTime);
+void setDreamPlayerCommandNumberActiveForDebug(int tID, int tCommandNumber);
+int getDreamPlayerCommandAmount(int tID);
 
 void setDreamMugenCommandFaceDirection(int tID, FaceDirection tDirection);
 

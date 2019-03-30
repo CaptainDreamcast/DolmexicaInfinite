@@ -11,6 +11,7 @@
 #include <prism/mugentexthandler.h>
 #include <prism/clipboardhandler.h>
 #include <prism/memorystack.h>
+#include <prism/debug.h>
 
 #include <prism/log.h>
 
@@ -35,6 +36,7 @@
 #include "mugenanimationutilities.h"
 #include "fightdebug.h"
 #include "fightresultdisplay.h"
+#include "dolmexicadebug.h"
 
 static struct {
 	void(*mWinCB)();
@@ -115,6 +117,9 @@ static void loadFightScreen() {
 	
 	if (isMugenDebugActive()) {
 		instantiateActor(getFightDebug());
+	}
+	if (isInDevelopMode()) {
+		instantiateActor(getDolmexicaDebug());
 	}
 
 	malloc_stats();
