@@ -114,12 +114,12 @@ static string rootposCB(void* tCaller, string tCommand) {
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
 
-	int id = stoi(words[1]);
+	int id = atoi(words[1].data());
 	DreamPlayer* p = getRootPlayer(id);
-	setPlayerPositionBasedOnScreenCenterX(p, stof(words[2]), getPlayerCoordinateP(p));
+	setPlayerPositionBasedOnScreenCenterX(p, atof(words[2].data()), getPlayerCoordinateP(p));
 
 	if (words.size() >= 4) {
-		setPlayerPositionY(p, stof(words[3]), getPlayerCoordinateP(p));
+		setPlayerPositionY(p, atof(words[3].data()), getPlayerCoordinateP(p));
 	}
 
 	return "";
@@ -130,7 +130,7 @@ static string rootposcloseCB(void* tCaller, string tCommand) {
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 
-	double dist = stof(words[1]);
+	double dist = atof(words[1].data());
 	setPlayerPositionBasedOnScreenCenterX(getRootPlayer(0), -dist / 2, getPlayerCoordinateP(getRootPlayer(0)));
 	setPlayerPositionBasedOnScreenCenterX(getRootPlayer(1), dist / 2, getPlayerCoordinateP(getRootPlayer(1)));
 
@@ -142,9 +142,9 @@ static string rootctrlCB(void* tCaller, string tCommand) {
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
 
-	int id = stoi(words[1]);
+	int id = atoi(words[1].data());
 	DreamPlayer* p = getRootPlayer(id);
-	setPlayerControl(p, stoi(words[2]));
+	setPlayerControl(p, atoi(words[2].data()));
 
 	return "";
 }
@@ -154,7 +154,7 @@ static string fullpowerCB(void* tCaller, string tCommand) {
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 
-	int id = stoi(words[1]);
+	int id = atoi(words[1].data());
 	DreamPlayer* p = getRootPlayer(id);
 	setPlayerPower(p, getPlayerPowerMax(p));
 
@@ -166,9 +166,9 @@ static string commandCB(void* tCaller, string tCommand) {
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
 	
-	int id = stoi(words[1]);
+	int id = atoi(words[1].data());
 	DreamPlayer* p = getRootPlayer(id);
-	int bufferTime = (words.size() >= 4) ? stoi(words[3]) : 2;
+	int bufferTime = (words.size() >= 4) ? atoi(words[3].data()) : 2;
 	setDreamPlayerCommandActiveForAI(p->mCommandID, words[2].data(), bufferTime);
 	return "";
 }
@@ -178,8 +178,8 @@ static string testcommandNumberCB(void* tCaller, string tCommand) {
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 
-	int commandNumber = stoi(words[1]);
-	double dist = words.size() >= 3 ? stof(words[2]) : 20;
+	int commandNumber = atoi(words[1].data());
+	double dist = words.size() >= 3 ? atof(words[2].data()) : 20;
 
 	setPlayerPositionBasedOnScreenCenterX(getRootPlayer(0), -dist / 2, getPlayerCoordinateP(getRootPlayer(0)));
 	setPlayerPositionBasedOnScreenCenterX(getRootPlayer(1), dist / 2, getPlayerCoordinateP(getRootPlayer(1)));
@@ -194,7 +194,7 @@ static string evalCB(void* tCaller, string tCommand) {
 	(void)tCaller;
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
-	int id = stoi(words[1]);
+	int id = atoi(words[1].data());
 	DreamPlayer* p = getRootPlayer(id);
 
 	int n = tCommand.find(' ', tCommand.find(' ') + 1) + 1;
@@ -214,8 +214,8 @@ static string evalhelperCB(void* tCaller, string tCommand) {
 	(void)tCaller;
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 4) return "Too few arguments";
-	int id = stoi(words[1]);
-	int helper = stoi(words[2]);
+	int id = atoi(words[1].data());
+	int helper = atoi(words[2].data());
 	DreamPlayer* p = getRootPlayer(id);
 
 	int n = tCommand.find(' ', tCommand.find(' ', tCommand.find(' ') + 1) + 1) + 1;
@@ -235,8 +235,8 @@ static string trackvarCB(void* tCaller, string tCommand) {
 	(void)tCaller;
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
-	int id = stoi(words[1]);
-	int varNumber = stoi(words[2]);
+	int id = atoi(words[1].data());
+	int varNumber = atoi(words[2].data());
 
 	DreamPlayer* p = getRootPlayer(id);
 
@@ -256,8 +256,8 @@ static string untrackvarCB(void* tCaller, string tCommand) {
 	(void)tCaller;
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
-	int id = stoi(words[1]);
-	int varNumber = stoi(words[2]);
+	int id = atoi(words[1].data());
+	int varNumber = atoi(words[2].data());
 
 	ostringstream ss;
 	ss << "player " << id << "; var " << varNumber;
@@ -269,8 +269,8 @@ static string stateCB(void* tCaller, string tCommand) {
 	(void)tCaller;
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
-	int id = stoi(words[1]);
-	int stateNumber = stoi(words[2]);
+	int id = atoi(words[1].data());
+	int stateNumber = atoi(words[2].data());
 	DreamPlayer* p = getRootPlayer(id);
 
 	changePlayerState(p, stateNumber);
