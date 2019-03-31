@@ -129,6 +129,7 @@ static void loadStoryScreen() {
 
 static void unloadStoryScreen() {
 	gDolmexicaStoryScreenData.mHelperInstances.clear();
+	shutdownDreamMugenStateControllerHandler();
 }
 
 static void unloadDolmexicaStoryText(StoryText* e);

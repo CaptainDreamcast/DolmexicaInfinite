@@ -13,4 +13,4 @@ int handleDreamMugenStateControllerAndReturnWhetherStateChanged(DreamMugenStateC
 
 void setupDreamMugenStateControllerHandler(MemoryStack* tMemoryStack);
 void setupDreamMugenStoryStateControllerHandler();
-void shutdownDreamMugenStoryStateControllerHandler();
+void shutdownDreamMugenStateControllerHandler();

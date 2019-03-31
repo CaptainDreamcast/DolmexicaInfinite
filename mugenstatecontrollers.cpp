@@ -35,11 +35,11 @@ typedef int(*StateControllerHandleFunction)(DreamMugenStateController*, DreamPla
 typedef void(*StateControllerUnloadFunction)(DreamMugenStateController*);
 
 static struct {
-	StringMap mStateControllerParsers; // contains StateControllerParseFunction
-	IntMap mStateControllerHandlers; // contains StateControllerHandleFunction
-	IntMap mStateControllerUnloaders; // contains StateControllerUnloadFunction
+	map<string, StateControllerParseFunction> mStateControllerParsers; 
+	map<int, StateControllerHandleFunction> mStateControllerHandlers;
+	map<int, StateControllerUnloadFunction> mStateControllerUnloaders; 
 	MemoryStack* mMemoryStack;
-} gVariableHandler;
+} gMugenStateControllerVariableHandler;
 
 
 typedef struct {
@@ -99,7 +99,7 @@ void parseStateControllerTriggers(DreamMugenStateController* tController, MugenD
 }
 
 static void* allocMemoryOnMemoryStackOrMemory(uint32_t tSize) {
-	if (gVariableHandler.mMemoryStack) return allocMemoryOnMemoryStack(gVariableHandler.mMemoryStack, tSize);
+	if (gMugenStateControllerVariableHandler.mMemoryStack) return allocMemoryOnMemoryStack(gMugenStateControllerVariableHandler.mMemoryStack, tSize);
 	else return allocMemory(tSize);
 }
 
@@ -2432,14 +2432,14 @@ static void parseStateControllerType(DreamMugenStateController* tController, Mug
 	char* type = getAllocatedMugenDefStringVariableAsElement(e);
 	turnStringLowercase(type);
 
-	if(!string_map_contains(&gVariableHandler.mStateControllerParsers, type)) {
+	if(!stl_string_map_contains_array(gMugenStateControllerVariableHandler.mStateControllerParsers, type)) {
 		logWarningFormat("Unable to determine state controller type %s. Defaulting to null.", type);
 		freeMemory(type);
 		type = (char*)allocMemory(10);
 		strcpy(type, "null");
 	}
 
-	StateControllerParseFunction func = (StateControllerParseFunction)string_map_get(&gVariableHandler.mStateControllerParsers, type);
+	StateControllerParseFunction func = gMugenStateControllerVariableHandler.mStateControllerParsers[type];
 	func(tController, tGroup);
 
 	freeMemory(type);
@@ -2464,12 +2464,12 @@ DreamMugenStateController * parseDreamMugenStateControllerFromGroup(MugenDefScri
 }
 
 static void unloadStateControllerType(DreamMugenStateController* tController) {
-	if (!int_map_contains(&gVariableHandler.mStateControllerUnloaders, tController->mType)) {
+	if (!stl_map_contains(gMugenStateControllerVariableHandler.mStateControllerUnloaders, (int)tController->mType)) {
 		logWarningFormat("Unable to determine state controller type %d. Defaulting to null.", tController->mType);
 		tController->mType = MUGEN_STATE_CONTROLLER_TYPE_NULL;
 	}
 
-	StateControllerUnloadFunction func = (StateControllerUnloadFunction)int_map_get(&gVariableHandler.mStateControllerUnloaders, tController->mType);
+	StateControllerUnloadFunction func = gMugenStateControllerVariableHandler.mStateControllerUnloaders[tController->mType];
 	func(tController);
 }
 
@@ -4741,12 +4741,12 @@ static int handleProjectile(DreamMugenStateController* tController, DreamPlayer*
 int handleDreamMugenStateControllerAndReturnWhetherStateChanged(DreamMugenStateController * tController, DreamPlayer* tPlayer)
 {
 
-	if (!int_map_contains(&gVariableHandler.mStateControllerHandlers, tController->mType)) {
+	if (!stl_map_contains(gMugenStateControllerVariableHandler.mStateControllerHandlers, (int)tController->mType)) {
 		logWarningFormat("Unrecognized state controller %d. Ignoring.", tController->mType);
 		return 0;
 	}
 
-	StateControllerHandleFunction func = (StateControllerHandleFunction)int_map_get(&gVariableHandler.mStateControllerHandlers, tController->mType);
+	StateControllerHandleFunction func = gMugenStateControllerVariableHandler.mStateControllerHandlers[tController->mType];
 	return func(tController, tPlayer);
 }
 
@@ -5178,99 +5178,99 @@ int widthHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPl
 
 
 static void setupStateControllerHandlers() {
-	gVariableHandler.mStateControllerHandlers = new_int_map();
+	gMugenStateControllerVariableHandler.mStateControllerHandlers.clear();
 
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_AFTER_IMAGE, (void*)afterImageHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_AFTER_IMAGE_TIME, (void*)afterImageTimeHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT_ALL, (void*)allPalFXHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_ADD_ANGLE, (void*)angleAddHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_DRAW_ANGLE, (void*)angleDrawHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_MUL_ANGLE, (void*)angleMulHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_ANGLE, (void*)angleSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_APPEND_TO_CLIPBOARD, (void*)appendToClipboardHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_ASSERT_SPECIAL, (void*)assertSpecialHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_ATTACK_DISTANCE, (void*)attackDistHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_ATTACK_MULTIPLIER, (void*)attackMulSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT_BACKGROUND, (void*)bgPalFXHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_BIND_TO_PARENT, (void*)bindToParentHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_BIND_TO_ROOT, (void*)bindToRootHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_BIND_TO_TARGET, (void*)bindToTargetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_CHANGE_ANIMATION, (void*)changeAnimHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_CHANGE_ANIMATION_2, (void*)changeAnim2HandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_CHANGE_STATE, (void*)changeStateHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_CLEAR_CLIPBOARD, (void*)clearClipboardHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_CONTROL, (void*)ctrlSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_DEFENSE_MULTIPLIER, (void*)defenceMulSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_DESTROY_SELF, (void*)destroySelfHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_DISPLAY_TO_CLIPBOARD, (void*)displayToClipboardHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_ENVIRONMENT_COLOR, (void*)envColorHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_ENVIRONMENT_SHAKE, (void*)envShakeHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_EXPLOD, (void*)explodHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_EXPLOD_BIND_TIME, (void*)explodBindTimeHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_FORCE_FEEDBACK, (void*)forceFeedbackHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_FALL_ENVIRONMENT_SHAKE, (void*)fallEnvShakeHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_MAKE_GAME_ANIMATION, (void*)gameMakeAnimHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_GRAVITY, (void*)gravityHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_HELPER, (void*)helperHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_ADD_HIT, (void*)hitAddHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_HIT_BY, (void*)hitByHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_HIT_DEFINITION, (void*)hitDefHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_HIT_FALL_DAMAGE, (void*)hitFallDamageHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_HIT_FALL, (void*)hitFallSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_HIT_FALL_VELOCITY, (void*)hitFallVelHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_HIT_OVERRIDE, (void*)hitOverrideHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_HIT_VELOCITY, (void*)hitVelSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_ADD_LIFE, (void*)lifeAddHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_LIFE, (void*)lifeSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_MAKE_DUST, (void*)makeDustHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_MODIFY_EXPLOD, (void*)modifyExplodHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_RESET_MOVE_HIT, (void*)moveHitResetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_NOT_HIT_BY, (void*)notHitByHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_NULL, (void*)nullHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_OFFSET, (void*)offsetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT, (void*)palFXHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_PARENT_ADD_VARIABLE, (void*)parentVarAddHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_PARENT_VARIABLE, (void*)parentVarSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_PAUSE, (void*)pauseHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_PLAYER_PUSH, (void*)playerPushHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_PLAY_SOUND, (void*)playSndHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_ADD_POSITION, (void*)posAddHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_FREEZE_POSITION, (void*)posFreezeHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_POSITION, (void*)posSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_ADD_POWER, (void*)powerAddHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_POWER, (void*)powerSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_PROJECTILE, (void*)projectileHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_REMAP_PALETTE, (void*)remapPalHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_REMOVE_EXPLOD, (void*)removeExplodHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_REVERSAL_DEFINITION, (void*)reversalDefHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SCREEN_BOUND, (void*)screenBoundHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_SELF_STATE, (void*)selfStateHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SPRITE_PRIORITY, (void*)sprPriorityHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_STATE_TYPE, (void*)stateTypeSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_PAN_SOUND, (void*)sndPanHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_STOP_SOUND, (void*)stopSndHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SUPER_PAUSE, (void*)superPauseHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_BIND_TARGET, (void*)targetBindHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_DROP_TARGET, (void*)targetDropHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_TARGET_FACING, (void*)targetFacingHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_ADD_TARGET_LIFE, (void*)targetLifeAddHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_ADD_TARGET_POWER, (void*)targetPowerAddHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_TARGET_STATE, (void*)targetStateHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_TARGET_ADD_VELOCITY, (void*)targetVelAddHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_TARGET_SET_VELOCITY, (void*)targetVelSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_TRANSPARENCY, (void*)transHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_TURN, (void*)turnHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_ADD_VARIABLE, (void*)varAddHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANDOM, (void*)varRandomHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANGE, (void*)varRangeSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE, (void*)varSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_GLOBAL_VAR_SET, (void*)globalVarSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_GLOBAL_VAR_ADD, (void*)globalVarAddHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_ADD_VELOCITY, (void*)velAddHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_MULTIPLY_VELOCITY, (void*)velMulHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_VELOCITY, (void*)velSetHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_VICTORY_QUOTE, (void*)victoryQuoteHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_WIDTH, (void*)widthHandleFunction);
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_AFTER_IMAGE] = afterImageHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_AFTER_IMAGE_TIME] = afterImageTimeHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT_ALL] = allPalFXHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_ADD_ANGLE] = angleAddHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_DRAW_ANGLE] = angleDrawHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_MUL_ANGLE] = angleMulHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_ANGLE] = angleSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_APPEND_TO_CLIPBOARD] = appendToClipboardHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_ASSERT_SPECIAL] = assertSpecialHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_ATTACK_DISTANCE] = attackDistHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_ATTACK_MULTIPLIER] = attackMulSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT_BACKGROUND] = bgPalFXHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_BIND_TO_PARENT] = bindToParentHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_BIND_TO_ROOT] = bindToRootHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_BIND_TO_TARGET] = bindToTargetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_CHANGE_ANIMATION] = changeAnimHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_CHANGE_ANIMATION_2] = changeAnim2HandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_CHANGE_STATE] = changeStateHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_CLEAR_CLIPBOARD] = clearClipboardHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_CONTROL] = ctrlSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_DEFENSE_MULTIPLIER] = defenceMulSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_DESTROY_SELF] = destroySelfHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_DISPLAY_TO_CLIPBOARD] = displayToClipboardHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_ENVIRONMENT_COLOR] = envColorHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_ENVIRONMENT_SHAKE] = envShakeHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_EXPLOD] = explodHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_EXPLOD_BIND_TIME] = explodBindTimeHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_FORCE_FEEDBACK] = forceFeedbackHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_FALL_ENVIRONMENT_SHAKE] = fallEnvShakeHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_MAKE_GAME_ANIMATION] = gameMakeAnimHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_GRAVITY] = gravityHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_HELPER] = helperHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_ADD_HIT] = hitAddHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_HIT_BY] = hitByHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_HIT_DEFINITION] = hitDefHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_HIT_FALL_DAMAGE] = hitFallDamageHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_HIT_FALL] = hitFallSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_HIT_FALL_VELOCITY] = hitFallVelHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_HIT_OVERRIDE] = hitOverrideHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_HIT_VELOCITY] = hitVelSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_ADD_LIFE] = lifeAddHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_LIFE] = lifeSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_MAKE_DUST] = makeDustHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_MODIFY_EXPLOD] = modifyExplodHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_RESET_MOVE_HIT] = moveHitResetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_NOT_HIT_BY] = notHitByHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_NULL] = nullHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_OFFSET] = offsetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT] = palFXHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_PARENT_ADD_VARIABLE] = parentVarAddHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_PARENT_VARIABLE] = parentVarSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_PAUSE] = pauseHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_PLAYER_PUSH] = playerPushHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_PLAY_SOUND] = playSndHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_ADD_POSITION] = posAddHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_FREEZE_POSITION] = posFreezeHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_POSITION] = posSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_ADD_POWER] = powerAddHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_POWER] = powerSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_PROJECTILE] = projectileHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_REMAP_PALETTE] = remapPalHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_REMOVE_EXPLOD] = removeExplodHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_REVERSAL_DEFINITION] = reversalDefHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SCREEN_BOUND] = screenBoundHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_SELF_STATE] = selfStateHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SPRITE_PRIORITY] = sprPriorityHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_STATE_TYPE] = stateTypeSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_PAN_SOUND] = sndPanHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_STOP_SOUND] = stopSndHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SUPER_PAUSE] = superPauseHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_BIND_TARGET] = targetBindHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_DROP_TARGET] = targetDropHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_TARGET_FACING] = targetFacingHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_ADD_TARGET_LIFE] = targetLifeAddHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_ADD_TARGET_POWER] = targetPowerAddHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_TARGET_STATE] = targetStateHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_TARGET_ADD_VELOCITY] = targetVelAddHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_TARGET_SET_VELOCITY] = targetVelSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_TRANSPARENCY] = transHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_TURN] = turnHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_ADD_VARIABLE] = varAddHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANDOM] = varRandomHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANGE] = varRangeSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE] = varSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_GLOBAL_VAR_SET] = globalVarSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_GLOBAL_VAR_ADD] = globalVarAddHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_ADD_VELOCITY] = velAddHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_MULTIPLY_VELOCITY] = velMulHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_SET_VELOCITY] = velSetHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_VICTORY_QUOTE] = victoryQuoteHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STATE_CONTROLLER_TYPE_WIDTH] = widthHandleFunction;
 
 }
 
@@ -5368,99 +5368,99 @@ void widthParseFunction(DreamMugenStateController* tController, MugenDefScriptGr
 
 
 static void setupStateControllerParsers() {
-	gVariableHandler.mStateControllerParsers = new_string_map();
+	gMugenStateControllerVariableHandler.mStateControllerParsers.clear();
 
-	string_map_push(&gVariableHandler.mStateControllerParsers, "afterimage", (void*)afterImageParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "afterimagetime", (void*)afterImageTimeParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "allpalfx", (void*)allPalFXParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "angleadd", (void*)angleAddParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "angledraw", (void*)angleDrawParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "anglemul", (void*)angleMulParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "angleset", (void*)angleSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "appendtoclipboard", (void*)appendToClipboardParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "assertspecial", (void*)assertSpecialParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "attackdist", (void*)attackDistParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "attackmulset", (void*)attackMulSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "bgpalfx", (void*)bgPalFXParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "bindtoparent", (void*)bindToParentParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "bindtoroot", (void*)bindToRootParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "bindtotarget", (void*)bindToTargetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "changeanim", (void*)changeAnimParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "changeanim2", (void*)changeAnim2ParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "changestate", (void*)changeStateParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "clearclipboard", (void*)clearClipboardParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "ctrlset", (void*)ctrlSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "defencemulset", (void*)defenceMulSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "destroyself", (void*)destroySelfParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "displaytoclipboard", (void*)displayToClipboardParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "envcolor", (void*)envColorParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "envshake", (void*)envShakeParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "explod", (void*)explodParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "explodbindtime", (void*)explodBindTimeParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "forcefeedback", (void*)forceFeedbackParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "fallenvshake", (void*)fallEnvShakeParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "gamemakeanim", (void*)gameMakeAnimParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "gravity", (void*)gravityParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "helper", (void*)helperParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "hitadd", (void*)hitAddParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "hitby", (void*)hitByParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "hitdef", (void*)hitDefParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "hitfalldamage", (void*)hitFallDamageParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "hitfallset", (void*)hitFallSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "hitfallvel", (void*)hitFallVelParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "hitoverride", (void*)hitOverrideParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "hitvelset", (void*)hitVelSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "lifeadd", (void*)lifeAddParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "lifeset", (void*)lifeSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "makedust", (void*)makeDustParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "modifyexplod", (void*)modifyExplodParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "movehitreset", (void*)moveHitResetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "nothitby", (void*)notHitByParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "null", (void*)nullParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "offset", (void*)offsetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "palfx", (void*)palFXParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "parentvaradd", (void*)parentVarAddParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "parentvarset", (void*)parentVarSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "pause", (void*)pauseParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "playerpush", (void*)playerPushParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "playsnd", (void*)playSndParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "posadd", (void*)posAddParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "posfreeze", (void*)posFreezeParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "posset", (void*)posSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "poweradd", (void*)powerAddParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "powerset", (void*)powerSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "projectile", (void*)projectileParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "remappal", (void*)remapPalParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "removeexplod", (void*)removeExplodParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "reversaldef", (void*)reversalDefParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "screenbound", (void*)screenBoundParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "selfstate", (void*)selfStateParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "sprpriority", (void*)sprPriorityParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "statetypeset", (void*)stateTypeSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "sndpan", (void*)sndPanParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "stopsnd", (void*)stopSndParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "superpause", (void*)superPauseParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "targetbind", (void*)targetBindParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "targetdrop", (void*)targetDropParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "targetfacing", (void*)targetFacingParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "targetlifeadd", (void*)targetLifeAddParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "targetpoweradd", (void*)targetPowerAddParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "targetstate", (void*)targetStateParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "targetveladd", (void*)targetVelAddParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "targetvelset", (void*)targetVelSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "trans", (void*)transParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "turn", (void*)turnParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "varadd", (void*)varAddParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "varrandom", (void*)varRandomParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "varrangeset", (void*)varRangeSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "varset", (void*)varSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "veladd", (void*)velAddParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "globalvarset", (void*)globalVarSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "globalvarset", (void*)globalVarAddParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "velmul", (void*)velMulParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "velset", (void*)velSetParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "victoryquote", (void*)victoryQuoteParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "width", (void*)widthParseFunction);
+	gMugenStateControllerVariableHandler.mStateControllerParsers["afterimage"] = afterImageParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["afterimagetime"] = afterImageTimeParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["allpalfx"] = allPalFXParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["angleadd"] = angleAddParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["angledraw"] = angleDrawParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["anglemul"] = angleMulParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["angleset"] = angleSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["appendtoclipboard"] = appendToClipboardParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["assertspecial"] = assertSpecialParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["attackdist"] = attackDistParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["attackmulset"] = attackMulSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["bgpalfx"] = bgPalFXParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["bindtoparent"] = bindToParentParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["bindtoroot"] = bindToRootParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["bindtotarget"] = bindToTargetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["changeanim"] = changeAnimParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["changeanim2"] = changeAnim2ParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["changestate"] = changeStateParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["clearclipboard"] = clearClipboardParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["ctrlset"] = ctrlSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["defencemulset"] = defenceMulSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["destroyself"] = destroySelfParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["displaytoclipboard"] = displayToClipboardParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["envcolor"] = envColorParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["envshake"] = envShakeParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["explod"] = explodParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["explodbindtime"] = explodBindTimeParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["forcefeedback"] = forceFeedbackParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["fallenvshake"] = fallEnvShakeParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["gamemakeanim"] = gameMakeAnimParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["gravity"] = gravityParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["helper"] = helperParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["hitadd"] = hitAddParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["hitby"] = hitByParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["hitdef"] = hitDefParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["hitfalldamage"] = hitFallDamageParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["hitfallset"] = hitFallSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["hitfallvel"] = hitFallVelParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["hitoverride"] = hitOverrideParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["hitvelset"] = hitVelSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["lifeadd"] = lifeAddParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["lifeset"] = lifeSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["makedust"] = makeDustParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["modifyexplod"] = modifyExplodParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["movehitreset"] = moveHitResetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["nothitby"] = notHitByParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["null"] = nullParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["offset"] = offsetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["palfx"] = palFXParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["parentvaradd"] = parentVarAddParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["parentvarset"] = parentVarSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["pause"] = pauseParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["playerpush"] = playerPushParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["playsnd"] = playSndParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["posadd"] = posAddParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["posfreeze"] = posFreezeParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["posset"] = posSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["poweradd"] = powerAddParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["powerset"] = powerSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["projectile"] = projectileParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["remappal"] = remapPalParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["removeexplod"] = removeExplodParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["reversaldef"] = reversalDefParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["screenbound"] = screenBoundParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["selfstate"] = selfStateParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["sprpriority"] = sprPriorityParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["statetypeset"] = stateTypeSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["sndpan"] = sndPanParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["stopsnd"] = stopSndParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["superpause"] = superPauseParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["targetbind"] = targetBindParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["targetdrop"] = targetDropParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["targetfacing"] = targetFacingParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["targetlifeadd"] = targetLifeAddParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["targetpoweradd"] = targetPowerAddParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["targetstate"] = targetStateParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["targetveladd"] = targetVelAddParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["targetvelset"] = targetVelSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["trans"] = transParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["turn"] = turnParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["varadd"] = varAddParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["varrandom"] = varRandomParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["varrangeset"] = varRangeSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["varset"] = varSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["veladd"] = velAddParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["globalvarset"] = globalVarSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["globalvarset"] = globalVarAddParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["velmul"] = velMulParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["velset"] = velSetParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["victoryquote"] = victoryQuoteParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["width"] = widthParseFunction;
 }
 
 void afterImageUnloadFunction(DreamMugenStateController* tController) { unloadAfterImageController(tController); }
@@ -5554,104 +5554,104 @@ void victoryQuoteUnloadFunction(DreamMugenStateController* tController) { unload
 void widthUnloadFunction(DreamMugenStateController* tController) { unloadWidthController(tController); }
 
 static void setupStateControllerUnloaders() {
-	gVariableHandler.mStateControllerUnloaders = new_int_map();
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders.clear();
 
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_AFTER_IMAGE, (void*)afterImageUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_AFTER_IMAGE_TIME, (void*)afterImageTimeUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT_ALL, (void*)allPalFXUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_ADD_ANGLE, (void*)angleAddUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_DRAW_ANGLE, (void*)angleDrawUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_MUL_ANGLE, (void*)angleMulUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_ANGLE, (void*)angleSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_APPEND_TO_CLIPBOARD, (void*)appendToClipboardUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_ASSERT_SPECIAL, (void*)assertSpecialUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_ATTACK_DISTANCE, (void*)attackDistUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_ATTACK_MULTIPLIER, (void*)attackMulSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT_BACKGROUND, (void*)bgPalFXUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_BIND_TO_PARENT, (void*)bindToParentUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_BIND_TO_ROOT, (void*)bindToRootUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_BIND_TO_TARGET, (void*)bindToTargetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_CHANGE_ANIMATION, (void*)changeAnimUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_CHANGE_ANIMATION_2, (void*)changeAnim2UnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_CHANGE_STATE, (void*)changeStateUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_CLEAR_CLIPBOARD, (void*)clearClipboardUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_CONTROL, (void*)ctrlSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_DEFENSE_MULTIPLIER, (void*)defenceMulSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_DESTROY_SELF, (void*)destroySelfUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_DISPLAY_TO_CLIPBOARD, (void*)displayToClipboardUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_ENVIRONMENT_COLOR, (void*)envColorUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_ENVIRONMENT_SHAKE, (void*)envShakeUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_EXPLOD, (void*)explodUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_EXPLOD_BIND_TIME, (void*)explodBindTimeUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_FORCE_FEEDBACK, (void*)forceFeedbackUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_FALL_ENVIRONMENT_SHAKE, (void*)fallEnvShakeUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_MAKE_GAME_ANIMATION, (void*)gameMakeAnimUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_GRAVITY, (void*)gravityUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_HELPER, (void*)helperUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_ADD_HIT, (void*)hitAddUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_HIT_BY, (void*)hitByUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_HIT_DEFINITION, (void*)hitDefUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_HIT_FALL_DAMAGE, (void*)hitFallDamageUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_HIT_FALL, (void*)hitFallSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_HIT_FALL_VELOCITY, (void*)hitFallVelUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_HIT_OVERRIDE, (void*)hitOverrideUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_HIT_VELOCITY, (void*)hitVelSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_ADD_LIFE, (void*)lifeAddUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_LIFE, (void*)lifeSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_MAKE_DUST, (void*)makeDustUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_MODIFY_EXPLOD, (void*)modifyExplodUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_RESET_MOVE_HIT, (void*)moveHitResetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_NOT_HIT_BY, (void*)notHitByUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_NULL, (void*)nullUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_OFFSET, (void*)offsetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT, (void*)palFXUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_PARENT_ADD_VARIABLE, (void*)parentVarAddUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_PARENT_VARIABLE, (void*)parentVarSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_PAUSE, (void*)pauseUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_PLAYER_PUSH, (void*)playerPushUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_PLAY_SOUND, (void*)playSndUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_ADD_POSITION, (void*)posAddUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_FREEZE_POSITION, (void*)posFreezeUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_POSITION, (void*)posSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_ADD_POWER, (void*)powerAddUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_POWER, (void*)powerSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_PROJECTILE, (void*)projectileUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_REMAP_PALETTE, (void*)remapPalUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_REMOVE_EXPLOD, (void*)removeExplodUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_REVERSAL_DEFINITION, (void*)reversalDefUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SCREEN_BOUND, (void*)screenBoundUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_SELF_STATE, (void*)selfStateUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SPRITE_PRIORITY, (void*)sprPriorityUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_STATE_TYPE, (void*)stateTypeSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_PAN_SOUND, (void*)sndPanUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_STOP_SOUND, (void*)stopSndUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SUPER_PAUSE, (void*)superPauseUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_BIND_TARGET, (void*)targetBindUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_DROP_TARGET, (void*)targetDropUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_TARGET_FACING, (void*)targetFacingUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_ADD_TARGET_LIFE, (void*)targetLifeAddUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_ADD_TARGET_POWER, (void*)targetPowerAddUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_TARGET_STATE, (void*)targetStateUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_TARGET_ADD_VELOCITY, (void*)targetVelAddUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_TARGET_SET_VELOCITY, (void*)targetVelSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_TRANSPARENCY, (void*)transUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_TURN, (void*)turnUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_ADD_VARIABLE, (void*)varAddUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANDOM, (void*)varRandomUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANGE, (void*)varRangeSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE, (void*)varSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_ADD_VELOCITY, (void*)velAddUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_MULTIPLY_VELOCITY, (void*)velMulUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_SET_VELOCITY, (void*)velSetUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_VICTORY_QUOTE, (void*)victoryQuoteUnloadFunction);
-	int_map_push(&gVariableHandler.mStateControllerUnloaders, MUGEN_STATE_CONTROLLER_TYPE_WIDTH, (void*)widthUnloadFunction);
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_AFTER_IMAGE] = afterImageUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_AFTER_IMAGE_TIME] = afterImageTimeUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT_ALL] = allPalFXUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_ADD_ANGLE] = angleAddUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_DRAW_ANGLE] = angleDrawUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_MUL_ANGLE] = angleMulUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_ANGLE] = angleSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_APPEND_TO_CLIPBOARD] = appendToClipboardUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_ASSERT_SPECIAL] = assertSpecialUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_ATTACK_DISTANCE] = attackDistUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_ATTACK_MULTIPLIER] = attackMulSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT_BACKGROUND] = bgPalFXUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_BIND_TO_PARENT] = bindToParentUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_BIND_TO_ROOT] = bindToRootUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_BIND_TO_TARGET] = bindToTargetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_CHANGE_ANIMATION] = changeAnimUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_CHANGE_ANIMATION_2] = changeAnim2UnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_CHANGE_STATE] = changeStateUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_CLEAR_CLIPBOARD] = clearClipboardUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_CONTROL] = ctrlSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_DEFENSE_MULTIPLIER] = defenceMulSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_DESTROY_SELF] = destroySelfUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_DISPLAY_TO_CLIPBOARD] = displayToClipboardUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_ENVIRONMENT_COLOR] = envColorUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_ENVIRONMENT_SHAKE] = envShakeUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_EXPLOD] = explodUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_EXPLOD_BIND_TIME] = explodBindTimeUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_FORCE_FEEDBACK] = forceFeedbackUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_FALL_ENVIRONMENT_SHAKE] = fallEnvShakeUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_MAKE_GAME_ANIMATION] = gameMakeAnimUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_GRAVITY] = gravityUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_HELPER] = helperUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_ADD_HIT] = hitAddUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_HIT_BY] = hitByUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_HIT_DEFINITION] = hitDefUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_HIT_FALL_DAMAGE] = hitFallDamageUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_HIT_FALL] = hitFallSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_HIT_FALL_VELOCITY] = hitFallVelUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_HIT_OVERRIDE] = hitOverrideUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_HIT_VELOCITY] = hitVelSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_ADD_LIFE] = lifeAddUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_LIFE] = lifeSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_MAKE_DUST] = makeDustUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_MODIFY_EXPLOD] = modifyExplodUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_RESET_MOVE_HIT] = moveHitResetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_NOT_HIT_BY] = notHitByUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_NULL] = nullUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_OFFSET] = offsetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_PALETTE_EFFECT] = palFXUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_PARENT_ADD_VARIABLE] = parentVarAddUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_PARENT_VARIABLE] = parentVarSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_PAUSE] = pauseUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_PLAYER_PUSH] = playerPushUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_PLAY_SOUND] = playSndUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_ADD_POSITION] = posAddUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_FREEZE_POSITION] = posFreezeUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_POSITION] = posSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_ADD_POWER] = powerAddUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_POWER] = powerSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_PROJECTILE] = projectileUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_REMAP_PALETTE] = remapPalUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_REMOVE_EXPLOD] = removeExplodUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_REVERSAL_DEFINITION] = reversalDefUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SCREEN_BOUND] = screenBoundUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_SELF_STATE] = selfStateUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SPRITE_PRIORITY] = sprPriorityUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_STATE_TYPE] = stateTypeSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_PAN_SOUND] = sndPanUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_STOP_SOUND] = stopSndUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SUPER_PAUSE] = superPauseUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_BIND_TARGET] = targetBindUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_DROP_TARGET] = targetDropUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_TARGET_FACING] = targetFacingUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_ADD_TARGET_LIFE] = targetLifeAddUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_ADD_TARGET_POWER] = targetPowerAddUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_TARGET_STATE] = targetStateUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_TARGET_ADD_VELOCITY] = targetVelAddUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_TARGET_SET_VELOCITY] = targetVelSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_TRANSPARENCY] = transUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_TURN] = turnUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_ADD_VARIABLE] = varAddUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANDOM] = varRandomUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANGE] = varRangeSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE] = varSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_ADD_VELOCITY] = velAddUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_MULTIPLY_VELOCITY] = velMulUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_SET_VELOCITY] = velSetUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_VICTORY_QUOTE] = victoryQuoteUnloadFunction;
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders[MUGEN_STATE_CONTROLLER_TYPE_WIDTH] = widthUnloadFunction;
 }
 
 void setupDreamMugenStateControllerHandler(MemoryStack* tMemoryStack) {
 	setupStateControllerParsers();
 	setupStateControllerHandlers();
 	setupStateControllerUnloaders();
-	gVariableHandler.mMemoryStack = tMemoryStack;
+	gMugenStateControllerVariableHandler.mMemoryStack = tMemoryStack;
 }
 
 
@@ -6179,46 +6179,46 @@ void globalVarSetStoryParseFunction(DreamMugenStateController* tController, Muge
 void globalVarAddStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryVarSetController(tController, tGroup, MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_ADD); }
 
 static void setupStoryStateControllerParsers() {
-	gVariableHandler.mStateControllerParsers = new_string_map();
+	gMugenStateControllerVariableHandler.mStateControllerParsers.clear();
 	
-	string_map_push(&gVariableHandler.mStateControllerParsers, "null", (void*)nullStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "createanim", (void*)createAnimationStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "removeanim", (void*)removeAnimationStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "changeanim", (void*)changeAnimationStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "createtext", (void*)createTextStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "removetext", (void*)removeTextStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "changetext", (void*)changeTextStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "locktext", (void*)lockTextToCharacterStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "textposadd", (void*)textPositionAddStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "nameid", (void*)nameIDStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "changestate", (void*)changeStateStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "fadein", (void*)fadeInStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "fadeout", (void*)fadeOutStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "gotostorystep", (void*)gotoStoryStepStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "animposset", (void*)animationSetPositionStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "animposadd", (void*)animationAddPositionStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "animscaleset", (void*)animationSetScaleStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "animsetfacing", (void*)animationSetFaceDirectionStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "animsetangle", (void*)animationSetAngleStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "animaddangle", (void*)animationAddAngleStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "animsetcolor", (void*)animationSetColorStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "animsetopacity", (void*)animationSetOpacityStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "endstoryboard", (void*)endStoryboardStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "movestage", (void*)moveStageStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "createchar", (void*)createCharStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "removechar", (void*)removeCharStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "charchangeanim", (void*)charChangeAnimStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "charposset", (void*)charSetPosStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "charposadd", (void*)charAddPosStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "charscaleset", (void*)charSetScaleStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "charsetfacing", (void*)charSetFaceDirectionStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "charsetcolor", (void*)charSetColorStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "charsetopacity", (void*)charSetOpacityStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "createhelper", (void*)createHelperStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "varset", (void*)varSetStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "varadd", (void*)varAddStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "globalvarset", (void*)globalVarSetStoryParseFunction);
-	string_map_push(&gVariableHandler.mStateControllerParsers, "globalvaradd", (void*)globalVarAddStoryParseFunction);
+	gMugenStateControllerVariableHandler.mStateControllerParsers["null"] = nullStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["createanim"] = createAnimationStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["removeanim"] = removeAnimationStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["changeanim"] = changeAnimationStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["createtext"] = createTextStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["removetext"] = removeTextStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["changetext"] = changeTextStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["locktext"] = lockTextToCharacterStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["textposadd"] = textPositionAddStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["nameid"] = nameIDStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["changestate"] = changeStateStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["fadein"] = fadeInStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["fadeout"] = fadeOutStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["gotostorystep"] = gotoStoryStepStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["animposset"] = animationSetPositionStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["animposadd"] = animationAddPositionStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["animscaleset"] = animationSetScaleStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["animsetfacing"] = animationSetFaceDirectionStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["animsetangle"] = animationSetAngleStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["animaddangle"] = animationAddAngleStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["animsetcolor"] = animationSetColorStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["animsetopacity"] = animationSetOpacityStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["endstoryboard"] = endStoryboardStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["movestage"] = moveStageStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["createchar"] = createCharStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["removechar"] = removeCharStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["charchangeanim"] = charChangeAnimStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["charposset"] = charSetPosStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["charposadd"] = charAddPosStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["charscaleset"] = charSetScaleStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["charsetfacing"] = charSetFaceDirectionStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["charsetcolor"] = charSetColorStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["charsetopacity"] = charSetOpacityStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["createhelper"] = createHelperStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["varset"] = varSetStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["varadd"] = varAddStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["globalvarset"] = globalVarSetStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["globalvaradd"] = globalVarAddStoryParseFunction;
 }
 
 static int getDolmexicaStoryIDFromAssignment(DreamMugenAssignment** tAssignment, StoryInstance* tInstance) {
@@ -7066,46 +7066,46 @@ int setGlobalVarStoryHandleFunction(DreamMugenStateController* tController, Drea
 int addGlobalVarStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAddingGlobalStoryVariable(tController, (StoryInstance*)tPlayer, (StoryInstance*)tPlayer); }
 
 static void setupStoryStateControllerHandlers() {
-	gVariableHandler.mStateControllerHandlers = new_int_map();
+	gMugenStateControllerVariableHandler.mStateControllerHandlers.clear();
 	
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_NULL, (void*)nullStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_ANIMATION, (void*)createAnimationStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_ANIMATION, (void*)removeAnimationStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_ANIMATION, (void*)changeAnimationStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_TEXT, (void*)createTextStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_TEXT, (void*)removeTextStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_TEXT, (void*)changeTextStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_LOCK_TEXT_TO_CHARACTER, (void*)lockTextToCharacterStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_TEXT_ADD_POSITION, (void*)textAddPositionStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_NAME_ID, (void*)nameIDStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_STATE, (void*)changeStateStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_FADE_IN, (void*)fadeInStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_FADE_OUT, (void*)fadeOutStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_GOTO_STORY_STEP, (void*)gotoStoryStepStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_POSITION, (void*)animationSetPositionStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_ADD_POSITION, (void*)animationAddPositionStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_SCALE, (void*)animationSetScaleStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_FACEDIRECTION, (void*)animationSetFaceDirectionStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_ANGLE, (void*)animationSetAngleStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_ADD_ANGLE, (void*)animationAddAngleStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_COLOR, (void*)animationSetColorStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_OPACITY, (void*)animationSetOpacityStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_END_STORYBOARD, (void*)endStoryboardStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_MOVE_STAGE, (void*)moveStageStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_CHARACTER, (void*)createCharacterStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_CHARACTER, (void*)removeCharacterStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_CHANGE_ANIMATION, (void*)changeCharacterAnimStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_POSITION, (void*)setCharacterPosStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_ADD_POSITION, (void*)addCharacterPosStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_SCALE, (void*)setCharacterScaleStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_FACEDIRECTION, (void*)setCharacterFaceDirectionStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_COLOR, (void*)setCharacterColorStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_OPACITY, (void*)setCharacterOpacityStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_HELPER, (void*)createHelperStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_VAR_SET, (void*)setVarStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_VAR_ADD, (void*)addVarStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_SET, (void*)setGlobalVarStoryHandleFunction);
-	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_ADD, (void*)addGlobalVarStoryHandleFunction);
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_NULL] = nullStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_ANIMATION] = createAnimationStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_ANIMATION] = removeAnimationStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_ANIMATION] = changeAnimationStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_TEXT] = createTextStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_TEXT] = removeTextStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_TEXT] = changeTextStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_LOCK_TEXT_TO_CHARACTER] = lockTextToCharacterStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_TEXT_ADD_POSITION] = textAddPositionStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_NAME_ID] = nameIDStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_STATE] = changeStateStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_FADE_IN] = fadeInStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_FADE_OUT] = fadeOutStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_GOTO_STORY_STEP] = gotoStoryStepStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_POSITION] = animationSetPositionStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_ADD_POSITION] = animationAddPositionStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_SCALE] = animationSetScaleStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_FACEDIRECTION] = animationSetFaceDirectionStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_ANGLE] = animationSetAngleStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_ADD_ANGLE] = animationAddAngleStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_COLOR] = animationSetColorStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_OPACITY] = animationSetOpacityStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_END_STORYBOARD] = endStoryboardStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_MOVE_STAGE] = moveStageStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_CHARACTER] = createCharacterStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_CHARACTER] = removeCharacterStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_CHANGE_ANIMATION] = changeCharacterAnimStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_POSITION] = setCharacterPosStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_ADD_POSITION] = addCharacterPosStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_SCALE] = setCharacterScaleStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_FACEDIRECTION] = setCharacterFaceDirectionStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_COLOR] = setCharacterColorStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_OPACITY] = setCharacterOpacityStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_HELPER] = createHelperStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_VAR_SET] = setVarStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_VAR_ADD] = addVarStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_SET] = setGlobalVarStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_ADD] = addGlobalVarStoryHandleFunction;
 
 	
 }
@@ -7116,10 +7116,10 @@ void setupDreamMugenStoryStateControllerHandler()
 	setupStoryStateControllerHandlers();
 }
 
-void shutdownDreamMugenStoryStateControllerHandler()
+void shutdownDreamMugenStateControllerHandler()
 {
-	delete_string_map(&gVariableHandler.mStateControllerParsers);
-	delete_int_map(&gVariableHandler.mStateControllerHandlers);
-	delete_int_map(&gVariableHandler.mStateControllerUnloaders);
-	gVariableHandler.mMemoryStack = NULL;
+	gMugenStateControllerVariableHandler.mStateControllerParsers.clear();
+	gMugenStateControllerVariableHandler.mStateControllerHandlers.clear();
+	gMugenStateControllerVariableHandler.mStateControllerUnloaders.clear();
+	gMugenStateControllerVariableHandler.mMemoryStack = NULL;
 }
