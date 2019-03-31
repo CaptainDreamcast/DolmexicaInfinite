@@ -417,7 +417,7 @@ void addPlayerPositionX(DreamPlayer* p, double x, int tCoordinateP);
 void addPlayerPositionY(DreamPlayer* p, double y, int tCoordinateP);
 void setPlayerPositionBasedOnScreenCenterX(DreamPlayer* p, double x, int tCoordinateP);
 
-int isPlayerCommandActive(DreamPlayer* p, char* tCommandName);
+int isPlayerCommandActive(DreamPlayer* p, const char* tCommandName);
 
 int hasPlayerState(DreamPlayer* p, int mNewState);
 int hasPlayerStateSelf(DreamPlayer* p, int mNewState);

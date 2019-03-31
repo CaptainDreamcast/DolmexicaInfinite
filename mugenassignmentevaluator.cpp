@@ -3,6 +3,8 @@
 #include "mugenassignmentevaluator.h"
 
 #include <assert.h>
+#include <sstream>
+#include <string>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -152,59 +154,50 @@ static AssignmentReturnValue* getVectorAssignmentReturnSecondDependency(Assignme
 static AssignmentReturnValue* makeBooleanAssignmentReturn(int tValue);
 
 
-static char* convertAssignmentReturnToAllocatedString(AssignmentReturnValue* tAssignmentReturn) {
-	char* ret;
-	char buffer[100]; // TODO: without buffer
-
-	char* string, *valueVA, *valueVB;
+static void convertAssignmentReturnToString(string& ret, AssignmentReturnValue* tAssignmentReturn) {
+	char* cstring;
+	string valueVA, valueVB;
 	int valueI;
 	double valueF;
+	stringstream ss;
 	switch (tAssignmentReturn->mType) {
 	case MUGEN_ASSIGNMENT_RETURN_TYPE_STRING:
-		string = getStringAssignmentReturnValue(tAssignmentReturn);
-		ret = copyToAllocatedString(string);
+		cstring = getStringAssignmentReturnValue(tAssignmentReturn);
+		ret = cstring;
 		break;
 	case MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER:
 		valueI = getNumberAssignmentReturnValue(tAssignmentReturn);
-		sprintf(buffer, "%d", valueI);
-		ret = copyToAllocatedString(buffer);
+		ss << valueI;
+		ret = ss.str();
 		break;
 	case MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT:
 		valueF = getFloatAssignmentReturnValue(tAssignmentReturn);
-		sprintf(buffer, "%f", valueF);
-		ret = copyToAllocatedString(buffer);
+		ss << valueF;
+		ret = ss.str();
 		break;
-		ret = copyToAllocatedString(buffer);
 	case MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN:
 		valueI = getBooleanAssignmentReturnValue(tAssignmentReturn);
-		sprintf(buffer, "%d", valueI);
-		ret = copyToAllocatedString(buffer);
+		ss << valueI;
+		ret = ss.str();
 		break;
 	case MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR:
-		valueVA = convertAssignmentReturnToAllocatedString(getVectorAssignmentReturnFirstDependency(tAssignmentReturn));
-		valueVB = convertAssignmentReturnToAllocatedString(getVectorAssignmentReturnSecondDependency(tAssignmentReturn));
-		sprintf(buffer, "%s , %s", valueVA, valueVB);
-		freeMemory(valueVA);
-		freeMemory(valueVB);
-		ret = copyToAllocatedString(buffer);
+		convertAssignmentReturnToString(valueVA, getVectorAssignmentReturnFirstDependency(tAssignmentReturn));
+		convertAssignmentReturnToString(valueVB, getVectorAssignmentReturnSecondDependency(tAssignmentReturn));
+		ss << valueVA << " , " << valueVB;
+		ret = ss.str();
 		break;
 	case MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE:
-		valueVA = convertAssignmentReturnToAllocatedString(getVectorAssignmentReturnFirstDependency(tAssignmentReturn));
-		valueVB = convertAssignmentReturnToAllocatedString(getVectorAssignmentReturnSecondDependency(tAssignmentReturn));
-		sprintf(buffer, "[ %s , %s ]", valueVA, valueVB);
-		freeMemory(valueVA);
-		freeMemory(valueVB);
-		ret = copyToAllocatedString(buffer);
+		convertAssignmentReturnToString(valueVA, getVectorAssignmentReturnFirstDependency(tAssignmentReturn));
+		convertAssignmentReturnToString(valueVB, getVectorAssignmentReturnSecondDependency(tAssignmentReturn));
+		ss << "[ " << valueVA << " , " << valueVB << " ]";
+		ret = ss.str();
 		break;
 	default:
-		*buffer = '\0';
-		ret = copyToAllocatedString(buffer);
+		ret = string();
 		break;
 	}
 
 	destroyAssignmentReturn(tAssignmentReturn);
-
-	return ret;
 }
 
 static int convertAssignmentReturnToBool(AssignmentReturnValue* tAssignmentReturn) {
@@ -429,9 +422,9 @@ static AssignmentReturnValue* evaluateBitwiseAndAssignment(DreamMugenAssignment*
 }
 
 static AssignmentReturnValue* evaluateCommandAssignment(AssignmentReturnValue* tCommand, DreamPlayer* tPlayer, int* tIsStatic) {
-	char* string = convertAssignmentReturnToAllocatedString(tCommand);
-	int ret = isPlayerCommandActive(tPlayer, string);
-	freeMemory(string);
+	string commandName;
+	convertAssignmentReturnToString(commandName, tCommand);
+	int ret = isPlayerCommandActive(tPlayer, commandName.data());
 
 	*tIsStatic = 0;
 	return makeBooleanAssignmentReturn(ret);
@@ -439,19 +432,17 @@ static AssignmentReturnValue* evaluateCommandAssignment(AssignmentReturnValue* t
 
 static AssignmentReturnValue* evaluateStateTypeAssignment(AssignmentReturnValue* tCommand, DreamPlayer* tPlayer, int* tIsStatic) {
 	DreamMugenStateType playerState = getPlayerStateType(tPlayer);
-	char* test = convertAssignmentReturnToAllocatedString(tCommand);
-	turnStringLowercase(test);
-
+	string test;
+	convertAssignmentReturnToString(test, tCommand);
 	int ret;
-	if (playerState == MUGEN_STATE_TYPE_STANDING) ret = strchr(test, 's') != NULL;
-	else if (playerState == MUGEN_STATE_TYPE_AIR) ret = strchr(test, 'a') != NULL;
-	else if (playerState == MUGEN_STATE_TYPE_CROUCHING) ret = strchr(test, 'c') != NULL;
-	else if (playerState == MUGEN_STATE_TYPE_LYING) ret = strchr(test, 'l') != NULL;
+	if (playerState == MUGEN_STATE_TYPE_STANDING) ret = test.find('s') != test.npos;
+	else if (playerState == MUGEN_STATE_TYPE_AIR) ret = test.find('a') != test.npos;
+	else if (playerState == MUGEN_STATE_TYPE_CROUCHING) ret = test.find('c') != test.npos;
+	else if (playerState == MUGEN_STATE_TYPE_LYING) ret = test.find('l') != test.npos;
 	else {
 		logWarningFormat("Undefined player state %d. Default to false.", playerState);
 		ret = 0;
 	}
-	freeMemory(test);
 
 	*tIsStatic = 0;
 	return makeBooleanAssignmentReturn(ret);
@@ -459,18 +450,17 @@ static AssignmentReturnValue* evaluateStateTypeAssignment(AssignmentReturnValue*
 
 static AssignmentReturnValue* evaluateMoveTypeAssignment(AssignmentReturnValue* tCommand, DreamPlayer* tPlayer, int* tIsStatic) {
 	DreamMugenStateMoveType playerMoveType = getPlayerStateMoveType(tPlayer);
-	char* test = convertAssignmentReturnToAllocatedString(tCommand);
-	turnStringLowercase(test);
+	string test;
+	convertAssignmentReturnToString(test, tCommand);
 
 	int ret;
-	if (playerMoveType == MUGEN_STATE_MOVE_TYPE_ATTACK) ret = strchr(test, 'a') != NULL;
-	else if (playerMoveType == MUGEN_STATE_MOVE_TYPE_BEING_HIT) ret = strchr(test, 'h') != NULL;
-	else if (playerMoveType == MUGEN_STATE_MOVE_TYPE_IDLE) ret = strchr(test, 'i') != NULL;
+	if (playerMoveType == MUGEN_STATE_MOVE_TYPE_ATTACK) ret = test.find('a') != test.npos;
+	else if (playerMoveType == MUGEN_STATE_MOVE_TYPE_BEING_HIT) ret = test.find('h') != test.npos;
+	else if (playerMoveType == MUGEN_STATE_MOVE_TYPE_IDLE) ret = test.find('i') != test.npos;
 	else {
 		logWarningFormat("Undefined player state %d. Default to false.", playerMoveType);
 		ret = 0;
 	}
-	freeMemory(test);
 
 	*tIsStatic = 0;
 	return makeBooleanAssignmentReturn(ret);
@@ -590,7 +580,6 @@ static DreamPlayer* getPlayerFromFirstVectorPartOrNullIfNonexistant(AssignmentRe
 	int id;
 
 	int items = sscanf(test, "%s %d", firstWord, &id);
-	turnStringLowercase(firstWord);
 
 	if (items == 1 && !strcmp("p1", firstWord)) {
 		return getRootPlayer(0);
@@ -639,10 +628,9 @@ static int isPlayerAccessVectorAssignment(AssignmentReturnValue* a, DreamPlayer*
 static AssignmentReturnValue* evaluateTeamModeAssignment(AssignmentReturnValue* tCommand, DreamPlayer* tPlayer, int* tIsStatic) {
 	(void)tPlayer;
 
-	char* test = convertAssignmentReturnToAllocatedString(tCommand); 
-	turnStringLowercase(test);
-	int ret = !strcmp(test, "single"); // TODO
-	freeMemory(test);
+	string test;
+	convertAssignmentReturnToString(test, tCommand); 
+	int ret = test == "single"; // TODO
 
 	(void)tIsStatic;
 	return makeBooleanAssignmentReturn(ret); 
@@ -774,11 +762,9 @@ static AssignmentReturnValue* evaluateHitDefAttributeAssignment(AssignmentReturn
 		return makeBooleanAssignmentReturn(0);
 	}
 
-	char buffer[100]; // TODO: think about non-messy way to do dynamic
-	char* test = convertAssignmentReturnToAllocatedString(tValue);
-	strcpy(buffer, test);
-	freeMemory(test);
-	char* pos = buffer;
+	string test;
+	convertAssignmentReturnToString(test, tValue);
+	const char* pos = test.data();
 	int positionsRead;
 	char flag[10], comma[10];
 	int items = sscanf(pos, "%s %s%n", flag, comma, &positionsRead);
@@ -1004,11 +990,10 @@ static AssignmentReturnValue* evaluateComparisonAssignmentInternal(DreamMugenAss
 		return makeBooleanAssignmentReturn(value);
 	}
 	else {
-		char* val1 = convertAssignmentReturnToAllocatedString(a);
-		char* val2 = convertAssignmentReturnToAllocatedString(b);
-		int value = !strcmp(val1, val2);
-		freeMemory(val1);
-		freeMemory(val2);
+		string val1, val2;
+		convertAssignmentReturnToString(val1, a);
+		convertAssignmentReturnToString(val2, b);
+		int value = val1 == val2;
 		return makeBooleanAssignmentReturn(value);
 	}
 }
@@ -1319,9 +1304,9 @@ static AssignmentReturnValue* evaluateAdditionSparkFile(AssignmentReturnValue* a
 	char firstW[200];
 	int val1;
 
-	char* test = convertAssignmentReturnToAllocatedString(a);
-	int items = sscanf(test, "%s %d", firstW, &val1);
-	freeMemory(test);
+	string test;
+	convertAssignmentReturnToString(test, a);
+	int items = sscanf(test.data(), "%s %d", firstW, &val1);
 
 	int val2 = convertAssignmentReturnToNumber(b);
 
@@ -1947,7 +1932,7 @@ static int isIsInOtherFileVariable(char* tName) {
 	return 1;
 }
 
-static AssignmentReturnValue* makeExternalFileAssignmentReturn(char tIdentifierCharacter, char* tValueString) {
+static AssignmentReturnValue* makeExternalFileAssignmentReturn(char tIdentifierCharacter, const char* tValueString) {
 	char buffer[100];
 	sprintf(buffer, "isinotherfile%c %s", tIdentifierCharacter, tValueString);
 	return makeStringAssignmentReturn(buffer);
@@ -2022,17 +2007,17 @@ static AssignmentReturnValue* evaluateGlobalFVarArrayAssignment(AssignmentReturn
 }
 
 static AssignmentReturnValue* evaluateStageVarArrayAssignment(AssignmentReturnValue* tIndex, DreamPlayer* tPlayer, int* tIsStatic) {
-	char* var = convertAssignmentReturnToAllocatedString(tIndex);
-	turnStringLowercase(var);
+	string var;
+	convertAssignmentReturnToString(var, tIndex);
 
 	AssignmentReturnValue* ret = NULL;
-	if (!strcmp("info.author", var)) {
+	if ("info.author" == var) {
 		ret = makeStringAssignmentReturn(getDreamStageAuthor());
 	}
-	else if(!strcmp("info.displayname", var)) {
+	else if("info.displayname" == var) {
 		ret = makeStringAssignmentReturn(getDreamStageDisplayName());
 	}
-	else if (!strcmp("info.name", var)) {
+	else if ("info.name" == var) {
 		ret = makeStringAssignmentReturn(getDreamStageName());
 	}
 	else {
@@ -2040,8 +2025,6 @@ static AssignmentReturnValue* evaluateStageVarArrayAssignment(AssignmentReturnVa
 		ret = makeBottomAssignmentReturn(); 
 	}
 	assert(ret);
-
-	freeMemory(var);
 
 	(void)tIsStatic; // TODO: check
 	return ret;
@@ -2156,15 +2139,14 @@ static AssignmentReturnValue* evaluateIfElseArrayAssignment(AssignmentReturnValu
 	char condText[100], yesText[100], noText[100];
 	char comma1[20], comma2[20];
 
-	char* test = convertAssignmentReturnToAllocatedString(tIndex);
-	sscanf(test, "%s %s %s %s %s", condText, comma1, yesText, comma2, noText);
+	string test;
+	convertAssignmentReturnToString(test, tIndex);
+	sscanf(test.data(), "%s %s %s %s %s", condText, comma1, yesText, comma2, noText);
 
 	if (strcmp(",", comma1) || strcmp(",", comma2) || !strcmp("", condText) || !strcmp("", yesText) || !strcmp("", noText)) {
 		logWarningFormat("Unable to parse if else array assignment %s. Defaulting to bottom.", test);
-		freeMemory(test);
 		return makeBottomAssignmentReturn(); 
 	}
-	freeMemory(test);
 
 	int cond = atof(condText) != 0;
 	if (cond) {
@@ -2228,9 +2210,9 @@ static AssignmentReturnValue* evaluateConstCoordinatesArrayAssignment(Assignment
 
 
 static AssignmentReturnValue* evaluateExternalFileAnimationArrayAssignment(char tIdentifierCharacter, AssignmentReturnValue* b) {
-	char* val2 = convertAssignmentReturnToAllocatedString(b);
-	AssignmentReturnValue* ret = makeExternalFileAssignmentReturn(tIdentifierCharacter, val2);
-	freeMemory(val2);
+	string val2;
+	convertAssignmentReturnToString(val2, b);
+	AssignmentReturnValue* ret = makeExternalFileAssignmentReturn(tIdentifierCharacter, val2.data());
 	return ret;
 }
 
@@ -2603,9 +2585,9 @@ static AssignmentReturnValue* evaluateCharAnimStoryArrayAssignment(AssignmentRet
 }
 
 static AssignmentReturnValue* evaluateCharAnimTimeStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
-	char* val = convertAssignmentReturnToAllocatedString(tIndex);
-	int id = getDolmexicaStoryIDFromString(val, tInstance);
-	freeMemory(val);
+	string val;
+	convertAssignmentReturnToString(val, tIndex);
+	int id = getDolmexicaStoryIDFromString(val.data(), tInstance);
 	*tIsStatic = 0;
 	return makeNumberAssignmentReturn(getDolmexicaStoryCharacterTimeLeft(tInstance, id));
 }
@@ -2659,9 +2641,9 @@ static AssignmentReturnValue* evaluateRootVarStoryArrayAssignment(AssignmentRetu
 }
 
 static AssignmentReturnValue* evaluateNameIDStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
-	char* text = convertAssignmentReturnToAllocatedString(tIndex);
-	int id = getDolmexicaStoryIDFromString(text, tInstance);
-	freeMemory(text);
+	string text;
+	convertAssignmentReturnToString(text, tIndex);
+	int id = getDolmexicaStoryIDFromString(text.data(), tInstance);
 	*tIsStatic = 0;
 	return makeNumberAssignmentReturn(id);
 }
@@ -2700,9 +2682,9 @@ static void setupStoryArrayAssignments() {
 }
 
 static AssignmentReturnValue* evaluateStoryCommandAssignment(AssignmentReturnValue* tCommand, StoryInstance* tInstance, int* tIsStatic) {
-	char* string = convertAssignmentReturnToAllocatedString(tCommand);
-	int ret = isStoryCommandActive(string);
-	freeMemory(string);
+	string cstring;
+	convertAssignmentReturnToString(cstring, tCommand);
+	int ret = isStoryCommandActive(cstring.data());
 
 	*tIsStatic = 0;
 	return makeBooleanAssignmentReturn(ret);
@@ -2755,24 +2737,24 @@ int evaluateDreamAssignmentAndReturnAsInteger(DreamMugenAssignment** tAssignment
 	return convertAssignmentReturnToNumber(ret);
 }
 
-char * evaluateDreamAssignmentAndReturnAsAllocatedString(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer)
+void evaluateDreamAssignmentAndReturnAsString(string& oString, DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer)
 {
 	int isStatic;
 	AssignmentReturnValue* ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
-	return convertAssignmentReturnToAllocatedString(ret);
+	convertAssignmentReturnToString(oString, ret);
 }
 
 Vector3D evaluateDreamAssignmentAndReturnAsVector3D(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer)
 {
 	int isStatic;
 	AssignmentReturnValue* ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
-	char* test = convertAssignmentReturnToAllocatedString(ret);
+	string test;
+	convertAssignmentReturnToString(test, ret);
 
 	double x, y, z;
 	char tX[100], comma1[100], tY[100], comma2[100], tZ[100];
 
-	int items = sscanf(test, "%s %s %s %s %s", tX, comma1, tY, comma2, tZ);
-	freeMemory(test);
+	int items = sscanf(test.data(), "%s %s %s %s %s", tX, comma1, tY, comma2, tZ);
 
 	if (items >= 1) x = atof(tX);
 	else x = 0;
@@ -2788,13 +2770,13 @@ Vector3DI evaluateDreamAssignmentAndReturnAsVector3DI(DreamMugenAssignment** tAs
 {
 	int isStatic;
 	AssignmentReturnValue* ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
-	char* test = convertAssignmentReturnToAllocatedString(ret);
+	string test;
+	convertAssignmentReturnToString(test, ret);
 
 	int x, y, z;
 	char tX[100], comma1[100], tY[100], comma2[100], tZ[100];
 
-	int items = sscanf(test, "%s %s %s %s %s", tX, comma1, tY, comma2, tZ);
-	freeMemory(test);
+	int items = sscanf(test.data(), "%s %s %s %s %s", tX, comma1, tY, comma2, tZ);
 
 	if (items >= 1) x = atoi(tX);
 	else x = 0;

@@ -2423,7 +2423,7 @@ void setPlayerPositionBasedOnScreenCenterX(DreamPlayer* p, double x, int tCoordi
 	setPlayerPositionX(p, nx, tCoordinateP);
 }
 
-int isPlayerCommandActive(DreamPlayer* p, char * tCommandName)
+int isPlayerCommandActive(DreamPlayer* p, const char * tCommandName)
 {
 	return isDreamCommandActive(p->mCommandID, tCommandName);
 }

@@ -386,7 +386,7 @@ void setHitDataAttackType(DreamPlayer* tPlayer, MugenAttackType tType)
 	e->mAttackType = tType;
 }
 
-void setHitDataHitFlag(DreamPlayer* tPlayer, char * tFlag)
+void setHitDataHitFlag(DreamPlayer* tPlayer, const char * tFlag)
 {
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = (PlayerHitData*)int_map_get(&gData.mPassiveHitDataMap, tPlayer->mHitDataID);
@@ -401,7 +401,7 @@ char* getActiveHitDataGuardFlag(DreamPlayer * tPlayer)
 	return e->mGuardFlag;
 }
 
-void setHitDataGuardFlag(DreamPlayer* tPlayer, char * tFlag)
+void setHitDataGuardFlag(DreamPlayer* tPlayer, const char * tFlag)
 {
 	assert(int_map_contains(&gData.mPassiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = (PlayerHitData*)int_map_get(&gData.mPassiveHitDataMap, tPlayer->mHitDataID);

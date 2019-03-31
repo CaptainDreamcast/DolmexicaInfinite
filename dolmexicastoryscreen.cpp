@@ -208,7 +208,7 @@ void setDolmexicaStoryScreenFile(char * tPath)
 	strcpy(gDolmexicaStoryScreenData.mPath, tPath);
 }
 
-int isStoryCommandActive(char* tCommand)
+int isStoryCommandActive(const char* tCommand)
 {
 	if (!gDolmexicaStoryScreenData.mHasCommands) return 0;
 	else return isDreamCommandActive(gDolmexicaStoryScreenData.mCommandID, tCommand);
@@ -511,7 +511,7 @@ void setDolmexicaStoryAnimationOpacity(StoryInstance * tInstance, int tID, doubl
 	setDolmexicaStoryAnimationOpacityInternal(e, tOpacity);
 }
 
-void addDolmexicaStoryText(StoryInstance* tInstance, int tID, char * tText, Vector3DI tFont, Position tBasePosition, Position tTextOffset, double tTextBoxWidth)
+void addDolmexicaStoryText(StoryInstance* tInstance, int tID, const char * tText, Vector3DI tFont, Position tBasePosition, Position tTextOffset, double tTextBoxWidth)
 {
 	if (int_map_contains(&tInstance->mStoryTexts, tID)) {
 		removeDolmexicaStoryText(tInstance, tID);
@@ -586,7 +586,7 @@ void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, Vector3DI tSpr
 	e->mHasFace = 1;
 }
 
-void setDolmexicaStoryTextName(StoryInstance * tInstance, int tID, char * tText, Vector3DI tFont, Position tOffset)
+void setDolmexicaStoryTextName(StoryInstance * tInstance, int tID, const char * tText, Vector3DI tFont, Position tOffset)
 {
 	StoryText* e = (StoryText*)int_map_get(&tInstance->mStoryTexts, tID);
 	e->mNameOffset = makePosition(tOffset.x, tOffset.y, 0);
@@ -619,7 +619,7 @@ void setDolmexicaStoryTextBasePosition(StoryInstance* tInstance, int tID, Positi
 	}
 }
 
-void setDolmexicaStoryTextText(StoryInstance* tInstance, int tID, char * tText)
+void setDolmexicaStoryTextText(StoryInstance* tInstance, int tID, const char * tText)
 {
 	StoryText* e = (StoryText*)int_map_get(&tInstance->mStoryTexts, tID);
 	changeMugenText(e->mTextID, tText);
@@ -679,7 +679,7 @@ void setDolmexicaStoryTextFaceOffset(StoryInstance* tInstance, int tID, Position
 	setMugenAnimationPosition(e->mFaceAnimationID, vecAdd(getMugenTextPosition(e->mTextID), e->mFaceOffset));
 }
 
-void setDolmexicaStoryTextNameText(StoryInstance * tInstance, int tID, char * tText)
+void setDolmexicaStoryTextNameText(StoryInstance * tInstance, int tID, const char * tText)
 {
 	StoryText* e = (StoryText*)int_map_get(&tInstance->mStoryTexts, tID);
 	changeMugenText(e->mNameID, tText);
@@ -818,7 +818,7 @@ double getDolmexicaStoryAnimationPositionX(StoryInstance* tInstance, int tID)
 	return getMugenAnimationPosition(e.mAnimationID).x;
 }
 
-void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, char* tName, int tAnimation, Position tPosition)
+void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* tName, int tAnimation, Position tPosition)
 {
 	if (stl_map_contains(tInstance->mStoryCharacters, tID)) {
 		logWarningFormat("Trying to create existing character %d. Erasing previous.", tID);
@@ -1031,7 +1031,7 @@ void addDolmexicaStoryHelper(int tID, int tState)
 	updateDreamSingleStateMachineByID(gDolmexicaStoryScreenData.mHelperInstances[tID].mStateMachineID);
 }
 
-int getDolmexicaStoryIDFromString(char * tString, StoryInstance * tInstance)
+int getDolmexicaStoryIDFromString(const char * tString, StoryInstance * tInstance)
 {
 	int id;
 	if (!strcmp("", tString)) {

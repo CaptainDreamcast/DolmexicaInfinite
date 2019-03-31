@@ -78,9 +78,9 @@ MugenAttackType getHitDataAttackType(DreamPlayer* tPlayer);
 MugenAttackType getActiveHitDataAttackType(DreamPlayer* tPlayer);
 void setHitDataAttackType(DreamPlayer* tPlayer, MugenAttackType tType);
 
-void setHitDataHitFlag(DreamPlayer* tPlayer, char* tFlag);
+void setHitDataHitFlag(DreamPlayer* tPlayer, const char* tFlag);
 char* getActiveHitDataGuardFlag(DreamPlayer* tPlayer);
-void setHitDataGuardFlag(DreamPlayer* tPlayer, char* tFlag);
+void setHitDataGuardFlag(DreamPlayer* tPlayer, const char* tFlag);
 void setHitDataAffectTeam(DreamPlayer* tPlayer, MugenAffectTeam tAffectTeam);
 
 MugenHitAnimationType getActiveHitDataAnimationType(DreamPlayer* tPlayer);

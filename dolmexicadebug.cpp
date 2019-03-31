@@ -203,10 +203,10 @@ static string evalCB(void* tCaller, string tCommand) {
 	strcpy(buffer, assignmentString.c_str());
 
 	auto assignment = parseDreamMugenAssignmentFromString(buffer);
-	char* result = evaluateDreamAssignmentAndReturnAsAllocatedString(&assignment, p);
+	string result;
+	evaluateDreamAssignmentAndReturnAsString(result, &assignment, p);
 	// destroyDreamMugenAssignment(assignment); // TODO: fix leak, only debug anyway though
 	string ret = result;
-	freeMemory(result);
 	return ret;
 }
 
@@ -224,10 +224,10 @@ static string evalhelperCB(void* tCaller, string tCommand) {
 	strcpy(buffer, assignmentString.c_str());
 
 	auto assignment = parseDreamMugenAssignmentFromString(buffer);
-	char* result = evaluateDreamAssignmentAndReturnAsAllocatedString(&assignment, p);
+	string result;
+	evaluateDreamAssignmentAndReturnAsString(result, &assignment, p);
 	// destroyDreamMugenAssignment(assignment); // TODO: fix leak, only debug anyway though
 	string ret = result;
-	freeMemory(result);
 	return ret;
 }
 

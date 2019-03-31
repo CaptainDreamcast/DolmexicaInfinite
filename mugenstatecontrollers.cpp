@@ -2590,21 +2590,19 @@ static int handleSelfStateChange(DreamMugenStateController* tController, DreamPl
 }
 
 static void getSingleIntegerValueOrDefault(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* tDst, int tDefault) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	if (!strcmp("", flag)) *tDst = tDefault;
-	else *tDst = atoi(flag);
-
-	freeMemory(flag);
+	if (flag.empty()) *tDst = tDefault;
+	else *tDst = atoi(flag.data());
 }
 
 static void getSingleFloatValueOrDefault(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, double* tDst, double tDefault) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	if (!strcmp("", flag)) *tDst = tDefault;
-	else *tDst = atof(flag);
-
-	freeMemory(flag);
+	if (flag.empty()) *tDst = tDefault;
+	else *tDst = atof(flag.data());
 }
 
 static int handleTargetStateChange(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -2625,52 +2623,46 @@ static int handleTargetStateChange(DreamMugenStateController* tController, Dream
 }
 
 static void handleSoundEffectValue(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
-	turnStringLowercase(flag);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	MugenSounds* soundFile;
 	int group;
 	int item;
 
 	char firstW[20], comma[10];
-	int items = sscanf(flag, "%s", firstW);
+	int items = sscanf(flag.data(), "%s", firstW);
 	if (items != 1) {
 		logWarningFormat("Unable to parse flag: %s. Abort.");
-		freeMemory(flag);
 		return;
 	}
 
 	if (!strcmp("isinotherfilef", firstW)) {
 		soundFile = getDreamCommonSounds();
-		int items = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
+		int items = sscanf(flag.data(), "%s %d %s %d", firstW, &group, comma, &item);
 		if (items != 4) {
 			logWarningFormat("Unable to parse flag: %s. Abort.");
-			freeMemory(flag);
 			return;
 		}
 	} else if (!strcmp("isinotherfiles", firstW)) {
 		soundFile = getPlayerSounds(tPlayer);
-		int items = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
+		int items = sscanf(flag.data(), "%s %d %s %d", firstW, &group, comma, &item);
 		if (items != 4) {
 			logWarningFormat("Unable to parse flag: %s. Abort.");
-			freeMemory(flag);
 			return;
 		}
 	}
 	else {
 		soundFile = getPlayerSounds(tPlayer);
-		int items = sscanf(flag, "%d %s %d", &group, comma, &item);
+		int items = sscanf(flag.data(), "%d %s %d", &group, comma, &item);
 		if (items != 3) {
 			logWarningFormat("Unable to parse flag: %s. Abort.");
-			freeMemory(flag);
 			return;
 		}
 	}
 
 
 	tryPlayMugenSound(soundFile, group, item);
-
-	freeMemory(flag);
 }
 
 static int handlePlaySound(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -2681,7 +2673,7 @@ static int handlePlaySound(DreamMugenStateController* tController, DreamPlayer* 
 	return 0;
 }
 
-static void getHitDefinitionAttributeValuesFromString(char* attr, DreamMugenStateType* tStateType, MugenAttackClass* tAttackClass, MugenAttackType* tAttackType) {
+static void getHitDefinitionAttributeValuesFromString(const char* attr, DreamMugenStateType* tStateType, MugenAttackClass* tAttackClass, MugenAttackType* tAttackType) {
 	char arg1[20], comma[10], arg2[20];
 	sscanf(attr, "%s %s %s", arg1, comma, arg2);
 	//assert(strcmp("", arg1));
@@ -2720,74 +2712,68 @@ static void getHitDefinitionAttributeValuesFromString(char* attr, DreamMugenStat
 }
 
 static void handleHitDefinitionAttribute(HitDefinitionController* e, DreamPlayer* tPlayer) {
-	char* attr = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mAttribute, tPlayer);
+	string attr;
+	evaluateDreamAssignmentAndReturnAsString(attr, &e->mAttribute, tPlayer);
 
 	DreamMugenStateType stateType;
 	MugenAttackClass attackClass;
 	MugenAttackType attackType;
 
-	getHitDefinitionAttributeValuesFromString(attr, &stateType, &attackClass, &attackType);
+	getHitDefinitionAttributeValuesFromString(attr.data(), &stateType, &attackClass, &attackType);
 
 	setHitDataType(tPlayer, stateType);
 	setHitDataAttackClass(tPlayer, attackClass);
 	setHitDataAttackType(tPlayer, attackType);
-
-	freeMemory(attr);
 }
 
-static void handleHitDefinitionSingleHitFlag(DreamMugenAssignment** tFlagAssignment, DreamPlayer* tPlayer, void(tSetFunc)(DreamPlayer* tPlayer, char*)) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tFlagAssignment, tPlayer);
-	tSetFunc(tPlayer, flag);
-	freeMemory(flag);
+static void handleHitDefinitionSingleHitFlag(DreamMugenAssignment** tFlagAssignment, DreamPlayer* tPlayer, void(tSetFunc)(DreamPlayer* tPlayer, const char*)) {
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tFlagAssignment, tPlayer);
+	tSetFunc(tPlayer, flag.data());
 }
 
 static void handleHitDefinitionAffectTeam(DreamMugenAssignment** tAffectAssignment, DreamPlayer* tPlayer) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAffectAssignment, tPlayer);
-	if (strlen(flag) != 1) {
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAffectAssignment, tPlayer);
+	if (flag.size() != 1) {
 		logWarningFormat("Unable to parse hitdef affectteam %s. Set to enemy.", flag);
 		setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_ENEMY);
-		freeMemory(flag);
 		return;
 	}
-	turnStringLowercase(flag);
 
-	if (*flag == 'b') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_BOTH);
-	else if (*flag == 'e') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_ENEMY);
-	else if (*flag == 'f') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_FRIENDLY);
+	if (flag[0] == 'b') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_BOTH);
+	else if (flag[0] == 'e') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_ENEMY);
+	else if (flag[0] == 'f') setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_FRIENDLY);
 	else {
 		logWarningFormat("Unable to parse hitdef affectteam %s. Set to enemy.", flag);
 		setHitDataAffectTeam(tPlayer, MUGEN_AFFECT_TEAM_ENEMY);
 	}
-
-	freeMemory(flag);
 }
 
 static void handleHitDefinitionSingleAnimationType(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, MugenHitAnimationType), MugenHitAnimationType tDefault) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
-	turnStringLowercase(flag);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	if (!strcmp("", flag)) tFunc(tPlayer, tDefault);
-	else if (!strcmp("light", flag)) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_LIGHT);
-	else if (!strcmp("medium", flag) || !strcmp("med", flag)) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_MEDIUM);
-	else if (!strcmp("hard", flag)) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_HARD);
-	else if (!strcmp("heavy", flag)) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_HEAVY);
-	else if (!strcmp("back", flag)) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_BACK);
-	else if (!strcmp("up", flag)) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_UP);
-	else if (!strcmp("diagup", flag)) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_DIAGONAL_UP);
+	if (flag.empty()) tFunc(tPlayer, tDefault);
+	else if ("light" == flag) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_LIGHT);
+	else if (("medium" == flag) || ("med" == flag)) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_MEDIUM);
+	else if ("hard" == flag) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_HARD);
+	else if ("heavy" == flag) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_HEAVY);
+	else if ("back" == flag) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_BACK);
+	else if ("up" == flag) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_UP);
+	else if ("diagup" == flag) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_DIAGONAL_UP);
 	else {
 		logWarningFormat("Unable to parse hitdef animation type %s. Setting to default", flag);
 		tFunc(tPlayer, tDefault);
 	}
-
-	freeMemory(flag);
 }
 
 static void handleHitDefinitionPriority(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
-	turnStringLowercase(flag);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	char prioString[20], comma[10], typeString[20];
-	int items = sscanf(flag, "%s %s %s", prioString, comma, typeString);
+	int items = sscanf(flag.data(), "%s %s %s", prioString, comma, typeString);
 
 	int prio;
 	if (items < 1 || !strcmp("", prioString)) prio = 4;
@@ -2804,36 +2790,32 @@ static void handleHitDefinitionPriority(DreamMugenAssignment** tAssignment, Drea
 	}
 
 	setHitDataPriority(tPlayer, prio, type);
-
-	freeMemory(flag);
 }
 
 static void getTwoIntegerValuesWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* v1, int* v2, int tDefault1, int tDefault2) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	char string1[20], comma[10], string2[20];
-	int items = sscanf(flag, "%s %s %s", string1, comma, string2);
+	int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
 
 	if (items < 1 || !strcmp("", string1)) *v1 = tDefault1;
 	else *v1 = atoi(string1);
 	if (items < 3 || !strcmp("", string2)) *v2 = tDefault2;
 	else *v2 = atoi(string2);
-
-	freeMemory(flag);
 }
 
 static void getTwoFloatValuesWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, double* v1, double* v2, double tDefault1, double tDefault2) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	char string1[20], comma[10], string2[20];
-	int items = sscanf(flag, "%s %s %s", string1, comma, string2);
+	int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
 
 	if (items < 1 || !strcmp("", string1)) *v1 = tDefault1;
 	else *v1 = atof(string1);
 	if (items < 3 || !strcmp("", string2)) *v2 = tDefault2;
 	else *v2 = atof(string2);
-
-	freeMemory(flag);
 }
 
 static void handleHitDefinitionDamage(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {
@@ -2851,13 +2833,13 @@ static void handleHitDefinitionSinglePauseTime(DreamMugenAssignment** tAssignmen
 }
 
 static void handleHitDefinitionSparkNumberSingle(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int, int), int tDefaultIsInFile, int tDefaultNumber) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
-	turnStringLowercase(flag);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	char firstW[200];
 	int which = -1;
 
-	int items = sscanf(flag, "%s %d", firstW, &which);
+	int items = sscanf(flag.data(), "%s %d", firstW, &which);
 
 	int isInPlayerFile;
 	int number;
@@ -2873,12 +2855,10 @@ static void handleHitDefinitionSparkNumberSingle(DreamMugenAssignment** tAssignm
 	else {
 		assert(items == 1);
 		isInPlayerFile = 0;
-		number = atoi(flag);
+		number = atoi(flag.data());
 	}
 
 	tFunc(tPlayer, isInPlayerFile, number);
-
-	freeMemory(flag);
 }
 
 static void handleHitDefinitionSparkXY(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {
@@ -2889,11 +2869,11 @@ static void handleHitDefinitionSparkXY(DreamMugenAssignment** tAssignment, Dream
 }
 
 static void handleHitDefinitionSingleSound(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int, int, int), int tDefaultGroup, int tDefaultItem) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
-	turnStringLowercase(flag);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	char firstW[200], comma[10];
-	int items = sscanf(flag, "%s", firstW);
+	int items = sscanf(flag.data(), "%s", firstW);
 	
 	int group;
 	int item;
@@ -2905,7 +2885,7 @@ static void handleHitDefinitionSingleSound(DreamMugenAssignment** tAssignment, D
 	}
 	else if (!strcmp("isinotherfilef", firstW)) {
 		isInPlayerFile = 0;
-		int fullItems = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
+		int fullItems = sscanf(flag.data(), "%s %d %s %d", firstW, &group, comma, &item);
 		assert(fullItems >= 2);
 
 		if (fullItems < 3) {
@@ -2914,7 +2894,7 @@ static void handleHitDefinitionSingleSound(DreamMugenAssignment** tAssignment, D
 	}
 	else if (!strcmp("isinotherfiles", firstW)) {
 		isInPlayerFile = 1;
-		int fullItems = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
+		int fullItems = sscanf(flag.data(), "%s %d %s %d", firstW, &group, comma, &item);
 		if (fullItems < 2) {
 			logWarningFormat("Unable to parse hit definition sound flag %s. Defaulting.", flag);
 			group = tDefaultGroup;
@@ -2926,7 +2906,7 @@ static void handleHitDefinitionSingleSound(DreamMugenAssignment** tAssignment, D
 	}
 	else {
 		isInPlayerFile = 0;
-		int fullItems = sscanf(flag, "%d %s %d", &group, comma, &item);
+		int fullItems = sscanf(flag.data(), "%d %s %d", &group, comma, &item);
 		if (fullItems < 1) {
 			logWarningFormat("Unable to parse hit definition sound flag %s. Defaulting.", flag);
 			group = tDefaultGroup;
@@ -2938,42 +2918,38 @@ static void handleHitDefinitionSingleSound(DreamMugenAssignment** tAssignment, D
 	}
 
 	tFunc(tPlayer, isInPlayerFile, group, item);
-
-	freeMemory(flag);
 }
 
 static void handleHitDefinitionSingleAttackHeight(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, MugenAttackHeight), MugenAttackHeight tDefault) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
-	turnStringLowercase(flag);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	if (!strcmp("", flag)) tFunc(tPlayer, tDefault);
-	else if (!strcmp("high", flag)) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_HIGH);
-	else if (!strcmp("low", flag)) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_LOW);
-	else if (!strcmp("trip", flag)) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_TRIP);
-	else if (!strcmp("heavy", flag)) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_HEAVY);
-	else if (!strcmp("none", flag)) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_NONE);
+	if (flag.empty()) tFunc(tPlayer, tDefault);
+	else if ("high" == flag) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_HIGH);
+	else if ("low" == flag) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_LOW);
+	else if ("trip" == flag) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_TRIP);
+	else if ("heavy" == flag) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_HEAVY);
+	else if ("none" == flag) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_NONE);
 	else {
 		logWarningFormat("Unable to parse hitdef attack height type %s. Defaulting.", flag);
 		tFunc(tPlayer, tDefault);
 	}
-
-	freeMemory(flag);
 }
 
 static void handleExplodOneIntegerElement(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(int, int), int tDefault) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	if (!strcmp("", flag)) tFunc(tID, tDefault);
-	else tFunc(tID, atoi(flag));
-
-	freeMemory(flag);
+	if (flag.empty()) tFunc(tID, tDefault);
+	else tFunc(tID, atoi(flag.data()));
 }
 
 static void handleExplodTwoIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(int, int, int), int tDefault1, int tDefault2) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	char string1[20], comma[10], string2[20];
-	int items = sscanf(flag, "%s %s %s", string1, comma, string2);
+	int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
 
 	int val1;
 	if (items < 1 || !strcmp("", string1)) val1 = tDefault1;
@@ -2984,15 +2960,14 @@ static void handleExplodTwoIntegerElements(DreamMugenAssignment** tAssignment, D
 	else val2 = atoi(string2);
 
 	tFunc(tID, val1, val2);
-
-	freeMemory(flag);
 }
 
 static void handleExplodThreeIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(int, int, int, int), int tDefault1, int tDefault2, int tDefault3) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	char string[3][20], comma[2][10];
-	int items = sscanf(flag, "%s %s %s %s %s", string[0], comma[0], string[1], comma[1], string[2]);
+	int items = sscanf(flag.data(), "%s %s %s %s %s", string[0], comma[0], string[1], comma[1], string[2]);
 
 	int defaults[3];
 	defaults[0] = tDefault1;
@@ -3007,15 +2982,14 @@ static void handleExplodThreeIntegerElements(DreamMugenAssignment** tAssignment,
 	}
 
 	tFunc(tID, vals[0], vals[1], vals[2]);
-
-	freeMemory(flag);
 }
 
 static void handleExplodTwoFloatElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(int, double, double), double tDefault1, double tDefault2) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	char string1[20], comma[10], string2[20];
-	int items = sscanf(flag, "%s %s %s", string1, comma, string2);
+	int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
 
 	double val1;
 	if (items < 1 || !strcmp("", string1)) val1 = tDefault1;
@@ -3026,24 +3000,22 @@ static void handleExplodTwoFloatElements(DreamMugenAssignment** tAssignment, Dre
 	else val2 = atof(string2);
 
 	tFunc(tID, val1, val2);
-
-	freeMemory(flag);
 }
 
 static void handleHitDefinitionOneIntegerElement(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int), int tDefault) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	if (!strcmp("", flag)) tFunc(tPlayer, tDefault);
-	else tFunc(tPlayer, atoi(flag));
-
-	freeMemory(flag);
+	if (flag.empty()) tFunc(tPlayer, tDefault);
+	else tFunc(tPlayer, atoi(flag.data()));
 }
 
 static void handleHitDefinitionTwoIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int, int), int tDefault1, int tDefault2) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	char string1[20], comma[10], string2[20];
-	int items = sscanf(flag, "%s %s %s", string1, comma, string2);
+	int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
 
 	int val1;
 	if (items < 1 || !strcmp("", string1)) val1 = tDefault1;
@@ -3054,15 +3026,14 @@ static void handleHitDefinitionTwoIntegerElements(DreamMugenAssignment** tAssign
 	else val2 = atoi(string2);
 
 	tFunc(tPlayer, val1, val2);
-
-	freeMemory(flag);
 }
 
 static void handleHitDefinitionThreeIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int, int, int), int tDefault1, int tDefault2, int tDefault3) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	char string[3][20], comma[2][10];
-	int items = sscanf(flag, "%s %s %s %s %s", string[0], comma[0], string[1], comma[1], string[2]);
+	int items = sscanf(flag.data(), "%s %s %s %s %s", string[0], comma[0], string[1], comma[1], string[2]);
 
 	int defaults[3];
 	defaults[0] = tDefault1;
@@ -3077,24 +3048,22 @@ static void handleHitDefinitionThreeIntegerElements(DreamMugenAssignment** tAssi
 	}
 
 	tFunc(tPlayer, vals[0], vals[1], vals[2]);
-
-	freeMemory(flag);
 }
 
 static void handleHitDefinitionOneFloatElement(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, double), double tDefault) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	if (!strcmp("", flag)) tFunc(tPlayer, tDefault);
-	else tFunc(tPlayer, atof(flag));
-
-	freeMemory(flag);
+	if (flag.empty()) tFunc(tPlayer, tDefault);
+	else tFunc(tPlayer, atof(flag.data()));
 }
 
 static void handleHitDefinitionTwoFloatElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, double, double), double tDefault1, double tDefault2) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	char string1[20], comma[10], string2[20];
-	int items = sscanf(flag, "%s %s %s", string1, comma, string2);
+	int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
 
 	double val1;
 	if (items < 1 || !strcmp("", string1)) val1 = tDefault1;
@@ -3105,18 +3074,15 @@ static void handleHitDefinitionTwoFloatElements(DreamMugenAssignment** tAssignme
 	else val2 = atof(string2);
 
 	tFunc(tPlayer, val1, val2);
-
-	freeMemory(flag);
 }
 
 static void handleHitDefinitionTwoOptionalIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int, int), void(tFuncDisable)(DreamPlayer*)) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	if (!strcmp("", flag)) {
+	if (flag.empty()) {
 		tFuncDisable(tPlayer);
 	}
-
-	freeMemory(flag);
 
 	int x, y;
 	getTwoIntegerValuesWithDefaultValues(tAssignment, tPlayer, &x, &y, 0, 0);
@@ -3125,11 +3091,11 @@ static void handleHitDefinitionTwoOptionalIntegerElements(DreamMugenAssignment**
 }
 
 static void handleHitDefinitionSinglePowerAddition(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int, int), double tDefaultFactor, int tDamage) {
-
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	char string1[20], comma[10], string2[20];
-	int items = sscanf(flag, "%s %s %s", string1, comma, string2);
+	int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
 
 	int val1;
 	if (items < 1 || !strcmp("", string1)) val1 = (int)(tDamage*tDefaultFactor);
@@ -3140,8 +3106,6 @@ static void handleHitDefinitionSinglePowerAddition(DreamMugenAssignment** tAssig
 	else val2 = atoi(string2);
 
 	tFunc(tPlayer, val1, val2);
-
-	freeMemory(flag);
 }
 
 static void handleHitDefinitionWithController(HitDefinitionController* e, DreamPlayer* tPlayer) {
@@ -3318,70 +3282,69 @@ static int handleSpritePriority(DreamMugenStateController* tController, DreamPla
 }
 
 static void handleSingleSpecialAssert(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
-	turnStringLowercase(flag);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	if (!strcmp("intro", flag)) {
+	if ("intro" == flag) {
 		setPlayerIntroFlag(tPlayer);
 	}
-	else if (!strcmp("invisible", flag)) {
+	else if ("invisible" == flag) {
 		setPlayerInvisibleFlag(tPlayer);
 	}
-	else if (!strcmp("roundnotover", flag)) {
+	else if ("roundnotover" == flag) {
 		setDreamRoundNotOverFlag();
 	}
-	else if (!strcmp("nobardisplay", flag)) {
+	else if ("nobardisplay" == flag) {
 		setDreamBarInvisibleForOneFrame();
 	}
-	else if (!strcmp("nobg", flag)) {
+	else if ("nobg" == flag) {
 		setDreamStageInvisibleForOneFrame();
 	}
-	else if (!strcmp("nofg", flag)) {
+	else if ("nofg" == flag) {
 		setDreamStageLayer1InvisibleForOneFrame();
 	}
-	else if (!strcmp("nostandguard", flag)) {
+	else if ("nostandguard" == flag) {
 		setPlayerNoStandGuardFlag(tPlayer);
 	}
-	else if (!strcmp("nocrouchguard", flag)) {
+	else if ("nocrouchguard" == flag) {
 		setPlayerNoCrouchGuardFlag(tPlayer);
 	}
-	else if (!strcmp("noairguard", flag)) {
+	else if ("noairguard" == flag) {
 		setPlayerNoAirGuardFlag(tPlayer);
 	}
-	else if (!strcmp("noautoturn", flag)) {
+	else if ("noautoturn" == flag) {
 		setPlayerNoAutoTurnFlag(tPlayer);
 	}
-	else if (!strcmp("nojugglecheck", flag)) {
+	else if ("nojugglecheck" == flag) {
 		setPlayerNoJuggleCheckFlag(tPlayer);
 	}
-	else if (!strcmp("nokosnd", flag)) {
+	else if ("nokosnd" == flag) {
 		setPlayerNoKOSoundFlag(tPlayer);
 	}
-	else if (!strcmp("nokoslow", flag)) {
+	else if ("nokoslow" == flag) {
 		setPlayerNoKOSlowdownFlag(tPlayer);
 	}
-	else if (!strcmp("noshadow", flag)) {
+	else if ("noshadow" == flag) {
 		setPlayerNoShadow(tPlayer);
 	}
-	else if (!strcmp("globalnoshadow", flag)) {
+	else if ("globalnoshadow" == flag) {
 		setAllPlayersNoShadow();
 	}
-	else if (!strcmp("nomusic", flag)) {
+	else if ("nomusic" == flag) {
 		setDreamNoMusicFlag();
 	}
-	else if (!strcmp("nowalk", flag)) {
+	else if ("nowalk" == flag) {
 		setPlayerNoWalkFlag(tPlayer);
 	}
-	else if (!strcmp("timerfreeze", flag)) {
+	else if ("timerfreeze" == flag) {
 		setTimerFreezeFlag();
 	}
-	else if (!strcmp("unguardable", flag)) {
+	else if ("unguardable" == flag) {
 		setPlayerUnguardableFlag(tPlayer);
 	}
 	else {
 		logWarningFormat("Unrecognized special assert flag %s. Ignoring.", flag);
 	}
-	freeMemory(flag);
 }
 
 static int handleSpecialAssert(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -3590,17 +3553,16 @@ static int handleNull() { return 0; }
 static DreamMugenStateType handleStateTypeAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {
 	DreamMugenStateType ret;
 
-	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
-	turnStringLowercase(text);
+	string text;
+	evaluateDreamAssignmentAndReturnAsString(text, tAssignment, tPlayer);
 	
-	if (!strcmp("a", text)) ret = MUGEN_STATE_TYPE_AIR;
-	else if (!strcmp("s", text)) ret = MUGEN_STATE_TYPE_STANDING;
-	else if (!strcmp("c", text)) ret = MUGEN_STATE_TYPE_CROUCHING;
+	if ("a" == text) ret = MUGEN_STATE_TYPE_AIR;
+	else if ("s" == text) ret = MUGEN_STATE_TYPE_STANDING;
+	else if ("c" == text) ret = MUGEN_STATE_TYPE_CROUCHING;
 	else {
 		logWarningFormat("Unrecognized state type %s. Defaulting to not changing state.", text);
 		ret = MUGEN_STATE_TYPE_UNCHANGED;
 	}
-	freeMemory(text);
 
 	return ret;
 }
@@ -3608,18 +3570,17 @@ static DreamMugenStateType handleStateTypeAssignment(DreamMugenAssignment** tAss
 static DreamMugenStatePhysics handleStatePhysicsAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {
 	DreamMugenStatePhysics ret;
 
-	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
-	turnStringLowercase(text);
-	if (!strcmp("s", text)) ret = MUGEN_STATE_PHYSICS_STANDING;
-	else if (!strcmp("a", text)) ret = MUGEN_STATE_PHYSICS_AIR;
-	else if (!strcmp("c", text)) ret = MUGEN_STATE_PHYSICS_CROUCHING;
-	else if (!strcmp("n", text)) ret = MUGEN_STATE_PHYSICS_NONE;
+	string text;
+	evaluateDreamAssignmentAndReturnAsString(text, tAssignment, tPlayer);
+	if ("s" == text) ret = MUGEN_STATE_PHYSICS_STANDING;
+	else if ("a" == text) ret = MUGEN_STATE_PHYSICS_AIR;
+	else if ("c" == text) ret = MUGEN_STATE_PHYSICS_CROUCHING;
+	else if ("n" == text) ret = MUGEN_STATE_PHYSICS_NONE;
 	else {
 		logWarning("Unrecognized state physics type");
 		logWarningString(text);
 		ret = MUGEN_STATE_PHYSICS_UNCHANGED;
 	}
-	freeMemory(text);
 
 	return ret;
 }
@@ -3627,16 +3588,15 @@ static DreamMugenStatePhysics handleStatePhysicsAssignment(DreamMugenAssignment*
 static DreamMugenStateMoveType handleStateMoveTypeAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {
 	DreamMugenStateMoveType ret;
 
-	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
-	turnStringLowercase(text);
-	if (!strcmp("a", text)) ret = MUGEN_STATE_MOVE_TYPE_ATTACK;
-	else if (!strcmp("i", text)) ret = MUGEN_STATE_MOVE_TYPE_IDLE;
+	string text;
+	evaluateDreamAssignmentAndReturnAsString(text, tAssignment, tPlayer);
+	if ("a" == text) ret = MUGEN_STATE_MOVE_TYPE_ATTACK;
+	else if ("i" == text) ret = MUGEN_STATE_MOVE_TYPE_IDLE;
 	else {
 		logWarning("Unrecognized state move type");
 		logWarningString(text);
 		ret = MUGEN_STATE_MOVE_TYPE_UNCHANGED;
 	}
-	freeMemory(text);
 
 	return ret;
 }
@@ -3703,12 +3663,12 @@ static int handleFallEnvironmentShake(DreamPlayer* tPlayer) {
 }
 
 static void handleExplodAnimation(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID) {
-	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
-	turnStringLowercase(text);
+	string text;
+	evaluateDreamAssignmentAndReturnAsString(text, tAssignment, tPlayer);
 
 	char firstW[100];
 	int anim;
-	int items = sscanf(text, "%s %d", firstW, &anim);
+	int items = sscanf(text.data(), "%s %d", firstW, &anim);
 
 	int isInFightDefFile;
 	if (items > 1 && !strcmp("isinotherfilef", firstW)) {
@@ -3717,45 +3677,42 @@ static void handleExplodAnimation(DreamMugenAssignment** tAssignment, DreamPlaye
 	}
 	else {
 		isInFightDefFile = 0;
-		anim = atoi(text);
+		anim = atoi(text.data());
 	}
 
 	setExplodAnimation(tID, isInFightDefFile, anim);
-
-	freeMemory(text);
 }
 
 DreamExplodPositionType getPositionTypeFromAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {
-	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string text;
+	evaluateDreamAssignmentAndReturnAsString(text, tAssignment, tPlayer);
 
 	DreamExplodPositionType type;
-	if (!strcmp("p1", text)) {
+	if ("p1" == text) {
 		type = EXPLOD_POSITION_TYPE_RELATIVE_TO_P1;
 	}
-	else if (!strcmp("p2", text)) {
+	else if ("p2" == text) {
 		type = EXPLOD_POSITION_TYPE_RELATIVE_TO_P2;
 	}
-	else if (!strcmp("front", text)) {
+	else if ("front" == text) {
 		type = EXPLOD_POSITION_TYPE_RELATIVE_TO_FRONT;
 	}
-	else if (!strcmp("back", text)) {
+	else if ("back" == text) {
 		type = EXPLOD_POSITION_TYPE_RELATIVE_TO_BACK;
 	}
-	else if (!strcmp("left", text)) {
+	else if ("left" == text) {
 		type = EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT;
 	}
-	else if (!strcmp("right", text)) {
+	else if ("right" == text) {
 		type = EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT;
 	}
-	else if (!strcmp("none", text)) {
+	else if ("none" == text) {
 		type = EXPLOD_POSITION_TYPE_NONE;
 	}
 	else {
 		logWarningFormat("Unable to determine position type %s. Defaulting to EXPLOD_POSITION_TYPE_RELATIVE_TO_P1.", text);
 		type = EXPLOD_POSITION_TYPE_RELATIVE_TO_P1;
 	}
-
-	freeMemory(text);
 
 	return type;
 }
@@ -3772,13 +3729,14 @@ static void handleExplodTransparencyType(DreamMugenAssignment** tAssignment, int
 		return;
 	}
 
-	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string text;
+	evaluateDreamAssignmentAndReturnAsString(text, tAssignment, tPlayer);
 
 	DreamExplodTransparencyType type;
-	if (!strcmp("alpha", text)) {
+	if ("alpha" == text) {
 		type = EXPLOD_TRANSPARENCY_TYPE_ALPHA;
 	}
-	else if (!strcmp("addalpha", text)) {
+	else if ("addalpha" == text) {
 		type = EXPLOD_TRANSPARENCY_TYPE_ADD_ALPHA;
 	}
 	else {
@@ -3787,8 +3745,6 @@ static void handleExplodTransparencyType(DreamMugenAssignment** tAssignment, int
 	}
 
 	setExplodTransparencyType(tID, 1, type);
-
-	freeMemory(text);
 }
 
 static int handleExplod(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -3967,33 +3923,32 @@ static int handlePowerSettingController(DreamMugenStateController* tController, 
 }
 
 static void getSingleIntegerValueOrDefaultFunctionCall(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(int), int tDefault) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	int val;
-	if (!strcmp("", flag)) val = tDefault;
-	else val = atoi(flag);
+	if (flag.empty()) val = tDefault;
+	else val = atoi(flag.data());
 	tFunc(val);
-
-	freeMemory(flag);
 }
 
 static void getSingleFloatValueOrDefaultFunctionCall(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(double), double tDefault) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	double val;
-	if (!strcmp("", flag)) val = tDefault;
-	else val = atof(flag);
+	if (flag.empty()) val = tDefault;
+	else val = atof(flag.data());
 	tFunc(val);
-
-	freeMemory(flag);
 }
 
 static void getSingleVector3DValueOrDefaultFunctionCall(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(Vector3D), Vector3D tDefault) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	double x, y, z;
 	char tx[20], comma1[10], ty[20], comma2[10], tz[20];
-	int items = sscanf(flag, "%s %s %s %s %s", tx, comma1, ty, comma2, tz);
+	int items = sscanf(flag.data(), "%s %s %s %s %s", tx, comma1, ty, comma2, tz);
 
 	if (items < 1) x = tDefault.x;
 	else x = atof(tx);
@@ -4005,18 +3960,16 @@ static void getSingleVector3DValueOrDefaultFunctionCall(DreamMugenAssignment** t
 	else z = atof(tz);
 
 	tFunc(makePosition(x, y, z));
-
-	freeMemory(flag);
 }
 
 static void handleSuperPauseAnimation(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
-	turnStringLowercase(flag);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	char firstW[200];
 	int which = -1;
 
-	int items = sscanf(flag, "%s %d", firstW, &which);
+	int items = sscanf(flag.data(), "%s %d", firstW, &which);
 
 	int isInPlayerFile;
 	int id;
@@ -4032,34 +3985,32 @@ static void handleSuperPauseAnimation(DreamMugenAssignment** tAssignment, DreamP
 	else {
 		assert(items == 1);
 		isInPlayerFile = 0;
-		id = atoi(flag);
+		id = atoi(flag.data());
 	}
 
 	setDreamSuperPauseAnimation(tPlayer, isInPlayerFile, id);
-
-	freeMemory(flag);
 }
 
 static void handleSuperPauseSound(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {
-	char* flag = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, tPlayer);
-	turnStringLowercase(flag);
+	string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
 	int isInPlayerFile;
 	int group;
 	int item;
-	if (!strcmp("", flag)) {
+	if (flag.empty()) {
 		isInPlayerFile = 0;
 		group = -1;
 		item = -1;
 	}
 	else {
 		char firstW[20], comma[10];
-		int items = sscanf(flag, "%s", firstW);
+		int items = sscanf(flag.data(), "%s", firstW);
 		assert(items == 1);
 
 		if (!strcmp("isinotherfilef", firstW)) {
 			isInPlayerFile = 0;
-			int items = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
+			int items = sscanf(flag.data(), "%s %d %s %d", firstW, &group, comma, &item);
 			if (items < 2) { // TODO: check if default works
 				group = 0;
 			}
@@ -4069,7 +4020,7 @@ static void handleSuperPauseSound(DreamMugenAssignment** tAssignment, DreamPlaye
 		}
 		else if (!strcmp("isinotherfiles", firstW)) {
 			isInPlayerFile = 1;
-			int items = sscanf(flag, "%s %d %s %d", firstW, &group, comma, &item);
+			int items = sscanf(flag.data(), "%s %d %s %d", firstW, &group, comma, &item);
 			if (items < 2) { // TODO: check if default works
 				group = 0;
 			}
@@ -4079,18 +4030,15 @@ static void handleSuperPauseSound(DreamMugenAssignment** tAssignment, DreamPlaye
 		}
 		else {
 			isInPlayerFile = 0;
-			int items = sscanf(flag, "%d %s %d", &group, comma, &item);
+			int items = sscanf(flag.data(), "%d %s %d", &group, comma, &item);
 			if (items != 3) {
 				logWarningFormat("Unable to parse super pause flag %s. Ignoring.", flag);
-				freeMemory(flag);
 				return;
 			}
 		}
 	}
 
 	setDreamSuperPauseSound(tPlayer, isInPlayerFile, group, item);
-
-	freeMemory(flag);
 }
 
 static int handleSuperPause(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -4258,15 +4206,14 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 	handleHelperTwoFloatElements(&e->mSizeMiddlePosition, tPlayer, helper, setPlayerMiddlePosition, getPlayerMiddlePositionX(tPlayer), getPlayerMiddlePositionY(tPlayer));
 	handleHelperOneIntegerElement(&e->mSizeShadowOffset, tPlayer, helper, setPlayerShadowOffset, getPlayerShadowOffset(tPlayer));
 
-	char* type = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mType, tPlayer);
-	turnStringLowercase(type);
-	if (!strcmp("player", type)) {
+	string type;
+	evaluateDreamAssignmentAndReturnAsString(type, &e->mType, tPlayer);
+	if ("player" == type) {
 		setPlayerScreenBoundForever(helper, 1);
 	}
 	else {
 		setPlayerScreenBoundForever(helper, 0);
 	}
-	freeMemory(type);
 
 	setPlayerPosition(helper, position, getPlayerCoordinateP(helper));
 	handleHelperOneIntegerElement(&e->mStateNumber, tPlayer, helper, changePlayerState, 0);
@@ -4455,11 +4402,11 @@ static int handleBindToParentController(DreamMugenStateController* tController, 
 }
 
 static DreamPlayerBindPositionType handleBindToTargetPositionType(DreamMugenAssignment** tPosition, DreamPlayer* tPlayer) {
-	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(tPosition, tPlayer);
+	string text;
+	evaluateDreamAssignmentAndReturnAsString(text, tPosition, tPlayer);
 
 	char val1[20], val2[20], comma1[10], comma2[10], postype[30];
-	int items = sscanf(text, "%s %s %s %s %s", val1, comma1, val2, comma2, postype);
-	freeMemory(text);
+	int items = sscanf(text.data(), "%s %s %s %s %s", val1, comma1, val2, comma2, postype);
 
 	if (items < 5) {
 		return PLAYER_BIND_POSITION_TYPE_AXIS;
@@ -4779,14 +4726,11 @@ static int handlePaletteEffect(DreamMugenStateController* tController, DreamPlay
 
 static int handleAppendToClipboardController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	ClipboardController* e = (ClipboardController*)tController->mData;
+	string formatString, parameterString;
+	evaluateDreamAssignmentAndReturnAsString(formatString, &e->mText, tPlayer);
+	evaluateDreamAssignmentAndReturnAsString(parameterString, &e->mParams, tPlayer);
 
-	char* formatString = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mText, tPlayer);
-	char* parameterString = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mParams, tPlayer);
-
-	addClipboardLineFormatString(formatString, parameterString);
-
-	freeMemory(formatString);
-	freeMemory(parameterString);
+	addClipboardLineFormatString(formatString.data(), parameterString.data());
 
 	return 0;
 }
@@ -4916,13 +4860,13 @@ static int handleHitAddController(DreamMugenStateController* tController, DreamP
 
 static int handleHitOverrideController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	HitOverrideController* e = (HitOverrideController*)tController->mData;
-	char* attr = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mAttributeString, tPlayer);
+	string attr;
+	evaluateDreamAssignmentAndReturnAsString(attr, &e->mAttributeString, tPlayer);
 
 	DreamMugenStateType stateType;
 	MugenAttackClass attackClass;
 	MugenAttackType attackType;
-	getHitDefinitionAttributeValuesFromString(attr, &stateType, &attackClass, &attackType);
-	freeMemory(attr);
+	getHitDefinitionAttributeValuesFromString(attr.data(), &stateType, &attackClass, &attackType);
 
 	int stateno, slot, time, forceAir;
 	getSingleIntegerValueOrDefault(&e->mStateNo, tPlayer, &stateno, 0);
@@ -5004,31 +4948,31 @@ static int handleVictoryQuoteController(DreamMugenStateController* tController, 
 
 
 static BlendType handleTransparencyType(DreamMugenAssignment** tType, DreamPlayer* tPlayer, int* tAlphaDefaultSrc, int* tAlphaDefaultDst) {
-	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(tType, tPlayer);
-	turnStringLowercase(text);
+	string text;
+	evaluateDreamAssignmentAndReturnAsString(text, tType, tPlayer);
 
 	BlendType ret;
-	if (!strcmp("default", text) || !strcmp("none", text)) {
+	if (("default" == text) || "none" == text) {
 		ret = BLEND_TYPE_NORMAL;
 		*tAlphaDefaultSrc = 256;
 		*tAlphaDefaultDst = 256;
 	}
-	else if (!strcmp("add", text)) {
+	else if ("add" == text) {
 		ret = BLEND_TYPE_ADDITION;
 		*tAlphaDefaultSrc = 256;
 		*tAlphaDefaultDst = 256;
 	}
-	else if (!strcmp("addalpha", text)) {
+	else if ("addalpha" == text) {
 		ret = BLEND_TYPE_ADDITION;
 		*tAlphaDefaultSrc = 256;
 		*tAlphaDefaultDst = 0;
 	}
-	else if (!strcmp("add1", text)) {
+	else if ("add1" == text) {
 		ret = BLEND_TYPE_ADDITION;
 		*tAlphaDefaultSrc = 256;
 		*tAlphaDefaultDst = 128;
 	}
-	else  if (!strcmp("sub", text)) {
+	else  if ("sub" == text) {
 		ret = BLEND_TYPE_SUBTRACTION;
 		*tAlphaDefaultSrc = 256;
 		*tAlphaDefaultDst = 256;
@@ -5039,8 +4983,6 @@ static BlendType handleTransparencyType(DreamMugenAssignment** tType, DreamPlaye
 		*tAlphaDefaultSrc = 256;
 		*tAlphaDefaultDst = 256;
 	}
-
-	freeMemory(text);
 
 	return ret;
 }
@@ -5065,11 +5007,11 @@ static int handleRandomVariableController(DreamMugenStateController* tController
 	int index;
 	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &index, 0);
 
-	char* rangeText = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mRange, tPlayer);
+	string rangeText;
+	evaluateDreamAssignmentAndReturnAsString(rangeText, &e->mRange, tPlayer);
 	char comma[10];
 	int val1, val2;
-	int items = sscanf(rangeText, "%d %s %d", &val1, comma, &val2);
-	freeMemory(rangeText);
+	int items = sscanf(rangeText.data(), "%d %s %d", &val1, comma, &val2);
 
 	int value;
 	if (items == 3) {
@@ -6222,11 +6164,9 @@ static void setupStoryStateControllerParsers() {
 }
 
 static int getDolmexicaStoryIDFromAssignment(DreamMugenAssignment** tAssignment, StoryInstance* tInstance) {
-
-	char* val = evaluateDreamAssignmentAndReturnAsAllocatedString(tAssignment, (DreamPlayer*)tInstance);
-	int id = getDolmexicaStoryIDFromString(val, tInstance);
-	freeMemory(val);
-	return id;
+	string val;
+	evaluateDreamAssignmentAndReturnAsString(val, tAssignment, (DreamPlayer*)tInstance);
+	return getDolmexicaStoryIDFromString(val.data(), tInstance);
 }
 
 static int handleCreateAnimationStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
@@ -6287,7 +6227,7 @@ static void handleSingleStoryTextSprite(int id, int tHasSprite, DreamMugenAssign
 	tFunc(tInstance, id, sprite, offset);
 }
 
-static int isStringEmptyOrWhitespace(char * tString)
+static int isStringEmptyOrWhitespace(const char * tString)
 {
 	for (; *tString; tString++) {
 		if (*tString != ' ') return 0;
@@ -6298,13 +6238,12 @@ static int isStringEmptyOrWhitespace(char * tString)
 static void handleSingleStoryTextName(int id, int tHasName, DreamMugenAssignment** tText, DreamMugenAssignment** tFont, DreamMugenAssignment** tOffset, StoryInstance* tInstance) {
 	if (!tHasName) return;
 
-	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(tText, (DreamPlayer*)tInstance);
+	string text;
+	evaluateDreamAssignmentAndReturnAsString(text, tText, (DreamPlayer*)tInstance);
 	Vector3DI font = evaluateDreamAssignmentAndReturnAsVector3DI(tFont, (DreamPlayer*)tInstance);
 	double x, y;
 	getTwoFloatValuesWithDefaultValues(tOffset, (DreamPlayer*)tInstance, &x, &y, 0, 0);
-	setDolmexicaStoryTextName(tInstance, id, text, font, makePosition(x, y, 0));
-
-	freeMemory(text);
+	setDolmexicaStoryTextName(tInstance, id, text.data(), font, makePosition(x, y, 0));
 }
 
 static int handleCreateTextStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
@@ -6321,10 +6260,10 @@ static int handleCreateTextStoryController(DreamMugenStateController* tControlle
 	double width;
 	getSingleFloatValueOrDefault(&e->mWidth, (DreamPlayer*)tInstance, &width, INF);
 	Vector3DI font = evaluateDreamAssignmentAndReturnAsVector3DI(&e->mFont, (DreamPlayer*)tInstance);
-	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mText, (DreamPlayer*)tInstance);
-	int isEmpty = isStringEmptyOrWhitespace(text);
-	addDolmexicaStoryText(tInstance, id, text, font, basePosition, textOffset, width);
-	freeMemory(text);
+	string text;
+	evaluateDreamAssignmentAndReturnAsString(text, &e->mText, (DreamPlayer*)tInstance);
+	int isEmpty = isStringEmptyOrWhitespace(text.data());
+	addDolmexicaStoryText(tInstance, id, text.data(), font, basePosition, textOffset, width);
 
 	handleSingleStoryTextSprite(id, e->mHasBackgroundSprite, &e->mBackgroundSprite, &e->mBackgroundOffset, setDolmexicaStoryTextBackground, tInstance);
 	handleSingleStoryTextSprite(id, e->mHasFaceSprite, &e->mFaceSprite, &e->mFaceOffset, setDolmexicaStoryTextFace, tInstance);
@@ -6370,9 +6309,9 @@ static int handleChangeTextStoryController(DreamMugenStateController* tControlle
 		setDolmexicaStoryTextBasePosition(tInstance, id, offset);
 	}
 	if (e->mDoesChangeText) {
-		char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mText, (DreamPlayer*)tInstance);
-		setDolmexicaStoryTextText(tInstance, id, text);
-		freeMemory(text);
+		string text;
+		evaluateDreamAssignmentAndReturnAsString(text, &e->mText, (DreamPlayer*)tInstance);
+		setDolmexicaStoryTextText(tInstance, id, text.data());
 	}
 	if (e->mDoesChangeTextOffset) {
 		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mTextOffset, (DreamPlayer*)tInstance);
@@ -6395,9 +6334,9 @@ static int handleChangeTextStoryController(DreamMugenStateController* tControlle
 		setDolmexicaStoryTextFaceOffset(tInstance, id, offset);
 	}
 	if (e->mDoesChangeName) {
-		char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mName, (DreamPlayer*)tInstance);
-		setDolmexicaStoryTextNameText(tInstance, id, text);
-		freeMemory(text);
+		string text;
+		evaluateDreamAssignmentAndReturnAsString(text, &e->mName, (DreamPlayer*)tInstance);
+		setDolmexicaStoryTextNameText(tInstance, id, text.data());
 	}
 	if (e->mDoesChangeNameOffset) {
 		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mNameOffset, (DreamPlayer*)tInstance);
@@ -6614,10 +6553,10 @@ static int handleCreateCharacterStoryController(DreamMugenStateController* tCont
 	getSingleIntegerValueOrDefault(&e->mStartAnimationNumber, (DreamPlayer*)tInstance, &animation, 0);
 	getSingleIntegerValueOrDefault(&e->mIsBoundToStage, (DreamPlayer*)tInstance, &isBoundToStage, 0);
 	getTwoFloatValuesWithDefaultValues(&e->mPosition, (DreamPlayer*)tInstance, &position.x, &position.y, 0, 0);
-	char* name = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mName, (DreamPlayer*)tInstance);
+	string name;
+	evaluateDreamAssignmentAndReturnAsString(name, &e->mName, (DreamPlayer*)tInstance);
 
-	addDolmexicaStoryCharacter(tInstance, id, name, animation, position);
-	freeMemory(name);
+	addDolmexicaStoryCharacter(tInstance, id, name.data(), animation, position);
 	if (e->mHasShadow) {
 		double shadowBasePosition;
 		getSingleFloatValueOrDefault(&e->mShadowBasePositionY, (DreamPlayer*)tInstance, &shadowBasePosition, 0);
@@ -6793,9 +6732,10 @@ static int handleCreateHelperStoryController(DreamMugenStateController* tControl
 }
 
 static void getStoryCharacterAndHelperFromAssignment(DreamMugenAssignment** tCharacterAssignment, StoryInstance* tInstance, int& oCharacter, int& oHelper) {
-	char* text = evaluateDreamAssignmentAndReturnAsAllocatedString(tCharacterAssignment, (DreamPlayer*)tInstance);
+	string text;
+	evaluateDreamAssignmentAndReturnAsString(text, tCharacterAssignment, (DreamPlayer*)tInstance);
 	char characterString[100], comma[20], helperString[100];
-	int items = sscanf(text, "%s %s %s", characterString, comma, helperString);
+	int items = sscanf(text.data(), "%s %s %s", characterString, comma, helperString);
 	assert(items >= 1);
 
 	if (items == 3) {
@@ -6806,7 +6746,6 @@ static void getStoryCharacterAndHelperFromAssignment(DreamMugenAssignment** tCha
 	}
 
 	oCharacter = getDolmexicaStoryIDFromString(characterString, tInstance);
-	freeMemory(text);
 }
 
 static int handleLockTextToCharacterStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
@@ -6853,9 +6792,9 @@ static int handleNameIDStoryController(DreamMugenStateController* tController, S
 	int id;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
-	char* name = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mName, (DreamPlayer*)tInstance);
+	string name;
+	evaluateDreamAssignmentAndReturnAsString(name, &e->mName, (DreamPlayer*)tInstance);
 	setDolmexicaStoryIDName(tInstance, id, name);
-	freeMemory(name);
 
 	return 0;
 }
@@ -6881,9 +6820,9 @@ static void handleSettingSingleStoryVariable(void* tCaller, void* tData) {
 		setDolmexicaStoryFloatVariable(caller->mTarget, id, val);
 	}
 	else if (e->mType == STORY_VAR_SET_TYPE_STRING) {
-		char* val = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mAssignment, (DreamPlayer*)caller->mPlayer);
+		string val;
+		evaluateDreamAssignmentAndReturnAsString(val, &e->mAssignment, (DreamPlayer*)caller->mPlayer);
 		setDolmexicaStoryStringVariable(caller->mTarget, id, val);
-		freeMemory(val);
 	}
 	else {
 		logWarningFormat("Unrecognized story variable type %d. Ignoring.", e->mType);
@@ -6918,9 +6857,9 @@ static void handleSettingSingleGlobalStoryVariable(void* tCaller, void* tData) {
 		setGlobalFloatVariable(id, val);
 	}
 	else if (e->mType == STORY_VAR_SET_TYPE_STRING) {
-		char* val = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mAssignment, (DreamPlayer*)caller->mPlayer);
+		string val;
+		evaluateDreamAssignmentAndReturnAsString(val, &e->mAssignment, (DreamPlayer*)caller->mPlayer);
 		setGlobalStringVariable(id, val);
-		freeMemory(val);
 	}
 	else {
 		logWarningFormat("Unrecognized story variable type %d. Ignoring.", e->mType);
@@ -6955,15 +6894,15 @@ static void handleAddingSingleStoryVariable(void* tCaller, void* tData) {
 		addDolmexicaStoryFloatVariable(caller->mTarget, id, val);
 	}
 	else if (e->mType == STORY_VAR_SET_TYPE_STRING) {
-		char* val = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mAssignment, (DreamPlayer*)caller->mPlayer);
+		string val;
+		evaluateDreamAssignmentAndReturnAsString(val, &e->mAssignment, (DreamPlayer*)caller->mPlayer);
 		if (val[0] == '$') {
-			int numVal = atoi(val + 1);
+			int numVal = atoi(val.data() + 1);
 			addDolmexicaStoryStringVariable(caller->mTarget, id, numVal);
 		}
 		else {
 			addDolmexicaStoryStringVariable(caller->mTarget, id, val);
 		}
-		freeMemory(val);
 	}
 	else {
 		logWarningFormat("Unrecognized story variable type %d. Ignoring.", e->mType);
@@ -6998,15 +6937,15 @@ static void handleAddingSingleGlobalStoryVariable(void* tCaller, void* tData) {
 		addGlobalFloatVariable(id, val);
 	}
 	else if (e->mType == STORY_VAR_SET_TYPE_STRING) {
-		char* val = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mAssignment, (DreamPlayer*)caller->mPlayer);
+		string val;
+		evaluateDreamAssignmentAndReturnAsString(val, &e->mAssignment, (DreamPlayer*)caller->mPlayer);
 		if (val[0] == '$') {
-			int numVal = atoi(val + 1);
+			int numVal = atoi(val.data() + 1);
 			addGlobalStringVariable(id, numVal);
 		}
 		else {
 			addGlobalStringVariable(id, val);
 		}
-		freeMemory(val);
 	}
 	else {
 		logWarningFormat("Unrecognized story variable type %d. Ignoring.", e->mType);
