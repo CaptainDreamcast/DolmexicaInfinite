@@ -302,19 +302,19 @@ typedef struct {
 } HitDefinitionController;
 
 static void readHitDefinitionFromGroup(HitDefinitionController* e, MugenDefScriptGroup* tGroup) {
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("attr", tGroup, &e->mAttribute, "S , NA");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("attr", tGroup, &e->mAttribute, "s , na");
 
 	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("hitflag", tGroup, &e->mHitFlag)) {
-		e->mHitFlag = makeDreamStringMugenAssignment("MAF");
+		e->mHitFlag = makeDreamStringMugenAssignment("maf");
 	}
 	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("guardflag", tGroup, &e->mGuardFlag)) {
 		e->mGuardFlag = makeDreamStringMugenAssignment("");
 	}
 	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("affectteam", tGroup, &e->mAffectTeam)) {
-		e->mAffectTeam = makeDreamStringMugenAssignment("E");
+		e->mAffectTeam = makeDreamStringMugenAssignment("e");
 	}
 	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("animtype", tGroup, &e->mAnimationType)) {
-		e->mAnimationType = makeDreamStringMugenAssignment("Light");
+		e->mAnimationType = makeDreamStringMugenAssignment("light");
 	}
 	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("air.animtype", tGroup, &e->mAirAnimationType)) {
 		e->mAirAnimationType = makeDreamStringMugenAssignment("");
@@ -350,7 +350,7 @@ static void readHitDefinitionFromGroup(HitDefinitionController* e, MugenDefScrip
 		e->mGuardSound = makeDreamStringMugenAssignment("");
 	}
 	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("ground.type", tGroup, &e->mGroundType)) {
-		e->mGroundType = makeDreamStringMugenAssignment("High");
+		e->mGroundType = makeDreamStringMugenAssignment("high");
 	}
 	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("air.type", tGroup, &e->mAirType)) {
 		e->mAirType = makeDreamStringMugenAssignment("");
