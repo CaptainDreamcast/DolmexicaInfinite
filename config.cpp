@@ -5,6 +5,9 @@
 #include <prism/system.h>
 #include <prism/sound.h>
 #include <prism/soundeffect.h>
+#include <prism/stlutil.h>
+
+using namespace std;
 
 static struct {
 	double mDefaultAttackDamageDoneToPowerMultiplier;
@@ -22,21 +25,27 @@ static struct {
 	int mGameSpeed;
 	int mWavVolume;
 	int mMidiVolume;
-} gData;
+
+	map<int, int> mGlobalVariables;
+	map<int, double> mGlobalFVariables;
+	map<int, std::string> mGlobalStringVariables;
+
+
+} gConfigData;
 
 static void loadRules(MugenDefScript* tScript) {
-	gData.mDefaultAttackDamageDoneToPowerMultiplier = getMugenDefFloatOrDefault(tScript, "Rules", "Default.Attack.LifeToPowerMul", 0.7);
-	gData.mDefaultAttackDamageReceivedToPowerMultiplier = getMugenDefFloatOrDefault(tScript, "Rules", "Default.GetHit.LifeToPowerMul", 0.6);
+	gConfigData.mDefaultAttackDamageDoneToPowerMultiplier = getMugenDefFloatOrDefault(tScript, "Rules", "Default.Attack.LifeToPowerMul", 0.7);
+	gConfigData.mDefaultAttackDamageReceivedToPowerMultiplier = getMugenDefFloatOrDefault(tScript, "Rules", "Default.GetHit.LifeToPowerMul", 0.6);
 }
 
 static void loadDebug(MugenDefScript* tScript) {
-	gData.mDebug = getMugenDefIntegerOrDefault(tScript, "Debug", "debug", 1);
-	gData.mAllowDebugMode = getMugenDefIntegerOrDefault(tScript, "Debug", "allowdebugmode", 1);
-	gData.mAllowDebugKeys = getMugenDefIntegerOrDefault(tScript, "Debug", "allowdebugkeys", 0);
-	gData.mSpeedup = getMugenDefIntegerOrDefault(tScript, "Debug", "speedup", 0);
+	gConfigData.mDebug = getMugenDefIntegerOrDefault(tScript, "Debug", "debug", 1);
+	gConfigData.mAllowDebugMode = getMugenDefIntegerOrDefault(tScript, "Debug", "allowdebugmode", 1);
+	gConfigData.mAllowDebugKeys = getMugenDefIntegerOrDefault(tScript, "Debug", "allowdebugkeys", 0);
+	gConfigData.mSpeedup = getMugenDefIntegerOrDefault(tScript, "Debug", "speedup", 0);
 
 	char* text = getAllocatedMugenDefStringOrDefault(tScript, "Debug", "startstage", "stages/stage0.def");
-	strcpy(gData.mStartStage, text);
+	strcpy(gConfigData.mStartStage, text);
 	freeMemory(text);
 }
 
@@ -62,104 +71,153 @@ void loadMugenConfig() {
 
 double getDreamDefaultAttackDamageDoneToPowerMultiplier()
 {
-	return gData.mDefaultAttackDamageDoneToPowerMultiplier;
+	return gConfigData.mDefaultAttackDamageDoneToPowerMultiplier;
 }
 
 double getDreamDefaultAttackDamageReceivedToPowerMultiplier()
 {
-	return gData.mDefaultAttackDamageReceivedToPowerMultiplier;
+	return gConfigData.mDefaultAttackDamageReceivedToPowerMultiplier;
 }
 
 int isMugenDebugActive()
 {
-	return gData.mDebug;
+	return gConfigData.mDebug;
 }
 
 void setDefaultOptionVariables() {
-	gData.mDifficulty = 4;
-	gData.mLifeStartPercentageNumber = 100;
-	gData.mIsTimerInfinite = 0;
-	gData.mTimerDuration = 99;
-	gData.mGameSpeed = 0;
-	gData.mWavVolume = 50;
-	gData.mMidiVolume = 50;
+	gConfigData.mDifficulty = 4;
+	gConfigData.mLifeStartPercentageNumber = 100;
+	gConfigData.mIsTimerInfinite = 0;
+	gConfigData.mTimerDuration = 99;
+	gConfigData.mGameSpeed = 0;
+	gConfigData.mWavVolume = 50;
+	gConfigData.mMidiVolume = 50;
 }
 
 int getDifficulty()
 {
-	return gData.mDifficulty;
+	return gConfigData.mDifficulty;
 }
 
 void setDifficulty(int tDifficulty)
 {
-	gData.mDifficulty = tDifficulty;
+	gConfigData.mDifficulty = tDifficulty;
 }
 
 double getLifeStartPercentage()
 {
-	return gData.mLifeStartPercentageNumber / 100.0;
+	return gConfigData.mLifeStartPercentageNumber / 100.0;
 }
 
 int getLifeStartPercentageNumber()
 {
-	return gData.mLifeStartPercentageNumber;
+	return gConfigData.mLifeStartPercentageNumber;
 }
 
 void setLifeStartPercentageNumber(int tLifeStartPercentageNumber)
 {
-	gData.mLifeStartPercentageNumber = tLifeStartPercentageNumber;
+	gConfigData.mLifeStartPercentageNumber = tLifeStartPercentageNumber;
 }
 
 int isGlobalTimerInfinite()
 {
-	return gData.mIsTimerInfinite;
+	return gConfigData.mIsTimerInfinite;
 }
 
 void setGlobalTimerInfinite()
 {
-	gData.mIsTimerInfinite = 1;
+	gConfigData.mIsTimerInfinite = 1;
 }
 
 int getGlobalTimerDuration()
 {
-	return gData.mTimerDuration;
+	return gConfigData.mTimerDuration;
 }
 
 void setGlobalTimerDuration(int tDuration)
 {
-	gData.mTimerDuration = tDuration;
-	gData.mIsTimerInfinite = 0;
+	gConfigData.mTimerDuration = tDuration;
+	gConfigData.mIsTimerInfinite = 0;
 }
 
 int getGlobalGameSpeed()
 {
-	return gData.mGameSpeed;
+	return gConfigData.mGameSpeed;
 }
 
 void setGlobalGameSpeed(int tGameSpeed)
 {
-	gData.mGameSpeed = tGameSpeed;
+	gConfigData.mGameSpeed = tGameSpeed;
 }
 
 int getGameWavVolume()
 {
-	return gData.mWavVolume;
+	return gConfigData.mWavVolume;
 }
 
 void setGameWavVolume(int tWavVolume)
 {
-	gData.mWavVolume = tWavVolume;
-	setVolume(gData.mWavVolume / 100.0);
+	gConfigData.mWavVolume = tWavVolume;
+	setVolume(gConfigData.mWavVolume / 100.0);
 }
 
 int getGameMidiVolume()
 {
-	return gData.mMidiVolume;
+	return gConfigData.mMidiVolume;
 }
 
 void setGameMidiVolume(int tMidiVolume)
 {
-	gData.mMidiVolume = tMidiVolume;
-	setSoundEffectVolume(gData.mMidiVolume / 100.0);
+	gConfigData.mMidiVolume = tMidiVolume;
+	setSoundEffectVolume(gConfigData.mMidiVolume / 100.0);
 }
 
+void setGlobalVariable(int tIndex, int tValue)
+{
+	gConfigData.mGlobalVariables[tIndex] = tValue;
+}
+
+void addGlobalVariable(int tIndex, int tValue)
+{
+	gConfigData.mGlobalVariables[tIndex] += tValue;
+}
+
+int getGlobalVariable(int tIndex)
+{
+	return gConfigData.mGlobalVariables[tIndex];
+}
+
+void setGlobalFloatVariable(int tIndex, double tValue)
+{
+	gConfigData.mGlobalFVariables[tIndex] = tValue;
+}
+
+void addGlobalFloatVariable(int tIndex, double tValue)
+{
+	gConfigData.mGlobalFVariables[tIndex] += tValue;
+}
+
+double getGlobalFloatVariable(int tIndex)
+{
+	return gConfigData.mGlobalFVariables[tIndex];
+}
+
+void setGlobalStringVariable(int tID, std::string tValue)
+{
+	gConfigData.mGlobalStringVariables[tID] = tValue;
+}
+
+void addGlobalStringVariable(int tID, std::string tValue)
+{
+	gConfigData.mGlobalStringVariables[tID] = gConfigData.mGlobalStringVariables[tID] + tValue;
+}
+
+void addGlobalStringVariable(int tID, int tValue)
+{
+	gConfigData.mGlobalStringVariables[tID][0] += tValue;
+}
+
+std::string getGlobalStringVariable(int tID)
+{
+	return gConfigData.mGlobalStringVariables[tID];
+}

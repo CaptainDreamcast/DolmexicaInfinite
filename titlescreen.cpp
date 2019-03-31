@@ -334,6 +334,8 @@ static void loadTitleMusic() {
 	freeMemory(path);
 }
 
+static void updateMenuElementPositions();
+
 static void loadTitleScreen() {
 	setWrapperTitleScreen(getDreamTitleScreen());
 	
@@ -383,6 +385,8 @@ static void loadTitleScreen() {
 	gTitleScreenData.mMenuTargetPosition = gTitleScreenData.mMenuBasePosition;
 	gTitleScreenData.mTopOption = 0;
 	setSelectedMenuElementActive();
+	gTitleScreenData.mMenuBasePosition = gTitleScreenData.mMenuTargetPosition;
+	updateMenuElementPositions();
 
 	loadCredits();
 

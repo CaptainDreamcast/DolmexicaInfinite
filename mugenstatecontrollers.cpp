@@ -3461,6 +3461,48 @@ static int handleSettingVariable(DreamMugenStateController* tController, DreamPl
 	return 0;
 }
 
+static void handleSettingSingleGlobalVariable(void* tCaller, void* tData) {
+	VarSetHandlingCaller* caller = (VarSetHandlingCaller*)tCaller;
+	VarSetControllerEntry* e = (VarSetControllerEntry*)tData;
+
+	int id = evaluateDreamAssignmentAndReturnAsInteger(&e->mID, caller->mPlayer);
+
+	if (e->mType == VAR_SET_TYPE_SYSTEM) {
+		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, caller->mPlayer);
+		logWarning("Trying to set global system variable, defaulting to normal global variable.");
+		setGlobalVariable(id, val);
+	}
+	else if (e->mType == VAR_SET_TYPE_INTEGER) {
+		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, caller->mPlayer);
+		setGlobalVariable(id, val);
+	}
+	else if (e->mType == VAR_SET_TYPE_SYSTEM_FLOAT) {
+		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mAssignment, caller->mPlayer);
+		logWarning("Trying to set global system variable, defaulting to normal global variable.");
+		setGlobalFloatVariable(id, val);
+	}
+	else if (e->mType == VAR_SET_TYPE_FLOAT) {
+		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mAssignment, caller->mPlayer);
+		setGlobalFloatVariable(id, val);
+	}
+	else {
+		logWarningFormat("Unrecognized variable type %d. Ignoring.", e->mType);
+	}
+}
+
+static int handleSettingGlobalVariable(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	if (!tPlayer) return 0;
+
+	VarSetController* e = (VarSetController*)tController->mData;
+	VarSetHandlingCaller caller;
+	caller.mPlayer = tPlayer;
+	caller.mTarget = NULL;
+
+	vector_map(&e->mVarSets, handleSettingSingleGlobalVariable, &caller);
+
+	return 0;
+}
+
 static void handleAddingSingleVariable(void* tCaller, void* tData) {
 	VarSetHandlingCaller* caller = (VarSetHandlingCaller*)tCaller;
 	VarSetControllerEntry* e = (VarSetControllerEntry*)tData;
@@ -3497,6 +3539,48 @@ static int handleAddingVariable(DreamMugenStateController* tController, DreamPla
 	caller.mTarget = tTarget;
 
 	vector_map(&e->mVarSets, handleAddingSingleVariable, &caller);
+
+	return 0;
+}
+
+static void handleAddingSingleGlobalVariable(void* tCaller, void* tData) {
+	VarSetHandlingCaller* caller = (VarSetHandlingCaller*)tCaller;
+	VarSetControllerEntry* e = (VarSetControllerEntry*)tData;
+
+	int id = evaluateDreamAssignmentAndReturnAsInteger(&e->mID, caller->mPlayer);
+
+	if (e->mType == VAR_SET_TYPE_SYSTEM) {
+		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, caller->mPlayer);
+		logWarning("Trying to set global system variable, defaulting to normal global variable.");
+		addGlobalVariable(id, val);
+	}
+	else if (e->mType == VAR_SET_TYPE_INTEGER) {
+		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, caller->mPlayer);
+		addGlobalVariable(id, val);
+	}
+	else if (e->mType == VAR_SET_TYPE_SYSTEM_FLOAT) {
+		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mAssignment, caller->mPlayer);
+		logWarning("Trying to set global system variable, defaulting to normal global variable.");
+		addGlobalFloatVariable(id, val);
+	}
+	else if (e->mType == VAR_SET_TYPE_FLOAT) {
+		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mAssignment, caller->mPlayer);
+		addGlobalFloatVariable(id, val);
+	}
+	else {
+		logWarningFormat("Unrecognized variable type %d. Ignoring.", e->mType);
+	}
+}
+
+static int handleAddingGlobalVariable(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	if (!tPlayer) return 0;
+
+	VarSetController* e = (VarSetController*)tController->mData;
+	VarSetHandlingCaller caller;
+	caller.mPlayer = tPlayer;
+	caller.mTarget = NULL;
+
+	vector_map(&e->mVarSets, handleAddingSingleGlobalVariable, &caller);
 
 	return 0;
 }
@@ -5084,6 +5168,8 @@ int varAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tP
 int varRandomHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleRandomVariableController(tController, tPlayer); }
 int varRangeSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSettingVariableRange(tController, tPlayer); }
 int varSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSettingVariable(tController, tPlayer, tPlayer); }
+int globalVarSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSettingGlobalVariable(tController, tPlayer); }
+int globalVarAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAddingGlobalVariable(tController, tPlayer); }
 int velAddHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleVelocityAddition(tController, tPlayer); }
 int velMulHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleVelocityMultiplication(tController, tPlayer); }
 int velSetHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleVelocitySetting(tController, tPlayer); }
@@ -5178,6 +5264,8 @@ static void setupStateControllerHandlers() {
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANDOM, (void*)varRandomHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANGE, (void*)varRangeSetHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE, (void*)varSetHandleFunction);
+	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_GLOBAL_VAR_SET, (void*)globalVarSetHandleFunction);
+	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_GLOBAL_VAR_ADD, (void*)globalVarAddHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_ADD_VELOCITY, (void*)velAddHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_MULTIPLY_VELOCITY, (void*)velMulHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STATE_CONTROLLER_TYPE_SET_VELOCITY, (void*)velSetHandleFunction);
@@ -5270,6 +5358,8 @@ void varAddParseFunction(DreamMugenStateController* tController, MugenDefScriptG
 void varRandomParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseVarRandomController(tController, tGroup); }
 void varRangeSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseVarRangeSetController(tController, tGroup); }
 void varSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseVarSetController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE); }
+void globalVarSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseVarSetController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_GLOBAL_VAR_SET); }
+void globalVarAddParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseVarSetController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_GLOBAL_VAR_ADD); }
 void velAddParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parse2DPhysicsController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_ADD_VELOCITY); }
 void velMulParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parse2DPhysicsController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_MULTIPLY_VELOCITY); }
 void velSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parse2DPhysicsController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_SET_VELOCITY); }
@@ -5365,6 +5455,8 @@ static void setupStateControllerParsers() {
 	string_map_push(&gVariableHandler.mStateControllerParsers, "varrangeset", (void*)varRangeSetParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "varset", (void*)varSetParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "veladd", (void*)velAddParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "globalvarset", (void*)globalVarSetParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "globalvarset", (void*)globalVarAddParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "velmul", (void*)velMulParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "velset", (void*)velSetParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "victoryquote", (void*)victoryQuoteParseFunction);
@@ -6083,6 +6175,8 @@ void charSetOpacityStoryParseFunction(DreamMugenStateController* tController, Mu
 void createHelperStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseCreateHelperStoryController(tController, tGroup); }
 void varSetStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryVarSetController(tController, tGroup, MUGEN_STORY_STATE_CONTROLLER_TYPE_VAR_SET); }
 void varAddStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryVarSetController(tController, tGroup, MUGEN_STORY_STATE_CONTROLLER_TYPE_VAR_ADD); }
+void globalVarSetStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryVarSetController(tController, tGroup, MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_SET); }
+void globalVarAddStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryVarSetController(tController, tGroup, MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_ADD); }
 
 static void setupStoryStateControllerParsers() {
 	gVariableHandler.mStateControllerParsers = new_string_map();
@@ -6123,6 +6217,8 @@ static void setupStoryStateControllerParsers() {
 	string_map_push(&gVariableHandler.mStateControllerParsers, "createhelper", (void*)createHelperStoryParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "varset", (void*)varSetStoryParseFunction);
 	string_map_push(&gVariableHandler.mStateControllerParsers, "varadd", (void*)varAddStoryParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "globalvarset", (void*)globalVarSetStoryParseFunction);
+	string_map_push(&gVariableHandler.mStateControllerParsers, "globalvaradd", (void*)globalVarAddStoryParseFunction);
 }
 
 static int getDolmexicaStoryIDFromAssignment(DreamMugenAssignment** tAssignment, StoryInstance* tInstance) {
@@ -6807,6 +6903,42 @@ static int handleSettingStoryVariable(DreamMugenStateController* tController, St
 	return 0;
 }
 
+static void handleSettingSingleGlobalStoryVariable(void* tCaller, void* tData) {
+	StoryVarSetHandlingCaller* caller = (StoryVarSetHandlingCaller*)tCaller;
+	StoryVarSetControllerEntry* e = (StoryVarSetControllerEntry*)tData;
+
+	int id = evaluateDreamAssignmentAndReturnAsInteger(&e->mID, (DreamPlayer*)caller->mPlayer);
+
+	if (e->mType == STORY_VAR_SET_TYPE_INTEGER) {
+		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, (DreamPlayer*)caller->mPlayer);
+		setGlobalVariable(id, val);
+	}
+	else if (e->mType == STORY_VAR_SET_TYPE_FLOAT) {
+		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mAssignment, (DreamPlayer*)caller->mPlayer);
+		setGlobalFloatVariable(id, val);
+	}
+	else if (e->mType == STORY_VAR_SET_TYPE_STRING) {
+		char* val = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mAssignment, (DreamPlayer*)caller->mPlayer);
+		setGlobalStringVariable(id, val);
+		freeMemory(val);
+	}
+	else {
+		logWarningFormat("Unrecognized story variable type %d. Ignoring.", e->mType);
+	}
+}
+
+static int handleSettingGlobalStoryVariable(DreamMugenStateController* tController, StoryInstance* tPlayer) {
+	if (!tPlayer) return 0;
+
+	StoryVarSetController* e = (StoryVarSetController*)tController->mData;
+	StoryVarSetHandlingCaller caller;
+	caller.mPlayer = tPlayer;
+	caller.mTarget = NULL;
+
+	vector_map(&e->mStoryVarSets, handleSettingSingleGlobalStoryVariable, &caller);
+
+	return 0;
+}
 
 static void handleAddingSingleStoryVariable(void* tCaller, void* tData) {
 	StoryVarSetHandlingCaller* caller = (StoryVarSetHandlingCaller*)tCaller;
@@ -6851,6 +6983,49 @@ static int handleAddingStoryVariable(DreamMugenStateController* tController, Sto
 	return 0;
 }
 
+static void handleAddingSingleGlobalStoryVariable(void* tCaller, void* tData) {
+	StoryVarSetHandlingCaller* caller = (StoryVarSetHandlingCaller*)tCaller;
+	StoryVarSetControllerEntry* e = (StoryVarSetControllerEntry*)tData;
+
+	int id = evaluateDreamAssignmentAndReturnAsInteger(&e->mID, (DreamPlayer*)caller->mPlayer);
+
+	if (e->mType == STORY_VAR_SET_TYPE_INTEGER) {
+		int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mAssignment, (DreamPlayer*)caller->mPlayer);
+		addGlobalVariable(id, val);
+	}
+	else if (e->mType == STORY_VAR_SET_TYPE_FLOAT) {
+		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mAssignment, (DreamPlayer*)caller->mPlayer);
+		addGlobalFloatVariable(id, val);
+	}
+	else if (e->mType == STORY_VAR_SET_TYPE_STRING) {
+		char* val = evaluateDreamAssignmentAndReturnAsAllocatedString(&e->mAssignment, (DreamPlayer*)caller->mPlayer);
+		if (val[0] == '$') {
+			int numVal = atoi(val + 1);
+			addGlobalStringVariable(id, numVal);
+		}
+		else {
+			addGlobalStringVariable(id, val);
+		}
+		freeMemory(val);
+	}
+	else {
+		logWarningFormat("Unrecognized story variable type %d. Ignoring.", e->mType);
+	}
+}
+
+static int handleAddingGlobalStoryVariable(DreamMugenStateController* tController, StoryInstance* tPlayer, StoryInstance* tTarget) {
+	if (!tPlayer) return 0;
+
+	StoryVarSetController* e = (StoryVarSetController*)tController->mData;
+	StoryVarSetHandlingCaller caller;
+	caller.mPlayer = tPlayer;
+	caller.mTarget = NULL;
+
+	vector_map(&e->mStoryVarSets, handleAddingSingleGlobalStoryVariable, &caller);
+
+	return 0;
+}
+
 int nullStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleNull(); }
 int createAnimationStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleCreateAnimationStoryController(tController, (StoryInstance*)tPlayer); }
 int removeAnimationStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleRemoveAnimationStoryController(tController, (StoryInstance*)tPlayer); }
@@ -6887,6 +7062,8 @@ int setCharacterOpacityStoryHandleFunction(DreamMugenStateController* tControlle
 int createHelperStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleCreateHelperStoryController(tController, (StoryInstance*)tPlayer); }
 int setVarStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSettingStoryVariable(tController, (StoryInstance*)tPlayer, (StoryInstance*)tPlayer); }
 int addVarStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAddingStoryVariable(tController, (StoryInstance*)tPlayer, (StoryInstance*)tPlayer); }
+int setGlobalVarStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSettingGlobalStoryVariable(tController, (StoryInstance*)tPlayer); }
+int addGlobalVarStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAddingGlobalStoryVariable(tController, (StoryInstance*)tPlayer, (StoryInstance*)tPlayer); }
 
 static void setupStoryStateControllerHandlers() {
 	gVariableHandler.mStateControllerHandlers = new_int_map();
@@ -6927,6 +7104,8 @@ static void setupStoryStateControllerHandlers() {
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_HELPER, (void*)createHelperStoryHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_VAR_SET, (void*)setVarStoryHandleFunction);
 	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_VAR_ADD, (void*)addVarStoryHandleFunction);
+	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_SET, (void*)setGlobalVarStoryHandleFunction);
+	int_map_push(&gVariableHandler.mStateControllerHandlers, MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_ADD, (void*)addGlobalVarStoryHandleFunction);
 
 	
 }

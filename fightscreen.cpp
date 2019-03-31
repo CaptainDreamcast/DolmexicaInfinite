@@ -133,7 +133,7 @@ static void loadFightScreen() {
 	playDreamStageMusic();
 	
 	setFightScreenGameSpeed();
-
+	
 	malloc_stats();
 
 	logFormat("assignments: %d\n", gDebugAssignmentAmount);
