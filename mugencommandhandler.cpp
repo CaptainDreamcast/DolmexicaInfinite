@@ -15,7 +15,7 @@
 using namespace std;
 
 typedef struct {
-	char mName[100];
+	string mName;
 	int mIsActive;
 	Duration mNow;
 	Duration mBufferTime;
@@ -26,7 +26,7 @@ typedef struct {
 } MugenCommandStates;
 
 typedef struct {
-	char mName[100];
+	string mName;
 	DreamMugenCommandInput* mInput;
 	int mStep;
 	Duration mNow;
@@ -40,7 +40,7 @@ typedef struct {
 typedef struct {
 	DreamMugenCommands* tCommands;
 	MugenCommandStates tStates;
-	StringMap mInternalStates;
+	map<string, InternalMugenCommandState> mInternalStates;
 
 	List mActiveCommands;
 
@@ -67,7 +67,7 @@ static void unloadSingleRegisteredCommand(void* tCaller, RegisteredMugenCommand&
 	RegisteredMugenCommand* e = &tData;
 	delete_list(&e->mActiveCommands);
 	stl_delete_map(e->tStates.mStates);
-	delete_string_map(&e->mInternalStates);
+	e->mInternalStates.clear();
 }
 
 static void unloadMugenCommandHandler(void* tData) {
@@ -81,13 +81,14 @@ static void addSingleMugenCommandState(RegisteredMugenCommand* tCaller, const st
 	RegisteredMugenCommand* s = (RegisteredMugenCommand*)tCaller;
 
 	MugenCommandState e;
-	strcpy(e.mName, tKey.data());
+	e.mName = tKey;
 	e.mIsActive = 0;
 	s->tStates.mStates[tKey] = e;
 	
-	InternalMugenCommandState* internalState = (InternalMugenCommandState*)allocMemory(sizeof(InternalMugenCommandState));
-	internalState->mIsBeingProcessed = 0;
-	string_map_push_owned(&s->mInternalStates, e.mName, internalState);
+	InternalMugenCommandState internalState;
+	internalState.mIsBeingProcessed = 0;
+	
+	s->mInternalStates[tKey] = internalState;
 }
 
 static void setupMugenCommandStates(RegisteredMugenCommand* e) {
@@ -101,7 +102,7 @@ int registerDreamMugenCommands(int tControllerID, DreamMugenCommands * tCommands
 	RegisteredMugenCommand e;
 	e.mActiveCommands = new_list();
 	e.tCommands = tCommands;
-	e.mInternalStates = new_string_map();
+	e.mInternalStates.clear();
 	e.mControllerID = tControllerID;
 	e.mIsFacingRight = 1;
 	setupMugenCommandStates(&e);
@@ -333,11 +334,11 @@ static int handleSingleCommandInputStepAndReturnIfActive(DreamMugenCommandInputS
 }
 
 static void removeActiveCommand(ActiveMugenCommand* tCommand, RegisteredMugenCommand* tRegisteredCommand) {
-	InternalMugenCommandState* state = (InternalMugenCommandState*)string_map_get(&tRegisteredCommand->mInternalStates, tCommand->mName);
+	InternalMugenCommandState* state = &tRegisteredCommand->mInternalStates[tCommand->mName];
 	state->mIsBeingProcessed = 0;
 }
 
-static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, const char* tName, Duration tBufferTime) {
+static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, string& tName, Duration tBufferTime) {
 	MugenCommandState* state = &tRegisteredCommand->tStates.mStates[tName];
 	state->mIsActive = 1;
 	state->mNow = 0;
@@ -415,7 +416,7 @@ static void addNewActiveMugenCommand(DreamMugenCommandInput* tInput, RegisteredM
 
 	ActiveMugenCommand* e = (ActiveMugenCommand*)allocMemory(sizeof(ActiveMugenCommand));
 	e->mInput = tInput;
-	strcpy(e->mName, tName);
+	e->mName = tName;
 	e->mNow = 0;
 	e->mStep = min(1, mIsStepOver);
 
@@ -445,7 +446,7 @@ static void updateSingleStaticMugenCommand(RegisteredMugenCommand* tCaller, cons
 	RegisteredMugenCommand* registeredCommand = (RegisteredMugenCommand*)tCaller;
 	DreamMugenCommand* command = &tData;
 	
-	InternalMugenCommandState* internalState = (InternalMugenCommandState*)string_map_get(&registeredCommand->mInternalStates, tKey.data());
+	InternalMugenCommandState* internalState = &registeredCommand->mInternalStates[tKey];
 	if (internalState->mIsBeingProcessed) return;
 
 	StaticMugenCommandInputCaller caller = {
