@@ -124,7 +124,7 @@ int isDreamCommandActive(int tID, const char * tCommandName)
 	return state->mIsActive;
 }
 
-static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, const char* tName, Duration tBufferTime);
+static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, const string& tName, Duration tBufferTime);
 
 void setDreamPlayerCommandActiveForAI(int tID, const char * tCommandName, Duration tBufferTime)
 {
@@ -338,7 +338,7 @@ static void removeActiveCommand(ActiveMugenCommand* tCommand, RegisteredMugenCom
 	state->mIsBeingProcessed = 0;
 }
 
-static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, string& tName, Duration tBufferTime) {
+static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, const string& tName, Duration tBufferTime) {
 	MugenCommandState* state = &tRegisteredCommand->tStates.mStates[tName];
 	state->mIsActive = 1;
 	state->mNow = 0;
