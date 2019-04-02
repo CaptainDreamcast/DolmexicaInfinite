@@ -42,7 +42,7 @@ typedef struct {
 	MugenCommandStates tStates;
 	map<string, InternalMugenCommandState> mInternalStates;
 
-	List mActiveCommands;
+	list<ActiveMugenCommand> mActiveCommands;
 
 	int mControllerID;
 	int mIsFacingRight;
@@ -65,7 +65,7 @@ static void loadMugenCommandHandler(void* tData) {
 static void unloadSingleRegisteredCommand(void* tCaller, RegisteredMugenCommand& tData) {
 	(void)tCaller;
 	RegisteredMugenCommand* e = &tData;
-	delete_list(&e->mActiveCommands);
+	e->mActiveCommands.clear();
 	stl_delete_map(e->tStates.mStates);
 	e->mInternalStates.clear();
 }
@@ -100,7 +100,7 @@ int registerDreamMugenCommands(int tControllerID, DreamMugenCommands * tCommands
 {
 	
 	RegisteredMugenCommand e;
-	e.mActiveCommands = new_list();
+	e.mActiveCommands.clear();
 	e.tCommands = tCommands;
 	e.mInternalStates.clear();
 	e.mControllerID = tControllerID;
@@ -366,9 +366,9 @@ static int isSameStepAsBefore(ActiveMugenCommand* tCommand) {
 	return haveSameTarget;
 }
 
-static int updateSingleActiveMugenCommand(void* tCaller, void* tData) {
+static int updateSingleActiveMugenCommand(RegisteredMugenCommand* tCaller, ActiveMugenCommand& tData) {
 	RegisteredMugenCommand* registeredCommand = (RegisteredMugenCommand*)tCaller;
-	ActiveMugenCommand* command = (ActiveMugenCommand*)tData;
+	ActiveMugenCommand* command = &tData;
 
 	if (handleDurationAndCheckIfOver(&command->mNow, command->mInput->mTime)) {
 		removeActiveCommand(command, registeredCommand);
@@ -399,7 +399,7 @@ static int updateSingleActiveMugenCommand(void* tCaller, void* tData) {
 }
 
 static void updateActiveMugenCommands(RegisteredMugenCommand* tCommand) {
-	list_remove_predicate(&tCommand->mActiveCommands, updateSingleActiveMugenCommand, tCommand);
+	stl_list_remove_predicate(tCommand->mActiveCommands, updateSingleActiveMugenCommand, tCommand);
 }
 
 typedef struct {
@@ -407,25 +407,24 @@ typedef struct {
 	const string& mName;
 } StaticMugenCommandInputCaller;
 
-static void addNewActiveMugenCommand(DreamMugenCommandInput* tInput, RegisteredMugenCommand* tRegisteredCommand, const char* tName, int mIsStepOver) {
+static void addNewActiveMugenCommand(DreamMugenCommandInput* tInput, RegisteredMugenCommand* tRegisteredCommand, const string& tName, int mIsStepOver) {
 	
 	if (vector_size(&tInput->mInputSteps) == 1) {
 		setCommandStateActive(tRegisteredCommand, tName, tInput->mBufferTime);
 		return;
 	}
 
-	ActiveMugenCommand* e = (ActiveMugenCommand*)allocMemory(sizeof(ActiveMugenCommand));
-	e->mInput = tInput;
-	e->mName = tName;
-	e->mNow = 0;
-	e->mStep = min(1, mIsStepOver);
+	ActiveMugenCommand e;
+	e.mInput = tInput;
+	e.mName = tName;
+	e.mNow = 0;
+	e.mStep = min(1, mIsStepOver);
 
 	int isAlreadyOver = 0;
-	if (!isSameStepAsBefore(e)) {
+	if (!isSameStepAsBefore(&e)) {
 		isAlreadyOver = updateSingleActiveMugenCommand(tRegisteredCommand, e);
 	}
-	if(!isAlreadyOver) list_push_back_owned(&tRegisteredCommand->mActiveCommands, e);
-	else freeMemory(e);
+	if(!isAlreadyOver) tRegisteredCommand->mActiveCommands.push_back(e);
 }
 
 static void updateSingleStaticMugenCommandInput(void* tCaller, void* tData) {
@@ -439,7 +438,7 @@ static void updateSingleStaticMugenCommandInput(void* tCaller, void* tData) {
 
 	if (!mIsActive) return;
 
-	addNewActiveMugenCommand(input, caller->mRegisteredCommand, caller->mName.data(), mIsStepOver);
+	addNewActiveMugenCommand(input, caller->mRegisteredCommand, caller->mName, mIsStepOver);
 }
 
 static void updateSingleStaticMugenCommand(RegisteredMugenCommand* tCaller, const string& tKey, DreamMugenCommand& tData) {
