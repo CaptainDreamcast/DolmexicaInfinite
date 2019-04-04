@@ -101,6 +101,7 @@ static void setPlayerExternalDependencies(DreamPlayer* tPlayer) {
 	Position p = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(tPlayer));
 	p.z = PLAYER_Z;
 	tPlayer->mAnimationID = addMugenAnimation(getMugenAnimation(&tPlayer->mHeader->mFiles.mAnimations, 0), gPlayerDefinition.mIsLoading ? NULL : &tPlayer->mHeader->mFiles.mSprites, p);
+	setMugenAnimationDrawScale(tPlayer->mAnimationID, tPlayer->mHeader->mFiles.mConstants.mSizeData.mScale);
 	setMugenAnimationBasePosition(tPlayer->mAnimationID, getHandledPhysicsPositionReference(tPlayer->mPhysicsID));
 	setMugenAnimationCameraPositionReference(tPlayer->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationAttackCollisionActive(tPlayer->mAnimationID, getDreamPlayerAttackCollisionList(tPlayer), NULL, NULL, getPlayerHitDataReference(tPlayer));
@@ -320,7 +321,7 @@ static void loadPlayerShadow(DreamPlayer* p) {
 	p->mShadow.mAnimationID = addMugenAnimation(getMugenAnimation(&p->mHeader->mFiles.mAnimations, getMugenAnimationAnimationNumber(p->mAnimationID)), gPlayerDefinition.mIsLoading ? NULL : &p->mHeader->mFiles.mSprites, pos);
 	setMugenAnimationBasePosition(p->mShadow.mAnimationID, &p->mShadow.mShadowPosition);
 	setMugenAnimationCameraPositionReference(p->mShadow.mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
-	setMugenAnimationDrawScale(p->mShadow.mAnimationID, makePosition(1, -getDreamStageShadowScaleY(), 1));
+	setMugenAnimationDrawScale(p->mShadow.mAnimationID, makePosition(1, -getDreamStageShadowScaleY(), 1) * p->mHeader->mFiles.mConstants.mSizeData.mScale);
 	Vector3D color = getDreamStageShadowColor();
 	(void)color; // TODO: proper shadow color
 	setMugenAnimationColor(p->mShadow.mAnimationID, 0, 0, 0); // TODO: proper shadow color
@@ -336,7 +337,7 @@ static void loadPlayerReflection(DreamPlayer* p) {
 
 	setMugenAnimationBasePosition(p->mReflection.mAnimationID, &p->mReflection.mPosition);
 	setMugenAnimationCameraPositionReference(p->mReflection.mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
-	setMugenAnimationDrawScale(p->mReflection.mAnimationID, makePosition(1, -1, 1));
+	setMugenAnimationDrawScale(p->mReflection.mAnimationID, makePosition(1, -1, 1) * p->mHeader->mFiles.mConstants.mSizeData.mScale);
 	setMugenAnimationBlendType(p->mReflection.mAnimationID, BLEND_TYPE_ADDITION);
 	setMugenAnimationTransparency(p->mReflection.mAnimationID, getDreamStageReflectionTransparency());
 	setMugenAnimationFaceDirection(p->mReflection.mAnimationID, getMugenAnimationIsFacingRight(p->mAnimationID));
@@ -3831,7 +3832,7 @@ int getPlayerControlTime(DreamPlayer * p)
 
 void setPlayerDrawScale(DreamPlayer * p, Vector3D tScale)
 {
-	setMugenAnimationDrawScale(p->mAnimationID, tScale); // TODO: one frame only
+	setMugenAnimationDrawScale(p->mAnimationID, tScale * p->mHeader->mFiles.mConstants.mSizeData.mScale); // TODO: one frame only
 }
 
 void setPlayerDrawAngle(DreamPlayer * p, double tAngle)
