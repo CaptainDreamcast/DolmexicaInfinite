@@ -58,7 +58,7 @@ static struct {
 	uint32_t mPreviousHeldMask[2];
 } gMugenCommandHandler;
 
-#define MAXIMUM_REGISTERED_COMMAND_AMOUNT 2
+#define MAXIMUM_REGISTERED_COMMAND_AMOUNT 2 // TODO: set dynamically from fightscreen or playerdefinition
 
 
 static void loadMugenCommandHandler(void* tData) {
