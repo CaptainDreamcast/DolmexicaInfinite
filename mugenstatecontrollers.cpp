@@ -76,14 +76,14 @@ static int parseTriggerAndReturnIfFound(char* tName, DreamMugenAssignment** tRoo
 	return 1;
 }
 
-int parseNumberedTriggerAndReturnIfFound(int i, DreamMugenAssignment** tRoot, MugenDefScriptGroup* tGroup) {
+static int parseNumberedTriggerAndReturnIfFound(int i, DreamMugenAssignment** tRoot, MugenDefScriptGroup* tGroup) {
 	char name[100];
 	sprintf(name, "trigger%d", i);
 
 	return parseTriggerAndReturnIfFound(name, tRoot, tGroup);
 }
 
-void parseStateControllerTriggers(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
+static void parseStateControllerTriggers(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	DreamMugenAssignment* allRoot = NULL;
 	parseTriggerAndReturnIfFound("triggerall", &allRoot, tGroup);
 

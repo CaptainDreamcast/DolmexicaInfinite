@@ -115,7 +115,15 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	char name[100];
 	getPathToFile(path, tPath);
 
+	getMugenDefStringOrDefault(file, tScript, "Files", "cmd", "");
+	assert(strcmp("", file));
+	sprintf(scriptPath, "%s%s", path, file);
+	tPlayer->mHeader->mFiles.mCommands = loadDreamMugenCommandFile(scriptPath);
+	malloc_stats();
+	tPlayer->mCommandID = registerDreamMugenCommands(tPlayer->mControllerID, &tPlayer->mHeader->mFiles.mCommands);
+	malloc_stats();
 
+	setDreamAssignmentCommandLookupID(tPlayer->mCommandID);
 	getMugenDefStringOrDefault(file, tScript, "Files", "cns", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
@@ -147,10 +155,9 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	getMugenDefStringOrDefault(file, tScript, "Files", "cmd", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
-	tPlayer->mHeader->mFiles.mCommands = loadDreamMugenCommandFile(scriptPath);
 	loadDreamMugenStateDefinitionsFromFile(&tPlayer->mHeader->mFiles.mConstants.mStates, scriptPath);
-	malloc_stats();
 
+	resetDreamAssignmentCommandLookupID();
 
 	getMugenDefStringOrDefault(file, tScript, "Files", "anim", "");
 	assert(strcmp("", file));
@@ -184,8 +191,6 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	malloc_stats();
 
 	setPlayerExternalDependencies(tPlayer);
-	tPlayer->mCommandID = registerDreamMugenCommands(tPlayer->mControllerID, &tPlayer->mHeader->mFiles.mCommands);
-	malloc_stats();
 
 	if (getPlayerAILevel(tPlayer)) {
 		setDreamAIActive(tPlayer);
@@ -2426,6 +2431,11 @@ void setPlayerPositionBasedOnScreenCenterX(DreamPlayer* p, double x, int tCoordi
 int isPlayerCommandActive(DreamPlayer* p, const char * tCommandName)
 {
 	return isDreamCommandActive(p->mCommandID, tCommandName);
+}
+
+int isPlayerCommandActiveWithLookup(DreamPlayer * p, int tCommandLookupIndex)
+{
+	return isDreamCommandActiveByLookupIndex(p->mCommandID, tCommandLookupIndex);
 }
 
 

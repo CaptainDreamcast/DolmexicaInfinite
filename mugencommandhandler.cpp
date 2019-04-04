@@ -19,10 +19,12 @@ typedef struct {
 	int mIsActive;
 	Duration mNow;
 	Duration mBufferTime;
+	int mLookupID;
 } MugenCommandState;
 
 typedef struct {
 	map<string, MugenCommandState> mStates;
+	vector<MugenCommandState*> mStateLookup;
 } MugenCommandStates;
 
 typedef struct {
@@ -50,14 +52,19 @@ typedef struct {
 
 static struct {
 	vector<RegisteredMugenCommand> mRegisteredCommands;
+	int mCommandIDCounter;
 
 	uint32_t mHeldMask[2];
 	uint32_t mPreviousHeldMask[2];
 } gMugenCommandHandler;
 
+#define MAXIMUM_REGISTERED_COMMAND_AMOUNT 2
+
+
 static void loadMugenCommandHandler(void* tData) {
 	(void)tData;
-	stl_new_vector(gMugenCommandHandler.mRegisteredCommands);
+	gMugenCommandHandler.mRegisteredCommands = vector<RegisteredMugenCommand>(MAXIMUM_REGISTERED_COMMAND_AMOUNT);
+	gMugenCommandHandler.mCommandIDCounter = 0;
 }
 
 
@@ -67,6 +74,7 @@ static void unloadSingleRegisteredCommand(void* tCaller, RegisteredMugenCommand&
 	RegisteredMugenCommand* e = &tData;
 	e->mActiveCommands.clear();
 	stl_delete_map(e->tStates.mStates);
+	e->tStates.mStateLookup.clear();
 	e->mInternalStates.clear();
 }
 
@@ -83,8 +91,10 @@ static void addSingleMugenCommandState(RegisteredMugenCommand* tCaller, const st
 	MugenCommandState e;
 	e.mName = tKey;
 	e.mIsActive = 0;
+	e.mLookupID = s->tStates.mStateLookup.size();
 	s->tStates.mStates[tKey] = e;
-	
+	s->tStates.mStateLookup.push_back(&s->tStates.mStates[tKey]);
+
 	InternalMugenCommandState internalState;
 	internalState.mIsBeingProcessed = 0;
 	
@@ -93,7 +103,14 @@ static void addSingleMugenCommandState(RegisteredMugenCommand* tCaller, const st
 
 static void setupMugenCommandStates(RegisteredMugenCommand* e) {
 	stl_new_map(e->tStates.mStates);
+	e->tStates.mStateLookup.clear();
 	stl_string_map_map(e->tCommands->mCommands, addSingleMugenCommandState, e);
+}
+
+static int getNewRegisteredCommandIndex() {
+	int ret = gMugenCommandHandler.mCommandIDCounter;
+	gMugenCommandHandler.mCommandIDCounter = (gMugenCommandHandler.mCommandIDCounter + 1) % MAXIMUM_REGISTERED_COMMAND_AMOUNT;
+	return ret;
 }
 
 int registerDreamMugenCommands(int tControllerID, DreamMugenCommands * tCommands)
@@ -105,10 +122,12 @@ int registerDreamMugenCommands(int tControllerID, DreamMugenCommands * tCommands
 	e.mInternalStates.clear();
 	e.mControllerID = tControllerID;
 	e.mIsFacingRight = 1;
-	setupMugenCommandStates(&e);
 
-	gMugenCommandHandler.mRegisteredCommands.push_back(e);
-	return gMugenCommandHandler.mRegisteredCommands.size() - 1;
+	int returnIndex = getNewRegisteredCommandIndex();
+	gMugenCommandHandler.mRegisteredCommands[returnIndex] = e;
+	setupMugenCommandStates(&gMugenCommandHandler.mRegisteredCommands[returnIndex]);
+
+	return returnIndex;
 }
 
 int isDreamCommandActive(int tID, const char * tCommandName)
@@ -124,7 +143,31 @@ int isDreamCommandActive(int tID, const char * tCommandName)
 	return state->mIsActive;
 }
 
+int isDreamCommandActiveByLookupIndex(int tID, int tLookupIndex)
+{
+	RegisteredMugenCommand* e = &gMugenCommandHandler.mRegisteredCommands[tID];
+	if (tLookupIndex < 0 || tLookupIndex >= (int)e->tStates.mStateLookup.size()) {
+		logWarningFormat("Querying nonexistant command lookup %d.", tLookupIndex);
+		return 0;
+	}
+	MugenCommandState* state = e->tStates.mStateLookup[tLookupIndex];
+
+	return state->mIsActive;
+}
+
 static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, const string& tName, Duration tBufferTime);
+
+int isDreamCommandForLookup(int tID, const char * tCommandName, int * oLookupIndex)
+{
+	RegisteredMugenCommand* e = &gMugenCommandHandler.mRegisteredCommands[tID];
+	string key(tCommandName);
+	if (!stl_map_contains(e->tStates.mStates, key)) {
+		return 0;
+	}
+	MugenCommandState* state = &e->tStates.mStates[key];
+	*oLookupIndex = state->mLookupID;
+	return 1;
+}
 
 void setDreamPlayerCommandActiveForAI(int tID, const char * tCommandName, Duration tBufferTime)
 {

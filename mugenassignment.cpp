@@ -14,6 +14,7 @@
 #include "stage.h"
 #include "playerhitdata.h"
 #include "gamelogic.h"
+#include "mugencommandhandler.h"
 
 using namespace std;
 
@@ -22,6 +23,8 @@ int gDebugAssignmentAmount;
 static struct {
 	MemoryStack* mMemoryStack;
 
+	int mHasCommandHandlerEntryForLookup;
+	int mCommandHandlerID;
 } gData;
 
 void setupDreamAssignmentReader(MemoryStack* tMemoryStack) {
@@ -31,6 +34,17 @@ void setupDreamAssignmentReader(MemoryStack* tMemoryStack) {
 void shutdownDreamAssignmentReader()
 {
 	gData.mMemoryStack = NULL;
+}
+
+void setDreamAssignmentCommandLookupID(int tID)
+{
+	gData.mCommandHandlerID = tID;
+	gData.mHasCommandHandlerEntryForLookup = 1;
+}
+
+void resetDreamAssignmentCommandLookupID()
+{
+	gData.mHasCommandHandlerEntryForLookup = 0;
 }
 
 static void* allocMemoryOnMemoryStackOrMemory(uint32_t tSize) {
@@ -702,6 +716,14 @@ static int isStringConstant(char* tText) {
 }
 
 static DreamMugenAssignment* parseStringConstantFromString(char* tText) {
+	if (gData.mHasCommandHandlerEntryForLookup) {
+		string potentialCommand(tText + 1, strlen(tText + 1) - 1);
+		int potentialCommandIndex;
+		if (isDreamCommandForLookup(gData.mCommandHandlerID, potentialCommand.data(), &potentialCommandIndex)) {
+			return makeDreamNumberMugenAssignment(potentialCommandIndex);
+		}
+	}
+
 	DreamMugenStringAssignment* s = (DreamMugenStringAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenStringAssignment));
 	gDebugAssignmentAmount++;
 	s->mValue = (char*)allocMemoryOnMemoryStackOrMemory(strlen(tText + 1) + 10);

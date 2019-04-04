@@ -917,11 +917,10 @@ static int tryEvaluateVariableComparison(DreamMugenRawVariableAssignment* tVaria
 	int hasReturn = 0;
 	if(!strcmp("command", tVariableAssignment->mName)) {
 		hasReturn = 1;
-		if(b->mType != MUGEN_ASSIGNMENT_RETURN_TYPE_STRING) {
+		if(b->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_BOTTOM) {
 			*oRet = makeBooleanAssignmentReturn(0);
 		} else {
-			char* comp = getStringAssignmentReturnValue(b);
-			*oRet = makeBooleanAssignmentReturn(isPlayerCommandActive(tPlayer, comp));
+			*oRet = makeBooleanAssignmentReturn(isPlayerCommandActiveWithLookup(tPlayer, convertAssignmentReturnToNumber(b)));
 		}	
 		*tIsStatic = 0;
 	}

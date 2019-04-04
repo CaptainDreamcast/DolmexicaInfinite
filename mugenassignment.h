@@ -118,6 +118,8 @@ typedef struct {
 
 void setupDreamAssignmentReader(MemoryStack* tMemoryStack);
 void shutdownDreamAssignmentReader();
+void setDreamAssignmentCommandLookupID(int tID);
+void resetDreamAssignmentCommandLookupID();
 
 DreamMugenAssignment* makeDreamTrueMugenAssignment();
 
