@@ -273,7 +273,8 @@ static void handleMugenStateDef(DreamMugenStates* tStates, MugenDefScriptGroup* 
 static int isMugenStateController(const char* tName) {
 	char firstW[100];
 	sscanf(tName, "%s", firstW);
-	return !strcmp("State", firstW) || !strcmp("state", firstW);
+	turnStringLowercase(firstW);
+	return !strcmp("state", firstW);
 }
 
 static void handleMugenStateControllerInDefGroup(DreamMugenStates* tStates, MugenDefScriptGroup* tGroup) {

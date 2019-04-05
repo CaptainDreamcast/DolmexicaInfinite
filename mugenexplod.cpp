@@ -471,8 +471,10 @@ static void updateExplodBindTime(Explod* e) {
 	if (!isPlayer(e->mPlayer)) {
 		return;
 	}
-	Position* pos = getHandledPhysicsPositionReference(e->mPhysicsID);
-	*pos = getFinalExplodPositionFromPositionType(e->mPositionType, e->mPosition, e->mPlayer);
+
+	auto pos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(e->mPlayer)) + getFinalExplodPositionFromPositionType(e->mPositionType, e->mPosition, e->mPlayer);
+	pos.z = PLAYER_Z + 1 * e->mSpritePriority;
+	setMugenAnimationPosition(e->mAnimationID, pos);
 
 	e->mBindTime--;
 }
