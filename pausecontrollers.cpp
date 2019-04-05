@@ -8,6 +8,7 @@
 #include "playerdefinition.h"
 #include "fightui.h"
 #include "mugenstagehandler.h"
+#include "stage.h"
 
 #define SUPERPAUSE_Z 52
 
@@ -136,7 +137,7 @@ void setDreamSuperPausePosition(DreamPlayer* tPlayer, double tX, double tY)
 	int isPlayerFacingRight = getPlayerIsFacingRight(tPlayer);
 	if (!isPlayerFacingRight) tX *= -1;
 
-	Position mPlayerPosition = getPlayerPosition(tPlayer, getPlayerCoordinateP(tPlayer));
+	Position mPlayerPosition = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(tPlayer)) + getPlayerPosition(tPlayer, getPlayerCoordinateP(tPlayer));
 	e->mAnimationReferencePosition = vecAdd(makePosition(tX, tY, 0), mPlayerPosition);
 	e->mAnimationReferencePosition.z = SUPERPAUSE_Z; // TODO: better
 }
