@@ -5626,20 +5626,6 @@ static void parseCreateAnimationStoryController(DreamMugenStateController* tCont
 
 typedef struct {
 	DreamMugenAssignment* mID;
-} RemoveAnimationStoryController;
-
-static void parseRemoveAnimationStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	RemoveAnimationStoryController* e = (RemoveAnimationStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(RemoveAnimationStoryController));
-
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
-
-	tController->mType = MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_ANIMATION;
-	tController->mData = e;
-}
-
-
-typedef struct {
-	DreamMugenAssignment* mID;
 	DreamMugenAssignment* mAnimation;
 
 	int mHasTarget;
@@ -6083,7 +6069,7 @@ static void parseStoryTarget2DPhysicsController(DreamMugenStateController* tCont
 
 void nullStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseNullController(tController, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_NULL); }
 void createAnimationStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseCreateAnimationStoryController(tController, tGroup); }
-void removeAnimationStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseRemoveAnimationStoryController(tController, tGroup); }
+void removeAnimationStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseRemoveElementStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_ANIMATION); }
 void changeAnimationStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseChangeAnimationStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_ANIMATION); }
 void createTextStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseCreateTextStoryController(tController, tGroup); }
 void removeTextStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseRemoveElementStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_TEXT); }
@@ -6114,7 +6100,10 @@ void charSetScaleStoryParseFunction(DreamMugenStateController* tController, Muge
 void charSetFaceDirectionStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationSetFaceDirectionStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_FACEDIRECTION); }
 void charSetColorStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationSetColorStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_COLOR); }
 void charSetOpacityStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationSetOpacityStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_OPACITY); }
+void charSetAngleStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationAngleStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_ANGLE); }
+void charAddAngleStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationAngleStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_ADD_ANGLE); }
 void createHelperStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseCreateHelperStoryController(tController, tGroup); }
+void removeHelperStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseRemoveElementStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_HELPER); }
 void varSetStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryVarSetController(tController, tGroup, MUGEN_STORY_STATE_CONTROLLER_TYPE_VAR_SET); }
 void varAddStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryVarSetController(tController, tGroup, MUGEN_STORY_STATE_CONTROLLER_TYPE_VAR_ADD); }
 void globalVarSetStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryVarSetController(tController, tGroup, MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_SET); }
@@ -6156,7 +6145,10 @@ static void setupStoryStateControllerParsers() {
 	gMugenStateControllerVariableHandler.mStateControllerParsers["charsetfacing"] = charSetFaceDirectionStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["charsetcolor"] = charSetColorStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["charsetopacity"] = charSetOpacityStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["charsetangle"] = charSetAngleStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["charaddangle"] = charAddAngleStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["createhelper"] = createHelperStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["removehelper"] = removeHelperStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["varset"] = varSetStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["varadd"] = varAddStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["globalvarset"] = globalVarSetStoryParseFunction;
@@ -6195,7 +6187,7 @@ static int handleCreateAnimationStoryController(DreamMugenStateController* tCont
 }
 
 static int handleRemoveAnimationStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
-	RemoveAnimationStoryController* e = (RemoveAnimationStoryController*)tController->mData;
+	RemoveElementStoryController* e = (RemoveElementStoryController*)tController->mData;
 
 	int id;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
@@ -6597,6 +6589,19 @@ static int handleChangeCharacterAnimStoryController(DreamMugenStateController* t
 	return 0;
 }
 
+static StoryInstance* getTargetInstanceFromAssignment(DreamMugenAssignment** tAssignment, StoryInstance* tInstance) {
+	string target;
+	evaluateDreamAssignmentAndReturnAsString(target, tAssignment, (DreamPlayer*)tInstance);
+	int targetNumber;
+	if (target == "root") {
+		targetNumber = -1;
+	}
+	else {
+		targetNumber = atoi(target.data());
+	}
+	return getDolmexicaStoryHelperInstance(targetNumber);
+}
+
 static int handleSetCharacterPosStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
 	StoryTarget2DPhysicsController* e = (StoryTarget2DPhysicsController*)tController->mData;
 
@@ -6605,9 +6610,7 @@ static int handleSetCharacterPosStoryController(DreamMugenStateController* tCont
 
 	StoryInstance* targetInstance = tInstance;
 	if (e->mHasTarget) {
-		int target;
-		getSingleIntegerValueOrDefault(&e->mTarget, (DreamPlayer*)tInstance, &target, -1);
-		targetInstance = getDolmexicaStoryHelperInstance(target);
+		targetInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
 	}
 
 	if (e->mIsSettingX) {
@@ -6630,9 +6633,7 @@ static int handleAddCharacterPosStoryController(DreamMugenStateController* tCont
 
 	StoryInstance* targetInstance = tInstance;
 	if (e->mHasTarget) {
-		int target;
-		getSingleIntegerValueOrDefault(&e->mTarget, (DreamPlayer*)tInstance, &target, -1);
-		targetInstance = getDolmexicaStoryHelperInstance(target);
+		targetInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
 	}
 
 	if (e->mIsSettingX) {
@@ -6655,9 +6656,7 @@ static int handleSetCharacterScaleStoryController(DreamMugenStateController* tCo
 
 	StoryInstance* targetInstance = tInstance;
 	if (e->mHasTarget) {
-		int target;
-		getSingleIntegerValueOrDefault(&e->mTarget, (DreamPlayer*)tInstance, &target, -1);
-		targetInstance = getDolmexicaStoryHelperInstance(target);
+		targetInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
 	}
 
 	if (e->mIsSettingX) {
@@ -6683,9 +6682,7 @@ static int handleSetCharacterFaceDirectionStoryController(DreamMugenStateControl
 
 	StoryInstance* targetInstance = tInstance;
 	if (e->mHasTarget) {
-		int target;
-		getSingleIntegerValueOrDefault(&e->mTarget, (DreamPlayer*)tInstance, &target, -1);
-		targetInstance = getDolmexicaStoryHelperInstance(target);
+		targetInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
 	}
 
 	setDolmexicaStoryCharacterIsFacingRight(targetInstance, id, faceDirection == 1);
@@ -6719,6 +6716,42 @@ static int handleSetCharacterOpacityStoryController(DreamMugenStateController* t
 	return 0;
 }
 
+static int handleSetCharacterAngleStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
+	AnimationSetFaceDirectionStoryController* e = (AnimationSetFaceDirectionStoryController*)tController->mData;
+
+	int id;
+	double angle;
+
+	StoryInstance* targetInstance = tInstance;
+	if (e->mHasTarget) {
+		targetInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
+	}
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
+	getSingleFloatValueOrDefault(&e->mFacing, (DreamPlayer*)tInstance, &angle, 0);
+
+	setDolmexicaStoryCharacterAngle(targetInstance, id, angle);
+
+	return 0;
+}
+
+static int handleAddCharacterAngleStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
+	AnimationSetFaceDirectionStoryController* e = (AnimationSetFaceDirectionStoryController*)tController->mData;
+
+	int id;
+	double angle;
+
+	StoryInstance* targetInstance = tInstance;
+	if (e->mHasTarget) {
+		targetInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
+	}
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
+	getSingleFloatValueOrDefault(&e->mFacing, (DreamPlayer*)tInstance, &angle, 0);
+
+	addDolmexicaStoryCharacterAngle(targetInstance, id, angle);
+
+	return 0;
+}
+
 static int handleCreateHelperStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
 	CreateHelperStoryController* e = (CreateHelperStoryController*)tController->mData;
 
@@ -6727,6 +6760,17 @@ static int handleCreateHelperStoryController(DreamMugenStateController* tControl
 	getSingleIntegerValueOrDefault(&e->mState, (DreamPlayer*)tInstance, &state, 0);
 
 	addDolmexicaStoryHelper(id, state);
+
+	return 0;
+}
+
+static int handleRemoveHelperStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
+	CreateHelperStoryController* e = (CreateHelperStoryController*)tController->mData;
+
+	int id;
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
+
+	removeDolmexicaStoryHelper(id);
 
 	return 0;
 }
@@ -6998,7 +7042,10 @@ int setCharacterScaleStoryHandleFunction(DreamMugenStateController* tController,
 int setCharacterFaceDirectionStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSetCharacterFaceDirectionStoryController(tController, (StoryInstance*)tPlayer); }
 int setCharacterColorStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSetCharacterColorStoryController(tController, (StoryInstance*)tPlayer); }
 int setCharacterOpacityStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSetCharacterOpacityStoryController(tController, (StoryInstance*)tPlayer); }
+int setCharacterAngleStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSetCharacterAngleStoryController(tController, (StoryInstance*)tPlayer); }
+int addCharacterAngleStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAddCharacterAngleStoryController(tController, (StoryInstance*)tPlayer); }
 int createHelperStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleCreateHelperStoryController(tController, (StoryInstance*)tPlayer); }
+int removeHelperStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleRemoveHelperStoryController(tController, (StoryInstance*)tPlayer); }
 int setVarStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSettingStoryVariable(tController, (StoryInstance*)tPlayer, (StoryInstance*)tPlayer); }
 int addVarStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAddingStoryVariable(tController, (StoryInstance*)tPlayer, (StoryInstance*)tPlayer); }
 int setGlobalVarStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSettingGlobalStoryVariable(tController, (StoryInstance*)tPlayer); }
@@ -7040,7 +7087,10 @@ static void setupStoryStateControllerHandlers() {
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_FACEDIRECTION] = setCharacterFaceDirectionStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_COLOR] = setCharacterColorStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_OPACITY] = setCharacterOpacityStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_SET_ANGLE] = setCharacterAngleStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHARACTER_ADD_ANGLE] = addCharacterAngleStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_HELPER] = createHelperStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_HELPER] = removeHelperStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_VAR_SET] = setVarStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_VAR_ADD] = addVarStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_SET] = setGlobalVarStoryHandleFunction;

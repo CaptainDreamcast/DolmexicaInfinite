@@ -52,7 +52,7 @@ typedef struct {
 
 static struct {
 	vector<RegisteredMugenCommand> mRegisteredCommands;
-	int mCommandIDCounter;
+	int mRegisteredCommandAmount;
 
 	uint32_t mHeldMask[2];
 	uint32_t mPreviousHeldMask[2];
@@ -64,7 +64,7 @@ static struct {
 static void loadMugenCommandHandler(void* tData) {
 	(void)tData;
 	gMugenCommandHandler.mRegisteredCommands = vector<RegisteredMugenCommand>(MAXIMUM_REGISTERED_COMMAND_AMOUNT);
-	gMugenCommandHandler.mCommandIDCounter = 0;
+	gMugenCommandHandler.mRegisteredCommandAmount = 0;
 }
 
 
@@ -108,8 +108,8 @@ static void setupMugenCommandStates(RegisteredMugenCommand* e) {
 }
 
 static int getNewRegisteredCommandIndex() {
-	int ret = gMugenCommandHandler.mCommandIDCounter;
-	gMugenCommandHandler.mCommandIDCounter = (gMugenCommandHandler.mCommandIDCounter + 1) % MAXIMUM_REGISTERED_COMMAND_AMOUNT;
+	int ret = gMugenCommandHandler.mRegisteredCommandAmount;
+	gMugenCommandHandler.mRegisteredCommandAmount = (gMugenCommandHandler.mRegisteredCommandAmount + 1) % MAXIMUM_REGISTERED_COMMAND_AMOUNT;
 	return ret;
 }
 
@@ -549,8 +549,7 @@ static void updateInputMasks() {
 	}
 }
 
-static void updateSingleRegisteredCommand(void* tCaller, RegisteredMugenCommand& tData) {
-	(void)tCaller;
+static void updateSingleRegisteredCommand(RegisteredMugenCommand& tData) {
 	RegisteredMugenCommand* command = &tData;
 
 	updateCommandStates(command);
@@ -562,7 +561,9 @@ static void updateMugenCommandHandler(void* tData) {
 	(void)tData;
 	updateInputMasks();
 
-	stl_vector_map(gMugenCommandHandler.mRegisteredCommands, updateSingleRegisteredCommand);
+	for (int i = 0; i < gMugenCommandHandler.mRegisteredCommandAmount; i++) {
+		updateSingleRegisteredCommand(gMugenCommandHandler.mRegisteredCommands[i]);
+	}
 }
 
 ActorBlueprint getDreamMugenCommandHandler() {

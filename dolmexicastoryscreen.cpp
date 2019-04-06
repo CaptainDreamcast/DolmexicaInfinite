@@ -96,6 +96,12 @@ static void initStoryInstance(StoryInstance& e){
 	e.mTextNames.clear();
 }
 
+static void unloadStoryInstance(StoryInstance& e) {
+	removeDreamRegisteredStateMachine(e.mStateMachineID);
+	// TODO: unload texts, animations and characters
+	delete_int_map(&e.mStoryTexts);
+}
+
 static void loadStoryScreen() {
 	setStateMachineHandlerToStory();
 
@@ -808,6 +814,10 @@ int getDolmexicaStoryAnimationTimeLeft(StoryInstance* tInstance, int tID)
 	return getDolmexicaStoryAnimationTimeLeftInternal(e);
 }
 
+static double getDolmexicaStoryAnimationPositionXInternal(StoryAnimation& e) {
+	return getMugenAnimationPosition(e.mAnimationID).x;
+}
+
 double getDolmexicaStoryAnimationPositionX(StoryInstance* tInstance, int tID)
 {
 	if (!stl_map_contains(tInstance->mStoryAnimations, tID)) {
@@ -815,7 +825,7 @@ double getDolmexicaStoryAnimationPositionX(StoryInstance* tInstance, int tID)
 		return 0;
 	}
 	StoryAnimation& e = tInstance->mStoryAnimations[tID];
-	return getMugenAnimationPosition(e.mAnimationID).x;
+	return getDolmexicaStoryAnimationPositionXInternal(e);
 }
 
 void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* tName, int tAnimation, Position tPosition)
@@ -897,6 +907,12 @@ void changeDolmexicaStoryCharacterAnimation(StoryInstance* tInstance, int tID, i
 	changeDolmexicaStoryAnimationInternal(e.mAnimation, tAnimation, &e.mAnimations);
 }
 
+double getDolmexicaStoryCharacterPositionX(StoryInstance * tInstance, int tID)
+{
+	StoryCharacter& e = tInstance->mStoryCharacters[tID];
+	return getDolmexicaStoryAnimationPositionXInternal(e.mAnimation);
+}
+
 void setDolmexicaStoryCharacterPositionX(StoryInstance* tInstance, int tID, double tX)
 {
 	StoryCharacter& e = tInstance->mStoryCharacters[tID];
@@ -949,6 +965,18 @@ void setDolmexicaStoryCharacterOpacity(StoryInstance * tInstance, int tID, doubl
 {
 	StoryCharacter& e = tInstance->mStoryCharacters[tID];
 	setDolmexicaStoryAnimationOpacityInternal(e.mAnimation, tOpacity);
+}
+
+void setDolmexicaStoryCharacterAngle(StoryInstance * tInstance, int tID, double tAngle)
+{
+	StoryCharacter& e = tInstance->mStoryCharacters[tID];
+	setDolmexicaStoryAnimationAngleInternal(e.mAnimation, tAngle);
+}
+
+void addDolmexicaStoryCharacterAngle(StoryInstance * tInstance, int tID, double tAngle)
+{
+	StoryCharacter& e = tInstance->mStoryCharacters[tID];
+	addDolmexicaStoryAnimationAngleInternal(e.mAnimation, tAngle);
 }
 
 int getDolmexicaStoryCharacterTimeLeft(StoryInstance * tInstance, int tID)
@@ -1029,6 +1057,12 @@ void addDolmexicaStoryHelper(int tID, int tState)
 
 	changeDolmexicaStoryStateOutsideStateHandler(&gDolmexicaStoryScreenData.mHelperInstances[tID], tState);
 	updateDreamSingleStateMachineByID(gDolmexicaStoryScreenData.mHelperInstances[tID].mStateMachineID);
+}
+
+void removeDolmexicaStoryHelper(int tID)
+{
+	unloadStoryInstance(gDolmexicaStoryScreenData.mHelperInstances[tID]);
+	gDolmexicaStoryScreenData.mHelperInstances.erase(tID);
 }
 
 int getDolmexicaStoryIDFromString(const char * tString, StoryInstance * tInstance)

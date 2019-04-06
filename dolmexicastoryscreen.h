@@ -139,6 +139,7 @@ void setDolmexicaStoryCharacterBoundToStage(StoryInstance* tInstance, int tID, i
 void setDolmexicaStoryCharacterShadow(StoryInstance* tInstance, int tID, double tBasePositionY);
 int getDolmexicaStoryCharacterAnimation(StoryInstance* tInstance, int tID);
 void changeDolmexicaStoryCharacterAnimation(StoryInstance* tInstance, int tID, int tAnimation);
+double getDolmexicaStoryCharacterPositionX(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryCharacterPositionX(StoryInstance* tInstance, int tID, double tX);
 void setDolmexicaStoryCharacterPositionY(StoryInstance* tInstance, int tID, double tY);
 void addDolmexicaStoryCharacterPositionX(StoryInstance* tInstance, int tID, double tX);
@@ -148,6 +149,8 @@ void setDolmexicaStoryCharacterScaleY(StoryInstance* tInstance, int tID, double 
 void setDolmexicaStoryCharacterIsFacingRight(StoryInstance* tInstance, int tID, int tIsFacingRight);
 void setDolmexicaStoryCharacterColor(StoryInstance* tInstance, int tID, Vector3D tColor);
 void setDolmexicaStoryCharacterOpacity(StoryInstance* tInstance, int tID, double tOpacity);
+void setDolmexicaStoryCharacterAngle(StoryInstance* tInstance, int tID, double tAngle);
+void addDolmexicaStoryCharacterAngle(StoryInstance* tInstance, int tID, double tAngle);
 
 int getDolmexicaStoryCharacterTimeLeft(StoryInstance* tInstance, int tID);
 
@@ -168,4 +171,5 @@ void addDolmexicaStoryStringVariable(StoryInstance* tInstance, int tID, int tVal
 StoryInstance* getDolmexicaStoryRootInstance();
 StoryInstance* getDolmexicaStoryHelperInstance(int tID);
 void addDolmexicaStoryHelper(int tID, int tState);
+void removeDolmexicaStoryHelper(int tID);
 int getDolmexicaStoryIDFromString(const char* tString, StoryInstance* tInstance);
