@@ -5827,6 +5827,8 @@ static void parseAnimationAngleStoryController(DreamMugenStateController* tContr
 typedef struct {
 	DreamMugenAssignment* mID;
 	DreamMugenAssignment* mValue;
+	int mHasTarget;
+	DreamMugenAssignment* mTarget;
 
 } AnimationSetSingleValueStoryController;
 
@@ -5835,6 +5837,7 @@ static void parseAnimationSetColorStoryController(DreamMugenStateController* tCo
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("color", tGroup, &e->mValue, "1,1,1");
+	e->mHasTarget = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("target", tGroup, &e->mTarget);
 
 	tController->mType = tType;
 	tController->mData = e;
@@ -5845,6 +5848,7 @@ static void parseAnimationSetOpacityStoryController(DreamMugenStateController* t
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("opacity", tGroup, &e->mValue, "1");
+	e->mHasTarget = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("target", tGroup, &e->mTarget);
 
 	tController->mType = tType;
 	tController->mData = e;
@@ -6706,12 +6710,17 @@ static int handleSetCharacterColorStoryController(DreamMugenStateController* tCo
 static int handleSetCharacterOpacityStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
 	AnimationSetSingleValueStoryController* e = (AnimationSetSingleValueStoryController*)tController->mData;
 
+	StoryInstance* targetInstance = tInstance;
+	if (e->mHasTarget) {
+		targetInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
+	}
+
 	int id;
 	double opacity;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	opacity = evaluateDreamAssignmentAndReturnAsFloat(&e->mValue, (DreamPlayer*)tInstance);
 
-	setDolmexicaStoryCharacterOpacity(tInstance, id, opacity);
+	setDolmexicaStoryCharacterOpacity(targetInstance, id, opacity);
 
 	return 0;
 }
