@@ -509,6 +509,9 @@ void setDolmexicaStoryAnimationColor(StoryInstance * tInstance, int tID, Vector3
 static void setDolmexicaStoryAnimationOpacityInternal(StoryAnimation& e, double tOpacity)
 {
 	setMugenAnimationTransparency(e.mAnimationID, tOpacity);
+	if (e.mHasShadow) {
+		setMugenAnimationTransparency(e.mShadowAnimationID, tOpacity);
+	}
 }
 
 void setDolmexicaStoryAnimationOpacity(StoryInstance * tInstance, int tID, double tOpacity)
