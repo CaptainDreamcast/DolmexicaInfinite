@@ -109,7 +109,7 @@ static void setupMugenCommandStates(RegisteredMugenCommand* e) {
 
 static int getNewRegisteredCommandIndex() {
 	int ret = gMugenCommandHandler.mRegisteredCommandAmount;
-	gMugenCommandHandler.mRegisteredCommandAmount = (gMugenCommandHandler.mRegisteredCommandAmount + 1) % MAXIMUM_REGISTERED_COMMAND_AMOUNT;
+	gMugenCommandHandler.mRegisteredCommandAmount++;
 	return ret;
 }
 
