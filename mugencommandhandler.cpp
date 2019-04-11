@@ -23,7 +23,7 @@ typedef struct {
 } MugenCommandState;
 
 typedef struct {
-	map<string, MugenCommandState> mStates;
+	unordered_map<string, MugenCommandState> mStates;
 	vector<MugenCommandState*> mStateLookup;
 } MugenCommandStates;
 
@@ -73,7 +73,7 @@ static void unloadSingleRegisteredCommand(void* tCaller, RegisteredMugenCommand&
 	(void)tCaller;
 	RegisteredMugenCommand* e = &tData;
 	e->mActiveCommands.clear();
-	stl_delete_map(e->tStates.mStates);
+	e->tStates.mStates.clear();
 	e->tStates.mStateLookup.clear();
 	e->mInternalStates.clear();
 }
@@ -102,7 +102,7 @@ static void addSingleMugenCommandState(RegisteredMugenCommand* tCaller, const st
 }
 
 static void setupMugenCommandStates(RegisteredMugenCommand* e) {
-	stl_new_map(e->tStates.mStates);
+	e->tStates.mStates.clear();
 	e->tStates.mStateLookup.clear();
 	stl_string_map_map(e->tCommands->mCommands, addSingleMugenCommandState, e);
 }
