@@ -183,6 +183,7 @@ typedef struct Player_t{
 	int mInvisibilityFlag;
 	Vector3DI mOneTickStageWidth;
 	Vector3DI mOneTickPlayerWidth;
+	Vector3D mDrawOffset;
 
 	int mJumpFlank;
 	int mAirJumpCounter;

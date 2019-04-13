@@ -227,7 +227,7 @@ static void resetHelperState(DreamPlayer* p) {
 	p->mTransparencyFlag = 0;
 	p->mWidthFlag = 0;
 	p->mNoJuggleCheckFlag = 0;
-
+	p->mDrawOffset = makePosition(0, 0, 0);
 	p->mJumpFlank = 0;
 	p->mAirJumpCounter = 0;
 
@@ -1103,6 +1103,16 @@ static void updateNoJuggleCheckFlag(DreamPlayer* tPlayer) {
 	tPlayer->mNoJuggleCheckFlag = 0;
 }
 
+static void updateOffsetFlag(DreamPlayer* tPlayer) {
+	if (tPlayer->mDrawOffset.x) {
+		setPlayerDrawOffsetX(tPlayer, 0, getPlayerCoordinateP(tPlayer));
+	}
+
+	if (tPlayer->mDrawOffset.y) {
+		setPlayerDrawOffsetY(tPlayer, 0, getPlayerCoordinateP(tPlayer));
+	}
+}
+
 static int updateSinglePlayerPreStateMachine(DreamPlayer* p) {
 	if (p->mIsDestroyed) {
 		updatePlayerDestruction(p);
@@ -1113,6 +1123,7 @@ static int updateSinglePlayerPreStateMachine(DreamPlayer* p) {
 	updateWidthFlag(p);
 	updateInvisibilityFlag(p);
 	updateNoJuggleCheckFlag(p);
+	updateOffsetFlag(p);
 
 	list_remove_predicate(&p->mHelpers, updateSinglePlayerPreStateMachineCB, NULL);
 	return 0;
@@ -4220,6 +4231,7 @@ void setPlayerDrawOffsetX(DreamPlayer* p, double tValue, int tCoordinateP) {
 	newPos.x += tValue;
 	newPos.y = pos.y;
 	newPos.z = pos.z;
+	p->mDrawOffset.x = tValue;
 
 	setMugenAnimationPosition(p->mAnimationID, newPos);
 }
@@ -4232,6 +4244,7 @@ void setPlayerDrawOffsetY(DreamPlayer* p, double tValue, int tCoordinateP) {
 	newPos.x = pos.x;
 	newPos.y += tValue;
 	newPos.z = pos.z;
+	p->mDrawOffset.y = tValue;
 
 	setMugenAnimationPosition(p->mAnimationID, newPos);
 }
