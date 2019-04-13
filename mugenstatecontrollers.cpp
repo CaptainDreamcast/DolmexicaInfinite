@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 #include <string>
 
 #define LOGGER_WARNINGS_DISABLED
@@ -162,9 +163,14 @@ static void unloadChangeStateController(DreamMugenStateController* tController) 
 	freeMemory(e);
 }
 
-static void fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString(char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tDst, char* tDefault) {
+static void fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString(char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tDst, const char* tDefault = NULL) {
 	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tName, tGroup, tDst)) {
-		*tDst = makeDreamStringMugenAssignment(tDefault);
+		if (tDefault) {
+			*tDst = makeDreamStringMugenAssignment(tDefault);
+		}
+		else {
+			*tDst = NULL;
+		}
 	}
 }
 
@@ -179,7 +185,7 @@ typedef struct {
 static void parseTargetChangeStateController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	TargetChangeStateController* e = (TargetChangeStateController*)allocMemoryOnMemoryStackOrMemory(sizeof(TargetChangeStateController));
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mState));
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 
 	e->mIsChangingControl = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("ctrl", tGroup, &e->mControl);
 
@@ -303,136 +309,83 @@ typedef struct {
 
 static void readHitDefinitionFromGroup(HitDefinitionController* e, MugenDefScriptGroup* tGroup) {
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("attr", tGroup, &e->mAttribute, "s , na");
-
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("hitflag", tGroup, &e->mHitFlag)) {
-		e->mHitFlag = makeDreamStringMugenAssignment("maf");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("guardflag", tGroup, &e->mGuardFlag)) {
-		e->mGuardFlag = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("affectteam", tGroup, &e->mAffectTeam)) {
-		e->mAffectTeam = makeDreamStringMugenAssignment("e");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("animtype", tGroup, &e->mAnimationType)) {
-		e->mAnimationType = makeDreamStringMugenAssignment("light");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("air.animtype", tGroup, &e->mAirAnimationType)) {
-		e->mAirAnimationType = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("fall.animtype", tGroup, &e->mFallAnimationType)) {
-		e->mFallAnimationType = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("priority", tGroup, &e->mPriority)) {
-		e->mPriority = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("damage", tGroup, &e->mDamage)) {
-		e->mDamage = makeDreamStringMugenAssignment("0 , 0");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("pausetime", tGroup, &e->mPauseTime)) {
-		e->mPauseTime = makeDreamStringMugenAssignment("0 , 0");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("guard.pausetime", tGroup, &e->mGuardPauseTime)) {
-		e->mGuardPauseTime = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("sparkno", tGroup, &e->mSparkNumber)) {
-		e->mSparkNumber = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("guard.sparkno", tGroup, &e->mGuardSparkNumber)) {
-		e->mGuardSparkNumber = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("sparkxy", tGroup, &e->mSparkXY)) {
-		e->mSparkXY = makeDreamStringMugenAssignment("0 , 0");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("hitsound", tGroup, &e->mHitSound)) {
-		e->mHitSound = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("guardsound", tGroup, &e->mGuardSound)) {
-		e->mGuardSound = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("ground.type", tGroup, &e->mGroundType)) {
-		e->mGroundType = makeDreamStringMugenAssignment("high");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("air.type", tGroup, &e->mAirType)) {
-		e->mAirType = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("ground.slidetime", tGroup, &e->mGroundSlideTime)) {
-		e->mGroundSlideTime = makeDreamStringMugenAssignment("0");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("guard.slidetime", tGroup, &e->mGuardSlideTime)) {
-		e->mGuardSlideTime = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("ground.hittime", tGroup, &e->mGroundHitTime)) {
-		e->mGroundHitTime = makeDreamStringMugenAssignment("0");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("guard.hittime", tGroup, &e->mGuardHitTime)) {
-		e->mGuardHitTime = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("air.hittime", tGroup, &e->mAirHitTime)) {
-		e->mAirHitTime = makeDreamStringMugenAssignment("20");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("guard.ctrltime", tGroup, &e->mGuardControlTime)) {
-		e->mGuardControlTime = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("guard.dist", tGroup, &e->mGuardDistance)) {
-		e->mGuardDistance = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("yaccel", tGroup, &e->mYAccel)) {
-		e->mYAccel = makeDreamStringMugenAssignment("");
-	}
-	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("ground.velocity", tGroup, &e->mGroundVelocity)) {
-		e->mGroundVelocity = makeDreamStringMugenAssignment("0 , 0");
-	}
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("guard.velocity", tGroup, &e->mGuardVelocity, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("hitflag", tGroup, &e->mHitFlag, "maf");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("guardflag", tGroup, &e->mGuardFlag);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("affectteam", tGroup, &e->mAffectTeam, "e");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("animtype", tGroup, &e->mAnimationType, "light");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("air.animtype", tGroup, &e->mAirAnimationType);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.animtype", tGroup, &e->mFallAnimationType);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("priority", tGroup, &e->mPriority);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("damage", tGroup, &e->mDamage, "0 , 0");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausetime", tGroup, &e->mPauseTime, "0 , 0");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("guard.pausetime", tGroup, &e->mGuardPauseTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("sparkno", tGroup, &e->mSparkNumber);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("guard.sparkno", tGroup, &e->mGuardSparkNumber);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("sparkxy", tGroup, &e->mSparkXY, "0 , 0");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("hitsound", tGroup, &e->mHitSound);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("guardsound", tGroup, &e->mGuardSound);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ground.type", tGroup, &e->mGroundType, "high");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("air.type", tGroup, &e->mAirType);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ground.slidetime", tGroup, &e->mGroundSlideTime, "0");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("guard.slidetime", tGroup, &e->mGuardSlideTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ground.hittime", tGroup, &e->mGroundHitTime, "0");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("guard.hittime", tGroup, &e->mGuardHitTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("air.hittime", tGroup, &e->mAirHitTime, "20");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("guard.ctrltime", tGroup, &e->mGuardControlTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("guard.dist", tGroup, &e->mGuardDistance);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("yaccel", tGroup, &e->mYAccel);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ground.velocity", tGroup, &e->mGroundVelocity, "0 , 0");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("guard.velocity", tGroup, &e->mGuardVelocity);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("air.velocity", tGroup, &e->mAirVelocity, "0 , 0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("airguard.velocity", tGroup, &e->mAirGuardVelocity, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("airguard.velocity", tGroup, &e->mAirGuardVelocity);
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ground.cornerpush.veloff", tGroup, &e->mGroundCornerPushVelocityOffset, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("air.cornerpush.veloff", tGroup, &e->mAirCornerPushVelocityOffset, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("down.cornerpush.veloff", tGroup, &e->mDownCornerPushVelocityOffset, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("guard.cornerpush.veloff", tGroup, &e->mGuardCornerPushVelocityOffset, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("airguard.cornerpush.veloff", tGroup, &e->mAirGuardCornerPushVelocityOffset, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("airguard.ctrltime", tGroup, &e->mAirGuardControlTime, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ground.cornerpush.veloff", tGroup, &e->mGroundCornerPushVelocityOffset);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("air.cornerpush.veloff", tGroup, &e->mAirCornerPushVelocityOffset);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("down.cornerpush.veloff", tGroup, &e->mDownCornerPushVelocityOffset);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("guard.cornerpush.veloff", tGroup, &e->mGuardCornerPushVelocityOffset);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("airguard.cornerpush.veloff", tGroup, &e->mAirGuardCornerPushVelocityOffset);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("airguard.ctrltime", tGroup, &e->mAirGuardControlTime);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("air.juggle", tGroup, &e->mAirJuggle, "0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("mindist", tGroup, &e->mMinimumDistance, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("maxdist", tGroup, &e->mMaximumDistance, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("snap", tGroup, &e->mSnap, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("mindist", tGroup, &e->mMinimumDistance);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("maxdist", tGroup, &e->mMaximumDistance);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("snap", tGroup, &e->mSnap);
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("p1sprpriority", tGroup, &e->mPlayerSpritePriority1, "1");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("p2sprpriority", tGroup, &e->mPlayerSpritePriority2, "0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("p1facing", tGroup, &e->mPlayer1ChangeFaceDirection, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("p1facing", tGroup, &e->mPlayer1ChangeFaceDirection);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("p1getp2facing", tGroup, &e->mPlayer1ChangeFaceDirectionRelativeToPlayer2, "0");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("p2facing", tGroup, &e->mPlayer2ChangeFaceDirectionRelativeToPlayer1, "0");
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("p1stateno", tGroup, &e->mPlayer1StateNumber, "-1");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("p2stateno", tGroup, &e->mPlayer2StateNumber, "-1");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("p2getp1state", tGroup, &e->mPlayer2CapableOfGettingPlayer1State, "1");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("forcestand", tGroup, &e->mForceStanding, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("forcestand", tGroup, &e->mForceStanding);
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall", tGroup, &e->mFall, "0");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.xvelocity", tGroup, &e->mFallXVelocity, "0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.yvelocity", tGroup, &e->mFallYVelocity, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.yvelocity", tGroup, &e->mFallYVelocity);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.recover", tGroup, &e->mFallCanBeRecovered, "1");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.recovertime", tGroup, &e->mFallRecoveryTime, "4");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.damage", tGroup, &e->mFallDamage, "0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("air.fall", tGroup, &e->mAirFall, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("air.fall", tGroup, &e->mAirFall);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("forcenofall", tGroup, &e->mForceNoFall, "0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("down.velocity", tGroup, &e->mDownVelocity, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("down.hittime", tGroup, &e->mDownHitTime, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("down.velocity", tGroup, &e->mDownVelocity);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("down.hittime", tGroup, &e->mDownHitTime);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("down.bounce", tGroup, &e->mDownBounce, "0");
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mHitID, "0");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("chainID", tGroup, &e->mChainID, "-1");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("nochainID", tGroup, &e->mNoChainID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("hitonce", tGroup, &e->mHitOnce, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("nochainID", tGroup, &e->mNoChainID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("hitonce", tGroup, &e->mHitOnce);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("kill", tGroup, &e->mKill, "1");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("guard.kill", tGroup, &e->mGuardKill, "1");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.kill", tGroup, &e->mFallKill, "1");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("numhits", tGroup, &e->mNumberOfHits, "1");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("getpower", tGroup, &e->mGetPower, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("givepower", tGroup, &e->mGivePower, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("getpower", tGroup, &e->mGetPower);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("givepower", tGroup, &e->mGivePower);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palfx.time", tGroup, &e->mPaletteEffectTime, "0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palfx.mul", tGroup, &e->mPaletteEffectMultiplication, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palfx.add", tGroup, &e->mPaletteEffectAddition, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palfx.mul", tGroup, &e->mPaletteEffectMultiplication);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palfx.add", tGroup, &e->mPaletteEffectAddition);
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("envshake.time", tGroup, &e->mEnvironmentShakeTime, "0");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("envshake.freq", tGroup, &e->mEnvironmentShakeFrequency, "0");
@@ -584,13 +537,13 @@ static void parsePlaySoundController(DreamMugenStateController* tController, Mug
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("volumescale", tGroup, &e->mVolumeScale, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("channel", tGroup, &e->mChannel, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("lowpriority", tGroup, &e->mLowPriority, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("freqmul", tGroup, &e->mFrequencyMultiplier, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("loop", tGroup, &e->mLoop, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pan", tGroup, &e->mPanning, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("abspan", tGroup, &e->mAbsolutePanning, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("volumescale", tGroup, &e->mVolumeScale);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("channel", tGroup, &e->mChannel);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("lowpriority", tGroup, &e->mLowPriority);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("freqmul", tGroup, &e->mFrequencyMultiplier);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("loop", tGroup, &e->mLoop);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pan", tGroup, &e->mPanning);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("abspan", tGroup, &e->mAbsolutePanning);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PLAY_SOUND;
 	tController->mData = e;
@@ -626,8 +579,8 @@ static void parseWidthController(DreamMugenStateController* tController, MugenDe
 	WidthController* e = (WidthController*)allocMemoryOnMemoryStackOrMemory(sizeof(WidthController));
 	
 	e->mHasValue = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue);
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("edge", tGroup, &e->mEdge, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("player", tGroup, &e->mPlayer, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("edge", tGroup, &e->mEdge);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("player", tGroup, &e->mPlayer);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_WIDTH;
 	tController->mData = e;
@@ -958,8 +911,8 @@ static void parseVarRangeSetController(DreamMugenStateController* tController, M
 		assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("fvalue", tGroup, &e->mValue));
 	}
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("first", tGroup, &e->mFirst, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("last", tGroup, &e->mLast, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("first", tGroup, &e->mFirst);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("last", tGroup, &e->mLast);
  
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANGE;
 	tController->mData = e;
@@ -1097,31 +1050,31 @@ static void parseExplodController(DreamMugenStateController* tController, MugenD
 	ExplodController* e = (ExplodController*)allocMemoryOnMemoryStackOrMemory(sizeof(ExplodController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("anim", tGroup, &e->mAnim));
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("postype", tGroup, &e->mPositionType, "p1");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mHorizontalFacing, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("vfacing", tGroup, &e->mVerticalFacing, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("bindtime", tGroup, &e->mBindTime, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mHorizontalFacing);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("vfacing", tGroup, &e->mVerticalFacing);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("bindtime", tGroup, &e->mBindTime);
 	if (stl_string_map_contains_array(tGroup->mElements, "vel")) {
-		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("vel", tGroup, &e->mVelocity, "");
+		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("vel", tGroup, &e->mVelocity);
 	}
 	else {
-		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("velocity", tGroup, &e->mVelocity, "");
+		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("velocity", tGroup, &e->mVelocity);
 	}
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("accel", tGroup, &e->mAcceleration, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("random", tGroup, &e->mRandomOffset, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("removetime", tGroup, &e->mRemoveTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("supermove", tGroup, &e->mSuperMove, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("supermovetime", tGroup, &e->mSuperMoveTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausemovetime", tGroup, &e->mPauseMoveTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("scale", tGroup, &e->mScale, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("sprpriority", tGroup, &e->mSpritePriority, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ontop", tGroup, &e->mOnTop, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("shadow", tGroup, &e->mShadow, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ownpal", tGroup, &e->mOwnPalette, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("removeongethit", tGroup, &e->mIsRemovedOnGetHit, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ignorehitpause", tGroup, &e->mIgnoreHitPause, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("accel", tGroup, &e->mAcceleration);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("random", tGroup, &e->mRandomOffset);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("removetime", tGroup, &e->mRemoveTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("supermove", tGroup, &e->mSuperMove);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("supermovetime", tGroup, &e->mSuperMoveTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausemovetime", tGroup, &e->mPauseMoveTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("scale", tGroup, &e->mScale);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("sprpriority", tGroup, &e->mSpritePriority);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ontop", tGroup, &e->mOnTop);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("shadow", tGroup, &e->mShadow);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ownpal", tGroup, &e->mOwnPalette);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("removeongethit", tGroup, &e->mIsRemovedOnGetHit);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ignorehitpause", tGroup, &e->mIgnoreHitPause);
 	e->mHasTransparencyType = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("trans", tGroup, &e->mTransparencyType);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_EXPLOD;
@@ -1164,27 +1117,27 @@ static void unloadExplodController(DreamMugenStateController* tController) {
 static void parseModifyExplodController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	ExplodController* e = (ExplodController*)allocMemoryOnMemoryStackOrMemory(sizeof(ExplodController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mAnim, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mAnim);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("postype", tGroup, &e->mPositionType, "p1");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mHorizontalFacing, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("vfacing", tGroup, &e->mVerticalFacing, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("bindtime", tGroup, &e->mBindTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("vel", tGroup, &e->mVelocity, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("accel", tGroup, &e->mAcceleration, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("random", tGroup, &e->mRandomOffset, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("removetime", tGroup, &e->mRemoveTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("supermove", tGroup, &e->mSuperMove, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("supermovetime", tGroup, &e->mSuperMoveTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausemovetime", tGroup, &e->mPauseMoveTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("scale", tGroup, &e->mScale, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("sprpriority", tGroup, &e->mSpritePriority, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ontop", tGroup, &e->mOnTop, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("shadow", tGroup, &e->mShadow, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ownpal", tGroup, &e->mOwnPalette, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("removeongethit", tGroup, &e->mIsRemovedOnGetHit, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ignorehitpause", tGroup, &e->mIgnoreHitPause, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mHorizontalFacing);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("vfacing", tGroup, &e->mVerticalFacing);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("bindtime", tGroup, &e->mBindTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("vel", tGroup, &e->mVelocity);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("accel", tGroup, &e->mAcceleration);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("random", tGroup, &e->mRandomOffset);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("removetime", tGroup, &e->mRemoveTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("supermove", tGroup, &e->mSuperMove);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("supermovetime", tGroup, &e->mSuperMoveTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausemovetime", tGroup, &e->mPauseMoveTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("scale", tGroup, &e->mScale);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("sprpriority", tGroup, &e->mSpritePriority);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ontop", tGroup, &e->mOnTop);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("shadow", tGroup, &e->mShadow);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ownpal", tGroup, &e->mOwnPalette);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("removeongethit", tGroup, &e->mIsRemovedOnGetHit);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ignorehitpause", tGroup, &e->mIgnoreHitPause);
 	e->mHasTransparencyType = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("trans", tGroup, &e->mTransparencyType);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_MODIFY_EXPLOD;
@@ -1346,9 +1299,9 @@ static void parseEnvironmentShakeController(DreamMugenStateController* tControll
 	EnvironmentShakeController* e = (EnvironmentShakeController*)allocMemoryOnMemoryStackOrMemory(sizeof(EnvironmentShakeController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("time", tGroup, &e->mTime));
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("freq", tGroup, &e->mFrequency, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ampl", tGroup, &e->mAmplitude, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("phase", tGroup, &e->mPhaseOffset, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("freq", tGroup, &e->mFrequency);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ampl", tGroup, &e->mAmplitude);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("phase", tGroup, &e->mPhaseOffset);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ENVIRONMENT_SHAKE;
 	tController->mData = e;
@@ -1384,18 +1337,18 @@ typedef struct {
 static void parseSuperPauseController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	SuperPauseController* e = (SuperPauseController*)allocMemoryOnMemoryStackOrMemory(sizeof(SuperPauseController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("endcmdbuftime", tGroup, &e->mBufferTimeForCommandsDuringPauseEnd, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("movetime", tGroup, &e->mMoveTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausebg", tGroup, &e->mDoesPauseBackground, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("endcmdbuftime", tGroup, &e->mBufferTimeForCommandsDuringPauseEnd);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("movetime", tGroup, &e->mMoveTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausebg", tGroup, &e->mDoesPauseBackground);
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mAnim, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("sound", tGroup, &e->mSound, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("darken", tGroup, &e->mIsDarkening, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("p2defmul", tGroup, &e->mPlayer2DefenseMultiplier, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("poweradd", tGroup, &e->mPowerToAdd, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("unhittable", tGroup, &e->mSetPlayerUnhittable, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mAnim);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("sound", tGroup, &e->mSound);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("darken", tGroup, &e->mIsDarkening);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("p2defmul", tGroup, &e->mPlayer2DefenseMultiplier);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("poweradd", tGroup, &e->mPowerToAdd);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("unhittable", tGroup, &e->mSetPlayerUnhittable);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SUPER_PAUSE;
 	tController->mData = e;
@@ -1474,26 +1427,26 @@ static void parseHelperController(DreamMugenStateController* tController, MugenD
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("helpertype", tGroup, &e->mType, "normal");
 	parseHelpeControllerName(e, tGroup);
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("postype", tGroup, &e->mPositionType, "p1");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mFacing, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("stateno", tGroup, &e->mStateNumber, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("keyctrl", tGroup, &e->mCanControl, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ownpal", tGroup, &e->mHasOwnPalette, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("supermovetime", tGroup, &e->mSuperMoveTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausemovetime", tGroup, &e->mPauseMoveTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.xscale", tGroup, &e->mSizeScaleX, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.yscale", tGroup, &e->mSizeScaleY, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.ground.back", tGroup, &e->mSizeGroundBack, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.ground.front", tGroup, &e->mSizeGroundFront, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.air.back", tGroup, &e->mSizeAirBack, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.air.front", tGroup, &e->mSizeAirFront, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.height", tGroup, &e->mSizeHeight, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.proj.doscale", tGroup, &e->mSizeProjectilesDoScale, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.head.pos", tGroup, &e->mSizeHeadPosition, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.mid.pos", tGroup, &e->mSizeMiddlePosition, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.shadowoffset", tGroup, &e->mSizeShadowOffset, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mFacing);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("stateno", tGroup, &e->mStateNumber);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("keyctrl", tGroup, &e->mCanControl);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ownpal", tGroup, &e->mHasOwnPalette);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("supermovetime", tGroup, &e->mSuperMoveTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausemovetime", tGroup, &e->mPauseMoveTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.xscale", tGroup, &e->mSizeScaleX);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.yscale", tGroup, &e->mSizeScaleY);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.ground.back", tGroup, &e->mSizeGroundBack);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.ground.front", tGroup, &e->mSizeGroundFront);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.air.back", tGroup, &e->mSizeAirBack);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.air.front", tGroup, &e->mSizeAirFront);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.height", tGroup, &e->mSizeHeight);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.proj.doscale", tGroup, &e->mSizeProjectilesDoScale);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.head.pos", tGroup, &e->mSizeHeadPosition);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.mid.pos", tGroup, &e->mSizeMiddlePosition);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("size.shadowoffset", tGroup, &e->mSizeShadowOffset);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_HELPER;
 	tController->mData = e;
@@ -1543,8 +1496,8 @@ static void parseLifeAddController(DreamMugenStateController* tController, Mugen
 	LifeAddController* e = (LifeAddController*)allocMemoryOnMemoryStackOrMemory(sizeof(LifeAddController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("kill", tGroup, &e->mCanKill, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("absolute", tGroup, &e->mIsAbsolute, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("kill", tGroup, &e->mCanKill);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("absolute", tGroup, &e->mIsAbsolute);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ADD_LIFE;
 	tController->mData = e;
@@ -1572,9 +1525,9 @@ static void parseTargetLifeAddController(DreamMugenStateController* tController,
 	TargetLifeAddController* e = (TargetLifeAddController*)allocMemoryOnMemoryStackOrMemory(sizeof(TargetLifeAddController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("kill", tGroup, &e->mCanKill, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("absolute", tGroup, &e->mIsAbsolute, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("kill", tGroup, &e->mCanKill);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("absolute", tGroup, &e->mIsAbsolute);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ADD_TARGET_LIFE;
 	tController->mData = e;
@@ -1659,10 +1612,10 @@ typedef struct {
 static void parseBindController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	BindController* e = (BindController*)allocMemoryOnMemoryStackOrMemory(sizeof(BindController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mFacing, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mFacing);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 
 	tController->mType = tType;
 	tController->mData = e;
@@ -1688,8 +1641,8 @@ typedef struct {
 static void parseScreenBoundController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	ScreenBoundController* e = (ScreenBoundController*)allocMemoryOnMemoryStackOrMemory(sizeof(ScreenBoundController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("movecamera", tGroup, &e->mMoveCameraFlags, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("movecamera", tGroup, &e->mMoveCameraFlags);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SCREEN_BOUND;
 	tController->mData = e;
@@ -1714,7 +1667,7 @@ static void parseSetTargetFacingController(DreamMugenStateController* tControlle
 	SetTargetFacingController* e = (SetTargetFacingController*)allocMemoryOnMemoryStackOrMemory(sizeof(SetTargetFacingController));
 
 	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_TARGET_FACING;
 	tController->mData = e;
@@ -1795,40 +1748,40 @@ static void parseProjectileController(DreamMugenStateController* tController, Mu
 	ProjectileController* e = (ProjectileController*)allocMemoryOnMemoryStackOrMemory(sizeof(ProjectileController));
 	readHitDefinitionFromGroup(&e->mHitDef, tGroup);
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projid", tGroup, &e->mID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projanim", tGroup, &e->mAnimation, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projhitanim", tGroup, &e->mHitAnimation, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projremanim", tGroup, &e->mRemoveAnimation, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projcancelanim", tGroup, &e->mCancelAnimation, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projid", tGroup, &e->mID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projanim", tGroup, &e->mAnimation);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projhitanim", tGroup, &e->mHitAnimation);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projremanim", tGroup, &e->mRemoveAnimation);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projcancelanim", tGroup, &e->mCancelAnimation);
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projscale", tGroup, &e->mScale, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projremove", tGroup, &e->mIsRemovingProjectileAfterHit, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projremovetime", tGroup, &e->mRemoveTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("velocity", tGroup, &e->mVelocity, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("remvelocity", tGroup, &e->mRemoveVelocity, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("accel", tGroup, &e->mAcceleration, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("velmul", tGroup, &e->mVelocityMultipliers, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projhits", tGroup, &e->mHitAmountBeforeVanishing, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projscale", tGroup, &e->mScale);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projremove", tGroup, &e->mIsRemovingProjectileAfterHit);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projremovetime", tGroup, &e->mRemoveTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("velocity", tGroup, &e->mVelocity);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("remvelocity", tGroup, &e->mRemoveVelocity);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("accel", tGroup, &e->mAcceleration);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("velmul", tGroup, &e->mVelocityMultipliers);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projhits", tGroup, &e->mHitAmountBeforeVanishing);
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projmisstime", tGroup, &e->mMissTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projpriority", tGroup, &e->mPriority, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projsprpriority", tGroup, &e->mSpriteSpriority, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projmisstime", tGroup, &e->mMissTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projpriority", tGroup, &e->mPriority);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projsprpriority", tGroup, &e->mSpriteSpriority);
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projedgebound", tGroup, &e->mEdgeBound, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projstagebound", tGroup, &e->mStageBound, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projheightbound", tGroup, &e->mHeightBoundValues, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("offset", tGroup, &e->mOffset, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("postype", tGroup, &e->mPositionType, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projedgebound", tGroup, &e->mEdgeBound);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projstagebound", tGroup, &e->mStageBound);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projheightbound", tGroup, &e->mHeightBoundValues);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("offset", tGroup, &e->mOffset);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("postype", tGroup, &e->mPositionType);
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projshadow", tGroup, &e->mShadow, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("supermovetime", tGroup, &e->mSuperMoveTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausemovetime", tGroup, &e->mPauseMoveTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ownpal", tGroup, &e->mHasOwnPalette, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("projshadow", tGroup, &e->mShadow);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("supermovetime", tGroup, &e->mSuperMoveTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausemovetime", tGroup, &e->mPauseMoveTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ownpal", tGroup, &e->mHasOwnPalette);
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("remappal", tGroup, &e->mRemapPalette, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("afterimage.time", tGroup, &e->mAfterImageTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("afterimage.length", tGroup, &e->mAfterImageLength, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("afterimage", tGroup, &e->mAfterImage, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("remappal", tGroup, &e->mRemapPalette);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("afterimage.time", tGroup, &e->mAfterImageTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("afterimage.length", tGroup, &e->mAfterImageLength);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("afterimage", tGroup, &e->mAfterImage);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PROJECTILE;
 	tController->mData = e;
@@ -1896,17 +1849,17 @@ typedef struct {
 static void parseAfterImageController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	AfterImageController* e = (AfterImageController*)allocMemoryOnMemoryStackOrMemory(sizeof(AfterImageController));
 	
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("length", tGroup, &e->mLength, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palcolor", tGroup, &e->mPalColor, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palinvertall", tGroup, &e->mPalInvertAll, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palbright", tGroup, &e->mPalBright, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palcontrast", tGroup, &e->mPalContrast, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palpostbright", tGroup, &e->mPalPostBright, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("paladd", tGroup, &e->mPalAdd, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palmul", tGroup, &e->mPalMul, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("timegap", tGroup, &e->mTimeGap, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("trans", tGroup, &e->mTrans, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("length", tGroup, &e->mLength);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palcolor", tGroup, &e->mPalColor);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palinvertall", tGroup, &e->mPalInvertAll);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palbright", tGroup, &e->mPalBright);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palcontrast", tGroup, &e->mPalContrast);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palpostbright", tGroup, &e->mPalPostBright);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("paladd", tGroup, &e->mPalAdd);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palmul", tGroup, &e->mPalMul);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("timegap", tGroup, &e->mTimeGap);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("trans", tGroup, &e->mTrans);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_AFTER_IMAGE;
 	tController->mData = e;
@@ -1939,10 +1892,10 @@ static void parseAfterImageTimeController(DreamMugenStateController* tController
 	AfterImageTimeController* e = (AfterImageTimeController*)allocMemoryOnMemoryStackOrMemory(sizeof(AfterImageTimeController));
 
 	if (isMugenDefNumberVariableAsGroup(tGroup, "time")) {
-		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
+		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime);
 	}
 	else {
-		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mTime, "");
+		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mTime);
 	}
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_AFTER_IMAGE_TIME;
@@ -1969,12 +1922,12 @@ typedef struct {
 static void parsePalFXController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	PalFXController* e = (PalFXController*)allocMemoryOnMemoryStackOrMemory(sizeof(PalFXController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("add", tGroup, &e->mAdd, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("mul", tGroup, &e->mMul, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("sinadd", tGroup, &e->mSinAdd, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("invertall", tGroup, &e->mInvertAll, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("color", tGroup, &e->mColor, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("add", tGroup, &e->mAdd);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("mul", tGroup, &e->mMul);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("sinadd", tGroup, &e->mSinAdd);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("invertall", tGroup, &e->mInvertAll);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("color", tGroup, &e->mColor);
 
 	tController->mType = tType;
 	tController->mData = e;
@@ -2002,8 +1955,8 @@ typedef struct {
 static void parseClipboardController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	ClipboardController* e = (ClipboardController*)allocMemoryOnMemoryStackOrMemory(sizeof(ClipboardController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("text", tGroup, &e->mText, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("params", tGroup, &e->mParams, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("text", tGroup, &e->mText);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("params", tGroup, &e->mParams);
 
 	tController->mType = tType;
 	tController->mData = e;
@@ -2027,8 +1980,8 @@ typedef struct {
 static void parseDestroySelfController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	DestroySelfController* e = (DestroySelfController*)allocMemoryOnMemoryStackOrMemory(sizeof(DestroySelfController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("recursive", tGroup, &e->mRecursive, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("removeexplods", tGroup, &e->mRemoveExplods, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("recursive", tGroup, &e->mRecursive);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("removeexplods", tGroup, &e->mRemoveExplods);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_DESTROY_SELF;
 	tController->mData = e;
@@ -2054,8 +2007,8 @@ static void parseEnvColorController(DreamMugenStateController* tController, Muge
 	EnvironmentColorController* e = (EnvironmentColorController*)allocMemoryOnMemoryStackOrMemory(sizeof(EnvironmentColorController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue, "255 , 255 , 255");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("under", tGroup, &e->mUnder, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("under", tGroup, &e->mUnder);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ENVIRONMENT_COLOR;
 	tController->mData = e;
@@ -2082,13 +2035,13 @@ typedef struct {
 static void parseExplodBindTimeController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	ExplodBindTimeController* e = (ExplodBindTimeController*)allocMemoryOnMemoryStackOrMemory(sizeof(ExplodBindTimeController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 
 	if (isMugenDefNumberVariableAsGroup(tGroup, "time")) {
-		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
+		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime);
 	}
 	else {
-		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mTime, "");
+		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mTime);
 	}
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_EXPLOD_BIND_TIME;
@@ -2115,10 +2068,10 @@ typedef struct {
 static void parseGameMakeAnimController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	GameMakeAnimController* e = (GameMakeAnimController*)allocMemoryOnMemoryStackOrMemory(sizeof(GameMakeAnimController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("under", tGroup, &e->mIsUnderPlayer, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosOffset, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("random", tGroup, &e->mRandomOffset, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("under", tGroup, &e->mIsUnderPlayer);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosOffset);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("random", tGroup, &e->mRandomOffset);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_MAKE_GAME_ANIMATION;
 	tController->mData = e;
@@ -2147,12 +2100,12 @@ typedef struct {
 static void parseHitOverrideController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	HitOverrideController* e = (HitOverrideController*)allocMemoryOnMemoryStackOrMemory(sizeof(HitOverrideController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("attr", tGroup, &e->mAttributeString, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("stateno", tGroup, &e->mStateNo, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("attr", tGroup, &e->mAttributeString);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("stateno", tGroup, &e->mStateNo);
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("slot", tGroup, &e->mSlot, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("forceair", tGroup, &e->mForceAir, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("slot", tGroup, &e->mSlot);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("forceair", tGroup, &e->mForceAir);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_HIT_OVERRIDE;
 	tController->mData = e;
@@ -2182,11 +2135,11 @@ typedef struct {
 static void parsePauseController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	PauseController* e = (PauseController*)allocMemoryOnMemoryStackOrMemory(sizeof(PauseController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime);
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("endcmdbuftime", tGroup, &e->mEndCommandBufferTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("movetime", tGroup, &e->mMoveTime, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausebg", tGroup, &e->mPauseBG, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("endcmdbuftime", tGroup, &e->mEndCommandBufferTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("movetime", tGroup, &e->mMoveTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausebg", tGroup, &e->mPauseBG);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PAUSE;
 	tController->mData = e;
@@ -2212,8 +2165,8 @@ typedef struct {
 static void parseRemapPaletteController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	RemapPaletteController* e = (RemapPaletteController*)allocMemoryOnMemoryStackOrMemory(sizeof(RemapPaletteController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("source", tGroup, &e->mSource, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("dest", tGroup, &e->mDestination, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("source", tGroup, &e->mSource);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("dest", tGroup, &e->mDestination);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_REMAP_PALETTE;
 	tController->mData = e;
@@ -2236,8 +2189,8 @@ typedef struct {
 static void parseSoundPanController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	SoundPanController* e = (SoundPanController*)allocMemoryOnMemoryStackOrMemory(sizeof(SoundPanController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("channel", tGroup, &e->mChannel, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pan", tGroup, &e->mPan, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("channel", tGroup, &e->mChannel);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pan", tGroup, &e->mPan);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PAN_SOUND;
 	tController->mData = e;
@@ -2259,7 +2212,7 @@ typedef struct {
 static void parseStopSoundController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	SoundStopController* e = (SoundStopController*)allocMemoryOnMemoryStackOrMemory(sizeof(SoundStopController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("channel", tGroup, &e->mChannel, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("channel", tGroup, &e->mChannel);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_STOP_SOUND;
 	tController->mData = e;
@@ -2282,8 +2235,8 @@ typedef struct {
 static void parseTargetDropController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	TargetDropController* e = (TargetDropController*)allocMemoryOnMemoryStackOrMemory(sizeof(TargetDropController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("excludeid", tGroup, &e->mExcludeID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("keepone", tGroup, &e->mKeepOne, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("excludeid", tGroup, &e->mExcludeID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("keepone", tGroup, &e->mKeepOne);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_DROP_TARGET;
 	tController->mData = e;
@@ -2307,8 +2260,8 @@ typedef struct {
 static void parseTargetPowerAddController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	TargetPowerAddController* e = (TargetPowerAddController*)allocMemoryOnMemoryStackOrMemory(sizeof(TargetPowerAddController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_ADD_TARGET_POWER;
 	tController->mData = e;
@@ -2335,7 +2288,7 @@ typedef struct {
 static void parseTarget2DPhysicsController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	Target2DPhysicsController* e = (Target2DPhysicsController*)allocMemoryOnMemoryStackOrMemory(sizeof(Target2DPhysicsController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 	e->mIsSettingX = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("x", tGroup, &e->x);
 	e->mIsSettingY = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("y", tGroup, &e->y);
 
@@ -2366,7 +2319,7 @@ static void parseTransparencyController(DreamMugenStateController* tController, 
 	TransparencyController* e = (TransparencyController*)allocMemoryOnMemoryStackOrMemory(sizeof(TransparencyController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("trans", tGroup, &e->mTransparency, "default");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("alpha", tGroup, &e->mAlpha, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("alpha", tGroup, &e->mAlpha);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_TRANSPARENCY;
 	tController->mData = e;
@@ -2389,7 +2342,7 @@ typedef struct {
 static void parseVarRandomController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	VarRandomController* e = (VarRandomController*)allocMemoryOnMemoryStackOrMemory(sizeof(VarRandomController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("v", tGroup, &e->mValue, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("v", tGroup, &e->mValue);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("range", tGroup, &e->mRange, "0 , 1000");
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_VARIABLE_RANDOM;
@@ -2412,7 +2365,7 @@ typedef struct {
 static void parseVictoryQuoteController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	VictoryQuoteController* e = (VictoryQuoteController*)allocMemoryOnMemoryStackOrMemory(sizeof(VictoryQuoteController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("value", tGroup, &e->mValue);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_VICTORY_QUOTE;
 	tController->mData = e;
@@ -2590,19 +2543,13 @@ static int handleSelfStateChange(DreamMugenStateController* tController, DreamPl
 }
 
 static void getSingleIntegerValueOrDefault(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* tDst, int tDefault) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-	if (flag.empty()) *tDst = tDefault;
-	else *tDst = atoi(flag.data());
+	if (!(*tAssignment)) *tDst = tDefault;
+	else *tDst = evaluateDreamAssignmentAndReturnAsInteger(tAssignment, tPlayer);
 }
 
 static void getSingleFloatValueOrDefault(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, double* tDst, double tDefault) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-	if (flag.empty()) *tDst = tDefault;
-	else *tDst = atof(flag.data());
+	if (!(*tAssignment)) *tDst = tDefault;
+	else *tDst = evaluateDreamAssignmentAndReturnAsFloat(tAssignment, tPlayer);
 }
 
 static int handleTargetStateChange(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -2727,6 +2674,11 @@ static void handleHitDefinitionAttribute(HitDefinitionController* e, DreamPlayer
 }
 
 static void handleHitDefinitionSingleHitFlag(DreamMugenAssignment** tFlagAssignment, DreamPlayer* tPlayer, void(tSetFunc)(DreamPlayer* tPlayer, const char*)) {
+	if (!(*tFlagAssignment)) {
+		tSetFunc(tPlayer, "");
+		return;
+	}
+	
 	string flag;
 	evaluateDreamAssignmentAndReturnAsString(flag, tFlagAssignment, tPlayer);
 	tSetFunc(tPlayer, flag.data());
@@ -2751,11 +2703,15 @@ static void handleHitDefinitionAffectTeam(DreamMugenAssignment** tAffectAssignme
 }
 
 static void handleHitDefinitionSingleAnimationType(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, MugenHitAnimationType), MugenHitAnimationType tDefault) {
+	if (!(*tAssignment)) {
+		tFunc(tPlayer, tDefault);
+		return;
+	}
+	
 	string flag;
 	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	if (flag.empty()) tFunc(tPlayer, tDefault);
-	else if ("light" == flag) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_LIGHT);
+	if ("light" == flag) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_LIGHT);
 	else if (("medium" == flag) || ("med" == flag)) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_MEDIUM);
 	else if ("hard" == flag) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_HARD);
 	else if ("heavy" == flag) tFunc(tPlayer, MUGEN_HIT_ANIMATION_TYPE_HEAVY);
@@ -2769,30 +2725,41 @@ static void handleHitDefinitionSingleAnimationType(DreamMugenAssignment** tAssig
 }
 
 static void handleHitDefinitionPriority(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-	char prioString[20], comma[10], typeString[20];
-	int items = sscanf(flag.data(), "%s %s %s", prioString, comma, typeString);
-
 	int prio;
-	if (items < 1 || !strcmp("", prioString)) prio = 4;
-	else prio = atoi(prioString);
-
-	MugenHitPriorityType type = MUGEN_HIT_PRIORITY_HIT;
-	if (items < 3 || !strcmp("", typeString)) type = MUGEN_HIT_PRIORITY_HIT;
-	else if (!strcmp("hit", typeString)) type = MUGEN_HIT_PRIORITY_HIT;
-	else if (!strcmp("miss", typeString)) type = MUGEN_HIT_PRIORITY_MISS;
-	else if (!strcmp("dodge", typeString)) type = MUGEN_HIT_PRIORITY_DODGE;
-	else {
-		logWarningFormat("Unable to parse hitdef priority type %s with string %s. Defaulting to hit.", flag, typeString);
+	MugenHitPriorityType type;
+	if (!(*tAssignment)) {
+		prio = 4;
 		type = MUGEN_HIT_PRIORITY_HIT;
 	}
+	else {
+		string flag;
+		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
+		char prioString[20], comma[10], typeString[20];
+		int items = sscanf(flag.data(), "%s %s %s", prioString, comma, typeString);
+
+		if (items < 1 || !strcmp("", prioString)) prio = 4;
+		else prio = atoi(prioString);
+
+		if (items < 3 || !strcmp("", typeString)) type = MUGEN_HIT_PRIORITY_HIT;
+		else if (!strcmp("hit", typeString)) type = MUGEN_HIT_PRIORITY_HIT;
+		else if (!strcmp("miss", typeString)) type = MUGEN_HIT_PRIORITY_MISS;
+		else if (!strcmp("dodge", typeString)) type = MUGEN_HIT_PRIORITY_DODGE;
+		else {
+			logWarningFormat("Unable to parse hitdef priority type %s with string %s. Defaulting to hit.", flag, typeString);
+			type = MUGEN_HIT_PRIORITY_HIT;
+		}
+	}
 	setHitDataPriority(tPlayer, prio, type);
 }
 
 static void getTwoIntegerValuesWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* v1, int* v2, int tDefault1, int tDefault2) {
+	if (!(*tAssignment)) {
+		*v1 = tDefault1;
+		*v2 = tDefault2;
+		return;
+	}
+	
 	string flag;
 	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
@@ -2806,6 +2773,12 @@ static void getTwoIntegerValuesWithDefaultValues(DreamMugenAssignment** tAssignm
 }
 
 static void getTwoFloatValuesWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, double* v1, double* v2, double tDefault1, double tDefault2) {
+	if (!(*tAssignment)) {
+		*v1 = tDefault1;
+		*v2 = tDefault2;
+		return;
+	}
+	
 	string flag;
 	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
@@ -2833,29 +2806,35 @@ static void handleHitDefinitionSinglePauseTime(DreamMugenAssignment** tAssignmen
 }
 
 static void handleHitDefinitionSparkNumberSingle(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int, int), int tDefaultIsInFile, int tDefaultNumber) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-	char firstW[200];
-	int which = -1;
-
-	int items = sscanf(flag.data(), "%s %d", firstW, &which);
-
 	int isInPlayerFile;
 	int number;
-	if (items < 1) {
+	if (!(*tAssignment)) {
 		isInPlayerFile = tDefaultIsInFile;
 		number = tDefaultNumber;
 	}
-	else if (!strcmp("isinotherfilef", firstW) || !strcmp("isinotherfiles", firstW)) {
-		assert(items == 2);
-		isInPlayerFile = 1;
-		number = which;
-	}
 	else {
-		assert(items == 1);
-		isInPlayerFile = 0;
-		number = atoi(flag.data());
+		string flag;
+		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
+
+		char firstW[200];
+		int which = -1;
+
+		int items = sscanf(flag.data(), "%s %d", firstW, &which);
+
+		if (items < 1) {
+			isInPlayerFile = tDefaultIsInFile;
+			number = tDefaultNumber;
+		}
+		else if (!strcmp("isinotherfilef", firstW) || !strcmp("isinotherfiles", firstW)) {
+			assert(items == 2);
+			isInPlayerFile = 1;
+			number = which;
+		}
+		else {
+			assert(items == 1);
+			isInPlayerFile = 0;
+			number = atoi(flag.data());
+		}
 	}
 
 	tFunc(tPlayer, isInPlayerFile, number);
@@ -2869,51 +2848,58 @@ static void handleHitDefinitionSparkXY(DreamMugenAssignment** tAssignment, Dream
 }
 
 static void handleHitDefinitionSingleSound(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int, int, int), int tDefaultGroup, int tDefaultItem) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-	char firstW[200], comma[10];
-	int items = sscanf(flag.data(), "%s", firstW);
-	
 	int group;
 	int item;
 	int isInPlayerFile;
-	if (items < 1) {
+	if (!(*tAssignment)) {
 		isInPlayerFile = 0;
 		group = tDefaultGroup;
 		item = tDefaultItem;
 	}
-	else if (!strcmp("isinotherfilef", firstW)) {
-		isInPlayerFile = 0;
-		int fullItems = sscanf(flag.data(), "%s %d %s %d", firstW, &group, comma, &item);
-		assert(fullItems >= 2);
-
-		if (fullItems < 3) {
-			item = tDefaultItem;
-		}
-	}
-	else if (!strcmp("isinotherfiles", firstW)) {
-		isInPlayerFile = 1;
-		int fullItems = sscanf(flag.data(), "%s %d %s %d", firstW, &group, comma, &item);
-		if (fullItems < 2) {
-			logWarningFormat("Unable to parse hit definition sound flag %s. Defaulting.", flag);
-			group = tDefaultGroup;
-			item = tDefaultItem;
-		}
-		else if (fullItems < 3) {
-			item = tDefaultItem;
-		}
-	}
 	else {
-		isInPlayerFile = 0;
-		int fullItems = sscanf(flag.data(), "%d %s %d", &group, comma, &item);
-		if (fullItems < 1) {
-			logWarningFormat("Unable to parse hit definition sound flag %s. Defaulting.", flag);
+		string flag;
+		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
+
+		char firstW[200], comma[10];
+		int items = sscanf(flag.data(), "%s", firstW);
+
+		if (items < 1) {
+			isInPlayerFile = 0;
 			group = tDefaultGroup;
 			item = tDefaultItem;
 		}
-		else if (fullItems < 2) {
-			item = tDefaultItem;
+		else if (!strcmp("isinotherfilef", firstW)) {
+			isInPlayerFile = 0;
+			int fullItems = sscanf(flag.data(), "%s %d %s %d", firstW, &group, comma, &item);
+			assert(fullItems >= 2);
+
+			if (fullItems < 3) {
+				item = tDefaultItem;
+			}
+		}
+		else if (!strcmp("isinotherfiles", firstW)) {
+			isInPlayerFile = 1;
+			int fullItems = sscanf(flag.data(), "%s %d %s %d", firstW, &group, comma, &item);
+			if (fullItems < 2) {
+				logWarningFormat("Unable to parse hit definition sound flag %s. Defaulting.", flag);
+				group = tDefaultGroup;
+				item = tDefaultItem;
+			}
+			else if (fullItems < 3) {
+				item = tDefaultItem;
+			}
+		}
+		else {
+			isInPlayerFile = 0;
+			int fullItems = sscanf(flag.data(), "%d %s %d", &group, comma, &item);
+			if (fullItems < 1) {
+				logWarningFormat("Unable to parse hit definition sound flag %s. Defaulting.", flag);
+				group = tDefaultGroup;
+				item = tDefaultItem;
+			}
+			else if (fullItems < 2) {
+				item = tDefaultItem;
+			}
 		}
 	}
 
@@ -2921,11 +2907,15 @@ static void handleHitDefinitionSingleSound(DreamMugenAssignment** tAssignment, D
 }
 
 static void handleHitDefinitionSingleAttackHeight(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, MugenAttackHeight), MugenAttackHeight tDefault) {
+	if (!(*tAssignment)) {
+		tFunc(tPlayer, tDefault);
+		return;
+	}
+
 	string flag;
 	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	if (flag.empty()) tFunc(tPlayer, tDefault);
-	else if ("high" == flag) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_HIGH);
+	if ("high" == flag) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_HIGH);
 	else if ("low" == flag) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_LOW);
 	else if ("trip" == flag) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_TRIP);
 	else if ("heavy" == flag) tFunc(tPlayer, MUGEN_ATTACK_HEIGHT_HEAVY);
@@ -2937,153 +2927,187 @@ static void handleHitDefinitionSingleAttackHeight(DreamMugenAssignment** tAssign
 }
 
 static void handleExplodOneIntegerElement(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(int, int), int tDefault) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-	if (flag.empty()) tFunc(tID, tDefault);
-	else tFunc(tID, atoi(flag.data()));
+	if (!(*tAssignment)) {
+		tFunc(tID, tDefault);
+		return;
+	}
+	
+	tFunc(tID, evaluateDreamAssignmentAndReturnAsInteger(tAssignment, tPlayer));
 }
 
 static void handleExplodTwoIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(int, int, int), int tDefault1, int tDefault2) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
+	int val1, val2;
+	if (!(*tAssignment)) {
+		val1 = tDefault1;
+		val2 = tDefault2;
+	}
+	else {
+		string flag;
+		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	char string1[20], comma[10], string2[20];
-	int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
+		char string1[20], comma[10], string2[20];
+		int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
 
-	int val1;
-	if (items < 1 || !strcmp("", string1)) val1 = tDefault1;
-	else val1 = atoi(string1);
+		if (items < 1 || !strcmp("", string1)) val1 = tDefault1;
+		else val1 = atoi(string1);
 
-	int val2;
-	if (items < 3 || !strcmp("", string2)) val2 = tDefault2;
-	else val2 = atoi(string2);
-
+		if (items < 3 || !strcmp("", string2)) val2 = tDefault2;
+		else val2 = atoi(string2);
+	}
+	
 	tFunc(tID, val1, val2);
 }
 
 static void handleExplodThreeIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(int, int, int, int), int tDefault1, int tDefault2, int tDefault3) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-	char string[3][20], comma[2][10];
-	int items = sscanf(flag.data(), "%s %s %s %s %s", string[0], comma[0], string[1], comma[1], string[2]);
-
-	int defaults[3];
-	defaults[0] = tDefault1;
-	defaults[1] = tDefault2;
-	defaults[2] = tDefault3;
-
 	int vals[3];
-	int j;
-	for (j = 0; j < 3; j++) {
-		if (items < (1 + j * 2) || !strcmp("", string[j])) vals[j] = defaults[j];
-		else vals[j] = atoi(string[j]);
+	if (!(*tAssignment)) {
+		vals[0] = tDefault1;
+		vals[1] = tDefault2;
+		vals[2] = tDefault3;
 	}
+	else {
+		string flag;
+		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
+		char string[3][20], comma[2][10];
+		int items = sscanf(flag.data(), "%s %s %s %s %s", string[0], comma[0], string[1], comma[1], string[2]);
+
+		int defaults[3];
+		defaults[0] = tDefault1;
+		defaults[1] = tDefault2;
+		defaults[2] = tDefault3;
+
+		int j;
+		for (j = 0; j < 3; j++) {
+			if (items < (1 + j * 2) || !strcmp("", string[j])) vals[j] = defaults[j];
+			else vals[j] = atoi(string[j]);
+		}
+	}
+	
 	tFunc(tID, vals[0], vals[1], vals[2]);
 }
 
 static void handleExplodTwoFloatElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(int, double, double), double tDefault1, double tDefault2) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
+	double val1, val2;
+	if (!(*tAssignment)) {
+		val1 = tDefault1;
+		val2 = tDefault2;
+	}
+	else {
+		string flag;
+		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	char string1[20], comma[10], string2[20];
-	int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
+		char string1[20], comma[10], string2[20];
+		int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
 
-	double val1;
-	if (items < 1 || !strcmp("", string1)) val1 = tDefault1;
-	else val1 = atof(string1);
+		if (items < 1 || !strcmp("", string1)) val1 = tDefault1;
+		else val1 = atof(string1);
 
-	double val2;
-	if (items < 3 || !strcmp("", string2)) val2 = tDefault2;
-	else val2 = atof(string2);
+		if (items < 3 || !strcmp("", string2)) val2 = tDefault2;
+		else val2 = atof(string2);
+	}
 
 	tFunc(tID, val1, val2);
 }
 
 static void handleHitDefinitionOneIntegerElement(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int), int tDefault) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
+	if (!(*tAssignment)) {
+		tFunc(tPlayer, tDefault);
+		return;
+	}
 
-	if (flag.empty()) tFunc(tPlayer, tDefault);
-	else tFunc(tPlayer, atoi(flag.data()));
+	tFunc(tPlayer, evaluateDreamAssignmentAndReturnAsInteger(tAssignment, tPlayer));
 }
 
 static void handleHitDefinitionTwoIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int, int), int tDefault1, int tDefault2) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
+	int val1, val2;
+	if (!(*tAssignment)) {
+		val1 = tDefault1;
+		val2 = tDefault2;
+	}
+	else {
+		string flag;
+		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	char string1[20], comma[10], string2[20];
-	int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
+		char string1[20], comma[10], string2[20];
+		int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
 
-	int val1;
-	if (items < 1 || !strcmp("", string1)) val1 = tDefault1;
-	else val1 = atoi(string1);
+		if (items < 1 || !strcmp("", string1)) val1 = tDefault1;
+		else val1 = atoi(string1);
 
-	int val2;
-	if (items < 3 || !strcmp("", string2)) val2 = tDefault2;
-	else val2 = atoi(string2);
-
+		int val2;
+		if (items < 3 || !strcmp("", string2)) val2 = tDefault2;
+		else val2 = atoi(string2);
+	}
 	tFunc(tPlayer, val1, val2);
 }
 
 static void handleHitDefinitionThreeIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int, int, int), int tDefault1, int tDefault2, int tDefault3) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-	char string[3][20], comma[2][10];
-	int items = sscanf(flag.data(), "%s %s %s %s %s", string[0], comma[0], string[1], comma[1], string[2]);
-
-	int defaults[3];
-	defaults[0] = tDefault1;
-	defaults[1] = tDefault2;
-	defaults[2] = tDefault3;
-
 	int vals[3];
-	int j;
-	for (j = 0; j < 3; j++) {
-		if (items < (1 + j * 2) || !strcmp("", string[j])) vals[j] = defaults[j];
-		else vals[j] = atoi(string[j]);
+	if (!(*tAssignment)) {
+		vals[0] = tDefault1;
+		vals[1] = tDefault2;
+		vals[2] = tDefault3;
 	}
+	else {
+		string flag;
+		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
+		char string[3][20], comma[2][10];
+		int items = sscanf(flag.data(), "%s %s %s %s %s", string[0], comma[0], string[1], comma[1], string[2]);
+
+		int defaults[3];
+		defaults[0] = tDefault1;
+		defaults[1] = tDefault2;
+		defaults[2] = tDefault3;
+
+		int j;
+		for (j = 0; j < 3; j++) {
+			if (items < (1 + j * 2) || !strcmp("", string[j])) vals[j] = defaults[j];
+			else vals[j] = atoi(string[j]);
+		}
+	}
 	tFunc(tPlayer, vals[0], vals[1], vals[2]);
 }
 
 static void handleHitDefinitionOneFloatElement(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, double), double tDefault) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-	if (flag.empty()) tFunc(tPlayer, tDefault);
-	else tFunc(tPlayer, atof(flag.data()));
+	if (!(*tAssignment)) {
+		tFunc(tPlayer, tDefault);
+		return;
+	}
+	
+	tFunc(tPlayer, evaluateDreamAssignmentAndReturnAsFloat(tAssignment, tPlayer));
 }
 
 static void handleHitDefinitionTwoFloatElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, double, double), double tDefault1, double tDefault2) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
+	double val1, val2;
+	if (!(*tAssignment)) {
+		val1 = tDefault1;
+		val2 = tDefault2;
+	}
+	else {
+		string flag;
+		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	char string1[20], comma[10], string2[20];
-	int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
+		char string1[20], comma[10], string2[20];
+		int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
 
-	double val1;
-	if (items < 1 || !strcmp("", string1)) val1 = tDefault1;
-	else val1 = atof(string1);
+		if (items < 1 || !strcmp("", string1)) val1 = tDefault1;
+		else val1 = atof(string1);
 
-	double val2;
-	if (items < 3 || !strcmp("", string2)) val2 = tDefault2;
-	else val2 = atof(string2);
+		if (items < 3 || !strcmp("", string2)) val2 = tDefault2;
+		else val2 = atof(string2);
+	}
 
 	tFunc(tPlayer, val1, val2);
 }
 
 static void handleHitDefinitionTwoOptionalIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int, int), void(tFuncDisable)(DreamPlayer*)) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-	if (flag.empty()) {
+	if (!(*tAssignment)) {
 		tFuncDisable(tPlayer);
+		return;
 	}
-
+	
 	int x, y;
 	getTwoIntegerValuesWithDefaultValues(tAssignment, tPlayer, &x, &y, 0, 0);
 
@@ -3091,19 +3115,24 @@ static void handleHitDefinitionTwoOptionalIntegerElements(DreamMugenAssignment**
 }
 
 static void handleHitDefinitionSinglePowerAddition(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int, int), double tDefaultFactor, int tDamage) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
+	int val1, val2;
+	if (!(*tAssignment)) {
+		val1 = (int)(tDamage*tDefaultFactor);
+		val2 = val1 / 2;
+	}
+	else {
+		string flag;
+		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
 
-	char string1[20], comma[10], string2[20];
-	int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
+		char string1[20], comma[10], string2[20];
+		int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
 
-	int val1;
-	if (items < 1 || !strcmp("", string1)) val1 = (int)(tDamage*tDefaultFactor);
-	else val1 = atoi(string1);
+		if (items < 1 || !strcmp("", string1)) val1 = (int)(tDamage*tDefaultFactor);
+		else val1 = atoi(string1);
 
-	int val2;
-	if (items < 3 || !strcmp("", string2)) val2 = val1 / 2;
-	else val2 = atoi(string2);
+		if (items < 3 || !strcmp("", string2)) val2 = val1 / 2;
+		else val2 = atoi(string2);
+	}
 
 	tFunc(tPlayer, val1, val2);
 }
@@ -3923,22 +3952,16 @@ static int handlePowerSettingController(DreamMugenStateController* tController, 
 }
 
 static void getSingleIntegerValueOrDefaultFunctionCall(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(int), int tDefault) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
 	int val;
-	if (flag.empty()) val = tDefault;
-	else val = atoi(flag.data());
+	if (!(*tAssignment)) val = tDefault;
+	else val = evaluateDreamAssignmentAndReturnAsInteger(tAssignment, tPlayer);
 	tFunc(val);
 }
 
 static void getSingleFloatValueOrDefaultFunctionCall(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(double), double tDefault) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
 	double val;
-	if (flag.empty()) val = tDefault;
-	else val = atof(flag.data());
+	if (!(*tAssignment)) val = tDefault;
+	else val = evaluateDreamAssignmentAndReturnAsFloat(tAssignment, tPlayer);
 	tFunc(val);
 }
 
@@ -3992,18 +4015,18 @@ static void handleSuperPauseAnimation(DreamMugenAssignment** tAssignment, DreamP
 }
 
 static void handleSuperPauseSound(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
 	int isInPlayerFile;
 	int group;
 	int item;
-	if (flag.empty()) {
+	if (!(*tAssignment)) {
 		isInPlayerFile = 0;
 		group = -1;
 		item = -1;
 	}
 	else {
+		string flag;
+		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
+
 		char firstW[20], comma[10];
 		int items = sscanf(flag.data(), "%s", firstW);
 		assert(items == 1);
@@ -5613,11 +5636,11 @@ typedef struct {
 static void parseCreateAnimationStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	CreateAnimationStoryController* e = (CreateAnimationStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(CreateAnimationStoryController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mAnimation, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("loop", tGroup, &e->mIsLooping, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("stage", tGroup, &e->mIsBoundToStage, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mAnimation);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("loop", tGroup, &e->mIsLooping);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("stage", tGroup, &e->mIsBoundToStage);
 	e->mHasShadow = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("shadow", tGroup, &e->mShadowBasePositionY);
 
 	tController->mType = MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_ANIMATION;
@@ -5635,8 +5658,8 @@ typedef struct {
 static void parseChangeAnimationStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	ChangeAnimationStoryController* e = (ChangeAnimationStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(ChangeAnimationStoryController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mAnimation, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mAnimation);
 	e->mHasTarget = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("target", tGroup, &e->mTarget);
 
 	tController->mType = tType;
@@ -5676,28 +5699,28 @@ typedef struct {
 static void parseCreateTextStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	CreateTextStoryController* e = (CreateTextStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(CreateTextStoryController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition);
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("text.offset", tGroup, &e->mTextOffset, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("text.offset", tGroup, &e->mTextOffset);
 
 
 	e->mHasBackgroundSprite = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("bg.spr", tGroup, &e->mBackgroundSprite);
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("bg.offset", tGroup, &e->mBackgroundOffset, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("bg.offset", tGroup, &e->mBackgroundOffset);
 
 	e->mHasFaceSprite = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("face.spr", tGroup, &e->mFaceSprite);
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("face.offset", tGroup, &e->mFaceOffset, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("face.offset", tGroup, &e->mFaceOffset);
 
 	e->mHasName = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name", tGroup, &e->mName);
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("name.font", tGroup, &e->mNameFont, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("name.offset", tGroup, &e->mNameOffset, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("name.font", tGroup, &e->mNameFont);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("name.offset", tGroup, &e->mNameOffset);
 
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("text", tGroup, &e->mText, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("text", tGroup, &e->mText);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("font", tGroup, &e->mFont, "1 , 0 , 0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("width", tGroup, &e->mWidth, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("width", tGroup, &e->mWidth);
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("buildup", tGroup, &e->mIsBuildingUp, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("buildup", tGroup, &e->mIsBuildingUp);
 
 	e->mHasNextState = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("nextstate", tGroup, &e->mNextState);
 
@@ -5712,7 +5735,7 @@ typedef struct {
 static void parseRemoveElementStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	RemoveElementStoryController* e = (RemoveElementStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(RemoveElementStoryController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 	
 	tController->mType = tType;
 	tController->mData = e;
@@ -5754,7 +5777,7 @@ typedef struct {
 static void parseChangeTextStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	ChangeTextStoryController* e = (ChangeTextStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(ChangeTextStoryController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 	e->mDoesChangePosition = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("pos", tGroup, &e->mPosition);
 
 	e->mDoesChangeBackgroundSprite = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("bg.spr", tGroup, &e->mBackgroundSprite);
@@ -5771,7 +5794,7 @@ static void parseChangeTextStoryController(DreamMugenStateController* tControlle
 
 	e->mDoesChangeNextState = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("nextstate", tGroup, &e->mNextState);
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("buildup", tGroup, &e->mIsBuildingUp, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("buildup", tGroup, &e->mIsBuildingUp);
 
 	tController->mType = MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_TEXT;
 	tController->mData = e;
@@ -5786,7 +5809,7 @@ typedef struct {
 static void parseFadeStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	FadeStoryController* e = (FadeStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(FadeStoryController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("duration", tGroup, &e->mDuration, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("duration", tGroup, &e->mDuration);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("color", tGroup, &e->mColor, "0,0,0");
 
 	tController->mType = tType;
@@ -5805,8 +5828,8 @@ typedef struct {
 static void parseAnimationSetFaceDirectionStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	AnimationSetFaceDirectionStoryController* e = (AnimationSetFaceDirectionStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(AnimationSetFaceDirectionStoryController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mFacing, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("facing", tGroup, &e->mFacing);
 	e->mHasTarget = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("target", tGroup, &e->mTarget);
 
 	tController->mType = tType;
@@ -5816,8 +5839,8 @@ static void parseAnimationSetFaceDirectionStoryController(DreamMugenStateControl
 static void parseAnimationAngleStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	AnimationSetFaceDirectionStoryController* e = (AnimationSetFaceDirectionStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(AnimationSetFaceDirectionStoryController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("angle", tGroup, &e->mFacing, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("angle", tGroup, &e->mFacing);
 	e->mHasTarget = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("target", tGroup, &e->mTarget);
 
 	tController->mType = tType;
@@ -5835,7 +5858,7 @@ typedef struct {
 static void parseAnimationSetColorStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	AnimationSetSingleValueStoryController* e = (AnimationSetSingleValueStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(AnimationSetSingleValueStoryController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("color", tGroup, &e->mValue, "1,1,1");
 	e->mHasTarget = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("target", tGroup, &e->mTarget);
 
@@ -5846,7 +5869,7 @@ static void parseAnimationSetColorStoryController(DreamMugenStateController* tCo
 static void parseAnimationSetOpacityStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	AnimationSetSingleValueStoryController* e = (AnimationSetSingleValueStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(AnimationSetSingleValueStoryController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("opacity", tGroup, &e->mValue, "1");
 	e->mHasTarget = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("target", tGroup, &e->mTarget);
 
@@ -5869,11 +5892,11 @@ typedef struct {
 static void parseCreateCharStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	CreateCharacterStoryController* e = (CreateCharacterStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(CreateCharacterStoryController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("name", tGroup, &e->mName, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mStartAnimationNumber, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("stage", tGroup, &e->mIsBoundToStage, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("name", tGroup, &e->mName);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("anim", tGroup, &e->mStartAnimationNumber);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("stage", tGroup, &e->mIsBoundToStage);
 	e->mHasShadow = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("shadow", tGroup, &e->mShadowBasePositionY);
 
 	tController->mType = MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_CHARACTER;
@@ -5888,8 +5911,8 @@ typedef struct {
 static void parseCreateHelperStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	CreateHelperStoryController* e = (CreateHelperStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(CreateHelperStoryController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("state", tGroup, &e->mState, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("state", tGroup, &e->mState);
 
 	tController->mType = MUGEN_STORY_STATE_CONTROLLER_TYPE_CREATE_HELPER;
 	tController->mData = e;
@@ -5904,9 +5927,9 @@ typedef struct {
 static void parseLockTextToCharacterStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	LockTextToCharacterStoryController* e = (LockTextToCharacterStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(LockTextToCharacterStoryController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("character", tGroup, &e->mCharacterID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("offset", tGroup, &e->mOffset, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("character", tGroup, &e->mCharacterID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("offset", tGroup, &e->mOffset);
 
 	tController->mType = MUGEN_STORY_STATE_CONTROLLER_TYPE_LOCK_TEXT_TO_CHARACTER;
 	tController->mData = e;
@@ -5920,8 +5943,8 @@ typedef struct {
 static void parseNameIDStoryController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	NameTextStoryController* e = (NameTextStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(NameTextStoryController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("name", tGroup, &e->mName, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("name", tGroup, &e->mName);
 
 	tController->mType = MUGEN_STORY_STATE_CONTROLLER_TYPE_NAME_ID;
 	tController->mData = e;
@@ -6060,7 +6083,7 @@ typedef struct {
 static void parseStoryTarget2DPhysicsController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	StoryTarget2DPhysicsController* e = (StoryTarget2DPhysicsController*)allocMemoryOnMemoryStackOrMemory(sizeof(StoryTarget2DPhysicsController));
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID, "");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 	e->mIsSettingX = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("x", tGroup, &e->x);
 	e->mIsSettingY = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("y", tGroup, &e->y);
 	e->mHasTarget = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("target", tGroup, &e->mTarget);

@@ -239,7 +239,7 @@ DreamMugenAssignment * makeDreamFloatMugenAssignment(double tVal)
 	return (DreamMugenAssignment*)f;
 }
 
-DreamMugenAssignment * makeDreamStringMugenAssignment(char * tVal)
+DreamMugenAssignment * makeDreamStringMugenAssignment(const char * tVal)
 {
 	DreamMugenStringAssignment* s = (DreamMugenStringAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenStringAssignment));
 	gDebugAssignmentAmount++;

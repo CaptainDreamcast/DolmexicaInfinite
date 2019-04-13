@@ -2737,6 +2737,8 @@ void shutdownDreamAssignmentEvaluator()
 
 int evaluateDreamAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer)
 {
+	if (!(*tAssignment)) return 0;
+
 	int isStatic;
 	AssignmentReturnValue* ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
 	return convertAssignmentReturnToBool(ret);
@@ -2744,6 +2746,8 @@ int evaluateDreamAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPl
 
 double evaluateDreamAssignmentAndReturnAsFloat(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer)
 {
+	if (!(*tAssignment)) return 0;
+
 	int isStatic;
 	AssignmentReturnValue* ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
 	return convertAssignmentReturnToFloat(ret);
@@ -2751,6 +2755,8 @@ double evaluateDreamAssignmentAndReturnAsFloat(DreamMugenAssignment** tAssignmen
 
 int evaluateDreamAssignmentAndReturnAsInteger(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer)
 {
+	if (!(*tAssignment)) return 0;
+
 	int isStatic;
 	AssignmentReturnValue* ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
 	return convertAssignmentReturnToNumber(ret);
@@ -2758,6 +2764,11 @@ int evaluateDreamAssignmentAndReturnAsInteger(DreamMugenAssignment** tAssignment
 
 void evaluateDreamAssignmentAndReturnAsString(string& oString, DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer)
 {
+	if (!(*tAssignment)) {
+		oString = "";
+		return;
+	}
+
 	int isStatic;
 	AssignmentReturnValue* ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
 	convertAssignmentReturnToString(oString, ret);
@@ -2765,6 +2776,8 @@ void evaluateDreamAssignmentAndReturnAsString(string& oString, DreamMugenAssignm
 
 Vector3D evaluateDreamAssignmentAndReturnAsVector3D(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer)
 {
+	if (!(*tAssignment)) return makePosition(0, 0, 0);
+
 	int isStatic;
 	AssignmentReturnValue* ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
 	string test;
@@ -2787,6 +2800,8 @@ Vector3D evaluateDreamAssignmentAndReturnAsVector3D(DreamMugenAssignment** tAssi
 
 Vector3DI evaluateDreamAssignmentAndReturnAsVector3DI(DreamMugenAssignment** tAssignment, DreamPlayer * tPlayer)
 {
+	if (!(*tAssignment)) return makeVector3DI(0, 0, 0);
+
 	int isStatic;
 	AssignmentReturnValue* ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
 	string test;
