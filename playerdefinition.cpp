@@ -1103,7 +1103,7 @@ static void updateNoJuggleCheckFlag(DreamPlayer* tPlayer) {
 	tPlayer->mNoJuggleCheckFlag = 0;
 }
 
-static void updateOffsetFlag(DreamPlayer* tPlayer) {
+static void updateOffsetFlag(DreamPlayer* tPlayer) { // TODO: check
 	if (tPlayer->mDrawOffset.x) {
 		setPlayerDrawOffsetX(tPlayer, 0, getPlayerCoordinateP(tPlayer));
 	}
