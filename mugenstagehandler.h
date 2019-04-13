@@ -6,8 +6,16 @@
 #include <prism/mugenanimationreader.h>
 #include <prism/geometry.h>
 #include <prism/datastructures.h>
+#include <prism/stlutil.h>
 
 #define BACKGROUND_UPPER_BASE_Z 52
+
+typedef struct {
+	int mID;
+	Position mReferencePosition; // TODO rewrite without reference position and remove list
+	Position mOffset;
+
+} StageElementAnimationReference;
 
 typedef struct {
 
@@ -19,7 +27,7 @@ typedef struct {
 	MugenSpriteFile* mSprites;
 	MugenAnimation* mAnimation;
 	int mOwnsAnimation;
-	List mAnimationReferences;
+	std::list<StageElementAnimationReference> mAnimationReferences;
 
 	double mStartScaleY;
 	double mScaleDeltaY;
@@ -60,6 +68,6 @@ void addStageElementPositionX(StaticStageHandlerElement* tElement, double tPosit
 void addStageElementPositionY(StaticStageHandlerElement* tElement, double tPositionY);
 void setStageElementAnimation(StaticStageHandlerElement* tElement, int tAnimation);
 
-Vector* getStageHandlerElementsWithID(int tID);
+std::vector<StaticStageHandlerElement*>& getStageHandlerElementsWithID(int tID);
 
 ActorBlueprint getDreamMugenStageHandler();

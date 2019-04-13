@@ -5,6 +5,8 @@
 #include "mugenstagehandler.h"
 #include "mugenassignmentevaluator.h"
 
+using namespace std;
+
 typedef enum {
 	BACKGROUND_STATE_CONTROLLER_NULL,
 	BACKGROUND_STATE_CONTROLLER_VISIBLE,
@@ -235,20 +237,20 @@ static void loadBackgroundStateControllerElements(MugenDefScriptGroup* tGroup, V
 		int i;
 		for (i = 0; i < vector.mSize; i++) {
 			int id = atoi(vector.mElement[i]);
-			Vector* elementList = getStageHandlerElementsWithID(id);
+			auto elementList = getStageHandlerElementsWithID(id);
 			int j;
-			for (j = 0; j < elementList->mSize; j++) {
-				StaticStageHandlerElement* element = (StaticStageHandlerElement*)vector_get(elementList, j);
+			for (j = 0; j < (int)elementList.size(); j++) {
+				StaticStageHandlerElement* element = elementList[j];
 				vector_push_back(oElements, element);
 			}
 		}
 	}
 	else if(isMugenDefNumberVariableAsGroup(tGroup, "ctrlid")){
 		int id = getMugenDefNumberVariableAsGroup(tGroup, "ctrlid");
-		Vector* elementList = getStageHandlerElementsWithID(id);
+		auto elementList = getStageHandlerElementsWithID(id);
 		int j;
-		for (j = 0; j < elementList->mSize; j++) {
-			StaticStageHandlerElement* element = (StaticStageHandlerElement*)vector_get(elementList, j);
+		for (j = 0; j < (int)elementList.size(); j++) {
+			StaticStageHandlerElement* element = elementList[j];
 			vector_push_back(oElements, element);
 		}
 	}
