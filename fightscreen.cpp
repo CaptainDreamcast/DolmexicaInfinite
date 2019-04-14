@@ -70,7 +70,7 @@ static void loadFightScreen() {
 
 	malloc_stats();
 	logg("create mem stack\n");
-	gData.mMemoryStack = createMemoryStack(1024 * 1024 * 5); // should be 3
+	gData.mMemoryStack = createMemoryStack(1024 * 1024 * 3);
 	
 	malloc_stats();
 	logg("init evaluators\n");
