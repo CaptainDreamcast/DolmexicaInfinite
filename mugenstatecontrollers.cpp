@@ -144,7 +144,7 @@ typedef struct {
 
 static void parseChangeStateController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	ChangeStateController* e = (ChangeStateController*)allocMemoryOnMemoryStackOrMemory(sizeof(ChangeStateController));
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mState));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mState);
 
 	e->mIsChangingControl = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("ctrl", tGroup, &e->mControl);
 
@@ -184,7 +184,7 @@ typedef struct {
 
 static void parseTargetChangeStateController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	TargetChangeStateController* e = (TargetChangeStateController*)allocMemoryOnMemoryStackOrMemory(sizeof(TargetChangeStateController));
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mState));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mState);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 
 	e->mIsChangingControl = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("ctrl", tGroup, &e->mControl);
@@ -535,7 +535,7 @@ typedef struct {
 static void parsePlaySoundController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	PlaySoundController* e = (PlaySoundController*)allocMemoryOnMemoryStackOrMemory(sizeof(PlaySoundController));
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue);
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("volumescale", tGroup, &e->mVolumeScale);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("channel", tGroup, &e->mChannel);
@@ -609,7 +609,7 @@ typedef struct {
 static void parseChangeAnimationController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	ChangeAnimationController* e = (ChangeAnimationController*)allocMemoryOnMemoryStackOrMemory(sizeof(ChangeAnimationController));
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->tNewAnimation));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->tNewAnimation);
 
 
 	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("elem", tGroup, &e->tStep)) {
@@ -637,7 +637,7 @@ typedef struct {
 static void parseControlSettingController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	ControlSettingController* e = (ControlSettingController*)allocMemoryOnMemoryStackOrMemory(sizeof(ControlSettingController));
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->tValue));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->tValue);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_CONTROL;
 	tController->mData = e;
@@ -659,7 +659,7 @@ typedef struct {
 static void parseSpritePriorityController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	SpritePriorityController* e = (SpritePriorityController*)allocMemoryOnMemoryStackOrMemory(sizeof(SpritePriorityController));
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->tValue));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->tValue);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SPRITE_PRIORITY;
 	tController->mData = e;
@@ -686,7 +686,7 @@ typedef struct {
 static void parseSpecialAssertController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	SpecialAssertController* e = (SpecialAssertController*)allocMemoryOnMemoryStackOrMemory(sizeof(SpecialAssertController));
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("flag", tGroup, &e->mFlag));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("flag", tGroup, &e->mFlag);
 	e->mHasFlag2 = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("flag2", tGroup, &e->mFlag2);
 	e->mHasFlag3 = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("flag3", tGroup, &e->mFlag3);
 
@@ -826,7 +826,7 @@ static void parseSingleVarSetControllerEntry(VarSetControllerCaller* tCaller, co
 
 	e->mID = makeDreamNumberMugenAssignment(atoi(value));
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tName.data(), caller->mGroup, &e->mAssignment));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tName.data(), caller->mGroup, &e->mAssignment);
 
 	vector_push_back_owned(&caller->mController->mVarSets, e);
 }
@@ -835,7 +835,7 @@ static void loadSingleOriginalVarSetController(Vector* tDst, MugenDefScriptGroup
 	VarSetControllerEntry* e = (VarSetControllerEntry*)allocMemoryOnMemoryStackOrMemory(sizeof(VarSetControllerEntry));
 	e->mType = tType;
 	fetchDreamAssignmentFromGroupAsElement(tIDElement, &e->mID);
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mAssignment));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mAssignment);
 
 	vector_push_back_owned(tDst, e);
 }
@@ -904,11 +904,11 @@ static void parseVarRangeSetController(DreamMugenStateController* tController, M
 
 	if (isIntegerVersion) {
 		e->mType = VAR_SET_TYPE_INTEGER;
-		assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
+		fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue);
 	}
 	else {
 		e->mType = VAR_SET_TYPE_FLOAT;
-		assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("fvalue", tGroup, &e->mValue));
+		fetchDreamAssignmentFromGroupAndReturnWhetherItExists("fvalue", tGroup, &e->mValue);
 	}
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("first", tGroup, &e->mFirst);
@@ -1005,7 +1005,7 @@ typedef struct {
 static void parseDefenseMultiplierController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	DefenseMultiplierController* e = (DefenseMultiplierController*)allocMemoryOnMemoryStackOrMemory(sizeof(DefenseMultiplierController));
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_DEFENSE_MULTIPLIER;
 	tController->mData = e;
@@ -1049,7 +1049,7 @@ typedef struct {
 static void parseExplodController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	ExplodController* e = (ExplodController*)allocMemoryOnMemoryStackOrMemory(sizeof(ExplodController));
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("anim", tGroup, &e->mAnim));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("anim", tGroup, &e->mAnim);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pos", tGroup, &e->mPosition);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("postype", tGroup, &e->mPositionType, "p1");
@@ -1275,7 +1275,7 @@ typedef struct {
 static void parseSingleRequiredValueController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	SingleRequiredValueController* e = (SingleRequiredValueController*)allocMemoryOnMemoryStackOrMemory(sizeof(SingleRequiredValueController));
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue);
 
 	tController->mType = tType;
 	tController->mData = e;
@@ -1298,7 +1298,7 @@ typedef struct {
 static void parseEnvironmentShakeController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	EnvironmentShakeController* e = (EnvironmentShakeController*)allocMemoryOnMemoryStackOrMemory(sizeof(EnvironmentShakeController));
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("time", tGroup, &e->mTime));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("time", tGroup, &e->mTime);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("freq", tGroup, &e->mFrequency);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("ampl", tGroup, &e->mAmplitude);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("phase", tGroup, &e->mPhaseOffset);
@@ -1495,7 +1495,7 @@ typedef struct {
 static void parseLifeAddController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	LifeAddController* e = (LifeAddController*)allocMemoryOnMemoryStackOrMemory(sizeof(LifeAddController));
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("kill", tGroup, &e->mCanKill);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("absolute", tGroup, &e->mIsAbsolute);
 
@@ -1524,7 +1524,7 @@ typedef struct {
 static void parseTargetLifeAddController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	TargetLifeAddController* e = (TargetLifeAddController*)allocMemoryOnMemoryStackOrMemory(sizeof(TargetLifeAddController));
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("kill", tGroup, &e->mCanKill);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("absolute", tGroup, &e->mIsAbsolute);
@@ -1666,7 +1666,7 @@ typedef struct {
 static void parseSetTargetFacingController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	SetTargetFacingController* e = (SetTargetFacingController*)allocMemoryOnMemoryStackOrMemory(sizeof(SetTargetFacingController));
 
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_SET_TARGET_FACING;
@@ -6010,7 +6010,7 @@ static void parseSingleStoryVarSetControllerEntry(StoryVarSetControllerCaller* t
 	}
 	
 	e->mID = makeDreamNumberMugenAssignment(atoi(value)); // TODO: proper parsing
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tName.data(), caller->mGroup, &e->mAssignment));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tName.data(), caller->mGroup, &e->mAssignment);
 
 	vector_push_back_owned(&caller->mController->mStoryVarSets, e);
 }
@@ -6019,7 +6019,7 @@ static void loadSingleOriginalStoryVarSetController(Vector* tDst, MugenDefScript
 	StoryVarSetControllerEntry* e = (StoryVarSetControllerEntry*)allocMemoryOnMemoryStackOrMemory(sizeof(StoryVarSetControllerEntry));
 	e->mType = tType;
 	fetchDreamAssignmentFromGroupAsElement(tIDElement, &e->mID);
-	assert(fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mAssignment));
+	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mAssignment);
 
 	vector_push_back_owned(tDst, e);
 }

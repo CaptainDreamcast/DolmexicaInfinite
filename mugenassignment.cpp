@@ -944,7 +944,7 @@ static int isVector(char* tText) {
 
 static DreamMugenAssignment* parseMugenContextFreeVectorFromString(char* tText) {
 	int position;
-	assert(hasContextFreeComma(tText, &position));
+	hasContextFreeComma(tText, &position);
 
 	// TODO: handle when second element is gone
 	return parseTwoElementMugenAssignmentFromStringWithFixedPosition(tText, MUGEN_ASSIGNMENT_TYPE_VECTOR, ",", position);
@@ -1011,7 +1011,7 @@ static int isOperatorArgument(char* tText) {
 static DreamMugenAssignment* parseMugenOperatorArgumentFromString(char* tText) {
 	char dst[10];
 	char text[200];
-	assert(isOperatorAndReturnType(tText, dst));
+	isOperatorAndReturnType(tText, dst);
 
 	sprintf(text, "%s $$ %s", dst, tText + strlen(dst));
 	return parseTwoElementMugenAssignmentFromString(text, MUGEN_ASSIGNMENT_TYPE_OPERATOR_ARGUMENT, "$$");
@@ -1120,7 +1120,10 @@ DreamMugenAssignment * parseDreamMugenAssignmentFromString(char * tText)
 
 
 int fetchDreamAssignmentFromGroupAndReturnWhetherItExists(const char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tOutput) {
-	if (!stl_string_map_contains_array(tGroup->mElements, tName)) return 0;
+	if (!stl_string_map_contains_array(tGroup->mElements, tName)) {
+		*tOutput = NULL;
+		return 0;
+	}
 	MugenDefScriptGroupElement* e = &tGroup->mElements[tName];
 	fetchDreamAssignmentFromGroupAsElement(e, tOutput);
 

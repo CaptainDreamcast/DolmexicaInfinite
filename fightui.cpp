@@ -750,7 +750,7 @@ static void loadRound(MugenDefScript* tScript) {
 
 	if (isMugenDefVariable(tScript, "Round", "round.default.anim")) {
 		gData.mRound.mHasDefaultAnimation = 1;
-		assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "round.default", 1, &gData.mRound.mDefaultAnimation, &gData.mRound.mOwnsDefaultAnimation, &gData.mRound.mPosition, &gData.mRound.mDefaultFaceDirection));
+		loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "round.default", 1, &gData.mRound.mDefaultAnimation, &gData.mRound.mOwnsDefaultAnimation, &gData.mRound.mPosition, &gData.mRound.mDefaultFaceDirection);
 	}
 	else {
 		gData.mRound.mHasDefaultAnimation = 0;
@@ -768,7 +768,7 @@ static void loadRound(MugenDefScript* tScript) {
 		else {
 			gData.mRound.mHasCustomRoundAnimation[i] = 1;
 			sprintf(name, "round%d", i + 1);
-			assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", name, 1, &gData.mRound.mCustomRoundAnimations[i], &gData.mRound.mOwnsCustomRoundAnimations[i], &gData.mRound.mCustomRoundPositions[i], &gData.mRound.mCustomRoundFaceDirection[i]));
+			loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", name, 1, &gData.mRound.mCustomRoundAnimations[i], &gData.mRound.mOwnsCustomRoundAnimations[i], &gData.mRound.mCustomRoundPositions[i], &gData.mRound.mCustomRoundFaceDirection[i]);
 		}
 
 		sprintf(name, "round%d.snd", i + 1);
@@ -789,7 +789,7 @@ static void loadFight(MugenDefScript* tScript) {
 	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
 	basePosition.z = UI_BASE_Z;
 
-	assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "fight", 1, &gData.mFight.mAnimation, &gData.mFight.mOwnsAnimation, &gData.mFight.mPosition, &gData.mFight.mFaceDirection));
+	loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "fight", 1, &gData.mFight.mAnimation, &gData.mFight.mOwnsAnimation, &gData.mFight.mPosition, &gData.mFight.mFaceDirection);
 	gData.mFight.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "fight.sndtime", 0);
 	gData.mFight.mSound = getMugenDefVectorIOrDefault(tScript, "Round", "fight.snd", makeVector3DI(1, 0, 0));
 
@@ -801,7 +801,7 @@ static void loadKO(MugenDefScript* tScript) {
 	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
 	basePosition.z = UI_BASE_Z;
 
-	assert(loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "ko", 1, &gData.mKO.mAnimation, &gData.mKO.mOwnsAnimation, &gData.mKO.mPosition, &gData.mKO.mFaceDirection));
+	loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "ko", 1, &gData.mKO.mAnimation, &gData.mKO.mOwnsAnimation, &gData.mKO.mPosition, &gData.mKO.mFaceDirection);
 	gData.mKO.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "ko.sndtime", 0);
 	gData.mKO.mSound = getMugenDefVectorIOrDefault(tScript, "Round", "ko.snd", makeVector3DI(1, 0, 0));
 
