@@ -13,6 +13,7 @@
 #include "fightdebug.h"
 #include "mugencommandhandler.h"
 #include "mugenassignmentevaluator.h"
+#include "titlescreen.h"
 
 using namespace std;
 
@@ -44,6 +45,10 @@ static vector<string> splitCommandString(string s) {
 	return ret;
 }
 
+static void mockFightFinishedCB() {
+	setNewScreen(getDreamTitleScreen());
+}
+
 static string fightCB(void* tCaller, string tCommand) {
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
@@ -69,7 +74,7 @@ static string fightCB(void* tCaller, string tCommand) {
 		setGameModeTraining();
 	}
 
-	startFightScreen();
+	startFightScreen(mockFightFinishedCB);
 
 	return "";
 }
@@ -83,7 +88,7 @@ static string stageCB(void* tCaller, string tCommand) {
 	setPlayerDefinitionPath(1, "assets/chars/kfm/kfm.def");
 	setDreamStageMugenDefinition(("assets/stages/" + words[1]).data(), "");
 	setGameModeTraining();
-	startFightScreen();
+	startFightScreen(mockFightFinishedCB);
 
 	return "";
 }

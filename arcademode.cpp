@@ -64,8 +64,7 @@ static void versusScreenFinishedCB() {
 	int isFinalFight = gData.mCurrentEnemy == gData.mEnemyAmount - 1;
 	setGameModeArcade();
 	setFightResultActive(isFinalFight && !gData.mHasEnding);
-	setFightScreenFinishedCBs(fightFinishedCB, fightLoseCB); 
-	startFightScreen();
+	startFightScreen(fightFinishedCB, fightLoseCB);
 }
 
 typedef struct {

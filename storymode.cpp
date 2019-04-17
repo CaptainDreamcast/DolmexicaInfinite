@@ -61,8 +61,7 @@ static void fightFinishedCB() {
 }
 
 static void internCharacterSelectOverCB() {
-	setFightScreenFinishedCBs(fightFinishedCB, NULL);
-	startFightScreen();
+	startFightScreen(fightFinishedCB);
 }
 
 static void loadFightGroup(MugenDefScriptGroup* tGroup) {

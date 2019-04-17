@@ -28,8 +28,7 @@ static void fightFinishedCB();
 
 static void versusScreenFinishedCB() {
 	setGameModeExhibit(gData.mFightEndTime, gData.mIsDisplayingFightBars);
-	setFightScreenFinishedCBs(fightFinishedCB, NULL);
-	startFightScreen();
+	startFightScreen(fightFinishedCB);
 }
 
 static void fightFinishedCB() {

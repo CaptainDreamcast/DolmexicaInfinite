@@ -14,8 +14,7 @@ static void fightFinishedCB();
 
 static void versusScreenFinishedCB() {
 	setGameModeTraining();
-	setFightScreenFinishedCBs(fightFinishedCB, NULL);
-	startFightScreen();
+	startFightScreen(fightFinishedCB);
 }
 
 static void characterSelectFinishedCB() {

@@ -71,8 +71,7 @@ static void fightFinishedCB() {
 	updateSurvivalResultMessage();
 	updateSurvivalResultIsShowingWinPose();
 	setGameModeSurvival(gData.mLifePercentage, gData.mCurrentEnemy+1);
-	setFightScreenFinishedCBs(fightFinishedCB, NULL);
-	startFightScreen();
+	startFightScreen(fightFinishedCB);
 }
 
 static void loadResultScreenFromScript(MugenDefScript* tScript) {

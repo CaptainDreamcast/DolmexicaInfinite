@@ -177,9 +177,16 @@ static void exitFightScreenCB(void* tCaller) {
 	loadMugenSystemFonts();
 }
 
-void startFightScreen() {
+void startFightScreen(void(*tWinCB)(), void(*tLoseCB)()) {
+	gData.mWinCB = tWinCB;
+	gData.mLoseCB = tLoseCB;
 	setWrapperBetweenScreensCB(loadFightFonts, NULL);
 	setNewScreen(getDreamFightScreen());
+}
+
+void reloadFightScreen()
+{
+	startFightScreen(gData.mWinCB, gData.mLoseCB);
 }
 
 void stopFightScreenWin() {
@@ -203,9 +210,4 @@ void stopFightScreenLose()
 void stopFightScreenToFixedScreen(Screen* tNextScreen) {
 	setWrapperBetweenScreensCB(exitFightScreenCB, NULL);
 	setNewScreen(tNextScreen);
-}
-
-void setFightScreenFinishedCBs(void(*tWinCB)(), void(*tLoseCB)()) {
-	gData.mWinCB = tWinCB;
-	gData.mLoseCB = tLoseCB;
 }

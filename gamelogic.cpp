@@ -444,7 +444,7 @@ void resetRound() {
 
 void reloadFight()
 {
-	startFightScreen();
+	reloadFightScreen();
 }
 
 void skipFightIntroWithoutFading()

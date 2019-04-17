@@ -4750,8 +4750,8 @@ static int handlePaletteEffect(DreamMugenStateController* tController, DreamPlay
 static int handleAppendToClipboardController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	ClipboardController* e = (ClipboardController*)tController->mData;
 	string formatString, parameterString;
-	evaluateDreamAssignmentAndReturnAsString(formatString, &e->mText, tPlayer);
-	evaluateDreamAssignmentAndReturnAsString(parameterString, &e->mParams, tPlayer);
+	if(e->mText) evaluateDreamAssignmentAndReturnAsString(formatString, &e->mText, tPlayer);
+	if (e->mParams) evaluateDreamAssignmentAndReturnAsString(parameterString, &e->mParams, tPlayer);
 
 	addClipboardLineFormatString(formatString.data(), parameterString.data());
 
