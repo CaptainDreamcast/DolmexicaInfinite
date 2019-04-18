@@ -430,15 +430,6 @@ static void unloadHelperStateWithoutFreeingOwnedHelpersAndProjectile(DreamPlayer
 	delete_list(&p->mBoundHelpers);
 }
 
-static void unloadHelperState(DreamPlayer* p) {
-	list_remove_predicate(&p->mHelpers, unloadSingleHelper, NULL);
-	delete_list(&p->mHelpers);
-	int_map_remove_predicate(&p->mProjectiles, unloadSingleProjectile, NULL);
-	delete_int_map(&p->mProjectiles);
-
-	delete_list(&p->mBoundHelpers);
-}
-
 static void unloadPlayerFiles(DreamPlayerHeader* tHeader) {
 	//unloadDreamMugenConstantsFile(&tHeader->mFiles.mConstants);
 	unloadDreamMugenCommandFile(&tHeader->mFiles.mCommands);

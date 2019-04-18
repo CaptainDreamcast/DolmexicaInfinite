@@ -368,7 +368,7 @@ static void loadMugenConstantsHeader(DreamMugenConstantsHeader* tHeader, MugenDe
 	tHeader->mFloatPersistIndex = getMugenDefIntegerOrDefault(tScript, "Data", "FloatPersistIndex", 40);
 }
 
-static int getMugenDefVectorIAndReturnWhetherItExists(MugenDefScript* tScript, char* tGroupName, char* tVariableName, Vector3DI* oVector) {
+static int getMugenDefVectorIAndReturnWhetherItExists(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName, Vector3DI* oVector) {
 	if (!isMugenDefVectorIVariable(tScript, tGroupName, tVariableName)) return 0;
 	*oVector = getMugenDefVectorIVariable(tScript, tGroupName, tVariableName);
 	return 1;

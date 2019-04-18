@@ -734,7 +734,7 @@ static DreamMugenAssignment* parseStringConstantFromString(char* tText) {
 	return (DreamMugenAssignment*)s;
 }
 
-int doDreamAssignmentStringsBeginsWithPattern(char* tPattern, char* tText) {
+int doDreamAssignmentStringsBeginsWithPattern(const char* tPattern, char* tText) {
 	int n = strlen(tPattern);
 	int m = strlen(tText);
 	if (m < n) return 0;

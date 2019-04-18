@@ -1176,7 +1176,7 @@ typedef struct {
 	uint8_t mHasValue2;
 } NotHitByController;
 
-static void readMugenDefStringVector(MugenStringVector* tDst, MugenDefScriptGroup* tGroup, char* tName, uint8_t* oHasValue) {
+static void readMugenDefStringVector(MugenStringVector* tDst, MugenDefScriptGroup* tGroup, const char* tName, uint8_t* oHasValue) {
 	if (stl_string_map_contains_array(tGroup->mElements, tName)) {
 		MugenDefScriptGroupElement* elem = &tGroup->mElements[tName];
 		*oHasValue = 1;
@@ -3994,6 +3994,7 @@ static void handleSuperPauseSound(DreamMugenAssignment** tAssignment, DreamPlaye
 
 		char firstW[20], comma[10];
 		int items = sscanf(flag.data(), "%s", firstW);
+		(void)items;
 		assert(items == 1);
 
 		if (!strcmp("isinotherfilef", firstW)) {
