@@ -408,20 +408,6 @@ void loadPlayerSprites() {
 	}
 }
 
-static int unloadSingleHelper(void* tCaller, void* tData) {
-	(void)tCaller;
-	DreamPlayer* p = (DreamPlayer*)tData;
-	(void)p; // TODO
-	return 1;
-}
-
-static int unloadSingleProjectile(void* tCaller, void* tData) {
-	(void)tCaller;
-	DreamPlayer* p = (DreamPlayer*)tData;
-	(void)p; // TODO
-	return 1;
-}
-
 // TODO: make sure child players are moved
 static void unloadHelperStateWithoutFreeingOwnedHelpersAndProjectile(DreamPlayer* p) {
 	delete_list(&p->mHelpers);
