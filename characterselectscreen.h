@@ -5,7 +5,7 @@
 
 Screen* getCharacterSelectScreen();
 
-void setCharacterSelectScreenModeName(char* tModeName);
+void setCharacterSelectScreenModeName(const char* tModeName);
 void setCharacterSelectFinishedCB(void(*tCB)());
 void setCharacterSelectStageActive();
 void setCharacterSelectStageInactive();

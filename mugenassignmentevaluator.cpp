@@ -82,10 +82,6 @@ static AssignmentReturnValue* getFreeAssignmentReturnValue() {
 	return &gAssignmentEvaluator.mStack[gAssignmentEvaluator.mFreePointer++];
 }
 
-static void popAssignmentReturn() {
-	gAssignmentEvaluator.mFreePointer--;
-}
-
 typedef AssignmentReturnValue*(*VariableFunction)(DreamPlayer*);
 typedef AssignmentReturnValue*(*ArrayFunction)(DreamMugenAssignment**, DreamPlayer*, int*);
 typedef AssignmentReturnValue*(*ComparisonFunction)(char*, AssignmentReturnValue*, DreamPlayer*, int*);
@@ -889,14 +885,14 @@ static AssignmentReturnValue* evaluateProjNumberAssignment(AssignmentReturnValue
 	return makeBooleanAssignmentReturn(ret == compareValue);
 }
 
-int getProjectileIDFromAssignmentName(char* tName, char* tBaseName) {
+static int getProjectileIDFromAssignmentName(char* tName, const char* tBaseName) {
 	char* idOffset = tName += strlen(tBaseName);
 	if (*idOffset == '\0') return 0;
 
 	return atoi(idOffset);
 }
 
-static AssignmentReturnValue* evaluateProjAssignment(char* tName, char* tBaseName, AssignmentReturnValue* tCommand, DreamPlayer* tPlayer, int(*tTimeFunc)(DreamPlayer*, int), int* tIsStatic) {
+static AssignmentReturnValue* evaluateProjAssignment(char* tName, const char* tBaseName, AssignmentReturnValue* tCommand, DreamPlayer* tPlayer, int(*tTimeFunc)(DreamPlayer*, int), int* tIsStatic) {
 	int projID = getProjectileIDFromAssignmentName(tName, tBaseName);
 
 	if (tCommand->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR) {
@@ -907,7 +903,7 @@ static AssignmentReturnValue* evaluateProjAssignment(char* tName, char* tBaseNam
 	}
 }
 
-static int isProjAssignment(char* tName, char* tBaseName) {
+static int isProjAssignment(char* tName, const char* tBaseName) {
 	return !strncmp(tName, tBaseName, strlen(tBaseName));
 
 }
@@ -2252,7 +2248,7 @@ static AssignmentReturnValue* evaluateIsHelperArrayAssignment(AssignmentReturnVa
 	return makeBooleanAssignmentReturn(isHelper && id == playerID);
 }
 
-static AssignmentReturnValue* evaluateTargetArrayAssignment(AssignmentReturnValue* tIndex, char* tTargetName) {
+static AssignmentReturnValue* evaluateTargetArrayAssignment(AssignmentReturnValue* tIndex, const char* tTargetName) {
 	int id = convertAssignmentReturnToNumber(tIndex);
 
 	char buffer[100]; // TODO: dynamic
@@ -2521,7 +2517,7 @@ static void setAssignmentStatic(DreamMugenAssignment** tAssignment, AssignmentRe
 	case MUGEN_ASSIGNMENT_TYPE_OPERATOR_ARGUMENT:
 	case MUGEN_ASSIGNMENT_TYPE_BITWISE_AND:
 	case MUGEN_ASSIGNMENT_TYPE_BITWISE_OR:
-		// *tAssignment = makeStaticDreamMugenAssignment(tValue);
+		if(0) *tAssignment = makeStaticDreamMugenAssignment(tValue); // TODO: reset
 		break;
 	default:
 		break;

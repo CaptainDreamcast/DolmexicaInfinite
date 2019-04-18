@@ -317,7 +317,7 @@ static void loadWinScreenFromScript(MugenDefScript* tScript) {
 	freeMemory(message);
 }
 
-static void loadSingleStoryboard(MugenDefScript* tScript, char* tFolder, char* tGroup, int* oHasStoryboard, char* oStoryBoardPath) {
+static void loadSingleStoryboard(MugenDefScript* tScript, const char* tFolder, const char* tGroup, int* oHasStoryboard, char* oStoryBoardPath) {
 
 	*oHasStoryboard = getMugenDefIntegerOrDefault(tScript, tGroup, "enabled", 0);
 	if (!(*oHasStoryboard)) return;
@@ -327,7 +327,7 @@ static void loadSingleStoryboard(MugenDefScript* tScript, char* tFolder, char* t
 	freeMemory(name);
 }
 
-static void loadStoryboardsFromScript(MugenDefScript* tScript, char* tFolder) {
+static void loadStoryboardsFromScript(MugenDefScript* tScript, const char* tFolder) {
 	
 	loadSingleStoryboard(tScript, tFolder, "Game Over Screen", &gData.mHasGameOver, gData.mGameOverPath);
 	loadSingleStoryboard(tScript, tFolder, "Default Ending", &gData.mHasDefaultEnding, gData.mDefaultEndingPath);

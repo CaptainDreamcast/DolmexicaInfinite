@@ -317,7 +317,7 @@ static int isBinaryOperator(char* tText, int tPosition) {
 	return poss;
 }
 
-static int isOnHighestLevelWithStartPosition(char* tText, char* tPattern, int* tOptionalPosition, int tStart, int isBinary) {
+static int isOnHighestLevelWithStartPosition(char* tText, const char* tPattern, int* tOptionalPosition, int tStart, int isBinary) {
 	int n = strlen(tText);
 	int m = strlen(tPattern);
 
@@ -352,11 +352,11 @@ static int isOnHighestLevelWithStartPosition(char* tText, char* tPattern, int* t
 	return 0;
 }
 
-static int isOnHighestLevel(char* tText, char* tPattern, int* tOptionalPosition) {
+static int isOnHighestLevel(char* tText, const char* tPattern, int* tOptionalPosition) {
 	return isOnHighestLevelWithStartPosition(tText, tPattern, tOptionalPosition, 0, 0);
 }
 
-static int isOnHighestLevelBinary(char* tText, char* tPattern, int* tOptionalPosition) {
+static int isOnHighestLevelBinary(char* tText, const char* tPattern, int* tOptionalPosition) {
 	return isOnHighestLevelWithStartPosition(tText, tPattern, tOptionalPosition, 0, 1);
 }
 
@@ -367,7 +367,7 @@ static DreamMugenAssignment* parseOneElementMugenAssignmentFromString(char* tTex
 	return makeMugenOneElementAssignment(tType, a);
 }
 
-static DreamMugenAssignment* parseTwoElementMugenAssignmentFromStringWithFixedPosition(char* tText, DreamMugenAssignmentType tType, char* tPattern, int tPosition) {
+static DreamMugenAssignment* parseTwoElementMugenAssignmentFromStringWithFixedPosition(char* tText, DreamMugenAssignmentType tType, const char* tPattern, int tPosition) {
 	int n = strlen(tText);
 	int m = strlen(tPattern);
 
@@ -393,13 +393,13 @@ static DreamMugenAssignment* parseTwoElementMugenAssignmentFromStringWithFixedPo
 	return makeMugenTwoElementAssignment(tType, a, b);
 }
 
-static DreamMugenAssignment* parseTwoElementMugenAssignmentFromString(char* tText, DreamMugenAssignmentType tType, char* tPattern) {
+static DreamMugenAssignment* parseTwoElementMugenAssignmentFromString(char* tText, DreamMugenAssignmentType tType, const char* tPattern) {
 	int pos = -1;
 	isOnHighestLevel(tText, tPattern, &pos);
 	return parseTwoElementMugenAssignmentFromStringWithFixedPosition(tText, tType, tPattern, pos);
 }
 
-static DreamMugenAssignment* parseBinaryTwoElementMugenAssignmentFromString(char* tText, DreamMugenAssignmentType tType, char* tPattern) {
+static DreamMugenAssignment* parseBinaryTwoElementMugenAssignmentFromString(char* tText, DreamMugenAssignmentType tType, const char* tPattern) {
 	int pos = -1;
 	isOnHighestLevelBinary(tText, tPattern, &pos);
 	return parseTwoElementMugenAssignmentFromStringWithFixedPosition(tText, tType, tPattern, pos);
@@ -825,11 +825,10 @@ static int isArray(char* tText) {
 }
 
 static DreamMugenAssignment* parseArrayFromString(char* tText) {
-	int posOpen = -1, posClose = -1;
+	int posOpen = -1;
 	posOpen = strchr(tText, '(') - tText;
-	posClose = strrchr(tText, ')') - tText;
 	assert(posOpen >= 0);
-	assert(posClose >= 0);
+	assert((strrchr(tText, ')') - tText) >= 0);
 
 	char text1[MUGEN_DEF_STRING_LENGTH];
 	char text2[MUGEN_DEF_STRING_LENGTH];
@@ -1118,6 +1117,11 @@ DreamMugenAssignment * parseDreamMugenAssignmentFromString(char * tText)
 	}
 }
 
+DreamMugenAssignment*  parseDreamMugenAssignmentFromString(const char* tText) {
+	char evalText[1024];
+	strcpy(evalText, tText);
+	return parseDreamMugenAssignmentFromString(evalText);
+}
 
 int fetchDreamAssignmentFromGroupAndReturnWhetherItExists(const char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tOutput) {
 	if (!stl_string_map_contains_array(tGroup->mElements, tName)) {

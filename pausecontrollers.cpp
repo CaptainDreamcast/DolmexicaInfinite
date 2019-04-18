@@ -12,20 +12,6 @@
 
 #define SUPERPAUSE_Z 52
 
-
-
-typedef struct {
-	
-
-	IntMap mPauseData;
-
-} SuperPauseHandler;
-
-static struct {
-	SuperPauseHandler mSuperPause;
-
-} gData;
-
 void setDreamSuperPauseActive(DreamPlayer * tPlayer)
 {
 	// TODO: check multiple

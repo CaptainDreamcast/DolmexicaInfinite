@@ -251,7 +251,7 @@ static void loadDemoHeader() {
 	gTitleScreenData.mDemo.mNow = 0;
 }
 
-static void addMenuPoint(char* tVariableName, void(*tCB)()) {
+static void addMenuPoint(const char* tVariableName, void(*tCB)()) {
 	if (!isMugenDefStringVariable(&gTitleScreenData.mScript, "Title Info", tVariableName)) return;
 	char* text = getAllocatedMugenDefStringVariable(&gTitleScreenData.mScript, "Title Info", tVariableName);
 	

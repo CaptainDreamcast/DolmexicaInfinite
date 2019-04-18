@@ -391,7 +391,7 @@ static void loadFightDefFilesFromScript(MugenDefScript* tScript, char* tDefPath)
 
 }
 
-static int loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(MugenDefScript* tScript, MugenAnimations* tAnimations, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, MugenAnimation** oAnimation, int* oOwnsAnimation, Position* oPosition, int* oFaceDirection) {
+static int loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(MugenDefScript* tScript, MugenAnimations* tAnimations, Position tBasePosition, const char* tGroupName, const char* tComponentName, double tZ, MugenAnimation** oAnimation, int* oOwnsAnimation, Position* oPosition, int* oFaceDirection) {
 	char name[1024];
 
 	int animation;
@@ -423,7 +423,7 @@ static int loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(
 	return 1;
 }
 
-static void loadSingleUIComponentWithFullComponentName(MugenDefScript* tScript, MugenSpriteFile* tSprites, MugenAnimations* tAnimations, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, MugenAnimation** oAnimation, int* oOwnsAnimation, int* oAnimationID, Position* oPosition, int tScaleCoordinateP) {
+static void loadSingleUIComponentWithFullComponentName(MugenDefScript* tScript, MugenSpriteFile* tSprites, MugenAnimations* tAnimations, Position tBasePosition, const char* tGroupName, const char* tComponentName, double tZ, MugenAnimation** oAnimation, int* oOwnsAnimation, int* oAnimationID, Position* oPosition, int tScaleCoordinateP) {
 	int faceDirection;
 
 	if (!loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, tAnimations, tBasePosition, tGroupName, tComponentName, tZ, oAnimation, oOwnsAnimation, oPosition, &faceDirection)) {
@@ -440,14 +440,14 @@ static void loadSingleUIComponentWithFullComponentName(MugenDefScript* tScript, 
 
 }
 
-static void loadSingleUIComponent(int i, MugenDefScript* tScript, MugenSpriteFile* tSprites, MugenAnimations* tAnimations, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, MugenAnimation** oAnimation, int* oOwnsAnimation, int* oAnimationID, Position* oPosition, int tScaleCoordinateP) {
+static void loadSingleUIComponent(int i, MugenDefScript* tScript, MugenSpriteFile* tSprites, MugenAnimations* tAnimations, Position tBasePosition, const char* tGroupName, const char* tComponentName, double tZ, MugenAnimation** oAnimation, int* oOwnsAnimation, int* oAnimationID, Position* oPosition, int tScaleCoordinateP) {
 	char name[1024];
 
 	sprintf(name, "p%d.%s", i + 1, tComponentName);
 	loadSingleUIComponentWithFullComponentName(tScript, tSprites, tAnimations, tBasePosition, tGroupName, name, tZ, oAnimation, oOwnsAnimation, oAnimationID, oPosition, tScaleCoordinateP);
 }
 
-static void loadSingleUITextWithFullComponentNameForStorage(MugenDefScript* tScript, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, Position* oPosition, int tIsReadingText, char* tText, Vector3DI* oFontData) {
+static void loadSingleUITextWithFullComponentNameForStorage(MugenDefScript* tScript, Position tBasePosition, const char* tGroupName, const char* tComponentName, double tZ, Position* oPosition, int tIsReadingText, char* tText, Vector3DI* oFontData) {
 	char name[1024];
 
 	sprintf(name, "%s.offset", tComponentName);
@@ -467,7 +467,7 @@ static void loadSingleUITextWithFullComponentNameForStorage(MugenDefScript* tScr
 }
 
 
-static void loadSingleUITextWithFullComponentName(MugenDefScript* tScript, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, int* oTextID, Position* oPosition, int tIsReadingText, char* tText, Vector3DI* oFontData) {
+static void loadSingleUITextWithFullComponentName(MugenDefScript* tScript, Position tBasePosition, const char* tGroupName, const char* tComponentName, double tZ, int* oTextID, Position* oPosition, int tIsReadingText, char* tText, Vector3DI* oFontData) {
 	loadSingleUITextWithFullComponentNameForStorage(tScript, tBasePosition, tGroupName, tComponentName, tZ, oPosition, tIsReadingText, tText, oFontData);
 
 	*oTextID = addMugenText(tText, *oPosition, oFontData->x);
@@ -476,7 +476,7 @@ static void loadSingleUITextWithFullComponentName(MugenDefScript* tScript, Posit
 }
 
 
-static void loadSingleUIText(int i, MugenDefScript* tScript, Position tBasePosition, char* tGroupName, char* tComponentName, double tZ, int* oTextID, Position* oPosition, int tIsReadingText, char* tText, Vector3DI* oFontData) {
+static void loadSingleUIText(int i, MugenDefScript* tScript, Position tBasePosition, const char* tGroupName, const char* tComponentName, double tZ, int* oTextID, Position* oPosition, int tIsReadingText, char* tText, Vector3DI* oFontData) {
 	char name[1024];
 
 	sprintf(name, "p%d.%s", i + 1, tComponentName);
@@ -652,7 +652,8 @@ static void loadSingleCombo(int i, MugenDefScript* tScript) {
 	combo->mPosition = getMugenDefVectorOrDefault(tScript, "Combo", name, makePosition(0, 0, 0));
 	combo->mPosition.z = UI_BASE_Z;
 
-	int coordP = COORD_P; // TODO
+	int coordP = COORD_P; 
+	(void)coordP; // TODO
 	sprintf(name, "team%d.start.x", i + 1);
 	combo->mStartX = getMugenDefFloatOrDefault(tScript, "Combo", name, 0);
 
@@ -711,14 +712,15 @@ static void loadPlayerUIs(MugenDefScript* tScript) {
 	}
 }
 
-static void playDisplayText(int* oTextID, char* tText, Position tPosition, Vector3DI tFont);
+static void playDisplayText(int* oTextID, const char* tText, Position tPosition, Vector3DI tFont);
 
 static void loadTimer(MugenDefScript* tScript) {
 	Position basePosition;
 	basePosition = getMugenDefVectorOrDefault(tScript, "Time", "pos", makePosition(0, 0, 0));
 	basePosition.z = UI_BASE_Z;
 
-	int coordP = COORD_P; // TODO
+	int coordP = COORD_P; 
+	(void)coordP; // TODO
 	loadSingleUIComponentWithFullComponentName(tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Time", "bg", 0, &gData.mTime.mBGAnimation, &gData.mTime.mOwnsBGAnimation, &gData.mTime.mBGAnimationID, &gData.mTime.mBGPosition, coordP);
 
 	gData.mTime.mPosition = getMugenDefVectorOrDefault(tScript, "Time", "counter.offset", makePosition(0, 0, 0));
@@ -730,8 +732,6 @@ static void loadTimer(MugenDefScript* tScript) {
 	gData.mTime.mIsActive = 0;
 
 	gData.mTime.mFont = getMugenDefVectorIOrDefault(tScript, "Time", "counter.font", makeVector3DI(1, 0, 0));
-
-
 
 	playDisplayText(&gData.mTime.mTextID, "99", gData.mTime.mPosition, gData.mTime.mFont);
 	
@@ -1116,7 +1116,7 @@ static void removeDisplayedAnimation(int tAnimationID) {
 }
 
 
-static void playDisplayText(int* oTextID, char* tText, Position tPosition, Vector3DI tFont) {
+static void playDisplayText(int* oTextID, const char* tText, Position tPosition, Vector3DI tFont) {
 	*oTextID = addMugenText(tText, tPosition, tFont.x);
 	setMugenTextColor(*oTextID, getMugenTextColorFromMugenTextColorIndex(tFont.y));
 	setMugenTextAlignment(*oTextID, getMugenTextAlignmentFromMugenAlignmentIndex(tFont.z));

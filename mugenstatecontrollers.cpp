@@ -63,7 +63,7 @@ static void checkSingleElementForTrigger(void* tCaller, void* tData) {
 	*caller->mTriggerRoot = makeDreamAndMugenAssignment(*caller->mTriggerRoot, trigger);
 }
 
-static int parseTriggerAndReturnIfFound(char* tName, DreamMugenAssignment** tRoot, MugenDefScriptGroup* tGroup) {
+static int parseTriggerAndReturnIfFound(const char* tName, DreamMugenAssignment** tRoot, MugenDefScriptGroup* tGroup) {
 	if (!stl_string_map_contains_array(tGroup->mElements, tName)) return 0;
 
 	DreamMugenAssignment* triggerRoot = NULL;
@@ -163,7 +163,7 @@ static void unloadChangeStateController(DreamMugenStateController* tController) 
 	freeMemory(e);
 }
 
-static void fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString(char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tDst, const char* tDefault = NULL) {
+static void fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString(const char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tDst, const char* tDefault = NULL) {
 	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tName, tGroup, tDst)) {
 		if (tDefault) {
 			*tDst = makeDreamStringMugenAssignment(tDefault);
@@ -3035,7 +3035,6 @@ static void handleHitDefinitionTwoIntegerElements(DreamMugenAssignment** tAssign
 		if (items < 1 || !strcmp("", string1)) val1 = tDefault1;
 		else val1 = atoi(string1);
 
-		int val2;
 		if (items < 3 || !strcmp("", string2)) val2 = tDefault2;
 		else val2 = atoi(string2);
 	}
@@ -3949,40 +3948,6 @@ static int handlePowerSettingController(DreamMugenStateController* tController, 
 	setPlayerPower(tPlayer, value);
 
 	return 0;
-}
-
-static void getSingleIntegerValueOrDefaultFunctionCall(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(int), int tDefault) {
-	int val;
-	if (!(*tAssignment)) val = tDefault;
-	else val = evaluateDreamAssignmentAndReturnAsInteger(tAssignment, tPlayer);
-	tFunc(val);
-}
-
-static void getSingleFloatValueOrDefaultFunctionCall(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(double), double tDefault) {
-	double val;
-	if (!(*tAssignment)) val = tDefault;
-	else val = evaluateDreamAssignmentAndReturnAsFloat(tAssignment, tPlayer);
-	tFunc(val);
-}
-
-static void getSingleVector3DValueOrDefaultFunctionCall(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(Vector3D), Vector3D tDefault) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-	double x, y, z;
-	char tx[20], comma1[10], ty[20], comma2[10], tz[20];
-	int items = sscanf(flag.data(), "%s %s %s %s %s", tx, comma1, ty, comma2, tz);
-
-	if (items < 1) x = tDefault.x;
-	else x = atof(tx);
-
-	if (items < 3) y = tDefault.y;
-	else y = atof(ty);
-
-	if (items < 5) z = tDefault.z;
-	else z = atof(tz);
-
-	tFunc(makePosition(x, y, z));
 }
 
 static void handleSuperPauseAnimation(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {

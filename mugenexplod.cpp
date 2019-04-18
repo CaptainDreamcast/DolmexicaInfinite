@@ -309,9 +309,6 @@ void finalizeExplod(int tID)
 	}
 	addAccelerationToHandledPhysics(e->mPhysicsID, e->mVelocity);
 
-
-	int isPositionIndependentType = e->mPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT || e->mPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT; // TODO: check???
-
 	Position p = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(e->mPlayer)) + getFinalExplodPositionFromPositionType(e->mPositionType, e->mPosition, e->mPlayer);
 	p.z = PLAYER_Z + 1 * e->mSpritePriority;
 	e->mAnimationID = addMugenAnimation(animation, sprites, p);

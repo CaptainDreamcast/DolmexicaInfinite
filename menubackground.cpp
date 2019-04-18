@@ -14,11 +14,12 @@ static struct {
 	Vector3DI mLocalCoordinates;
 } gData;
 
-static int isMenuBackgroundGroup(MugenDefScriptGroup* tGroup, char* tBackgroundGroupName) {
+static int isMenuBackgroundGroup(MugenDefScriptGroup* tGroup, const char* tBackgroundGroupName) {
 	if (tGroup == NULL) return 0;
 
 	char firstW[100];
 	int items = sscanf(tGroup->mName.data(), "%s", firstW);
+	(void)items;
 	assert(items == 1);
 
 	return !strcmp(tBackgroundGroupName, firstW);
@@ -101,7 +102,7 @@ static void loadMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, MugenSpr
 	freeMemory(type);
 }
 
-void loadMenuBackground(MugenDefScript * tScript, MugenSpriteFile * tSprites, MugenAnimations * tAnimations, char * tDefinitionGroupName, char * tBackgroundGroupName)
+void loadMenuBackground(MugenDefScript * tScript, MugenSpriteFile * tSprites, MugenAnimations * tAnimations, const char * tDefinitionGroupName, const char * tBackgroundGroupName)
 {
 	instantiateActor(getDreamMugenStageHandler());
 	gData.mLocalCoordinates = makeVector3DI(320, 240, 0); // TODO: move outside

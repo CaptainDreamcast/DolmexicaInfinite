@@ -268,7 +268,7 @@ ActorBlueprint getPreStateMachinePlayersBlueprint();
 
 void playerHitCB(void* tData, void* tHitData);
 
-void setPlayerDefinitionPath(int i, char* tDefinitionPath);
+void setPlayerDefinitionPath(int i, const char* tDefinitionPath);
 void getPlayerDefinitionPath(char* tDst, int i);
 void setPlayerPreferredPalette(int i, int tPalette);
 

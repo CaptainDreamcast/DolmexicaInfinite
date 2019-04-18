@@ -411,14 +411,14 @@ void loadPlayerSprites() {
 static int unloadSingleHelper(void* tCaller, void* tData) {
 	(void)tCaller;
 	DreamPlayer* p = (DreamPlayer*)tData;
-	// TODO
+	(void)p; // TODO
 	return 1;
 }
 
 static int unloadSingleProjectile(void* tCaller, void* tData) {
 	(void)tCaller;
 	DreamPlayer* p = (DreamPlayer*)tData;
-	// TODO
+	(void)p; // TODO
 	return 1;
 }
 
@@ -439,10 +439,6 @@ static void unloadHelperState(DreamPlayer* p) {
 	delete_list(&p->mBoundHelpers);
 }
 
-static void unloadPlayerState(DreamPlayer* p) {
-	unloadHelperState(p);
-}
-
 static void unloadPlayerFiles(DreamPlayerHeader* tHeader) {
 	//unloadDreamMugenConstantsFile(&tHeader->mFiles.mConstants);
 	unloadDreamMugenCommandFile(&tHeader->mFiles.mCommands);
@@ -453,7 +449,7 @@ static void unloadPlayerFiles(DreamPlayerHeader* tHeader) {
 }
 
 static void unloadSinglePlayer(DreamPlayer* p, DreamPlayerHeader* tHeader) {
-	//unloadPlayerState(p);
+	// TODO: unload player state
 	unloadPlayerFiles(tHeader);
 }
 
@@ -1651,7 +1647,7 @@ void playerHitCB(void* tData, void* tHitData)
 	}
 }
 
-void setPlayerDefinitionPath(int i, char * tDefinitionPath)
+void setPlayerDefinitionPath(int i, const char * tDefinitionPath)
 {
 	strcpy(gPlayerDefinition.mPlayerHeader[i].mFiles.mDefinitionPath, tDefinitionPath);
 }
@@ -1749,7 +1745,6 @@ void setPlayerPhysics(DreamPlayer* p, DreamMugenStatePhysics tNewPhysics)
 	else if (tNewPhysics == MUGEN_STATE_PHYSICS_STANDING) {
 		setHandledPhysicsDragCoefficient(p->mPhysicsID, makePosition(p->mHeader->mFiles.mConstants.mMovementData.mStandFiction, 0, 0));
 		setHandledPhysicsGravity(p->mPhysicsID, makePosition(0, 0, 0));
-		Position* pos = getHandledPhysicsPositionReference(p->mPhysicsID);
 		Velocity* vel = getHandledPhysicsVelocityReference(p->mPhysicsID);
 		Acceleration* acc = getHandledPhysicsAccelerationReference(p->mPhysicsID);
 		

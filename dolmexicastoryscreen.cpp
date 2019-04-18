@@ -797,7 +797,6 @@ void endDolmexicaStoryboard(StoryInstance* tInstance, int tNextStoryState)
 
 int getDolmexicaStoryTimeInState(StoryInstance* tInstance)
 {
-	int ret = getDreamRegisteredStateTimeInState(tInstance->mStateMachineID);
 	return getDreamRegisteredStateTimeInState(tInstance->mStateMachineID);
 }
 

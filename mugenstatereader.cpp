@@ -229,7 +229,7 @@ static void handleSingleMugenStateDefElement(MugenStateDefCaller* tCaller, const
 }
 
 static void removeState(DreamMugenStates* tStates, int tState) {
-	DreamMugenState* e = &tStates->mStates[tState];
+	// DreamMugenState* e = &tStates->mStates[tState];
 	// unloadSingleState(e); // TODO: reinsert
 	tStates->mStates.erase(tState);
 }
@@ -328,7 +328,7 @@ static DreamMugenConstants makeEmptyMugenConstants() {
 }
 
 
-static void loadSingleSparkNumber(int* oIsSparkInPlayerFile, int* oSparkNumber, MugenDefScript* tScript, char* tGroup, char* tName, int tDefaultNumber) {
+static void loadSingleSparkNumber(int* oIsSparkInPlayerFile, int* oSparkNumber, MugenDefScript* tScript, const char* tGroup, const char* tName, int tDefaultNumber) {
 	if (!isMugenDefStringVariable(tScript, tGroup, tName)) {
 		*oIsSparkInPlayerFile = 0;
 		*oSparkNumber = tDefaultNumber;

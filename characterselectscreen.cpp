@@ -215,7 +215,7 @@ static struct {
 	int mIsFadingOut;
 } gData;
 
-static MugenAnimation* getMugenDefMenuAnimationOrSprite(MugenDefScript* tScript, char* tGroupName, char* tVariableName) {
+static MugenAnimation* getMugenDefMenuAnimationOrSprite(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName) {
 	char fullVariableName[200];
 	sprintf(fullVariableName, "%s.anim", tVariableName);
 
@@ -228,7 +228,7 @@ static MugenAnimation* getMugenDefMenuAnimationOrSprite(MugenDefScript* tScript,
 	return createOneFrameMugenAnimationForSprite(ret.x, ret.y);
 }
 
-static void loadMenuPlayerHeader(char* tPlayerName, PlayerHeader* tHeader) {
+static void loadMenuPlayerHeader(const char* tPlayerName, PlayerHeader* tHeader) {
 	char fullVariableName[200];
 
 	sprintf(fullVariableName, "%s.cursor.startcell", tPlayerName);
@@ -1378,7 +1378,7 @@ Screen* getCharacterSelectScreen() {
 	return &gCharacterSelectScreen;
 };
 
-void setCharacterSelectScreenModeName(char * tModeName)
+void setCharacterSelectScreenModeName(const char * tModeName)
 {
 	strcpy(gData.mModeName, tModeName);
 }

@@ -222,6 +222,10 @@ static string evalhelperCB(void* tCaller, string tCommand) {
 	int id = atoi(words[1].data());
 	int helper = atoi(words[2].data());
 	DreamPlayer* p = getRootPlayer(id);
+	p = getPlayerHelperOrNullIfNonexistant(p, helper);
+	if (!p) {
+		return "No helper with that ID.";
+	}
 
 	int n = tCommand.find(' ', tCommand.find(' ', tCommand.find(' ') + 1) + 1) + 1;
 	string assignmentString = tCommand.substr(n);
