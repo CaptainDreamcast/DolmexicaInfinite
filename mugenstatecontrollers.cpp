@@ -3951,29 +3951,35 @@ static int handlePowerSettingController(DreamMugenStateController* tController, 
 }
 
 static void handleSuperPauseAnimation(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer) {
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-	char firstW[200];
-	int which = -1;
-
-	int items = sscanf(flag.data(), "%s %d", firstW, &which);
-
 	int isInPlayerFile;
 	int id;
-	if (items < 1) {
+	if (!(*tAssignment)) {
 		isInPlayerFile = 0;
 		id = 30;
 	}
-	else if (!strcmp("isinotherfilef", firstW) || !strcmp("isinotherfiles", firstW)) {
-		assert(items == 2);
-		isInPlayerFile = 1;
-		id = which;
-	}
 	else {
-		assert(items == 1);
-		isInPlayerFile = 0;
-		id = atoi(flag.data());
+		string flag;
+		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
+
+		char firstW[200];
+		int which = -1;
+
+		int items = sscanf(flag.data(), "%s %d", firstW, &which);
+
+		if (items < 1) {
+			isInPlayerFile = 0;
+			id = 30;
+		}
+		else if (!strcmp("isinotherfilef", firstW) || !strcmp("isinotherfiles", firstW)) {
+			assert(items == 2);
+			isInPlayerFile = 1;
+			id = which;
+		}
+		else {
+			assert(items == 1);
+			isInPlayerFile = 0;
+			id = atoi(flag.data());
+		}
 	}
 
 	setDreamSuperPauseAnimation(tPlayer, isInPlayerFile, id);
