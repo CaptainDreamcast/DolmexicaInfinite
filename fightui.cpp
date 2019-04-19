@@ -328,6 +328,11 @@ typedef struct {
 	int mDuration;
 } EnvironmentShakeEffect;
 
+typedef struct {
+	Position mPosition;
+	int mAnimationID;
+} HitSpark;
+
 // TODO: "time" component for everything, which offsets when single element is shown after call
 static struct {
 	MugenSpriteFile mFightSprites;
@@ -357,8 +362,8 @@ static struct {
 	EnvironmentColorEffect mEnvironmentEffects;
 	EnvironmentShakeEffect mEnvironmentShake;
 
-	List mHitSparks;
-} gData;
+	list<HitSpark> mHitSparks;
+} gFightUIData;
 
 static void loadFightDefFilesFromScript(MugenDefScript* tScript, char* tDefPath) {
 	char directory[1024];
@@ -368,26 +373,26 @@ static void loadFightDefFilesFromScript(MugenDefScript* tScript, char* tDefPath)
 	getMugenDefStringOrDefault(fileName, tScript, "Files", "sff", "NO_FILE");
 	sprintf(fullPath, "%s%s", directory, fileName);
 	setMugenSpriteFileReaderToUsePalette(3); // TODO: check
-	gData.mFightSprites = loadMugenSpriteFileWithoutPalette(fullPath);
+	gFightUIData.mFightSprites = loadMugenSpriteFileWithoutPalette(fullPath);
 	setMugenSpriteFileReaderToNotUsePalette();
 
-	gData.mFightAnimations = loadMugenAnimationFile(tDefPath);
+	gFightUIData.mFightAnimations = loadMugenAnimationFile(tDefPath);
 
 	getMugenDefStringOrDefault(fileName, tScript, "Files", "fightfx.sff", "NO_FILE");
 	sprintf(fullPath, "%s%s", directory, fileName);
-	gData.mFightFXSprites = loadMugenSpriteFileWithoutPalette(fullPath);
+	gFightUIData.mFightFXSprites = loadMugenSpriteFileWithoutPalette(fullPath);
 
 	getMugenDefStringOrDefault(fileName, tScript, "Files", "fightfx.air", "NO_FILE");
 	sprintf(fullPath, "%s%s", directory, fileName);
-	gData.mFightFXAnimations = loadMugenAnimationFile(fullPath);
+	gFightUIData.mFightFXAnimations = loadMugenAnimationFile(fullPath);
 
 	getMugenDefStringOrDefault(fileName, tScript, "Files", "snd", "NO_FILE");
 	sprintf(fullPath, "%s%s", directory, fileName);
-	gData.mFightSounds = loadMugenSoundFile(fullPath);
+	gFightUIData.mFightSounds = loadMugenSoundFile(fullPath);
 
 	getMugenDefStringOrDefault(fileName, tScript, "Files", "common.snd", "NO_FILE");
 	sprintf(fullPath, "%s%s", directory, fileName);
-	gData.mCommonSounds = loadMugenSoundFile(fullPath);
+	gFightUIData.mCommonSounds = loadMugenSoundFile(fullPath);
 
 }
 
@@ -486,7 +491,7 @@ static void loadSingleUIText(int i, MugenDefScript* tScript, Position tBasePosit
 static void loadSingleHealthBar(int i, MugenDefScript* tScript) {
 	char name[1024];
 
-	HealthBar* bar = &gData.mHealthBars[i];
+	HealthBar* bar = &gFightUIData.mHealthBars[i];
 
 
 	Position basePosition;
@@ -495,10 +500,10 @@ static void loadSingleHealthBar(int i, MugenDefScript* tScript) {
 	basePosition.z = UI_BASE_Z;
 
 	int coordP = COORD_P; // TODO
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Lifebar", "bg0", 1, &bar->mBG0Animation, &bar->mOwnsBG0Animation, &bar->mBG0AnimationID, &bar->mBG0Position, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Lifebar", "bg1", 2, &bar->mBG1Animation, &bar->mOwnsBG1Animation, &bar->mBG1AnimationID, &bar->mBG1Position, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Lifebar", "mid", 3, &bar->mMidAnimation, &bar->mOwnsMidAnimation,  &bar->mMidAnimationID, &bar->mMidPosition, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Lifebar", "front", 4, &bar->mFrontAnimation, &bar->mOwnsFrontAnimation, &bar->mFrontAnimationID, &bar->mFrontPosition, coordP);
+	loadSingleUIComponent(i, tScript, &gFightUIData.mFightSprites, &gFightUIData.mFightAnimations, basePosition, "Lifebar", "bg0", 1, &bar->mBG0Animation, &bar->mOwnsBG0Animation, &bar->mBG0AnimationID, &bar->mBG0Position, coordP);
+	loadSingleUIComponent(i, tScript, &gFightUIData.mFightSprites, &gFightUIData.mFightAnimations, basePosition, "Lifebar", "bg1", 2, &bar->mBG1Animation, &bar->mOwnsBG1Animation, &bar->mBG1AnimationID, &bar->mBG1Position, coordP);
+	loadSingleUIComponent(i, tScript, &gFightUIData.mFightSprites, &gFightUIData.mFightAnimations, basePosition, "Lifebar", "mid", 3, &bar->mMidAnimation, &bar->mOwnsMidAnimation,  &bar->mMidAnimationID, &bar->mMidPosition, coordP);
+	loadSingleUIComponent(i, tScript, &gFightUIData.mFightSprites, &gFightUIData.mFightAnimations, basePosition, "Lifebar", "front", 4, &bar->mFrontAnimation, &bar->mOwnsFrontAnimation, &bar->mFrontAnimationID, &bar->mFrontPosition, coordP);
 
 	sprintf(name, "p%d.range.x", i + 1);
 	bar->mHealthRangeX = getMugenDefVectorOrDefault(tScript, "Lifebar", name, makePosition(0, 0, 0));
@@ -511,7 +516,7 @@ static void loadSingleHealthBar(int i, MugenDefScript* tScript) {
 static void loadSinglePowerBar(int i, MugenDefScript* tScript) {
 	char name[1024];
 
-	PowerBar* bar = &gData.mPowerBars[i];
+	PowerBar* bar = &gFightUIData.mPowerBars[i];
 
 	Position basePosition;
 	sprintf(name, "p%d.pos", i + 1);
@@ -519,10 +524,10 @@ static void loadSinglePowerBar(int i, MugenDefScript* tScript) {
 	basePosition.z = UI_BASE_Z;
 
 	int coordP = COORD_P; // TODO
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "bg0", 1, &bar->mBG0Animation, &bar->mOwnsBG0Animation, &bar->mBG0AnimationID, &bar->mBG0Position, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "bg1", 2, &bar->mBG1Animation, &bar->mOwnsBG1Animation, &bar->mBG1AnimationID, &bar->mBG1Position, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "mid", 3, &bar->mMidAnimation, &bar->mOwnsMidAnimation, &bar->mMidAnimationID, &bar->mMidPosition, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Powerbar", "front", 4, &bar->mFrontAnimation, &bar->mOwnsFrontAnimation, &bar->mFrontAnimationID, &bar->mFrontPosition, coordP);
+	loadSingleUIComponent(i, tScript, &gFightUIData.mFightSprites, &gFightUIData.mFightAnimations, basePosition, "Powerbar", "bg0", 1, &bar->mBG0Animation, &bar->mOwnsBG0Animation, &bar->mBG0AnimationID, &bar->mBG0Position, coordP);
+	loadSingleUIComponent(i, tScript, &gFightUIData.mFightSprites, &gFightUIData.mFightAnimations, basePosition, "Powerbar", "bg1", 2, &bar->mBG1Animation, &bar->mOwnsBG1Animation, &bar->mBG1AnimationID, &bar->mBG1Position, coordP);
+	loadSingleUIComponent(i, tScript, &gFightUIData.mFightSprites, &gFightUIData.mFightAnimations, basePosition, "Powerbar", "mid", 3, &bar->mMidAnimation, &bar->mOwnsMidAnimation, &bar->mMidAnimationID, &bar->mMidPosition, coordP);
+	loadSingleUIComponent(i, tScript, &gFightUIData.mFightSprites, &gFightUIData.mFightAnimations, basePosition, "Powerbar", "front", 4, &bar->mFrontAnimation, &bar->mOwnsFrontAnimation, &bar->mFrontAnimationID, &bar->mFrontPosition, coordP);
 	
 	strcpy(bar->mCounterText, "0");
 	loadSingleUIText(i, tScript, basePosition, "Powerbar", "counter", 5, &bar->mCounterTextID, &bar->mCounterPosition, 0, bar->mCounterText, &bar->mCounterFont);
@@ -542,7 +547,7 @@ static void loadSinglePowerBar(int i, MugenDefScript* tScript) {
 static void loadSingleFace(int i, MugenDefScript* tScript) {
 	char name[1024];
 
-	Face* face = &gData.mFaces[i];
+	Face* face = &gFightUIData.mFaces[i];
 
 	Position basePosition;
 	sprintf(name, "p%d.pos", i + 1);
@@ -551,9 +556,9 @@ static void loadSingleFace(int i, MugenDefScript* tScript) {
 
 	DreamPlayer* p = getRootPlayer(i);
 	int coordP = COORD_P; // TODO
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Face", "bg", 1, &face->mBGAnimation, &face->mOwnsBGAnimation, &face->mBGAnimationID, &face->mBGPosition, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Face", "bg0", 1, &face->mBG0Animation, &face->mOwnsBG0Animation, &face->mBG0AnimationID, &face->mBG0Position, coordP);
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Face", "bg1", 2, &face->mBG1Animation, &face->mOwnsBG1Animation, &face->mBG1AnimationID, &face->mBG1Position, coordP);
+	loadSingleUIComponent(i, tScript, &gFightUIData.mFightSprites, &gFightUIData.mFightAnimations, basePosition, "Face", "bg", 1, &face->mBGAnimation, &face->mOwnsBGAnimation, &face->mBGAnimationID, &face->mBGPosition, coordP);
+	loadSingleUIComponent(i, tScript, &gFightUIData.mFightSprites, &gFightUIData.mFightAnimations, basePosition, "Face", "bg0", 1, &face->mBG0Animation, &face->mOwnsBG0Animation, &face->mBG0AnimationID, &face->mBG0Position, coordP);
+	loadSingleUIComponent(i, tScript, &gFightUIData.mFightSprites, &gFightUIData.mFightAnimations, basePosition, "Face", "bg1", 2, &face->mBG1Animation, &face->mOwnsBG1Animation, &face->mBG1AnimationID, &face->mBG1Position, coordP);
 	loadSingleUIComponent(i, tScript, NULL, getPlayerAnimations(p), basePosition, "Face", "face", 3, &face->mFaceAnimation, &face->mOwnsFaceAnimation, &face->mFaceAnimationID, &face->mFacePosition, getPlayerCoordinateP(p));
 
 }
@@ -561,7 +566,7 @@ static void loadSingleFace(int i, MugenDefScript* tScript) {
 static void loadSingleName(int i, MugenDefScript* tScript) {
 	char name[1024];
 
-	DisplayName* displayName = &gData.mDisplayName[i];
+	DisplayName* displayName = &gFightUIData.mDisplayName[i];
 
 	Position basePosition;
 	sprintf(name, "p%d.pos", i + 1);
@@ -569,7 +574,7 @@ static void loadSingleName(int i, MugenDefScript* tScript) {
 	basePosition.z = UI_BASE_Z;
 
 	int coordP = COORD_P; // TODO
-	loadSingleUIComponent(i, tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Name", "bg", 0, &displayName->mBGAnimation, &displayName->mOwnsBGAnimation, &displayName->mBGAnimationID, &displayName->mBGPosition, coordP);
+	loadSingleUIComponent(i, tScript, &gFightUIData.mFightSprites, &gFightUIData.mFightAnimations, basePosition, "Name", "bg", 0, &displayName->mBGAnimation, &displayName->mOwnsBGAnimation, &displayName->mBGAnimationID, &displayName->mBGPosition, coordP);
 
 	char displayNameText[1024];
 	sprintf(displayNameText, "%s", getPlayerDisplayName(getRootPlayer(i)));
@@ -579,7 +584,7 @@ static void loadSingleName(int i, MugenDefScript* tScript) {
 static void loadSingleWinIcon(int i, MugenDefScript* tScript) {
 	char name[1024];
 
-	WinIcon* winIcon = &gData.mWinIcons[i];
+	WinIcon* winIcon = &gFightUIData.mWinIcons[i];
 
 	sprintf(name, "p%d.pos", i + 1);
 	winIcon->mPosition = getMugenDefVectorOrDefault(tScript, "WinIcon", name, makePosition(0, 0, 0));
@@ -624,7 +629,7 @@ static void loadSingleWinIcon(int i, MugenDefScript* tScript) {
 }
 
 static void setComboPosition(int i) {
-	Combo* combo = &gData.mCombos[i];
+	Combo* combo = &gFightUIData.mCombos[i];
 
 	if (i == 0) {
 		Position startPosition = makePosition(combo->mCurrentX, combo->mPosition.y, combo->mPosition.z);
@@ -645,7 +650,7 @@ static void setComboPosition(int i) {
 static void loadSingleCombo(int i, MugenDefScript* tScript) {
 	char name[1024];
 
-	Combo* combo = &gData.mCombos[i];
+	Combo* combo = &gFightUIData.mCombos[i];
 
 
 	sprintf(name, "team%d.pos", i + 1);
@@ -693,8 +698,8 @@ static void setBarToPercentage(int tAnimationID, Vector3D tRange, double tPercen
 static void setDreamLifeBarPercentageStart(DreamPlayer* tPlayer, double tPercentage) {
 	int i = tPlayer->mRootID;
 	setDreamLifeBarPercentage(tPlayer, tPercentage);
-	gData.mHealthBars[i].mDisplayedPercentage = getPlayerLifePercentage(getRootPlayer(i));
-	setBarToPercentage(gData.mHealthBars[i].mMidAnimationID, gData.mHealthBars[i].mHealthRangeX, gData.mHealthBars[i].mDisplayedPercentage);
+	gFightUIData.mHealthBars[i].mDisplayedPercentage = getPlayerLifePercentage(getRootPlayer(i));
+	setBarToPercentage(gFightUIData.mHealthBars[i].mMidAnimationID, gFightUIData.mHealthBars[i].mHealthRangeX, gFightUIData.mHealthBars[i].mDisplayedPercentage);
 }
 
 
@@ -721,21 +726,21 @@ static void loadTimer(MugenDefScript* tScript) {
 
 	int coordP = COORD_P; 
 	(void)coordP; // TODO
-	loadSingleUIComponentWithFullComponentName(tScript, &gData.mFightSprites, &gData.mFightAnimations, basePosition, "Time", "bg", 0, &gData.mTime.mBGAnimation, &gData.mTime.mOwnsBGAnimation, &gData.mTime.mBGAnimationID, &gData.mTime.mBGPosition, coordP);
+	loadSingleUIComponentWithFullComponentName(tScript, &gFightUIData.mFightSprites, &gFightUIData.mFightAnimations, basePosition, "Time", "bg", 0, &gFightUIData.mTime.mBGAnimation, &gFightUIData.mTime.mOwnsBGAnimation, &gFightUIData.mTime.mBGAnimationID, &gFightUIData.mTime.mBGPosition, coordP);
 
-	gData.mTime.mPosition = getMugenDefVectorOrDefault(tScript, "Time", "counter.offset", makePosition(0, 0, 0));
-	gData.mTime.mPosition = vecAdd(gData.mTime.mPosition, basePosition);
-	gData.mTime.mPosition.z+=10;
+	gFightUIData.mTime.mPosition = getMugenDefVectorOrDefault(tScript, "Time", "counter.offset", makePosition(0, 0, 0));
+	gFightUIData.mTime.mPosition = vecAdd(gFightUIData.mTime.mPosition, basePosition);
+	gFightUIData.mTime.mPosition.z+=10;
 
-	gData.mTime.mFramesPerCount = getMugenDefIntegerOrDefault(tScript, "Time", "framespercount", 60);
+	gFightUIData.mTime.mFramesPerCount = getMugenDefIntegerOrDefault(tScript, "Time", "framespercount", 60);
 
-	gData.mTime.mIsActive = 0;
+	gFightUIData.mTime.mIsActive = 0;
 
-	gData.mTime.mFont = getMugenDefVectorIOrDefault(tScript, "Time", "counter.font", makeVector3DI(1, 0, 0));
+	gFightUIData.mTime.mFont = getMugenDefVectorIOrDefault(tScript, "Time", "counter.font", makeVector3DI(1, 0, 0));
 
-	playDisplayText(&gData.mTime.mTextID, "99", gData.mTime.mPosition, gData.mTime.mFont);
+	playDisplayText(&gFightUIData.mTime.mTextID, "99", gFightUIData.mTime.mPosition, gFightUIData.mTime.mFont);
 	
-	gData.mTime.mTimerFreezeFlag = 0;
+	gFightUIData.mTime.mTimerFreezeFlag = 0;
 	resetDreamTimer();
 }
 
@@ -744,17 +749,17 @@ static void loadRound(MugenDefScript* tScript) {
 	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0,0,0));
 	basePosition.z = UI_BASE_Z;
 
-	gData.mRound.mRoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "round.time", 0);
-	gData.mRound.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "Round", "round.default.displaytime", 0);
-	gData.mRound.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "round.sndtime", 0);
+	gFightUIData.mRound.mRoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "round.time", 0);
+	gFightUIData.mRound.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "Round", "round.default.displaytime", 0);
+	gFightUIData.mRound.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "round.sndtime", 0);
 
 	if (isMugenDefVariable(tScript, "Round", "round.default.anim")) {
-		gData.mRound.mHasDefaultAnimation = 1;
-		loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "round.default", 1, &gData.mRound.mDefaultAnimation, &gData.mRound.mOwnsDefaultAnimation, &gData.mRound.mPosition, &gData.mRound.mDefaultFaceDirection);
+		gFightUIData.mRound.mHasDefaultAnimation = 1;
+		loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gFightUIData.mFightAnimations, basePosition, "Round", "round.default", 1, &gFightUIData.mRound.mDefaultAnimation, &gFightUIData.mRound.mOwnsDefaultAnimation, &gFightUIData.mRound.mPosition, &gFightUIData.mRound.mDefaultFaceDirection);
 	}
 	else {
-		gData.mRound.mHasDefaultAnimation = 0;
-		loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "Round", "round.default", 1, &gData.mRound.mPosition, 1, gData.mRound.mText, &gData.mRound.mFont);
+		gFightUIData.mRound.mHasDefaultAnimation = 0;
+		loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "Round", "round.default", 1, &gFightUIData.mRound.mPosition, 1, gFightUIData.mRound.mText, &gFightUIData.mRound.mFont);
 	}
 
 
@@ -763,25 +768,25 @@ static void loadRound(MugenDefScript* tScript) {
 		char name[1024];
 		sprintf(name, "round%d.anim", i + 1);
 		if (!isMugenDefVariable(tScript, "Round", name)) {
-			gData.mRound.mHasCustomRoundAnimation[i] = 0;
+			gFightUIData.mRound.mHasCustomRoundAnimation[i] = 0;
 		}
 		else {
-			gData.mRound.mHasCustomRoundAnimation[i] = 1;
+			gFightUIData.mRound.mHasCustomRoundAnimation[i] = 1;
 			sprintf(name, "round%d", i + 1);
-			loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", name, 1, &gData.mRound.mCustomRoundAnimations[i], &gData.mRound.mOwnsCustomRoundAnimations[i], &gData.mRound.mCustomRoundPositions[i], &gData.mRound.mCustomRoundFaceDirection[i]);
+			loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gFightUIData.mFightAnimations, basePosition, "Round", name, 1, &gFightUIData.mRound.mCustomRoundAnimations[i], &gFightUIData.mRound.mOwnsCustomRoundAnimations[i], &gFightUIData.mRound.mCustomRoundPositions[i], &gFightUIData.mRound.mCustomRoundFaceDirection[i]);
 		}
 
 		sprintf(name, "round%d.snd", i + 1);
 		if (!isMugenDefVariable(tScript, "Round", name)) {
-			gData.mRound.mHasRoundSound[i] = 0;
+			gFightUIData.mRound.mHasRoundSound[i] = 0;
 		}
 		else {
-			gData.mRound.mHasRoundSound[i] = 1;
-			gData.mRound.mRoundSounds[i] = getMugenDefVectorIVariable(tScript, "Round", name);
+			gFightUIData.mRound.mHasRoundSound[i] = 1;
+			gFightUIData.mRound.mRoundSounds[i] = getMugenDefVectorIVariable(tScript, "Round", name);
 		}
 	}
 
-	gData.mRound.mIsDisplayingRound = 0;
+	gFightUIData.mRound.mIsDisplayingRound = 0;
 }
 
 static void loadFight(MugenDefScript* tScript) {
@@ -789,11 +794,11 @@ static void loadFight(MugenDefScript* tScript) {
 	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
 	basePosition.z = UI_BASE_Z;
 
-	loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "fight", 1, &gData.mFight.mAnimation, &gData.mFight.mOwnsAnimation, &gData.mFight.mPosition, &gData.mFight.mFaceDirection);
-	gData.mFight.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "fight.sndtime", 0);
-	gData.mFight.mSound = getMugenDefVectorIOrDefault(tScript, "Round", "fight.snd", makeVector3DI(1, 0, 0));
+	loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gFightUIData.mFightAnimations, basePosition, "Round", "fight", 1, &gFightUIData.mFight.mAnimation, &gFightUIData.mFight.mOwnsAnimation, &gFightUIData.mFight.mPosition, &gFightUIData.mFight.mFaceDirection);
+	gFightUIData.mFight.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "fight.sndtime", 0);
+	gFightUIData.mFight.mSound = getMugenDefVectorIOrDefault(tScript, "Round", "fight.snd", makeVector3DI(1, 0, 0));
 
-	gData.mFight.mIsDisplayingFight = 0;
+	gFightUIData.mFight.mIsDisplayingFight = 0;
 }
 
 static void loadKO(MugenDefScript* tScript) {
@@ -801,11 +806,11 @@ static void loadKO(MugenDefScript* tScript) {
 	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
 	basePosition.z = UI_BASE_Z;
 
-	loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gData.mFightAnimations, basePosition, "Round", "ko", 1, &gData.mKO.mAnimation, &gData.mKO.mOwnsAnimation, &gData.mKO.mPosition, &gData.mKO.mFaceDirection);
-	gData.mKO.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "ko.sndtime", 0);
-	gData.mKO.mSound = getMugenDefVectorIOrDefault(tScript, "Round", "ko.snd", makeVector3DI(1, 0, 0));
+	loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gFightUIData.mFightAnimations, basePosition, "Round", "ko", 1, &gFightUIData.mKO.mAnimation, &gFightUIData.mKO.mOwnsAnimation, &gFightUIData.mKO.mPosition, &gFightUIData.mKO.mFaceDirection);
+	gFightUIData.mKO.mSoundTime = getMugenDefIntegerOrDefault(tScript, "Round", "ko.sndtime", 0);
+	gFightUIData.mKO.mSound = getMugenDefVectorIOrDefault(tScript, "Round", "ko.snd", makeVector3DI(1, 0, 0));
 
-	gData.mKO.mIsDisplaying = 0;
+	gFightUIData.mKO.mIsDisplaying = 0;
 }
 
 static void loadWinDisplay(MugenDefScript* tScript) {
@@ -813,37 +818,37 @@ static void loadWinDisplay(MugenDefScript* tScript) {
 	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
 	basePosition.z = UI_BASE_Z;
 
-	loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "Round", "win", 1, &gData.mWin.mPosition, 1, gData.mWin.mText, &gData.mWin.mFont);
+	loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "Round", "win", 1, &gFightUIData.mWin.mPosition, 1, gFightUIData.mWin.mText, &gFightUIData.mWin.mFont);
 
-	gData.mWin.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "Round", "win.displaytime", 0);
+	gFightUIData.mWin.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "Round", "win.displaytime", 0);
 
-	gData.mWin.mIsDisplaying = 0;
+	gFightUIData.mWin.mIsDisplaying = 0;
 }
 
 static void loadControl(MugenDefScript* tScript) {
-	gData.mControl.mControlReturnTime = getMugenDefIntegerOrDefault(tScript, "Round", "ctrl.time", 0);
+	gFightUIData.mControl.mControlReturnTime = getMugenDefIntegerOrDefault(tScript, "Round", "ctrl.time", 0);
 
-	gData.mControl.mIsCountingDownControl = 0;
+	gFightUIData.mControl.mIsCountingDownControl = 0;
 }
 
 static void loadHitSparks() {
-	gData.mHitSparks = new_list();
+	gFightUIData.mHitSparks.clear();
 }
 
 static void loadContinue() {
-	gData.mContinue.mIsActive = 0;
+	gFightUIData.mContinue.mIsActive = 0;
 }
 
 static void loadEnvironmentColorEffects() {
-	gData.mEnvironmentEffects.mWhiteTexture = createWhiteTexture();
-	gData.mEnvironmentEffects.mAnimationID = playOneFrameAnimationLoop(makePosition(0, 0, 0), &gData.mEnvironmentEffects.mWhiteTexture);
-	setAnimationScale(gData.mEnvironmentEffects.mAnimationID, makePosition(0, 0, 0), makePosition(0, 0, 0));
+	gFightUIData.mEnvironmentEffects.mWhiteTexture = createWhiteTexture();
+	gFightUIData.mEnvironmentEffects.mAnimationID = playOneFrameAnimationLoop(makePosition(0, 0, 0), &gFightUIData.mEnvironmentEffects.mWhiteTexture);
+	setAnimationScale(gFightUIData.mEnvironmentEffects.mAnimationID, makePosition(0, 0, 0), makePosition(0, 0, 0));
 
-	gData.mEnvironmentEffects.mIsActive = 0;
+	gFightUIData.mEnvironmentEffects.mIsActive = 0;
 }
 
 static void loadEnvironmentShakeEffects() {
-	gData.mEnvironmentShake.mIsActive = 0;
+	gFightUIData.mEnvironmentShake.mIsActive = 0;
 }
 
 static void loadFightUI(void* tData) {
@@ -881,19 +886,19 @@ static void unloadSingleOptionalUIComponent(MugenAnimation* tAnimation, int tOwn
 }
 
 static void unloadFightDefFiles() {
-	unloadMugenSpriteFile(&gData.mFightSprites);
-	unloadMugenAnimationFile(&gData.mFightAnimations);
-	unloadMugenSpriteFile(&gData.mFightFXSprites);
-	unloadMugenAnimationFile(&gData.mFightFXAnimations);
+	unloadMugenSpriteFile(&gFightUIData.mFightSprites);
+	unloadMugenAnimationFile(&gFightUIData.mFightAnimations);
+	unloadMugenSpriteFile(&gFightUIData.mFightFXSprites);
+	unloadMugenAnimationFile(&gFightUIData.mFightFXAnimations);
 
-	unloadMugenSoundFile(&gData.mFightSounds);
-	unloadMugenSoundFile(&gData.mCommonSounds);
+	unloadMugenSoundFile(&gFightUIData.mFightSounds);
+	unloadMugenSoundFile(&gFightUIData.mCommonSounds);
 }
 
 
 
 static void unloadSingleHealthBar(int i) {
-	HealthBar* bar = &gData.mHealthBars[i];
+	HealthBar* bar = &gFightUIData.mHealthBars[i];
 
 	unloadSingleOptionalUIComponent(bar->mBG0Animation, bar->mOwnsBG0Animation, bar->mBG0AnimationID);
 	unloadSingleOptionalUIComponent(bar->mBG1Animation, bar->mOwnsBG1Animation, bar->mBG1AnimationID);
@@ -902,7 +907,7 @@ static void unloadSingleHealthBar(int i) {
 }
 
 static void unloadSinglePowerBar(int i) {
-	PowerBar* bar = &gData.mPowerBars[i];
+	PowerBar* bar = &gFightUIData.mPowerBars[i];
 
 	unloadSingleOptionalUIComponent(bar->mBG0Animation, bar->mOwnsBG0Animation, bar->mBG0AnimationID);
 	unloadSingleOptionalUIComponent(bar->mBG1Animation, bar->mOwnsBG1Animation, bar->mBG1AnimationID);
@@ -911,7 +916,7 @@ static void unloadSinglePowerBar(int i) {
 }
 
 static void unloadSingleFace(int i) {
-	Face* face = &gData.mFaces[i];
+	Face* face = &gFightUIData.mFaces[i];
 
 	unloadSingleOptionalUIComponent(face->mBGAnimation, face->mOwnsBGAnimation, face->mBGAnimationID);
 	unloadSingleOptionalUIComponent(face->mBG0Animation, face->mOwnsBG0Animation, face->mBG0AnimationID);
@@ -920,14 +925,14 @@ static void unloadSingleFace(int i) {
 }
 
 static void unloadSingleName(int i) {
-	DisplayName* displayName = &gData.mDisplayName[i];
+	DisplayName* displayName = &gFightUIData.mDisplayName[i];
 
 	unloadSingleOptionalUIComponent(displayName->mBGAnimation, displayName->mOwnsBGAnimation, displayName->mBGAnimationID);
 }
 
 
 static void unloadSingleWinIcon(int i) {
-	WinIcon* winIcon = &gData.mWinIcons[i];
+	WinIcon* winIcon = &gFightUIData.mWinIcons[i];
 
 	int j;
 	for (j = 0; j < winIcon->mIconAmount; j++) {
@@ -957,37 +962,37 @@ static void unloadPlayerUIs() {
 }
 
 static void unloadTimer() {
-	unloadSingleOptionalUIComponent(gData.mTime.mBGAnimation, gData.mTime.mOwnsBGAnimation, gData.mTime.mBGAnimationID);
+	unloadSingleOptionalUIComponent(gFightUIData.mTime.mBGAnimation, gFightUIData.mTime.mOwnsBGAnimation, gFightUIData.mTime.mBGAnimationID);
 }
 
 static void unloadRound() {
-	if (gData.mRound.mHasDefaultAnimation) {
-		gData.mRound.mHasDefaultAnimation = 1;
-		unloadSingleUIComponent(gData.mRound.mDefaultAnimation, gData.mRound.mOwnsDefaultAnimation);
+	if (gFightUIData.mRound.mHasDefaultAnimation) {
+		gFightUIData.mRound.mHasDefaultAnimation = 1;
+		unloadSingleUIComponent(gFightUIData.mRound.mDefaultAnimation, gFightUIData.mRound.mOwnsDefaultAnimation);
 	}
 
 	int i;
 	for (i = 0; i < 9; i++) {
-		if (gData.mRound.mHasCustomRoundAnimation[i]) {
-			unloadSingleUIComponent(gData.mRound.mCustomRoundAnimations[i], gData.mRound.mOwnsCustomRoundAnimations[i]);
+		if (gFightUIData.mRound.mHasCustomRoundAnimation[i]) {
+			unloadSingleUIComponent(gFightUIData.mRound.mCustomRoundAnimations[i], gFightUIData.mRound.mOwnsCustomRoundAnimations[i]);
 		}
 	}
 }
 
 static void unloadFight() {
-	unloadSingleUIComponent(gData.mFight.mAnimation, gData.mFight.mOwnsAnimation);
+	unloadSingleUIComponent(gFightUIData.mFight.mAnimation, gFightUIData.mFight.mOwnsAnimation);
 }
 
 static void unloadKO() {	
-	unloadSingleUIComponent(gData.mKO.mAnimation, gData.mKO.mOwnsAnimation);
+	unloadSingleUIComponent(gFightUIData.mKO.mAnimation, gFightUIData.mKO.mOwnsAnimation);
 }
 
 static void unloadHitSparks() {
-	delete_list(&gData.mHitSparks);
+	gFightUIData.mHitSparks.clear();
 }
 
 static void unloadEnvironmentColorEffects() {
-	unloadTexture(gData.mEnvironmentEffects.mWhiteTexture);
+	unloadTexture(gFightUIData.mEnvironmentEffects.mWhiteTexture);
 }
 
 
@@ -1005,15 +1010,10 @@ static void unloadFightUI(void* tData) {
 	unloadEnvironmentColorEffects();
 }
 
-typedef struct {
-	Position mPosition;
-	int mAnimationID;
-} HitSpark;
-
-static int updateSingleHitSpark(void* tCaller, void* tData) {
+static int updateSingleHitSpark(void* tCaller, HitSpark& tData) {
 	(void)tCaller;
 
-	HitSpark* e = (HitSpark*)tData;
+	HitSpark* e = &tData;
 
 	if (!getMugenAnimationRemainingAnimationTime(e->mAnimationID)) {
 		removeMugenAnimation(e->mAnimationID);
@@ -1024,7 +1024,7 @@ static int updateSingleHitSpark(void* tCaller, void* tData) {
 }
 
 static void updateHitSparks() {
-	list_remove_predicate(&gData.mHitSparks, updateSingleHitSpark, NULL);
+	stl_list_remove_predicate(gFightUIData.mHitSparks, updateSingleHitSpark);
 }
 
 static void setBarToPercentage(int tAnimationID, Vector3D tRange, double tPercentage) {
@@ -1034,7 +1034,7 @@ static void setBarToPercentage(int tAnimationID, Vector3D tRange, double tPercen
 }
 
 static void updateSingleHealthBar(int i) {
-	HealthBar* bar = &gData.mHealthBars[i];
+	HealthBar* bar = &gFightUIData.mHealthBars[i];
 
 	double dx = bar->mPercentage - bar->mDisplayedPercentage;
 
@@ -1054,7 +1054,7 @@ static void updateSingleHealthBar(int i) {
 #define COMBO_MOVEMENT_SPEED 4
 
 static void updateSingleComboMovement(int i) {
-	Combo* combo = &gData.mCombos[i];
+	Combo* combo = &gFightUIData.mCombos[i];
 
 	double left, right;
 	if (i == 0) {
@@ -1079,7 +1079,7 @@ static void updateSingleComboMovement(int i) {
 }
 
 static void updateSingleComboActivity(int i) {
-	Combo* combo = &gData.mCombos[i];
+	Combo* combo = &gFightUIData.mCombos[i];
 	if (!combo->mIsActive) return;
 
 	combo->mDisplayNow++;
@@ -1103,7 +1103,7 @@ static void updateUISide() {
 
 
 static void playDisplayAnimation(int* oAnimationID, MugenAnimation* tAnimation, Position* tBasePosition, int tFaceDirection) {
-	*oAnimationID = addMugenAnimation(tAnimation, &gData.mFightSprites, makePosition(0,0,0)); 
+	*oAnimationID = addMugenAnimation(tAnimation, &gFightUIData.mFightSprites, makePosition(0,0,0)); 
 	setMugenAnimationBasePosition(*oAnimationID, tBasePosition);
 
 	if (tFaceDirection == -1) {
@@ -1127,148 +1127,148 @@ static void removeDisplayedText(int tTextID) {
 }
 
 static void updateRoundSound() {
-	int round = gData.mRound.mRoundIndex;
-	if (gData.mRound.mDisplayNow >= gData.mRound.mSoundTime && gData.mRound.mHasRoundSound[round] && !gData.mRound.mHasPlayedSound) {
-		tryPlayMugenSound(&gData.mFightSounds, gData.mRound.mRoundSounds[round].x, gData.mRound.mRoundSounds[round].y);
-		gData.mRound.mHasPlayedSound = 1;
+	int round = gFightUIData.mRound.mRoundIndex;
+	if (gFightUIData.mRound.mDisplayNow >= gFightUIData.mRound.mSoundTime && gFightUIData.mRound.mHasRoundSound[round] && !gFightUIData.mRound.mHasPlayedSound) {
+		tryPlayMugenSound(&gFightUIData.mFightSounds, gFightUIData.mRound.mRoundSounds[round].x, gFightUIData.mRound.mRoundSounds[round].y);
+		gFightUIData.mRound.mHasPlayedSound = 1;
 	}
 }
 
 static void removeRoundDisplay() {
-	if (gData.mRound.mHasActiveAnimation) {
-		removeDisplayedAnimation(gData.mRound.mAnimationID);
+	if (gFightUIData.mRound.mHasActiveAnimation) {
+		removeDisplayedAnimation(gFightUIData.mRound.mAnimationID);
 	}
 	else {
-		removeDisplayedText(gData.mRound.mTextID);
+		removeDisplayedText(gFightUIData.mRound.mTextID);
 	}
 }
 
 static void updateRoundFinish() {
-	if (gData.mRound.mDisplayNow >= gData.mRound.mDisplayTime) {
+	if (gFightUIData.mRound.mDisplayNow >= gFightUIData.mRound.mDisplayTime) {
 
 		removeRoundDisplay();
-		gData.mRound.mCB();
-		gData.mRound.mIsDisplayingRound = 0;
+		gFightUIData.mRound.mCB();
+		gFightUIData.mRound.mIsDisplayingRound = 0;
 	}
 }
 
 static void updateRoundDisplay() {
-	if (!gData.mRound.mIsDisplayingRound) return;
+	if (!gFightUIData.mRound.mIsDisplayingRound) return;
 
-	gData.mRound.mDisplayNow++;
+	gFightUIData.mRound.mDisplayNow++;
 
 	updateRoundSound();
 	updateRoundFinish();
 }
 
 static void startControlCountdown() {
-	gData.mControl.mNow = 0;
-	gData.mControl.mIsCountingDownControl = 1;
+	gFightUIData.mControl.mNow = 0;
+	gFightUIData.mControl.mIsCountingDownControl = 1;
 }
 
 static void updateFightSound() {
 
-	if (gData.mFight.mDisplayNow >= gData.mFight.mSoundTime && !gData.mFight.mHasPlayedSound) {
-		tryPlayMugenSound(&gData.mFightSounds, gData.mFight.mSound.x, gData.mFight.mSound.y);
-		gData.mFight.mHasPlayedSound = 1;
+	if (gFightUIData.mFight.mDisplayNow >= gFightUIData.mFight.mSoundTime && !gFightUIData.mFight.mHasPlayedSound) {
+		tryPlayMugenSound(&gFightUIData.mFightSounds, gFightUIData.mFight.mSound.x, gFightUIData.mFight.mSound.y);
+		gFightUIData.mFight.mHasPlayedSound = 1;
 	}
 }
 
 
 static void updateFightFinish() {
-	if (!getMugenAnimationRemainingAnimationTime(gData.mFight.mAnimationID)) {
-		removeDisplayedAnimation(gData.mFight.mAnimationID);
-		gData.mFight.mCB();
+	if (!getMugenAnimationRemainingAnimationTime(gFightUIData.mFight.mAnimationID)) {
+		removeDisplayedAnimation(gFightUIData.mFight.mAnimationID);
+		gFightUIData.mFight.mCB();
 		startControlCountdown();
-		gData.mFight.mIsDisplayingFight = 0;
+		gFightUIData.mFight.mIsDisplayingFight = 0;
 	}
 }
 
 static void updateFightDisplay() {
-	if (!gData.mFight.mIsDisplayingFight) return;
+	if (!gFightUIData.mFight.mIsDisplayingFight) return;
 
-	gData.mFight.mDisplayNow++;
+	gFightUIData.mFight.mDisplayNow++;
 	updateFightSound();
 	updateFightFinish();
 }
 
 static void updateKOSound() {
 
-	if (gData.mKO.mDisplayNow >= gData.mKO.mSoundTime && !gData.mKO.mHasPlayedSound) {
-		tryPlayMugenSound(&gData.mFightSounds, gData.mKO.mSound.x, gData.mKO.mSound.y);
-		gData.mKO.mHasPlayedSound = 1;
+	if (gFightUIData.mKO.mDisplayNow >= gFightUIData.mKO.mSoundTime && !gFightUIData.mKO.mHasPlayedSound) {
+		tryPlayMugenSound(&gFightUIData.mFightSounds, gFightUIData.mKO.mSound.x, gFightUIData.mKO.mSound.y);
+		gFightUIData.mKO.mHasPlayedSound = 1;
 	}
 }
 
 static void updateKOFinish() {
-	if (!getMugenAnimationRemainingAnimationTime(gData.mKO.mAnimationID)) {
-		removeDisplayedAnimation(gData.mKO.mAnimationID);
-		gData.mKO.mCB();
-		gData.mKO.mIsDisplaying = 0;
+	if (!getMugenAnimationRemainingAnimationTime(gFightUIData.mKO.mAnimationID)) {
+		removeDisplayedAnimation(gFightUIData.mKO.mAnimationID);
+		gFightUIData.mKO.mCB();
+		gFightUIData.mKO.mIsDisplaying = 0;
 	}
 }
 
 static void updateKODisplay() {
-	if (!gData.mKO.mIsDisplaying) return;
+	if (!gFightUIData.mKO.mIsDisplaying) return;
 
-	gData.mKO.mDisplayNow++;
+	gFightUIData.mKO.mDisplayNow++;
 	updateKOSound();
 	updateKOFinish();
 }
 
 
 static void updateWinDisplay() {
-	if (!gData.mWin.mIsDisplaying) return;
+	if (!gFightUIData.mWin.mIsDisplaying) return;
 
-	gData.mWin.mNow++;
-	if (gData.mWin.mNow >= gData.mWin.mDisplayTime || hasPressedStartFlank()) {
-		removeDisplayedText(gData.mWin.mTextID);
-		gData.mWin.mCB();
-		gData.mWin.mIsDisplaying = 0;
+	gFightUIData.mWin.mNow++;
+	if (gFightUIData.mWin.mNow >= gFightUIData.mWin.mDisplayTime || hasPressedStartFlank()) {
+		removeDisplayedText(gFightUIData.mWin.mTextID);
+		gFightUIData.mWin.mCB();
+		gFightUIData.mWin.mIsDisplaying = 0;
 	}
 }
 
 
 static void updateControlCountdown() {
-	if (!gData.mControl.mIsCountingDownControl) return;
+	if (!gFightUIData.mControl.mIsCountingDownControl) return;
 
-	gData.mControl.mNow++;
-	if (gData.mControl.mNow >= gData.mControl.mControlReturnTime) {
+	gFightUIData.mControl.mNow++;
+	if (gFightUIData.mControl.mNow >= gFightUIData.mControl.mControlReturnTime) {
 		setPlayerControl(getRootPlayer(0), 1);
 		setPlayerControl(getRootPlayer(1), 1);
-		gData.mControl.mIsCountingDownControl = 0;
+		gFightUIData.mControl.mIsCountingDownControl = 0;
 	}
 }
 
 static void updateTimeDisplayText() {
 	char text[10];
-	if (gData.mTime.mIsInfinite) {
+	if (gFightUIData.mTime.mIsInfinite) {
 		sprintf(text, "o");
 	}
 	else {
-		if (gData.mTime.mValue < 10) sprintf(text, "0%d", gData.mTime.mValue);
-		else sprintf(text, "%d", gData.mTime.mValue);
+		if (gFightUIData.mTime.mValue < 10) sprintf(text, "0%d", gFightUIData.mTime.mValue);
+		else sprintf(text, "%d", gFightUIData.mTime.mValue);
 	}
 
-	changeMugenText(gData.mTime.mTextID, text);
+	changeMugenText(gFightUIData.mTime.mTextID, text);
 }
 
 static void setTimerFinishedInternal();
 
 static void updateTimeDisplay() {
-	if (!gData.mTime.mIsActive) return;
-	if (gData.mTime.mIsInfinite) return;
-	if (gData.mTime.mIsFinished) return;
-	if (gData.mTime.mTimerFreezeFlag) {
-		gData.mTime.mTimerFreezeFlag = 0;
+	if (!gFightUIData.mTime.mIsActive) return;
+	if (gFightUIData.mTime.mIsInfinite) return;
+	if (gFightUIData.mTime.mIsFinished) return;
+	if (gFightUIData.mTime.mTimerFreezeFlag) {
+		gFightUIData.mTime.mTimerFreezeFlag = 0;
 		return;
 	}
 
-	gData.mTime.mNow++;
-	if (gData.mTime.mNow >= gData.mTime.mFramesPerCount) {
-		gData.mTime.mNow = 0;
-		gData.mTime.mValue--;
-		if (gData.mTime.mValue < 0) {
+	gFightUIData.mTime.mNow++;
+	if (gFightUIData.mTime.mNow >= gFightUIData.mTime.mFramesPerCount) {
+		gFightUIData.mTime.mNow = 0;
+		gFightUIData.mTime.mValue--;
+		if (gFightUIData.mTime.mValue < 0) {
 			setTimerFinishedInternal();
 		}
 
@@ -1277,34 +1277,34 @@ static void updateTimeDisplay() {
 }
 
 static void setContinueInactive() {
-	removeMugenText(gData.mContinue.mContinueTextID);
-	removeMugenText(gData.mContinue.mValueTextID);
-	gData.mContinue.mIsActive = 0;
+	removeMugenText(gFightUIData.mContinue.mContinueTextID);
+	removeMugenText(gFightUIData.mContinue.mValueTextID);
+	gFightUIData.mContinue.mIsActive = 0;
 }
 
 
 static void decreaseContinueCounter() {
-	gData.mContinue.mValue--;
+	gFightUIData.mContinue.mValue--;
 	char text[10];
-	sprintf(text, "%d", gData.mContinue.mValue);
-	changeMugenText(gData.mContinue.mValueTextID, text);
+	sprintf(text, "%d", gFightUIData.mContinue.mValue);
+	changeMugenText(gFightUIData.mContinue.mValueTextID, text);
 }
 
 static void updateContinueDisplay() {
-	if (!gData.mContinue.mIsActive) return;
+	if (!gFightUIData.mContinue.mIsActive) return;
 
 	if (hasPressedStartFlank()) {
 		setContinueInactive();
-		gData.mContinue.mPressedContinueCB();
+		gFightUIData.mContinue.mPressedContinueCB();
 		return;
 	}
 	
-	gData.mContinue.mNow++;
-	if (gData.mContinue.mNow >= gData.mContinue.mDuration || hasPressedAFlank()) {
-		gData.mContinue.mNow = 0;
-		if (!gData.mContinue.mValue) {
+	gFightUIData.mContinue.mNow++;
+	if (gFightUIData.mContinue.mNow >= gFightUIData.mContinue.mDuration || hasPressedAFlank()) {
+		gFightUIData.mContinue.mNow = 0;
+		if (!gFightUIData.mContinue.mValue) {
 			setContinueInactive();
-			gData.mContinue.mFinishedCB();
+			gFightUIData.mContinue.mFinishedCB();
 			return;
 		}
 
@@ -1313,14 +1313,14 @@ static void updateContinueDisplay() {
 }
 
 static void updateEnvironmentColor() {
-	if (!gData.mEnvironmentEffects.mIsActive) return;
+	if (!gFightUIData.mEnvironmentEffects.mIsActive) return;
 
 	setDreamStageLayer1InvisibleForOneFrame();
 
-	gData.mEnvironmentEffects.mNow++;
-	if (gData.mEnvironmentEffects.mNow >= gData.mEnvironmentEffects.mDuration) {
-		setAnimationScale(gData.mEnvironmentEffects.mAnimationID, makePosition(0, 0, 0), makePosition(0, 0, 0));
-		gData.mEnvironmentEffects.mIsActive = 0;
+	gFightUIData.mEnvironmentEffects.mNow++;
+	if (gFightUIData.mEnvironmentEffects.mNow >= gFightUIData.mEnvironmentEffects.mDuration) {
+		setAnimationScale(gFightUIData.mEnvironmentEffects.mAnimationID, makePosition(0, 0, 0), makePosition(0, 0, 0));
+		gFightUIData.mEnvironmentEffects.mIsActive = 0;
 	}
 }
 
@@ -1356,28 +1356,29 @@ void playDreamHitSpark(Position tPosition, DreamPlayer* tPlayer, int tIsInPlayer
 		anim = getMugenAnimation(getPlayerAnimations(tPlayer), tNumber);
 	}
 	else {
-		spriteFile = &gData.mFightFXSprites;
-		if (!hasMugenAnimation(&gData.mFightFXAnimations, tNumber)) return;
-		anim = getMugenAnimation(&gData.mFightFXAnimations, tNumber);
+		spriteFile = &gFightUIData.mFightFXSprites;
+		if (!hasMugenAnimation(&gFightUIData.mFightFXAnimations, tNumber)) return;
+		anim = getMugenAnimation(&gFightUIData.mFightFXAnimations, tNumber);
 	}
 
-	HitSpark* e = (HitSpark*)allocMemory(sizeof(HitSpark));
+	gFightUIData.mHitSparks.push_back(HitSpark());
+	HitSpark& e = gFightUIData.mHitSparks.back();
 	
-	e->mPosition = tPosition;
-	e->mPosition.z = HITSPARK_BASE_Z;
-	e->mAnimationID = addMugenAnimation(anim, spriteFile, getDreamStageCoordinateSystemOffset(tPositionCoordinateP));
-	setMugenAnimationBasePosition(e->mAnimationID, &e->mPosition);
-	setMugenAnimationCameraPositionReference(e->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
+	e.mPosition = tPosition;
+	e.mPosition.z = HITSPARK_BASE_Z;
+	e.mAnimationID = addMugenAnimation(anim, spriteFile, getDreamStageCoordinateSystemOffset(tPositionCoordinateP));
+	setMugenAnimationBasePosition(e.mAnimationID, &e.mPosition);
+	setMugenAnimationCameraPositionReference(e.mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
 	if (!tIsFacingRight) {
-		setMugenAnimationFaceDirection(e->mAnimationID, tIsFacingRight);
+		setMugenAnimationFaceDirection(e.mAnimationID, tIsFacingRight);
 	}
-	list_push_back_owned(&gData.mHitSparks, e);
+	
 }
 
 void addDreamDustCloud(Position tPosition, int tIsFacingRight, int tCoordinateP)
 {
 	Position pos = vecAdd(tPosition, getDreamStageCoordinateSystemOffset(tCoordinateP));
-	int id = addMugenAnimation(getMugenAnimation(&gData.mFightFXAnimations, 120), &gData.mFightFXSprites, pos);
+	int id = addMugenAnimation(getMugenAnimation(&gFightUIData.mFightFXAnimations, 120), &gFightUIData.mFightFXSprites, pos);
 	setMugenAnimationNoLoop(id);
 	setMugenAnimationCameraPositionReference(id, getDreamMugenStageHandlerCameraPositionReference());
 	if (!tIsFacingRight) {
@@ -1387,7 +1388,7 @@ void addDreamDustCloud(Position tPosition, int tIsFacingRight, int tCoordinateP)
 
 void setDreamLifeBarPercentage(DreamPlayer* tPlayer, double tPercentage)
 {
-	HealthBar* bar = &gData.mHealthBars[tPlayer->mRootID];
+	HealthBar* bar = &gFightUIData.mHealthBars[tPlayer->mRootID];
 
 	bar->mPercentage = tPercentage;
 	setBarToPercentage(bar->mFrontAnimationID, bar->mHealthRangeX, bar->mPercentage);
@@ -1402,13 +1403,13 @@ void setDreamLifeBarPercentage(DreamPlayer* tPlayer, double tPercentage)
 
 void setDreamPowerBarPercentage(DreamPlayer* tPlayer, double tPercentage, int tValue)
 {
-	PowerBar* bar = &gData.mPowerBars[tPlayer->mRootID];
+	PowerBar* bar = &gFightUIData.mPowerBars[tPlayer->mRootID];
 	setBarToPercentage(bar->mFrontAnimationID, bar->mPowerRangeX, tPercentage);
 
 	int newLevel = tValue / 1000;
 
 	if (newLevel >= 1 && newLevel > bar->mLevel) {
-		tryPlayMugenSound(&gData.mFightSounds, bar->mLevelSounds[newLevel - 1].x, bar->mLevelSounds[newLevel - 1].y);
+		tryPlayMugenSound(&gFightUIData.mFightSounds, bar->mLevelSounds[newLevel - 1].x, bar->mLevelSounds[newLevel - 1].y);
 	}
 	sprintf(bar->mCounterText, "%d", newLevel);
 	changeMugenText(bar->mCounterTextID, bar->mCounterText);
@@ -1418,51 +1419,51 @@ void setDreamPowerBarPercentage(DreamPlayer* tPlayer, double tPercentage, int tV
 
 void enableDreamTimer()
 {
-	gData.mTime.mIsActive = 1;
+	gFightUIData.mTime.mIsActive = 1;
 }
 
 void disableDreamTimer()
 {
-	gData.mTime.mIsActive = 0;
+	gFightUIData.mTime.mIsActive = 0;
 }
 
 void resetDreamTimer()
 {
-	gData.mTime.mNow = 0;
-	gData.mTime.mValue = getGlobalTimerDuration();
-	gData.mTime.mIsFinished = 0;
+	gFightUIData.mTime.mNow = 0;
+	gFightUIData.mTime.mValue = getGlobalTimerDuration();
+	gFightUIData.mTime.mIsFinished = 0;
 	updateTimeDisplayText();
 }
 
 void setTimerFinished() {
-	gData.mTime.mIsInfinite = 0;
-	gData.mTime.mValue = 0;
-	gData.mTime.mIsFinished = 0;
+	gFightUIData.mTime.mIsInfinite = 0;
+	gFightUIData.mTime.mValue = 0;
+	gFightUIData.mTime.mIsFinished = 0;
 	updateTimeDisplayText();
 }
 
 static void setTimerFinishedInternal() {
-	gData.mTime.mIsInfinite = 0;
-	gData.mTime.mValue = 0;
-	gData.mTime.mIsFinished = 1;
+	gFightUIData.mTime.mIsInfinite = 0;
+	gFightUIData.mTime.mValue = 0;
+	gFightUIData.mTime.mIsFinished = 1;
 	updateTimeDisplayText();
-	gData.mTime.mFinishedCB();
+	gFightUIData.mTime.mFinishedCB();
 }
 
 
 MugenAnimation * getDreamFightEffectAnimation(int tNumber)
 {
-	return getMugenAnimation(&gData.mFightFXAnimations, tNumber);
+	return getMugenAnimation(&gFightUIData.mFightFXAnimations, tNumber);
 }
 
 MugenSpriteFile * getDreamFightEffectSprites()
 {
-	return &gData.mFightFXSprites;
+	return &gFightUIData.mFightFXSprites;
 }
 
 MugenSounds * getDreamCommonSounds()
 {
-	return &gData.mCommonSounds;
+	return &gFightUIData.mCommonSounds;
 }
 
 static void parseRoundText(char* tDst, char* tSrc, int tRoundNumber) {
@@ -1487,46 +1488,46 @@ void playDreamRoundAnimation(int tRound, void(*tFunc)())
 {
 	
 	tRound--;
-	if (gData.mRound.mHasCustomRoundAnimation[tRound]) {
-		gData.mRound.mHasActiveAnimation = 1;
-		playDisplayAnimation(&gData.mRound.mAnimationID, gData.mRound.mCustomRoundAnimations[tRound], &gData.mRound.mCustomRoundPositions[tRound], gData.mRound.mCustomRoundFaceDirection[tRound]);
+	if (gFightUIData.mRound.mHasCustomRoundAnimation[tRound]) {
+		gFightUIData.mRound.mHasActiveAnimation = 1;
+		playDisplayAnimation(&gFightUIData.mRound.mAnimationID, gFightUIData.mRound.mCustomRoundAnimations[tRound], &gFightUIData.mRound.mCustomRoundPositions[tRound], gFightUIData.mRound.mCustomRoundFaceDirection[tRound]);
 	}
-	else if (gData.mRound.mHasDefaultAnimation) {
-		gData.mRound.mHasActiveAnimation = 1;
-		playDisplayAnimation(&gData.mRound.mAnimationID, gData.mRound.mDefaultAnimation, &gData.mRound.mPosition, gData.mRound.mDefaultFaceDirection);
+	else if (gFightUIData.mRound.mHasDefaultAnimation) {
+		gFightUIData.mRound.mHasActiveAnimation = 1;
+		playDisplayAnimation(&gFightUIData.mRound.mAnimationID, gFightUIData.mRound.mDefaultAnimation, &gFightUIData.mRound.mPosition, gFightUIData.mRound.mDefaultFaceDirection);
 	}
 	else {
-		gData.mRound.mHasActiveAnimation = 0;
-		parseRoundText(gData.mRound.mDisplayedText, gData.mRound.mText, tRound + 1);
+		gFightUIData.mRound.mHasActiveAnimation = 0;
+		parseRoundText(gFightUIData.mRound.mDisplayedText, gFightUIData.mRound.mText, tRound + 1);
 
-		playDisplayText(&gData.mRound.mTextID, gData.mRound.mDisplayedText, gData.mRound.mPosition, gData.mRound.mFont);
+		playDisplayText(&gFightUIData.mRound.mTextID, gFightUIData.mRound.mDisplayedText, gFightUIData.mRound.mPosition, gFightUIData.mRound.mFont);
 	}
 
-	gData.mRound.mCB = tFunc;
-	gData.mRound.mDisplayNow = 0;
-	gData.mRound.mHasPlayedSound = 0;
-	gData.mRound.mRoundIndex = tRound;
-	gData.mRound.mIsDisplayingRound = 1;
+	gFightUIData.mRound.mCB = tFunc;
+	gFightUIData.mRound.mDisplayNow = 0;
+	gFightUIData.mRound.mHasPlayedSound = 0;
+	gFightUIData.mRound.mRoundIndex = tRound;
+	gFightUIData.mRound.mIsDisplayingRound = 1;
 }
 
 void playDreamFightAnimation(void(*tFunc)())
 {
-	playDisplayAnimation(&gData.mFight.mAnimationID, gData.mFight.mAnimation, &gData.mFight.mPosition, gData.mFight.mFaceDirection);
+	playDisplayAnimation(&gFightUIData.mFight.mAnimationID, gFightUIData.mFight.mAnimation, &gFightUIData.mFight.mPosition, gFightUIData.mFight.mFaceDirection);
 
-	gData.mFight.mCB = tFunc;
-	gData.mFight.mDisplayNow = 0;
-	gData.mFight.mHasPlayedSound = 0;
-	gData.mFight.mIsDisplayingFight = 1;
+	gFightUIData.mFight.mCB = tFunc;
+	gFightUIData.mFight.mDisplayNow = 0;
+	gFightUIData.mFight.mHasPlayedSound = 0;
+	gFightUIData.mFight.mIsDisplayingFight = 1;
 }
 
 void playDreamKOAnimation(void(*tFunc)())
 {
-	playDisplayAnimation(&gData.mKO.mAnimationID, gData.mKO.mAnimation, &gData.mKO.mPosition, gData.mKO.mFaceDirection);
+	playDisplayAnimation(&gFightUIData.mKO.mAnimationID, gFightUIData.mKO.mAnimation, &gFightUIData.mKO.mPosition, gFightUIData.mKO.mFaceDirection);
 
-	gData.mKO.mDisplayNow = 0;
-	gData.mKO.mHasPlayedSound = 0;
-	gData.mKO.mCB = tFunc;
-	gData.mKO.mIsDisplaying = 1;
+	gFightUIData.mKO.mDisplayNow = 0;
+	gFightUIData.mKO.mHasPlayedSound = 0;
+	gFightUIData.mKO.mCB = tFunc;
+	gFightUIData.mKO.mIsDisplaying = 1;
 }
 
 static void parseWinText(char* tDst, char* tSrc, char* tName, Position* oDisplayPosition, Position tPosition) {
@@ -1552,33 +1553,33 @@ static void parseWinText(char* tDst, char* tSrc, char* tName, Position* oDisplay
 
 void playDreamWinAnimation(char * tName, void(*tFunc)())
 {
-	parseWinText(gData.mWin.mDisplayedText, gData.mWin.mText, tName, &gData.mWin.mDisplayPosition, gData.mWin.mPosition);
-	playDisplayText(&gData.mWin.mTextID, gData.mWin.mDisplayedText, gData.mWin.mDisplayPosition, gData.mWin.mFont);
+	parseWinText(gFightUIData.mWin.mDisplayedText, gFightUIData.mWin.mText, tName, &gFightUIData.mWin.mDisplayPosition, gFightUIData.mWin.mPosition);
+	playDisplayText(&gFightUIData.mWin.mTextID, gFightUIData.mWin.mDisplayedText, gFightUIData.mWin.mDisplayPosition, gFightUIData.mWin.mFont);
 	
-	gData.mWin.mNow = 0;
-	gData.mWin.mCB = tFunc;
-	gData.mWin.mIsDisplaying = 1;
+	gFightUIData.mWin.mNow = 0;
+	gFightUIData.mWin.mCB = tFunc;
+	gFightUIData.mWin.mIsDisplaying = 1;
 }
 
 void playDreamContinueAnimation(void(*tAnimationFinishedFunc)(), void(*tContinuePressedFunc)())
 {
 
-	gData.mContinue.mFinishedCB = tAnimationFinishedFunc;
-	gData.mContinue.mPressedContinueCB = tContinuePressedFunc;
-	gData.mContinue.mValue = 10;
-	gData.mContinue.mNow = 0;
-	gData.mContinue.mDuration = 60;
+	gFightUIData.mContinue.mFinishedCB = tAnimationFinishedFunc;
+	gFightUIData.mContinue.mPressedContinueCB = tContinuePressedFunc;
+	gFightUIData.mContinue.mValue = 10;
+	gFightUIData.mContinue.mNow = 0;
+	gFightUIData.mContinue.mDuration = 60;
 
-	playDisplayText(&gData.mContinue.mContinueTextID, "Continue?", makePosition(160, 100, UI_BASE_Z), makeVector3DI(3, 0, 0));
-	playDisplayText(&gData.mContinue.mValueTextID, "10", makePosition(160, 120, UI_BASE_Z), makeVector3DI(2, 0, 0));
+	playDisplayText(&gFightUIData.mContinue.mContinueTextID, "Continue?", makePosition(160, 100, UI_BASE_Z), makeVector3DI(3, 0, 0));
+	playDisplayText(&gFightUIData.mContinue.mValueTextID, "10", makePosition(160, 120, UI_BASE_Z), makeVector3DI(2, 0, 0));
 
 
-	gData.mContinue.mIsActive = 1;
+	gFightUIData.mContinue.mIsActive = 1;
 }
 
 void setDreamTimeDisplayFinishedCB(void(*tTimeDisplayFinishedFunc)())
 {
-	gData.mTime.mFinishedCB = tTimeDisplayFinishedFunc;
+	gFightUIData.mTime.mFinishedCB = tTimeDisplayFinishedFunc;
 }
 
 static void setSingleUIComponentInvisibleForOneFrame(int tAnimationID) {
@@ -1593,32 +1594,32 @@ void setDreamBarInvisibleForOneFrame()
 {
 	int i;
 	for (i = 0; i < 2; i++) {
-		setSingleUIComponentInvisibleForOneFrame(gData.mHealthBars[i].mBG0AnimationID);
-		setSingleUIComponentInvisibleForOneFrame(gData.mHealthBars[i].mBG1AnimationID);
-		setSingleUIComponentInvisibleForOneFrame(gData.mHealthBars[i].mMidAnimationID);
-		setSingleUIComponentInvisibleForOneFrame(gData.mHealthBars[i].mFrontAnimationID);
+		setSingleUIComponentInvisibleForOneFrame(gFightUIData.mHealthBars[i].mBG0AnimationID);
+		setSingleUIComponentInvisibleForOneFrame(gFightUIData.mHealthBars[i].mBG1AnimationID);
+		setSingleUIComponentInvisibleForOneFrame(gFightUIData.mHealthBars[i].mMidAnimationID);
+		setSingleUIComponentInvisibleForOneFrame(gFightUIData.mHealthBars[i].mFrontAnimationID);
 
-		setSingleUIComponentInvisibleForOneFrame(gData.mPowerBars[i].mBG0AnimationID);
-		setSingleUIComponentInvisibleForOneFrame(gData.mPowerBars[i].mBG1AnimationID);
-		setSingleUIComponentInvisibleForOneFrame(gData.mPowerBars[i].mMidAnimationID);
-		setSingleUIComponentInvisibleForOneFrame(gData.mPowerBars[i].mFrontAnimationID);
-		setSingleUITextInvisibleForOneFrame(gData.mPowerBars[i].mCounterTextID);
+		setSingleUIComponentInvisibleForOneFrame(gFightUIData.mPowerBars[i].mBG0AnimationID);
+		setSingleUIComponentInvisibleForOneFrame(gFightUIData.mPowerBars[i].mBG1AnimationID);
+		setSingleUIComponentInvisibleForOneFrame(gFightUIData.mPowerBars[i].mMidAnimationID);
+		setSingleUIComponentInvisibleForOneFrame(gFightUIData.mPowerBars[i].mFrontAnimationID);
+		setSingleUITextInvisibleForOneFrame(gFightUIData.mPowerBars[i].mCounterTextID);
 
-		setSingleUIComponentInvisibleForOneFrame(gData.mFaces[i].mBGAnimationID);
-		setSingleUIComponentInvisibleForOneFrame(gData.mFaces[i].mBG0AnimationID);
-		setSingleUIComponentInvisibleForOneFrame(gData.mFaces[i].mBG1AnimationID);
-		setSingleUIComponentInvisibleForOneFrame(gData.mFaces[i].mFaceAnimationID);
+		setSingleUIComponentInvisibleForOneFrame(gFightUIData.mFaces[i].mBGAnimationID);
+		setSingleUIComponentInvisibleForOneFrame(gFightUIData.mFaces[i].mBG0AnimationID);
+		setSingleUIComponentInvisibleForOneFrame(gFightUIData.mFaces[i].mBG1AnimationID);
+		setSingleUIComponentInvisibleForOneFrame(gFightUIData.mFaces[i].mFaceAnimationID);
 
-		setSingleUIComponentInvisibleForOneFrame(gData.mDisplayName[i].mBGAnimationID);
+		setSingleUIComponentInvisibleForOneFrame(gFightUIData.mDisplayName[i].mBGAnimationID);
 
-		for (int j = 0; j < gData.mWinIcons[i].mIconAmount; j++) {
-			setSingleUIComponentInvisibleForOneFrame(gData.mWinIcons[i].mIconAnimationIDs[j]);
+		for (int j = 0; j < gFightUIData.mWinIcons[i].mIconAmount; j++) {
+			setSingleUIComponentInvisibleForOneFrame(gFightUIData.mWinIcons[i].mIconAnimationIDs[j]);
 		}
-		setSingleUITextInvisibleForOneFrame(gData.mDisplayName[i].mTextID);
+		setSingleUITextInvisibleForOneFrame(gFightUIData.mDisplayName[i].mTextID);
 	}
 
-	setSingleUIComponentInvisibleForOneFrame(gData.mTime.mBGAnimationID);
-	setSingleUITextInvisibleForOneFrame(gData.mTime.mTextID);
+	setSingleUIComponentInvisibleForOneFrame(gFightUIData.mTime.mBGAnimationID);
+	setSingleUITextInvisibleForOneFrame(gFightUIData.mTime.mTextID);
 }
 
 void setDreamNoMusicFlag()
@@ -1628,64 +1629,64 @@ void setDreamNoMusicFlag()
 
 void setTimerFreezeFlag()
 {
-	gData.mTime.mTimerFreezeFlag = 1;
+	gFightUIData.mTime.mTimerFreezeFlag = 1;
 }
 
 void setTimerInfinite()
 {
-	gData.mTime.mIsInfinite = 1;
+	gFightUIData.mTime.mIsInfinite = 1;
 }
 
 void setTimerFinite()
 {
 	if (isGlobalTimerInfinite()) setTimerInfinite();
-	else gData.mTime.mIsInfinite = 0;
+	else gFightUIData.mTime.mIsInfinite = 0;
 }
 
 int isTimerFinished()
 {
-	return gData.mTime.mIsActive && !gData.mTime.mIsInfinite && gData.mTime.mIsFinished;
+	return gFightUIData.mTime.mIsActive && !gFightUIData.mTime.mIsInfinite && gFightUIData.mTime.mIsFinished;
 }
 
 void setEnvironmentColor(Vector3DI tColors, int tTime, int tIsUnderCharacters)
 {
-	setAnimationPosition(gData.mEnvironmentEffects.mAnimationID, makePosition(0, 0, tIsUnderCharacters ? ENVIRONMENT_COLOR_LOWER_Z : ENVIRONMENT_COLOR_UPPER_Z));
-	setAnimationSize(gData.mEnvironmentEffects.mAnimationID, makePosition(640, 480, 1), makePosition(0, 0, 0));
-	setAnimationColor(gData.mEnvironmentEffects.mAnimationID, tColors.x / 255.0, tColors.y / 255.0, tColors.z / 255.0);
+	setAnimationPosition(gFightUIData.mEnvironmentEffects.mAnimationID, makePosition(0, 0, tIsUnderCharacters ? ENVIRONMENT_COLOR_LOWER_Z : ENVIRONMENT_COLOR_UPPER_Z));
+	setAnimationSize(gFightUIData.mEnvironmentEffects.mAnimationID, makePosition(640, 480, 1), makePosition(0, 0, 0));
+	setAnimationColor(gFightUIData.mEnvironmentEffects.mAnimationID, tColors.x / 255.0, tColors.y / 255.0, tColors.z / 255.0);
 
-	gData.mEnvironmentEffects.mDuration = tTime;
-	gData.mEnvironmentEffects.mNow = 0;
-	gData.mEnvironmentEffects.mIsActive = 1;
+	gFightUIData.mEnvironmentEffects.mDuration = tTime;
+	gFightUIData.mEnvironmentEffects.mNow = 0;
+	gFightUIData.mEnvironmentEffects.mIsActive = 1;
 
 }
 
 // TODO: use environment shake
 void setEnvironmentShake(int tDuration, double tFrequency, int tAmplitude, double tPhaseOffset)
 {
-	gData.mEnvironmentShake.mFrequency = tFrequency;
-	gData.mEnvironmentShake.mAmplitude = tAmplitude;
-	gData.mEnvironmentShake.mPhaseOffset = tPhaseOffset;
+	gFightUIData.mEnvironmentShake.mFrequency = tFrequency;
+	gFightUIData.mEnvironmentShake.mAmplitude = tAmplitude;
+	gFightUIData.mEnvironmentShake.mPhaseOffset = tPhaseOffset;
 
-	gData.mEnvironmentShake.mNow = 0;
-	gData.mEnvironmentShake.mDuration = tDuration;
-	gData.mEnvironmentShake.mIsActive = 1;
+	gFightUIData.mEnvironmentShake.mNow = 0;
+	gFightUIData.mEnvironmentShake.mDuration = tDuration;
+	gFightUIData.mEnvironmentShake.mIsActive = 1;
 }
 
 static void addGeneralWinIcon(int tPlayer, Vector3DI tSprite, int tIsPerfect) {
-	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	WinIcon* icon = &gFightUIData.mWinIcons[tPlayer];
 
 	if (icon->mIconAmount >= icon->mIconUpToAmount) return;
 
 	int id = icon->mIconAmount;
 	Position pos = vecAdd2D(icon->mPosition, vecScale(icon->mOffset, id));	
 	icon->mIconAnimations[id] = createOneFrameMugenAnimationForSprite(tSprite.x, tSprite.y);
-	icon->mIconAnimationIDs[id] = addMugenAnimation(icon->mIconAnimations[id], &gData.mFightSprites, pos);
+	icon->mIconAnimationIDs[id] = addMugenAnimation(icon->mIconAnimations[id], &gFightUIData.mFightSprites, pos);
 
 	icon->mHasIsPerfectIcon[id] = tIsPerfect;
 	if (icon->mHasIsPerfectIcon[id]) {
 		pos.z++;
 		icon->mPerfectIconAnimations[id] = createOneFrameMugenAnimationForSprite(icon->mPerfectWin.x, icon->mPerfectWin.y);
-		icon->mPerfectIconAnimationIDs[id] = addMugenAnimation(icon->mPerfectIconAnimations[id], &gData.mFightSprites, pos);
+		icon->mPerfectIconAnimationIDs[id] = addMugenAnimation(icon->mPerfectIconAnimations[id], &gFightUIData.mFightSprites, pos);
 	}
 
 	icon->mIconAmount++;
@@ -1693,47 +1694,47 @@ static void addGeneralWinIcon(int tPlayer, Vector3DI tSprite, int tIsPerfect) {
 
 void addNormalWinIcon(int tPlayer, int tIsPerfect)
 {
-	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	WinIcon* icon = &gFightUIData.mWinIcons[tPlayer];
 	addGeneralWinIcon(tPlayer, icon->mNormalWin, tIsPerfect);
 }
 
 void addSpecialWinIcon(int tPlayer, int tIsPerfect) {
-	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	WinIcon* icon = &gFightUIData.mWinIcons[tPlayer];
 	addGeneralWinIcon(tPlayer, icon->mSpecialWin, tIsPerfect);
 }
 
 void addHyperWinIcon(int tPlayer, int tIsPerfect) {
-	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	WinIcon* icon = &gFightUIData.mWinIcons[tPlayer];
 	addGeneralWinIcon(tPlayer, icon->mHyperWin, tIsPerfect);
 }
 
 void addThrowWinIcon(int tPlayer, int tIsPerfect) {
-	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	WinIcon* icon = &gFightUIData.mWinIcons[tPlayer];
 	addGeneralWinIcon(tPlayer, icon->mThrowWin, tIsPerfect);
 }
 
 void addCheeseWinIcon(int tPlayer, int tIsPerfect) {
-	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	WinIcon* icon = &gFightUIData.mWinIcons[tPlayer];
 	addGeneralWinIcon(tPlayer, icon->mCheeseWin, tIsPerfect);
 }
 
 void addTimeoverWinIcon(int tPlayer, int tIsPerfect) {
-	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	WinIcon* icon = &gFightUIData.mWinIcons[tPlayer];
 	addGeneralWinIcon(tPlayer, icon->mTimeOverWin, tIsPerfect);
 }
 
 void addSuicideWinIcon(int tPlayer, int tIsPerfect) {
-	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	WinIcon* icon = &gFightUIData.mWinIcons[tPlayer];
 	addGeneralWinIcon(tPlayer, icon->mSuicideWin, tIsPerfect);
 }
 
 void addTeammateWinIcon(int tPlayer, int tIsPerfect) {
-	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	WinIcon* icon = &gFightUIData.mWinIcons[tPlayer];
 	addGeneralWinIcon(tPlayer, icon->mTeammateWin, tIsPerfect);
 }
 
 static void removeSinglePlayerWinIcons(int tPlayer) {
-	WinIcon* icon = &gData.mWinIcons[tPlayer];
+	WinIcon* icon = &gFightUIData.mWinIcons[tPlayer];
 	int i;
 	for (i = 0; i < icon->mIconAmount; i++) {
 		removeMugenAnimation(icon->mIconAnimationIDs[i]);
@@ -1759,29 +1760,29 @@ void removeAllWinIcons()
 
 void stopFightAndRoundAnimation()
 {
-	if (gData.mRound.mIsDisplayingRound) {
+	if (gFightUIData.mRound.mIsDisplayingRound) {
 		removeRoundDisplay();
-		gData.mRound.mIsDisplayingRound = 0;
+		gFightUIData.mRound.mIsDisplayingRound = 0;
 	}
 
-	if (gData.mFight.mIsDisplayingFight) {
-		removeDisplayedAnimation(gData.mFight.mAnimationID);
-		gData.mFight.mIsDisplayingFight = 0;
+	if (gFightUIData.mFight.mIsDisplayingFight) {
+		removeDisplayedAnimation(gFightUIData.mFight.mAnimationID);
+		gFightUIData.mFight.mIsDisplayingFight = 0;
 	}
 
 	startControlCountdown();	
 }
 
 void setUIFaces() {
-	setMugenAnimationSprites(gData.mFaces[0].mFaceAnimationID, getPlayerSprites(getRootPlayer(0)));
-	setMugenAnimationSprites(gData.mFaces[1].mFaceAnimationID, getPlayerSprites(getRootPlayer(1)));
+	setMugenAnimationSprites(gFightUIData.mFaces[0].mFaceAnimationID, getPlayerSprites(getRootPlayer(0)));
+	setMugenAnimationSprites(gFightUIData.mFaces[1].mFaceAnimationID, getPlayerSprites(getRootPlayer(1)));
 }
 
 void setComboUIDisplay(int i, int tAmount)
 {
 	if (tAmount < 2) return;
 
-	Combo* combo = &gData.mCombos[i];
+	Combo* combo = &gFightUIData.mCombos[i];
 	char number[20];
 	sprintf(number, "%d", tAmount);
 

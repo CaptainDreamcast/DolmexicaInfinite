@@ -4125,16 +4125,16 @@ void setPlayerNotHitByFlag1(DreamPlayer * p, int tSlot, char * tFlag)
 	turnStringLowercase(p->mNotHitBy[tSlot].mFlag1);
 }
 
-static void copyOverCleanFlag2(char* tDst, char* tSrc) {
+static string copyOverCleanFlag2(char* tSrc) {
 	int n = strlen(tSrc);
 
-	int o = 0;
+	string ret;
 	int i;
 	for (i = 0; i < n; i++) {
 		if (tSrc[i] == ' ') continue;
-		tDst[o++] = tSrc[i];
+		ret.push_back(tSrc[i]);
 	}
-	tDst[o] = '\0';
+	return ret;
 }
 
 void addPlayerNotHitByFlag2(DreamPlayer * p, int tSlot, char * tFlag)
@@ -4145,19 +4145,16 @@ void addPlayerNotHitByFlag2(DreamPlayer * p, int tSlot, char * tFlag)
 		return;
 	}
 
-	char* nFlag = (char*)allocMemory(strlen(tFlag) + 5);
-	copyOverCleanFlag2(nFlag, tFlag);
-	if (strlen(nFlag) != 2) {
+	string nFlag = copyOverCleanFlag2(tFlag);
+	if (nFlag.size() != 2) {
 		logErrorFormat("Unable to parse nothitby flag %s. Ignoring.", tFlag);
-		freeMemory(nFlag);
 		return;
 	}
+
 	turnStringLowercase(nFlag);
 
-	strcpy(p->mNotHitBy[tSlot].mFlag2[p->mNotHitBy[tSlot].mFlag2Amount], nFlag);
+	strcpy(p->mNotHitBy[tSlot].mFlag2[p->mNotHitBy[tSlot].mFlag2Amount], nFlag.data());
 	p->mNotHitBy[tSlot].mFlag2Amount++;
-
-	freeMemory(nFlag);
 }
 
 void setPlayerNotHitByTime(DreamPlayer * p, int tSlot, int tTime)
