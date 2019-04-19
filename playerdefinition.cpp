@@ -232,9 +232,16 @@ static void resetHelperState(DreamPlayer* p) {
 	p->mAirJumpCounter = 0;
 
 	p->mIsHitOver = 1;
-	p->mIsHitShakeOver = 1;
 	p->mIsFalling = 0;
 	p->mCanRecoverFromFall = 0;
+
+	p->mIsHitShakeActive = 0;
+	p->mHitShakeNow = 0;
+	p->mHitShakeDuration = 0;
+
+	p->mIsHitOverWaitActive = 0;
+	p->mHitOverNow = 0;
+	p->mHitOverDuration = 0;
 
 	p->mDefenseMultiplier = 1;
 
@@ -642,7 +649,8 @@ static void updateHitPause(DreamPlayer* p) {
 	}
 	
 	if (p->mMoveContactCounter) p->mMoveContactCounter++;
-	if (handleDurationAndCheckIfOver(&p->mHitPauseNow, p->mHitPauseDuration)) {
+	p->mHitPauseNow++;
+	if (p->mHitPauseNow >= p->mHitPauseDuration) {
 		setPlayerUnHitPaused(p);
 		p->mMoveContactCounter = 0;
 	}
@@ -1002,6 +1010,52 @@ static void updateBeingTarget(DreamPlayer* p) {
 	}
 }
 
+static void setPlayerHitOver(DreamPlayer* p) {
+	setActiveHitDataInactive(p);
+	p->mIsHitOverWaitActive = 0;
+	p->mIsHitOver = 1;
+}
+
+static void updatePlayerHitOver(DreamPlayer* p) {
+	if (!p->mIsHitOverWaitActive) return;
+
+	p->mHitOverNow++;
+	if (p->mHitOverNow >= p->mHitOverDuration) {
+		setPlayerHitOver(p);
+	}
+}
+
+static void setPlayerHitShakeOver(DreamPlayer* p) {
+	p->mIsHitShakeActive = 0;
+
+	int hitDuration;
+	if (isPlayerGuarding(p)) {
+		hitDuration = getActiveHitDataGuardHitTime(p);
+	}
+	else if (getPlayerStateType(p) == MUGEN_STATE_TYPE_AIR) {
+		hitDuration = getActiveHitDataAirHitTime(p);
+	}
+	else {
+		hitDuration = getActiveHitDataGroundHitTime(p);
+	}
+
+	setPlayerVelocityX(p, getActiveHitDataVelocityX(p), getPlayerCoordinateP(p));
+	setPlayerVelocityY(p, getActiveHitDataVelocityY(p), getPlayerCoordinateP(p));
+
+	p->mIsHitOverWaitActive = 1;
+	p->mHitOverNow = 0;
+	p->mHitOverDuration = hitDuration;
+}
+
+static void updatePlayerHitShake(DreamPlayer* p) {
+	if (!p->mIsHitShakeActive) return;
+
+	p->mHitShakeNow++;
+	if (p->mHitShakeNow >= p->mHitShakeDuration) {
+		setPlayerHitShakeOver(p);
+	}
+}
+
 static void updatePlayerDestruction(DreamPlayer* p) {
 	freeMemory(p);
 }
@@ -1024,6 +1078,8 @@ static int updateSinglePlayer(DreamPlayer* p) {
 	updateStandingUp(p);
 	updatePositionFreeze(p);
 	updateGettingUp(p);
+	updatePlayerHitOver(p);
+	updatePlayerHitShake(p);
 	updateHitPause(p);
 	updateBinding(p);
 	updateGuarding(p);
@@ -1165,41 +1221,6 @@ void drawPlayers() {
 ActorBlueprint getPreStateMachinePlayersBlueprint() {
 	return makeActorBlueprint(NULL, NULL, updatePlayersPreStateMachine);
 };
-
-
-static void setPlayerHitOver(void* tCaller) {
-	DreamPlayer* p = (DreamPlayer*)tCaller;
-
-	setActiveHitDataInactive(p);
-	p->mIsHitOver = 1;
-}
-
-static void setPlayerHitShakeOver(void* tCaller) {
-	DreamPlayer* p = (DreamPlayer*)tCaller;
-	if (!isPlayer(p)) { // TODO: fix
-		logWarning("Trying to access nonexistant character. Ignoring.");
-		return;
-	}
-
-
-	p->mIsHitShakeOver = 1;
-
-	Duration hitDuration;
-	if (isPlayerGuarding(p)) {
-		hitDuration = getActiveHitDataGuardHitTime(p);
-	}
-	else if(getPlayerStateType(p) == MUGEN_STATE_TYPE_AIR){
-		hitDuration = getActiveHitDataAirHitTime(p);
-	}
-	else {
-		hitDuration = getActiveHitDataGroundHitTime(p);
-	}
-
-	setPlayerVelocityX(p, getActiveHitDataVelocityX(p), getPlayerCoordinateP(p));
-	setPlayerVelocityY(p, getActiveHitDataVelocityY(p), getPlayerCoordinateP(p));
-
-	addTimerCB(hitDuration, setPlayerHitOver, p);
-}
 
 static void handlePlayerHitOverride(DreamPlayer* p, DreamPlayer* tOtherPlayer, int* tNextState) {
 	int doesForceAir;
@@ -1408,7 +1429,7 @@ static void setPlayerHit(DreamPlayer* p, DreamPlayer* tOtherPlayer, void* tHitDa
 		hitShakeDuration = getActiveHitDataPlayer2PauseTime(p);
 	}
 
-	p->mIsHitShakeOver = 0;
+	p->mIsHitShakeActive = 1;
 	p->mIsHitOver = 0;
 	p->mTargetID = getActiveHitDataHitID(p);
 
@@ -1428,7 +1449,9 @@ static void setPlayerHit(DreamPlayer* p, DreamPlayer* tOtherPlayer, void* tHitDa
 		setPlayerHitPaused(tOtherPlayer, hitPauseDuration);
 	}
 
-	addTimerCB(hitShakeDuration, setPlayerHitShakeOver, p);
+	p->mIsHitOverWaitActive = 0;
+	p->mHitShakeNow = 0;
+	p->mHitShakeDuration = hitShakeDuration;
 }
 
 static void playPlayerHitSpark(DreamPlayer* p1, DreamPlayer* p2, int tIsInPlayerFile, int tNumber, Position tSparkOffset) {
@@ -2646,7 +2669,7 @@ int doesPlayerHaveAnimationHimself(DreamPlayer* p, int tAnimation)
 
 int isPlayerHitShakeOver(DreamPlayer* p)
 {
-	return p->mIsHitShakeOver;
+	return !p->mIsHitShakeActive;
 }
 
 int isPlayerHitOver(DreamPlayer* p)

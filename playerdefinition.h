@@ -188,7 +188,6 @@ typedef struct Player_t{
 	int mJumpFlank;
 	int mAirJumpCounter;
 
-	int mIsHitShakeOver;
 	int mIsHitOver;
 	int mIsFalling;
 	int mCanRecoverFromFall;
@@ -202,10 +201,18 @@ typedef struct Player_t{
 	Duration mLyingDownTime;
 
 	int mIsHitPaused;
-	Duration mHitPauseNow;
+	int mHitPauseNow;
 	int mHitPauseDuration;
 
 	int mIsSuperPaused;
+
+	int mIsHitShakeActive;
+	int mHitShakeNow;
+	int mHitShakeDuration;
+
+	int mIsHitOverWaitActive;
+	int mHitOverNow;
+	int mHitOverDuration;
 
 	int mLife;
 	int mPower;
