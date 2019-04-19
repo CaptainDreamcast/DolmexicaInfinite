@@ -8,10 +8,13 @@
 #include <prism/physicshandler.h>
 #include <prism/log.h>
 #include <prism/system.h>
+#include <prism/stlutil.h>
 
 #include "fightui.h"
 #include "stage.h"
 #include "mugenstagehandler.h"
+
+using namespace std;
 
 typedef struct {
 	int mInternalID;
@@ -63,55 +66,56 @@ typedef struct {
 
 
 static struct {
-	IntMap mExplods;
-} gData;
+	map<int, Explod> mExplods;
+} gMugenExplod;
 
 static void loadExplods(void* tData) {
 	(void)tData;
-	gData.mExplods = new_int_map();
+	gMugenExplod.mExplods.clear();
 }
 
 static void unloadExplods(void* tData) {
 	(void)tData;
-	delete_int_map(&gData.mExplods);
+	gMugenExplod.mExplods.clear();
 }
 
 int addExplod(DreamPlayer* tPlayer)
 {
-	Explod* e = (Explod*)allocMemory(sizeof(Explod));
-	e->mPlayer = tPlayer;
-	e->mInternalID = int_map_push_back_owned(&gData.mExplods, e);
-	return e->mInternalID;
+	int id = stl_int_map_push_back(gMugenExplod.mExplods, Explod());
+	Explod& e = gMugenExplod.mExplods[id];
+	e.mPlayer = tPlayer;
+	e.mInternalID = id;
+	return e.mInternalID;
 }
 
 void setExplodAnimation(int tID, int tIsInFightDefFile, int tAnimationNumber)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mIsInFightDefFile = tIsInFightDefFile;
 	e->mAnimationNumber = tAnimationNumber;
 }
 
 void setExplodID(int tID, int tExternalID)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mExternalID = tExternalID;
 }
 
 void setExplodPosition(int tID, int tOffsetX, int tOffsetY)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mPosition = makePosition(tOffsetX, tOffsetY, 0);
 }
 
 void setExplodPositionType(int tID, DreamExplodPositionType tType)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mPositionType = tType;
 }
 
 void setExplodHorizontalFacing(int tID, int tFacing)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	int isPositionIndependentType = e->mPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT || e->mPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT;
 	if(isPositionIndependentType || e->mPosition.x >= 0) e->mIsFlippedHorizontally = tFacing == -1;
 	else e->mIsFlippedHorizontally = tFacing == 1;
@@ -119,104 +123,104 @@ void setExplodHorizontalFacing(int tID, int tFacing)
 
 void setExplodVerticalFacing(int tID, int tFacing)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mIsFlippedVertically = tFacing == -1;
 }
 
 // TODO: use bind time
 void setExplodBindTime(int tID, int tBindTime)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mBindTime = tBindTime;
 }
 
 void setExplodVelocity(int tID, double tX, double tY)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mVelocity = makePosition(tX, tY, 0);
 }
 
 void setExplodAcceleration(int tID, double tX, double tY)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mAcceleration = makePosition(tX, tY, 0);
 }
 
 void setExplodRandomOffset(int tID, int tX, int tY)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mRandomOffset = makeVector3DI(tX, tY, 0);
 }
 
 void setExplodRemoveTime(int tID, int tRemoveTime)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mRemoveTime = tRemoveTime;
 }
 
 void setExplodSuperMove(int tID, int tIsSuperMove)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mIsSuperMove = tIsSuperMove;
 }
 
 void setExplodSuperMoveTime(int tID, int tSuperMoveTime)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mSuperMoveTime = tSuperMoveTime;
 }
 
 void setExplodPauseMoveTime(int tID, int tPauseMoveTime)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mPauseMoveTime = tPauseMoveTime;
 }
 
 void setExplodScale(int tID, double tX, double tY)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mScale = makePosition(tX, tY, 0);
 }
 
 void setExplodSpritePriority(int tID, int tSpritePriority)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mSpritePriority = tSpritePriority;
 }
 
 void setExplodOnTop(int tID, int tIsOnTop)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mIsOnTop = tIsOnTop;
 }
 
 void setExplodShadow(int tID, int tR, int tG, int tB)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mShadow = makeVector3DI(tR, tG, tB);
 }
 
 void setExplodOwnPalette(int tID, int tUsesOwnPalette)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mUsesOwnPalette = tUsesOwnPalette;
 }
 
 void setExplodRemoveOnGetHit(int tID, int tIsRemovedOnGetHit)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mIsRemovedOnGetHit = tIsRemovedOnGetHit;
 }
 
 void setExplodIgnoreHitPause(int tID, int tIgnoreHitPause)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mIgnoreHitPause = tIgnoreHitPause;
 }
 
 void setExplodTransparencyType(int tID, int tHasTransparencyType, DreamExplodTransparencyType tTransparencyType)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mHasTransparencyType = tHasTransparencyType;
 	e->mTransparencyType = tTransparencyType;
 }
@@ -277,7 +281,7 @@ static Position getFinalExplodPositionFromPositionType(DreamExplodPositionType t
 
 void finalizeExplod(int tID)
 {
-	Explod* e = (Explod*)int_map_get(&gData.mExplods, tID);
+	Explod* e = &gMugenExplod.mExplods[tID];
 
 	MugenSpriteFile* sprites;
 	MugenAnimation* animation;
@@ -335,11 +339,10 @@ typedef struct {
 } RemoveExplodsCaller;
 
 
-static int removeSingleExplodWithID(void* tCaller, void* tData) {
-	RemoveExplodsCaller* caller = (RemoveExplodsCaller*)tCaller;
-	Explod* e = (Explod*)tData;
+static int removeSingleExplodWithID(RemoveExplodsCaller* tCaller, Explod& tData) {
+	Explod* e = &tData;
 
-	if (e->mPlayer == caller->mPlayer && e->mExternalID == caller->mExplodID) {
+	if (e->mPlayer == tCaller->mPlayer && e->mExternalID == tCaller->mExplodID) {
 		unloadExplod(e);
 		return 1;
 	}
@@ -352,14 +355,13 @@ void removeExplodsWithID(DreamPlayer * tPlayer, int tExplodID)
 	RemoveExplodsCaller caller;
 	caller.mPlayer = tPlayer;
 	caller.mExplodID = tExplodID;
-	int_map_remove_predicate(&gData.mExplods, removeSingleExplodWithID, &caller);
+	stl_int_map_remove_predicate(gMugenExplod.mExplods, removeSingleExplodWithID, &caller);
 }
 
-static int removeSingleExplod(void* tCaller, void* tData) {
-	RemoveExplodsCaller* caller = (RemoveExplodsCaller*)tCaller;
-	Explod* e = (Explod*)tData;
+static int removeSingleExplod(RemoveExplodsCaller* tCaller, Explod& tData) {
+	Explod* e = &tData;
 
-	if (e->mPlayer == caller->mPlayer) {
+	if (e->mPlayer == tCaller->mPlayer) {
 		unloadExplod(e);
 		return 1;
 	}
@@ -371,11 +373,11 @@ void removeAllExplodsForPlayer(DreamPlayer * tPlayer)
 {
 	RemoveExplodsCaller caller;
 	caller.mPlayer = tPlayer;
-	int_map_remove_predicate(&gData.mExplods, removeSingleExplod, &caller);
+	stl_int_map_remove_predicate(gMugenExplod.mExplods, removeSingleExplod, &caller);
 }
 
-static int removeSingleExplodAlways(void* tCaller, void* tData) {
-	Explod* e = (Explod*)tData;
+static int removeSingleExplodAlways(void* tCaller, Explod& tData) {
+	Explod* e = &tData;
 
 	unloadExplod(e);
 	return 1;
@@ -383,7 +385,7 @@ static int removeSingleExplodAlways(void* tCaller, void* tData) {
 
 void removeAllExplods()
 {
-	int_map_remove_predicate(&gData.mExplods, removeSingleExplodAlways, NULL);
+	stl_int_map_remove_predicate(gMugenExplod.mExplods, removeSingleExplodAlways);
 }
 
 typedef struct {
@@ -392,12 +394,11 @@ typedef struct {
 	int mReturnValue;
 } FindExplodCaller;
 
-void compareSingleExplodIDToSearchID(void* tCaller, void* tData) {
-	FindExplodCaller* caller = (FindExplodCaller*)tCaller;
-	Explod* e = (Explod*)tData;
+void compareSingleExplodIDToSearchID(FindExplodCaller* tCaller, Explod& tData) {
+	Explod* e = &tData;
 
-	if (e->mPlayer == caller->mPlayer && e->mExternalID == caller->mExplodID) {
-		caller->mReturnValue = e->mInternalID;
+	if (e->mPlayer == tCaller->mPlayer && e->mExternalID == tCaller->mExplodID) {
+		tCaller->mReturnValue = e->mInternalID;
 	}
 }
 
@@ -408,18 +409,17 @@ int getExplodIndexFromExplodID(DreamPlayer* tPlayer, int tExplodID)
 	caller.mExplodID = tExplodID;
 	caller.mReturnValue = -1;
 
-	int_map_map(&gData.mExplods, compareSingleExplodIDToSearchID, &caller);
+	stl_int_map_map(gMugenExplod.mExplods, compareSingleExplodIDToSearchID, &caller);
 
 	return caller.mReturnValue;
 }
 
 
-void compareSingleAmountSearchPlayer(void* tCaller, void* tData) {
-	FindExplodCaller* caller = (FindExplodCaller*)tCaller;
-	Explod* e = (Explod*)tData;
+void compareSingleAmountSearchPlayer(FindExplodCaller* tCaller, Explod& tData) {
+	Explod* e = &tData;
 
-	if (e->mPlayer == caller->mPlayer) {
-		caller->mReturnValue++;
+	if (e->mPlayer == tCaller->mPlayer) {
+		tCaller->mReturnValue++;
 	}
 }
 
@@ -429,17 +429,16 @@ int getExplodAmount(DreamPlayer * tPlayer)
 	caller.mPlayer = tPlayer;
 	caller.mReturnValue = 0;
 
-	int_map_map(&gData.mExplods, compareSingleAmountSearchPlayer, &caller);
+	stl_int_map_map(gMugenExplod.mExplods, compareSingleAmountSearchPlayer, &caller);
 
 	return caller.mReturnValue;
 }
 
-void compareSingleAmountSearchExplodIDToSearchID(void* tCaller, void* tData) {
-	FindExplodCaller* caller = (FindExplodCaller*)tCaller;
-	Explod* e = (Explod*)tData;
+void compareSingleAmountSearchExplodIDToSearchID(FindExplodCaller* tCaller, Explod& tData) {
+	Explod* e = &tData;
 
-	if (e->mPlayer == caller->mPlayer && e->mExternalID == caller->mExplodID) {
-		caller->mReturnValue++;
+	if (e->mPlayer == tCaller->mPlayer && e->mExternalID == tCaller->mExplodID) {
+		tCaller->mReturnValue++;
 	}
 }
 
@@ -450,7 +449,7 @@ int getExplodAmountWithID(DreamPlayer * tPlayer, int tID)
 	caller.mExplodID = tID;
 	caller.mReturnValue = 0;
 
-	int_map_map(&gData.mExplods, compareSingleAmountSearchExplodIDToSearchID, &caller);
+	stl_int_map_map(gMugenExplod.mExplods, compareSingleAmountSearchExplodIDToSearchID, &caller);
 
 	return caller.mReturnValue;
 }
@@ -496,9 +495,9 @@ static void updateStaticExplodPosition(Explod* e) {
 	}
 }
 
-static int updateSingleExplod(void* tCaller, void* tData) {
+static int updateSingleExplod(void* tCaller, Explod& tData) {
 	(void)tCaller;
-	Explod* e = (Explod*)tData;
+	Explod* e = &tData;
 	updateStaticExplodPosition(e);
 	if (isPlayerPaused(e->mPlayer)) return 0;
 
@@ -514,7 +513,7 @@ static int updateSingleExplod(void* tCaller, void* tData) {
 }
 
 static void updateExplods(void* tData) {
-	int_map_remove_predicate(&gData.mExplods, updateSingleExplod, NULL);
+	stl_int_map_remove_predicate(gMugenExplod.mExplods, updateSingleExplod);
 }
 
 ActorBlueprint getDreamExplodHandler() {
@@ -529,14 +528,13 @@ typedef struct {
 	int mBindTime;
 } BindTimeSetterForIDCaller;
 
-static void setExplodBindTimeForSingleExplod(void* tCaller, void* tData) {
-	BindTimeSetterForIDCaller* caller = (BindTimeSetterForIDCaller*)tCaller;
-	Explod* e = (Explod*)tData;
+static void setExplodBindTimeForSingleExplod(BindTimeSetterForIDCaller* tCaller, Explod& tData) {
+	Explod* e = &tData;
 
-	if (e->mPlayer != caller->mPlayer) return;
-	if (caller->mID != -1 && e->mExternalID != caller->mID) return;
+	if (e->mPlayer != tCaller->mPlayer) return;
+	if (tCaller->mID != -1 && e->mExternalID != tCaller->mID) return;
 
-	e->mBindTime = caller->mBindTime;
+	e->mBindTime = tCaller->mBindTime;
 }
 
 void setExplodBindTimeForID(DreamPlayer * tPlayer, int tExplodID, int tBindTime)
@@ -545,5 +543,5 @@ void setExplodBindTimeForID(DreamPlayer * tPlayer, int tExplodID, int tBindTime)
 	caller.mPlayer = tPlayer;
 	caller.mID = tExplodID;
 	caller.mBindTime = tBindTime;
-	int_map_map(&gData.mExplods, setExplodBindTimeForSingleExplod, &caller);
+	stl_int_map_map(gMugenExplod.mExplods, setExplodBindTimeForSingleExplod, &caller);
 }
