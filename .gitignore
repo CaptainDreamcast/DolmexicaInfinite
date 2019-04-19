@@ -30,6 +30,9 @@ windows/Release/*
 windows/Debug/*
 *.aps
 *.exe
+*.exp
+*.iobj
+*.ipdb
 *.idb
 *.ipch
 *.lastbuildstate
