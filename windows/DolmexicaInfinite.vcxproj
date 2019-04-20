@@ -263,6 +263,17 @@
     <ClInclude Include="..\warningscreen.h" />
     <ClInclude Include="..\watchmode.h" />
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libogg-0.dll">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libvorbis-0.dll">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libvorbisfile-3.dll">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

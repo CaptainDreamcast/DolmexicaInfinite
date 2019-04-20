@@ -13,6 +13,10 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="DLLs">
+      <UniqueIdentifier>{831ad228-15a2-464c-848d-30fd7ef962fa}</UniqueIdentifier>
+      <Extensions>dll</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DolmexicaInfinite.rc">
@@ -319,5 +323,16 @@
     <ClInclude Include="..\debugscreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libvorbisfile-3.dll">
+      <Filter>DLLs</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libvorbis-0.dll">
+      <Filter>DLLs</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libogg-0.dll">
+      <Filter>DLLs</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>
