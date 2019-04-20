@@ -508,11 +508,11 @@ MugenAnimations * getStageAnimations()
 
 void playDreamStageMusic()
 {
-	if (isMugenBGMMusicPath(gData.mCustomMusicPath)) {
-		playMugenBGMMusicPath(gData.mCustomMusicPath, 1);
+	if (isMugenBGMMusicPath(gData.mCustomMusicPath, gData.mDefinitionPath)) {
+		playMugenBGMMusicPath(gData.mCustomMusicPath, gData.mDefinitionPath, 1);
 	}
-	else if (isMugenBGMMusicPath(gData.mMusic.mBGMusic)) {
-		playMugenBGMMusicPath(gData.mMusic.mBGMusic, 1);
+	else if (isMugenBGMMusicPath(gData.mMusic.mBGMusic, gData.mDefinitionPath)) {
+		playMugenBGMMusicPath(gData.mMusic.mBGMusic, gData.mDefinitionPath, 1);
 	}
 }
 

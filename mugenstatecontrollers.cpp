@@ -1203,7 +1203,7 @@ static void parseNotHitByController(DreamMugenStateController* tController, Muge
 
 	readMugenDefStringVector(&e->mValue, tGroup, "value", &e->mHasValue);
 	readMugenDefStringVector(&e->mValue2, tGroup, "value2", &e->mHasValue2);
-	assert(&e->mHasValue || e->mHasValue2);
+	assert(e->mHasValue || e->mHasValue2);
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime, "1");
 	
