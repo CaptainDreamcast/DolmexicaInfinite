@@ -17,6 +17,7 @@ dc-tool_*
 
 filesystem
 concept
+debug
 
 web/*
 web2/*
