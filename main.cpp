@@ -93,13 +93,6 @@ int main(int argc, char** argv) {
 	if (framerateReturnType == FRAMERATE_SCREEN_RETURN_ABORT) {
 		exitGame();
 	}
-	
-#ifdef DEVELOP	
-	setVolume(0);
-	// setDisplayedScreenSize(320, 240);
-	disableWrapperErrorRecovery();
-	initDolmexicaDebug();
-#endif
 
 	setMemoryHandlerCompressionActive();
 	initClipboardForGame();
@@ -107,6 +100,13 @@ int main(int argc, char** argv) {
 	loadMugenConfig();
 	setScreenAfterWrapperLogoScreen(getDreamTitleScreen());
 	
+#ifdef DEVELOP	
+	// setVolume(0);
+	// setDisplayedScreenSize(320, 240);
+	disableWrapperErrorRecovery();
+	initDolmexicaDebug();
+#endif
+
 	startScreenHandling(getDreamTitleScreen());
 	
 	exitGame();
