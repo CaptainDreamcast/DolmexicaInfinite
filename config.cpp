@@ -90,8 +90,13 @@ void setDefaultOptionVariables() {
 	gConfigData.mIsTimerInfinite = 0;
 	gConfigData.mTimerDuration = 99;
 	gConfigData.mGameSpeed = 0;
-	gConfigData.mWavVolume = 10;
-	gConfigData.mMidiVolume = 20;
+    if(isOnDreamcast()) {
+	    gConfigData.mWavVolume = 100;
+	    gConfigData.mMidiVolume = 100;
+    } else {
+        gConfigData.mWavVolume = 10;
+        gConfigData.mMidiVolume = 20;
+    }
 
 	setVolume(gConfigData.mWavVolume / 100.0);
 	setSoundEffectVolume(gConfigData.mMidiVolume / 100.0);
