@@ -1,6 +1,7 @@
 #include "storymode.h"
 
 #include <prism/log.h>
+#include <prism/stlutil.h>
 
 #include "characterselectscreen.h"
 #include "titlescreen.h"
@@ -15,6 +16,8 @@
 #include "stage.h"
 #include "fightresultdisplay.h"
 #include "config.h"
+
+using namespace std;
 
 static struct {
 	char mStoryPath[1024];
@@ -89,10 +92,13 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 
 	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "stage");
 	sprintf(path, "assets/%s", file);
-	char dummyMusicPath[2];
-	*dummyMusicPath = '\0';
-	setDreamStageMugenDefinition(path, dummyMusicPath);
-
+	string musicPath;
+	if (isMugenDefStringVariableAsGroup(tGroup, "bgm")) {
+		char* tempFile = getAllocatedMugenDefStringVariableAsGroup(tGroup, "bgm");
+		musicPath = tempFile;
+		freeMemory(tempFile);
+	}
+	setDreamStageMugenDefinition(path, musicPath.data());
 
 
 	gData.mNextStateAfterWin = getMugenDefIntegerOrDefaultAsGroup(tGroup, "win", gData.mCurrentState + 1);

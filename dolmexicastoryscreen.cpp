@@ -9,6 +9,7 @@
 #include <prism/mugentexthandler.h>
 #include <prism/input.h>
 #include <prism/stlutil.h>
+#include <prism/sound.h>
 
 #include "mugenassignmentevaluator.h"
 #include "mugenstatecontrollers.h"
@@ -19,6 +20,7 @@
 #include "storymode.h"
 #include "characterselectscreen.h"
 #include "mugencommandhandler.h"
+#include "mugensound.h"
 
 using namespace std;
 
@@ -1081,4 +1083,26 @@ int getDolmexicaStoryIDFromString(const char * tString, StoryInstance * tInstanc
 		}
 	}
 	return id;
+}
+
+void playDolmexicaStoryMusic(const string& tPath) {
+	stopMusic();
+	if (isMugenBGMMusicPath(tPath.data(), gDolmexicaStoryScreenData.mPath)) {
+		playMugenBGMMusicPath(tPath.data(), gDolmexicaStoryScreenData.mPath, 1);
+	}
+}
+
+void stopDolmexicaStoryMusic()
+{
+	stopMusic();
+}
+
+void pauseDolmexicaStoryMusic()
+{
+	pauseMusic();
+}
+
+void resumeDolmexicaStoryMusic()
+{
+	resumeMusic();
 }

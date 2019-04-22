@@ -173,3 +173,8 @@ StoryInstance* getDolmexicaStoryHelperInstance(int tID);
 void addDolmexicaStoryHelper(int tID, int tState);
 void removeDolmexicaStoryHelper(int tID);
 int getDolmexicaStoryIDFromString(const char* tString, StoryInstance* tInstance);
+
+void playDolmexicaStoryMusic(const std::string& tPath);
+void stopDolmexicaStoryMusic();
+void pauseDolmexicaStoryMusic();
+void resumeDolmexicaStoryMusic();

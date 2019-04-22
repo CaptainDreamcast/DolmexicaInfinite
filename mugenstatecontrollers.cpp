@@ -6064,6 +6064,18 @@ static void parseStoryTarget2DPhysicsController(DreamMugenStateController* tCont
 	tController->mData = e;
 }
 
+typedef struct {
+	DreamMugenAssignment* mPath;
+} StoryPlayMusicController;
+
+static void parseStoryPlayMusicController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
+	StoryPlayMusicController* e = (StoryPlayMusicController*)allocMemoryOnMemoryStackOrMemory(sizeof(StoryPlayMusicController));
+
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("path", tGroup, &e->mPath);
+
+	tController->mType = MUGEN_STORY_STATE_CONTROLLER_TYPE_PLAY_MUSIC;
+	tController->mData = e;
+}
 
 
 void nullStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseNullController(tController, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_NULL); }
@@ -6107,6 +6119,10 @@ void varSetStoryParseFunction(DreamMugenStateController* tController, MugenDefSc
 void varAddStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryVarSetController(tController, tGroup, MUGEN_STORY_STATE_CONTROLLER_TYPE_VAR_ADD); }
 void globalVarSetStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryVarSetController(tController, tGroup, MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_SET); }
 void globalVarAddStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryVarSetController(tController, tGroup, MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_ADD); }
+void playMusicStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryPlayMusicController(tController, tGroup); }
+void stopMusicStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseNullController(tController, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_STOP_MUSIC); }
+void pauseMusicStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseNullController(tController, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_PAUSE_MUSIC); }
+void resumeMusicStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseNullController(tController, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_RESUME_MUSIC); }
 
 static void setupStoryStateControllerParsers() {
 	gMugenStateControllerVariableHandler.mStateControllerParsers.clear();
@@ -6152,6 +6168,10 @@ static void setupStoryStateControllerParsers() {
 	gMugenStateControllerVariableHandler.mStateControllerParsers["varadd"] = varAddStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["globalvarset"] = globalVarSetStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["globalvaradd"] = globalVarAddStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["playmusic"] = playMusicStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["stopmusic"] = stopMusicStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["pausemusic"] = pauseMusicStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["resumemusic"] = resumeMusicStoryParseFunction;
 }
 
 static int getDolmexicaStoryIDFromAssignment(DreamMugenAssignment** tAssignment, StoryInstance* tInstance) {
@@ -7013,6 +7033,34 @@ static int handleAddingGlobalStoryVariable(DreamMugenStateController* tControlle
 	return 0;
 }
 
+static int handlePlayMusicStoryController(DreamMugenStateController* tController, StoryInstance* tPlayer) {
+	if (!tPlayer) return 0;
+
+	StoryPlayMusicController* e = (StoryPlayMusicController*)tController->mData;
+	string path;
+	evaluateDreamAssignmentAndReturnAsString(path, &e->mPath, (DreamPlayer*)tPlayer);
+	playDolmexicaStoryMusic(path);
+	return 0;
+}
+
+static int handleStopMusicStoryController(StoryInstance* tPlayer) {
+	if (!tPlayer) return 0;
+	stopDolmexicaStoryMusic();
+	return 0;
+}
+
+static int handlePauseMusicStoryController(StoryInstance* tPlayer) {
+	if (!tPlayer) return 0;
+	pauseDolmexicaStoryMusic();
+	return 0;
+}
+
+static int handleResumeMusicStoryController(StoryInstance* tPlayer) {
+	if (!tPlayer) return 0;
+	resumeDolmexicaStoryMusic();
+	return 0;
+}
+
 int nullStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleNull(); }
 int createAnimationStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleCreateAnimationStoryController(tController, (StoryInstance*)tPlayer); }
 int removeAnimationStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleRemoveAnimationStoryController(tController, (StoryInstance*)tPlayer); }
@@ -7054,6 +7102,10 @@ int setVarStoryHandleFunction(DreamMugenStateController* tController, DreamPlaye
 int addVarStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAddingStoryVariable(tController, (StoryInstance*)tPlayer, (StoryInstance*)tPlayer); }
 int setGlobalVarStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSettingGlobalStoryVariable(tController, (StoryInstance*)tPlayer); }
 int addGlobalVarStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleAddingGlobalStoryVariable(tController, (StoryInstance*)tPlayer, (StoryInstance*)tPlayer); }
+int playMusicStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handlePlayMusicStoryController(tController, (StoryInstance*)tPlayer); }
+int stopMusicStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleStopMusicStoryController((StoryInstance*)tPlayer); }
+int pauseMusicStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handlePauseMusicStoryController((StoryInstance*)tPlayer); }
+int resumeMusicStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleResumeMusicStoryController((StoryInstance*)tPlayer); }
 
 static void setupStoryStateControllerHandlers() {
 	gMugenStateControllerVariableHandler.mStateControllerHandlers.clear();
@@ -7099,6 +7151,10 @@ static void setupStoryStateControllerHandlers() {
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_VAR_ADD] = addVarStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_SET] = setGlobalVarStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_GLOBAL_VAR_ADD] = addGlobalVarStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_PLAY_MUSIC] = playMusicStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_STOP_MUSIC] = stopMusicStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_PAUSE_MUSIC] = pauseMusicStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_RESUME_MUSIC] = resumeMusicStoryHandleFunction;
 
 	
 }
