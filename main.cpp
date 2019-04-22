@@ -14,6 +14,7 @@
 #include <prism/screeneffect.h>
 #include <prism/profiling.h>
 #include <prism/debug.h>
+#include <prism/soundeffect.h>
 
 #include "titlescreen.h"
 #include "fightscreen.h"
@@ -101,7 +102,8 @@ int main(int argc, char** argv) {
 	setScreenAfterWrapperLogoScreen(getDreamTitleScreen());
 	
 #ifdef DEVELOP	
-	// setVolume(0);
+	setVolume(0);
+	setSoundEffectVolume(0);
 	// setDisplayedScreenSize(320, 240);
 	disableWrapperErrorRecovery();
 	initDolmexicaDebug();

@@ -90,7 +90,7 @@ void setDefaultOptionVariables() {
 	gConfigData.mIsTimerInfinite = 0;
 	gConfigData.mTimerDuration = 99;
 	gConfigData.mGameSpeed = 0;
-	gConfigData.mWavVolume = 20;
+	gConfigData.mWavVolume = 10;
 	gConfigData.mMidiVolume = 20;
 
 	setVolume(gConfigData.mWavVolume / 100.0);

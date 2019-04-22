@@ -75,8 +75,6 @@ static void introFinished() {
 static void startIntro() {
 	gData.mRoundStateNumber = ROUND_STATE_INTRO;
 	gData.mIsDisplayingIntro = 2;
-	changePlayerState(getRootPlayer(0), 5900);
-	changePlayerState(getRootPlayer(1), 5900);
 }
 
 static void fadeInFinished(void* tData) {
@@ -92,6 +90,10 @@ static void startRound() {
 	gData.mIsDisplayingWinPose = 0;
 	setPlayerControl(getRootPlayer(0), 0);
 	setPlayerControl(getRootPlayer(1), 0);
+	if (hasLoadedPlayerSprites()) {
+		changePlayerState(getRootPlayer(0), 5900);
+		changePlayerState(getRootPlayer(1), 5900);
+	}
 	addFadeIn(30, fadeInFinished, NULL);
 }
 

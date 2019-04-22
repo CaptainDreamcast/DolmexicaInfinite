@@ -54,6 +54,7 @@ static struct {
 	int mIsCollisionDebugActive;
 	MemoryStack* mMemoryStack;
 	int mIsLoading;
+	int mHasLoadedSprites;
 
 	List mAllPlayers; // contains DreamPlayer
 } gPlayerDefinition;
@@ -395,6 +396,7 @@ void loadPlayers(MemoryStack* tMemoryStack) {
 	}
 
 	gPlayerDefinition.mIsLoading = 0;
+	gPlayerDefinition.mHasLoadedSprites = 0;
 }
 
 static void loadSinglePlayerSprites(DreamPlayer* tPlayer) {
@@ -413,6 +415,8 @@ void loadPlayerSprites() {
 	for (i = 0; i < 2; i++) {
 		loadSinglePlayerSprites(&gPlayerDefinition.mPlayers[i]);
 	}
+
+	gPlayerDefinition.mHasLoadedSprites = 1;
 }
 
 // TODO: make sure child players are moved
@@ -1220,7 +1224,12 @@ void drawPlayers() {
 
 ActorBlueprint getPreStateMachinePlayersBlueprint() {
 	return makeActorBlueprint(NULL, NULL, updatePlayersPreStateMachine);
-};
+}
+
+int hasLoadedPlayerSprites()
+{
+	return gPlayerDefinition.mHasLoadedSprites;
+}
 
 static void handlePlayerHitOverride(DreamPlayer* p, DreamPlayer* tOtherPlayer, int* tNextState) {
 	int doesForceAir;

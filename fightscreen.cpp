@@ -134,6 +134,9 @@ static void loadFightScreen() {
 	
 	setFightScreenGameSpeed();
 	
+	changePlayerState(getRootPlayer(0), 5900);
+	changePlayerState(getRootPlayer(1), 5900);
+
 	malloc_stats();
 
 	logFormat("assignments: %d\n", gDebugAssignmentAmount);

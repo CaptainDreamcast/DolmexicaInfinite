@@ -273,6 +273,8 @@ void drawPlayers();
 
 ActorBlueprint getPreStateMachinePlayersBlueprint();
 
+int hasLoadedPlayerSprites();
+
 void playerHitCB(void* tData, void* tHitData);
 
 void setPlayerDefinitionPath(int i, const char* tDefinitionPath);
