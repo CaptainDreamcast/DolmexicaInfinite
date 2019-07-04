@@ -40,7 +40,7 @@ static struct {
 
 	int mHasCredits;
 	char mCreditsPath[300];
-} gData;
+} gArcadeModeData;
 
 static void fightFinishedCB();
 
@@ -49,8 +49,8 @@ static void gameOverFinishedCB() {
 }
 
 static void fightLoseCB() {
-	if (gData.mHasGameOver) {
-		setStoryDefinitionFile(gData.mGameOverPath);
+	if (gArcadeModeData.mHasGameOver) {
+		setStoryDefinitionFile(gArcadeModeData.mGameOverPath);
 		setStoryScreenFinishedCB(gameOverFinishedCB);
 		setNewScreen(getStoryScreen());
 	}
@@ -61,9 +61,9 @@ static void fightLoseCB() {
 
 static void versusScreenFinishedCB() {
 
-	int isFinalFight = gData.mCurrentEnemy == gData.mEnemyAmount - 1;
+	int isFinalFight = gArcadeModeData.mCurrentEnemy == gArcadeModeData.mEnemyAmount - 1;
 	setGameModeArcade();
-	setFightResultActive(isFinalFight && !gData.mHasEnding);
+	setFightResultActive(isFinalFight && !gArcadeModeData.mHasEnding);
 	startFightScreen(fightFinishedCB, fightLoseCB);
 }
 
@@ -127,13 +127,13 @@ static void addSingleEnemyToSelection(void* tCaller, void* tData) {
 }
 
 static void addArcadeEnemy(SingleArcadeEnemy* tEnemy) {
-	int index = gData.mEnemyAmount;
-	ArcadeCharacter* e = &gData.mEnemies[index];
+	int index = gArcadeModeData.mEnemyAmount;
+	ArcadeCharacter* e = &gArcadeModeData.mEnemies[index];
 	strcpy(e->mDefinitionPath, tEnemy->mDefinitionPath);
 	strcpy(e->mStagePath, tEnemy->mStagePath);
 	strcpy(e->mMusicPath, tEnemy->mMusicPath);
 
-	gData.mEnemyAmount++;
+	gArcadeModeData.mEnemyAmount++;
 }
 
 static void addOrderEnemies(int tOrder, int tAmount, AddEnemyCaller* tCaller) {
@@ -178,7 +178,7 @@ static void generateEnemies() {
 	list_map(&group->mOrderedElementList, addSingleEnemyToSelection, &caller);
 
 
-	gData.mEnemyAmount = 0;
+	gArcadeModeData.mEnemyAmount = 0;
 	int i;
 	for (i = 0; i < enemyTypeAmountVector.mSize; i++) {
 		addOrderEnemies(i+1, atoi(enemyTypeAmountVector.mElement[i]), &caller);
@@ -196,8 +196,8 @@ static void creditsFinishedCB() {
 }
 
 static void endingScreenFinishedCB() {
-	if (gData.mHasCredits) {
-		setStoryDefinitionFile(gData.mCreditsPath);
+	if (gArcadeModeData.mHasCredits) {
+		setStoryDefinitionFile(gArcadeModeData.mCreditsPath);
 		setStoryScreenFinishedCB(creditsFinishedCB);
 		setNewScreen(getStoryScreen());
 		return;
@@ -215,7 +215,7 @@ static void startEnding() {
 	loadMugenDefScript(&script, path);
 	char* endingDefinitionFile;
 
-	if (gData.mHasEnding) {
+	if (gArcadeModeData.mHasEnding) {
 		endingDefinitionFile = getAllocatedMugenDefStringVariable(&script, "Arcade", "ending.storyboard");
 		sprintf(path, "%s%s", folder, endingDefinitionFile);
 		if (isFile(path)) {
@@ -225,8 +225,8 @@ static void startEnding() {
 			return;
 		}
 	}
-	else if (gData.mHasDefaultEnding) {
-		setStoryDefinitionFile(gData.mDefaultEndingPath);
+	else if (gArcadeModeData.mHasDefaultEnding) {
+		setStoryDefinitionFile(gArcadeModeData.mDefaultEndingPath);
 		setStoryScreenFinishedCB(endingScreenFinishedCB);
 		setNewScreen(getStoryScreen());
 		return;
@@ -237,29 +237,29 @@ static void startEnding() {
 }
 
 static void fightFinishedCB() {
-	gData.mCurrentEnemy++;
+	gArcadeModeData.mCurrentEnemy++;
 
-	if (gData.mCurrentEnemy == gData.mEnemyAmount) {
+	if (gArcadeModeData.mCurrentEnemy == gArcadeModeData.mEnemyAmount) {
 		startEnding();
 		return;
 	}
 		
-	setPlayerDefinitionPath(1, gData.mEnemies[gData.mCurrentEnemy].mDefinitionPath);
+	setPlayerDefinitionPath(1, gArcadeModeData.mEnemies[gArcadeModeData.mCurrentEnemy].mDefinitionPath);
 
-	if (!strcmp("random", gData.mEnemies[gData.mCurrentEnemy].mStagePath)) {
+	if (!strcmp("random", gArcadeModeData.mEnemies[gArcadeModeData.mCurrentEnemy].mStagePath)) {
 		MugenDefScript script; 
 		loadMugenDefScript(&script, "assets/data/select.def");
 		setStageRandom(&script);
 	}
 	else {
-		setDreamStageMugenDefinition(gData.mEnemies[gData.mCurrentEnemy].mStagePath, gData.mEnemies[gData.mCurrentEnemy].mMusicPath);
+		setDreamStageMugenDefinition(gArcadeModeData.mEnemies[gArcadeModeData.mCurrentEnemy].mStagePath, gArcadeModeData.mEnemies[gArcadeModeData.mCurrentEnemy].mMusicPath);
 	}
 	setVersusScreenFinishedCB(versusScreenFinishedCB);
 	setNewScreen(getVersusScreen());
 }
 
 static void introScreenFinishedCB() {
-	gData.mCurrentEnemy = -1;
+	gArcadeModeData.mCurrentEnemy = -1;
 	fightFinishedCB();
 }
 
@@ -275,7 +275,7 @@ static void characterSelectFinishedCB() {
 	int hasIntro;
 	char* introDefinitionFile;
 	hasIntro = isMugenDefStringVariable(&script, "Arcade", "intro.storyboard");
-	gData.mHasEnding = isMugenDefStringVariable(&script, "Arcade", "ending.storyboard");
+	gArcadeModeData.mHasEnding = isMugenDefStringVariable(&script, "Arcade", "ending.storyboard");
 
 	int isGoingToStory = 0;
 
@@ -329,9 +329,9 @@ static void loadSingleStoryboard(MugenDefScript* tScript, const char* tFolder, c
 
 static void loadStoryboardsFromScript(MugenDefScript* tScript, const char* tFolder) {
 	
-	loadSingleStoryboard(tScript, tFolder, "Game Over Screen", &gData.mHasGameOver, gData.mGameOverPath);
-	loadSingleStoryboard(tScript, tFolder, "Default Ending", &gData.mHasDefaultEnding, gData.mDefaultEndingPath);
-	loadSingleStoryboard(tScript, tFolder, "End Credits", &gData.mHasCredits, gData.mCreditsPath);
+	loadSingleStoryboard(tScript, tFolder, "Game Over Screen", &gArcadeModeData.mHasGameOver, gArcadeModeData.mGameOverPath);
+	loadSingleStoryboard(tScript, tFolder, "Default Ending", &gArcadeModeData.mHasDefaultEnding, gArcadeModeData.mDefaultEndingPath);
+	loadSingleStoryboard(tScript, tFolder, "End Credits", &gArcadeModeData.mHasCredits, gArcadeModeData.mCreditsPath);
 }
 
 static void loadArcadeModeHeaderFromScript() {

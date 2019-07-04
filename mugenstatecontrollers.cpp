@@ -5653,6 +5653,10 @@ typedef struct {
 	DreamMugenAssignment* mFaceSprite;
 	DreamMugenAssignment* mFaceOffset;
 
+	int mHasContinueAnimation;
+	DreamMugenAssignment* mContinueAnimation;
+	DreamMugenAssignment* mContinueOffset;
+
 	int mHasName;
 	DreamMugenAssignment* mName;
 	DreamMugenAssignment* mNameFont;
@@ -5676,12 +5680,14 @@ static void parseCreateTextStoryController(DreamMugenStateController* tControlle
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("text.offset", tGroup, &e->mTextOffset);
 
-
 	e->mHasBackgroundSprite = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("bg.spr", tGroup, &e->mBackgroundSprite);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("bg.offset", tGroup, &e->mBackgroundOffset);
 
 	e->mHasFaceSprite = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("face.spr", tGroup, &e->mFaceSprite);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("face.offset", tGroup, &e->mFaceOffset);
+
+	e->mHasContinueAnimation = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("continue.anim", tGroup, &e->mContinueAnimation);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("continue.offset", tGroup, &e->mContinueOffset);
 
 	e->mHasName = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name", tGroup, &e->mName);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("name.font", tGroup, &e->mNameFont);
@@ -5729,6 +5735,11 @@ typedef struct {
 	int mDoesChangeFaceOffset;
 	DreamMugenAssignment* mFaceOffset;
 
+	int mDoesChangeContinueAnimation;
+	DreamMugenAssignment* mContinueAnimation;
+	int mDoesChangeContinueOffset;
+	DreamMugenAssignment* mContinueOffset;
+
 	int mDoesChangeName;
 	DreamMugenAssignment* mName;
 	int mDoesChangeNameOffset;
@@ -5757,6 +5768,9 @@ static void parseChangeTextStoryController(DreamMugenStateController* tControlle
 
 	e->mDoesChangeFaceSprite = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("face.spr", tGroup, &e->mFaceSprite);
 	e->mDoesChangeFaceOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("face.offset", tGroup, &e->mFaceOffset);
+
+	e->mDoesChangeContinueAnimation = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("continue.anim", tGroup, &e->mContinueAnimation);
+	e->mDoesChangeContinueOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("continue.offset", tGroup, &e->mContinueOffset);
 
 	e->mDoesChangeName = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name", tGroup, &e->mName);
 	e->mDoesChangeNameOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name.offset", tGroup, &e->mNameOffset);
@@ -6238,6 +6252,16 @@ static void handleSingleStoryTextSprite(int id, int tHasSprite, DreamMugenAssign
 	tFunc(tInstance, id, sprite, offset);
 }
 
+static void handleSingleStoryTextAnimation(int id, int tHasAnimation, DreamMugenAssignment** tSprite, DreamMugenAssignment** tOffset, void(*tFunc)(StoryInstance*, int, int, Position), StoryInstance* tInstance) {
+	if (!tHasAnimation) return;
+
+	int animation;
+	Position offset = makePosition(0, 0, 0);
+	getSingleIntegerValueOrDefault(tSprite, (DreamPlayer*)tInstance, &animation, 0);
+	getTwoFloatValuesWithDefaultValues(tOffset, (DreamPlayer*)tInstance, &offset.x, &offset.y, 0, 0);
+	tFunc(tInstance, id, animation, offset);
+}
+
 static int isStringEmptyOrWhitespace(const char * tString)
 {
 	for (; *tString; tString++) {
@@ -6278,6 +6302,7 @@ static int handleCreateTextStoryController(DreamMugenStateController* tControlle
 
 	handleSingleStoryTextSprite(id, e->mHasBackgroundSprite, &e->mBackgroundSprite, &e->mBackgroundOffset, setDolmexicaStoryTextBackground, tInstance);
 	handleSingleStoryTextSprite(id, e->mHasFaceSprite, &e->mFaceSprite, &e->mFaceOffset, setDolmexicaStoryTextFace, tInstance);
+	handleSingleStoryTextAnimation(id, e->mHasContinueAnimation, &e->mContinueAnimation, &e->mContinueOffset, setDolmexicaStoryTextContinue, tInstance); // TODO: merge
 	handleSingleStoryTextName(id, e->mHasName, &e->mName, &e->mNameFont, &e->mNameOffset, tInstance);
 
 	int buildUp;
@@ -6343,6 +6368,14 @@ static int handleChangeTextStoryController(DreamMugenStateController* tControlle
 	if (e->mDoesChangeFaceOffset) {
 		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mFaceOffset, (DreamPlayer*)tInstance);
 		setDolmexicaStoryTextFaceOffset(tInstance, id, offset);
+	}
+	if (e->mDoesChangeContinueAnimation) {
+		int anim = evaluateDreamAssignmentAndReturnAsInteger(&e->mContinueAnimation, (DreamPlayer*)tInstance);
+		setDolmexicaStoryTextContinueAnimation(tInstance, id, anim);
+	}
+	if (e->mDoesChangeContinueOffset) {
+		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mContinueOffset, (DreamPlayer*)tInstance);
+		setDolmexicaStoryTextContinueOffset(tInstance, id, offset);
 	}
 	if (e->mDoesChangeName) {
 		string text;

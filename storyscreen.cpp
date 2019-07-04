@@ -51,18 +51,18 @@ static struct {
 	int mCurrentScene;
 	Duration mNow;
 	int mIsFadingOut;
-} gData;
+} gStoryScreenData;
 
 static void loadScriptAndSprites() {
-	loadMugenDefScript(&gData.mScript, gData.mDefinitionPath);
-	gData.mAnimations = loadMugenAnimationFile(gData.mDefinitionPath);
+	loadMugenDefScript(&gStoryScreenData.mScript, gStoryScreenData.mDefinitionPath);
+	gStoryScreenData.mAnimations = loadMugenAnimationFile(gStoryScreenData.mDefinitionPath);
 
 	char folder[1024];
-	getPathToFile(folder, gData.mDefinitionPath);
+	getPathToFile(folder, gStoryScreenData.mDefinitionPath);
 	setWorkingDirectory(folder);
 
-	char* text = getAllocatedMugenDefStringVariable(&gData.mScript, "SceneDef", "spr");
-	gData.mSprites = loadMugenSpriteFileWithoutPalette(text);
+	char* text = getAllocatedMugenDefStringVariable(&gStoryScreenData.mScript, "SceneDef", "spr");
+	gStoryScreenData.mSprites = loadMugenSpriteFileWithoutPalette(text);
 	freeMemory(text);
 
 	setWorkingDirectory("/");
@@ -87,7 +87,7 @@ static void loadSingleLayer(MugenDefScriptGroup* tGroup, Scene* tScene, int i) {
 
 	sprintf(variableName, "layer%d.anim", i);
 	int animation = getMugenDefIntegerOrDefaultAsGroup(tGroup, variableName, -1);
-	e->mAnimation = getMugenAnimation(&gData.mAnimations, animation);
+	e->mAnimation = getMugenAnimation(&gStoryScreenData.mAnimations, animation);
 
 	sprintf(variableName, "layer%d.offset", i);
 	e->mOffset = getMugenDefVectorOrDefaultAsGroup(tGroup, variableName, makePosition(0, 0, 0));
@@ -108,8 +108,8 @@ static void loadSingleScene(MugenDefScriptGroup* tGroup) {
 	e->mFadeOutTime = getMugenDefIntegerOrDefaultAsGroup(tGroup, "fadeout.time", 0);
 	e->mFadeOutColor = getMugenDefVectorIOrDefaultAsGroup(tGroup, "fadeout.col", makeVector3DI(0, 0, 0));
 
-	if (vector_size(&gData.mScenes)) {
-		Scene* previousScene = (Scene*)vector_get(&gData.mScenes, vector_size(&gData.mScenes) - 1);
+	if (vector_size(&gStoryScreenData.mScenes)) {
+		Scene* previousScene = (Scene*)vector_get(&gStoryScreenData.mScenes, vector_size(&gStoryScreenData.mScenes) - 1);
 		e->mClearColor = getMugenDefVectorIOrDefaultAsGroup(tGroup, "clearcolor", previousScene->mClearColor);
 		e->mLayerAllPosition = getMugenDefVectorOrDefaultAsGroup(tGroup, "layerall.pos", previousScene->mLayerAllPosition);
 	}
@@ -123,13 +123,13 @@ static void loadSingleScene(MugenDefScriptGroup* tGroup) {
 		loadSingleLayer(tGroup, e, i);
 	}
 
-	vector_push_back_owned(&gData.mScenes, e);
+	vector_push_back_owned(&gStoryScreenData.mScenes, e);
 }
 
 static void loadScenes() {
-	gData.mScenes = new_vector();
+	gStoryScreenData.mScenes = new_vector();
 	
-	MugenDefScriptGroup* group = gData.mScript.mFirstGroup;
+	MugenDefScriptGroup* group = gStoryScreenData.mScript.mFirstGroup;
 	while (group != NULL) {
 		if (isSceneGroup(group)) {
 			loadSingleScene(group);
@@ -146,7 +146,7 @@ static void loadStoryScreen() {
 	loadScriptAndSprites();
 	loadScenes();
 
-	gData.mCurrentScene = 0;
+	gStoryScreenData.mCurrentScene = 0;
 	startScene();
 }
 
@@ -154,23 +154,23 @@ static void loadStoryScreen() {
 
 
 static void unloadScenes() {
-	delete_vector(&gData.mScenes);
+	delete_vector(&gStoryScreenData.mScenes);
 }
 
 static void unloadStoryScreen() {
-	unloadMugenDefScript(gData.mScript);
-	unloadMugenAnimationFile(&gData.mAnimations);
-	unloadMugenSpriteFile(&gData.mSprites);
+	unloadMugenDefScript(gStoryScreenData.mScript);
+	unloadMugenAnimationFile(&gStoryScreenData.mAnimations);
+	unloadMugenSpriteFile(&gStoryScreenData.mSprites);
 
 	unloadScenes();
 }
 
 static void startScene() {
-	assert(gData.mCurrentScene < vector_size(&gData.mScenes));
-	Scene* scene = (Scene*)vector_get(&gData.mScenes, gData.mCurrentScene);
+	assert(gStoryScreenData.mCurrentScene < vector_size(&gStoryScreenData.mScenes));
+	Scene* scene = (Scene*)vector_get(&gStoryScreenData.mScenes, gStoryScreenData.mCurrentScene);
 
-	gData.mNow = 0;
-	gData.mIsFadingOut = 0;
+	gStoryScreenData.mNow = 0;
+	gStoryScreenData.mIsFadingOut = 0;
 
 	setScreenBackgroundColorRGB(scene->mClearColor.x / 255.0, scene->mClearColor.y / 255.0, scene->mClearColor.z / 255.0);
 	setFadeColorRGB(scene->mFadeInColor.x / 255.0, scene->mFadeInColor.y / 255.0, scene->mFadeInColor.z / 255.0);
@@ -181,18 +181,18 @@ static void activateLayer(Scene* tScene, Layer* tLayer, int i) {
 	Position pos = vecAdd(tScene->mLayerAllPosition, tLayer->mOffset);
 	pos.z = 10 + i;
 
-	tLayer->mAnimationID = addMugenAnimation(tLayer->mAnimation, &gData.mSprites, pos);
+	tLayer->mAnimationID = addMugenAnimation(tLayer->mAnimation, &gStoryScreenData.mSprites, pos);
 	tLayer->mStage = 1;
 }
 
 static void updateLayerActivation(Scene* tScene, Layer* tLayer, int i) {
-	if (isDurationOver(gData.mNow, tLayer->mTime)) {
+	if (isDurationOver(gStoryScreenData.mNow, tLayer->mTime)) {
 		activateLayer(tScene, tLayer, i);
 	}
 }
 
 static void updateSingleLayer(int i) {
-	Scene* scene = (Scene*)vector_get(&gData.mScenes, gData.mCurrentScene);
+	Scene* scene = (Scene*)vector_get(&gStoryScreenData.mScenes, gStoryScreenData.mCurrentScene);
 	Layer* layer = &scene->mLayers[i];
 
 	if (!layer->mIsActive) return;
@@ -210,7 +210,7 @@ static void updateLayers() {
 }
 
 static void unloadLayer(int i) {
-	Scene* scene = (Scene*)vector_get(&gData.mScenes, gData.mCurrentScene);
+	Scene* scene = (Scene*)vector_get(&gStoryScreenData.mScenes, gStoryScreenData.mCurrentScene);
 	Layer* layer = &scene->mLayers[i];
 
 	if (!layer->mIsActive) return;
@@ -227,7 +227,7 @@ static void unloadScene() {
 }
 
 static void gotoNextScreen() {
-	gData.mCB();
+	gStoryScreenData.mCB();
 }
 
 static void fadeOutSceneOver(void* tCaller) {
@@ -235,31 +235,31 @@ static void fadeOutSceneOver(void* tCaller) {
 	unloadScene();
 	enableDrawing();
 
-	gData.mCurrentScene++;
+	gStoryScreenData.mCurrentScene++;
 
-	if (gData.mCurrentScene < vector_size(&gData.mScenes)) {
+	if (gStoryScreenData.mCurrentScene < vector_size(&gStoryScreenData.mScenes)) {
 		startScene();
 	}
 	else {
-		gData.mCurrentScene--; // TODO: check
+		gStoryScreenData.mCurrentScene--; // TODO: check
 		gotoNextScreen();
 	}
 }
 
 static void fadeOutScene() {
-	Scene* scene = (Scene*)vector_get(&gData.mScenes, gData.mCurrentScene);
+	Scene* scene = (Scene*)vector_get(&gStoryScreenData.mScenes, gStoryScreenData.mCurrentScene);
 
 	setFadeColorRGB(scene->mFadeOutColor.x / 255.0, scene->mFadeOutColor.y / 255.0, scene->mFadeOutColor.z / 255.0);
 	addFadeOut(scene->mFadeOutTime, fadeOutSceneOver, NULL);
 
-	gData.mIsFadingOut = 1;
+	gStoryScreenData.mIsFadingOut = 1;
 }
 
 static void updateScene() {
-	if (gData.mIsFadingOut) return;
+	if (gStoryScreenData.mIsFadingOut) return;
 
-	Scene* scene = (Scene*)vector_get(&gData.mScenes, gData.mCurrentScene);
-	if (isDurationOver(gData.mNow, scene->mEndTime)) {
+	Scene* scene = (Scene*)vector_get(&gStoryScreenData.mScenes, gStoryScreenData.mCurrentScene);
+	if (isDurationOver(gStoryScreenData.mNow, scene->mEndTime)) {
 		fadeOutScene();
 	}
 }
@@ -268,7 +268,7 @@ static void updateStoryScreen() {
 	updateLayers();
 	updateScene();
 
-	handleDurationAndCheckIfOver(&gData.mNow, INF);
+	handleDurationAndCheckIfOver(&gStoryScreenData.mNow, INF);
 
 	if (hasPressedAFlank() || hasPressedStartFlank()) {
 		gotoNextScreen();
@@ -284,10 +284,10 @@ Screen* getStoryScreen() {
 };
 
 void setStoryDefinitionFile(char* tPath) {
-	strcpy(gData.mDefinitionPath, tPath);
+	strcpy(gStoryScreenData.mDefinitionPath, tPath);
 }
 
 void setStoryScreenFinishedCB(void(*tCB)())
 {
-	gData.mCB = tCB;
+	gStoryScreenData.mCB = tCB;
 }

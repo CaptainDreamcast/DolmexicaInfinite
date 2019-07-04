@@ -35,6 +35,10 @@ typedef struct {
 	MugenAnimation* mFaceAnimation;
 	int mFaceAnimationID;
 
+	int mHasContinue;
+	Position mContinueOffset; // TODO: sprites
+	int mContinueAnimationID;
+
 	int mHasName;
 	Position mNameOffset;
 	int mNameID;
@@ -103,6 +107,7 @@ void removeDolmexicaStoryText(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryTextBackground(StoryInstance* tInstance, int tID, Vector3DI tSprite, Position tOffset);
 void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, Vector3DI tSprite, Position tOffset);
 void setDolmexicaStoryTextName(StoryInstance* tInstance, int tID, const char* tText, Vector3DI tFont, Position tOffset);
+void setDolmexicaStoryTextContinue(StoryInstance* tInstance, int tID, int tAnimation, Position tOffset);
 void setDolmexicaStoryTextBasePosition(StoryInstance* tInstance, int tID, Position tPosition);
 void setDolmexicaStoryTextText(StoryInstance* tInstance, int tID, const char* tText);
 void setDolmexicaStoryTextTextOffset(StoryInstance* tInstance, int tID, Position tOffset);
@@ -110,6 +115,8 @@ void setDolmexicaStoryTextBackgroundSprite(StoryInstance* tInstance, int tID, Ve
 void setDolmexicaStoryTextBackgroundOffset(StoryInstance* tInstance, int tID, Position tOffset);
 void setDolmexicaStoryTextFaceSprite(StoryInstance* tInstance, int tID, Vector3DI tSprite);
 void setDolmexicaStoryTextFaceOffset(StoryInstance* tInstance, int tID, Position tOffset);
+void setDolmexicaStoryTextContinueAnimation(StoryInstance* tInstance, int tID, int tAnimation);
+void setDolmexicaStoryTextContinueOffset(StoryInstance* tInstance, int tID, Position tOffset);
 void setDolmexicaStoryTextNameText(StoryInstance* tInstance, int tID, const char* tText);
 void setDolmexicaStoryTextNameOffset(StoryInstance* tInstance, int tID, Position tOffset);
 
