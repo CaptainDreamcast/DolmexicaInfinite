@@ -102,8 +102,8 @@ int main(int argc, char** argv) {
 	setScreenAfterWrapperLogoScreen(getDreamTitleScreen());
 	
 #ifdef DEVELOP	
-	//setVolume(0);
-	//setSoundEffectVolume(0);
+	setVolume(0);
+	setSoundEffectVolume(0);
 	// setDisplayedScreenSize(320, 240);
 	disableWrapperErrorRecovery();
 	initDolmexicaDebug();
