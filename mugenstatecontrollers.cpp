@@ -5721,6 +5721,8 @@ static void parseRemoveElementStoryController(DreamMugenStateController* tContro
 
 typedef struct {
 	DreamMugenAssignment* mID;
+	int mHasTarget;
+	DreamMugenAssignment* mTarget;
 
 	int mDoesChangePosition;
 	DreamMugenAssignment* mPosition;
@@ -5761,6 +5763,7 @@ static void parseChangeTextStoryController(DreamMugenStateController* tControlle
 	ChangeTextStoryController* e = (ChangeTextStoryController*)allocMemoryOnMemoryStackOrMemory(sizeof(ChangeTextStoryController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("id", tGroup, &e->mID);
+	e->mHasTarget = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("target", tGroup, &e->mTarget);
 	e->mDoesChangePosition = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("pos", tGroup, &e->mPosition);
 
 	e->mDoesChangeBackgroundSprite = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("bg.spr", tGroup, &e->mBackgroundSprite);
@@ -6137,6 +6140,7 @@ void playMusicStoryParseFunction(DreamMugenStateController* tController, MugenDe
 void stopMusicStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseNullController(tController, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_STOP_MUSIC); }
 void pauseMusicStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseNullController(tController, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_PAUSE_MUSIC); }
 void resumeMusicStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseNullController(tController, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_RESUME_MUSIC); }
+void destroySelfStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseNullController(tController, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_DESTROY_SELF); }
 
 static void setupStoryStateControllerParsers() {
 	gMugenStateControllerVariableHandler.mStateControllerParsers.clear();
@@ -6186,6 +6190,7 @@ static void setupStoryStateControllerParsers() {
 	gMugenStateControllerVariableHandler.mStateControllerParsers["stopmusic"] = stopMusicStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["pausemusic"] = pauseMusicStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["resumemusic"] = resumeMusicStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["destroyself"] = destroySelfStoryParseFunction;
 }
 
 static int getDolmexicaStoryIDFromAssignment(DreamMugenAssignment** tAssignment, StoryInstance* tInstance) {
@@ -6334,68 +6339,85 @@ static int handleRemoveTextStoryController(DreamMugenStateController* tControlle
 	return 0;
 }
 
+static StoryInstance* getTargetInstanceFromAssignment(DreamMugenAssignment** tAssignment, StoryInstance* tInstance) {
+	string target;
+	evaluateDreamAssignmentAndReturnAsString(target, tAssignment, (DreamPlayer*)tInstance);
+	int targetNumber;
+	if (target == "root") {
+		targetNumber = -1;
+	}
+	else {
+		targetNumber = atoi(target.data());
+	}
+	return getDolmexicaStoryHelperInstance(targetNumber);
+}
+
 static int handleChangeTextStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
 	ChangeTextStoryController* e = (ChangeTextStoryController*)tController->mData;
 
 	int id;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
+	StoryInstance* targetInstance = tInstance;
+	if (e->mHasTarget) {
+		targetInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
+	}
 	if (e->mDoesChangePosition) {
 		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mPosition, (DreamPlayer*)tInstance);
-		setDolmexicaStoryTextBasePosition(tInstance, id, offset);
+		setDolmexicaStoryTextBasePosition(targetInstance, id, offset);
 	}
 	if (e->mDoesChangeText) {
 		string text;
 		evaluateDreamAssignmentAndReturnAsString(text, &e->mText, (DreamPlayer*)tInstance);
-		setDolmexicaStoryTextText(tInstance, id, text.data());
+		setDolmexicaStoryTextText(targetInstance, id, text.data());
 	}
 	if (e->mDoesChangeTextOffset) {
 		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mTextOffset, (DreamPlayer*)tInstance);
-		setDolmexicaStoryTextTextOffset(tInstance, id, offset);
+		setDolmexicaStoryTextTextOffset(targetInstance, id, offset);
 	}
 	if (e->mDoesChangeBackgroundSprite) {
 		Vector3DI sprite = evaluateDreamAssignmentAndReturnAsVector3DI(&e->mBackgroundSprite, (DreamPlayer*)tInstance);
-		setDolmexicaStoryTextBackgroundSprite(tInstance, id, sprite);
+		setDolmexicaStoryTextBackgroundSprite(targetInstance, id, sprite);
 	}
 	if (e->mDoesChangeBackgroundOffset) {
 		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mBackgroundOffset, (DreamPlayer*)tInstance);
-		setDolmexicaStoryTextBackgroundOffset(tInstance, id, offset);
+		setDolmexicaStoryTextBackgroundOffset(targetInstance, id, offset);
 	}
 	if (e->mDoesChangeFaceSprite) {
 		Vector3DI sprite = evaluateDreamAssignmentAndReturnAsVector3DI(&e->mFaceSprite, (DreamPlayer*)tInstance);
-		setDolmexicaStoryTextFaceSprite(tInstance, id, sprite);
+		setDolmexicaStoryTextFaceSprite(targetInstance, id, sprite);
 	}
 	if (e->mDoesChangeFaceOffset) {
 		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mFaceOffset, (DreamPlayer*)tInstance);
-		setDolmexicaStoryTextFaceOffset(tInstance, id, offset);
+		setDolmexicaStoryTextFaceOffset(targetInstance, id, offset);
 	}
 	if (e->mDoesChangeContinueAnimation) {
 		int anim = evaluateDreamAssignmentAndReturnAsInteger(&e->mContinueAnimation, (DreamPlayer*)tInstance);
-		setDolmexicaStoryTextContinueAnimation(tInstance, id, anim);
+		setDolmexicaStoryTextContinueAnimation(targetInstance, id, anim);
 	}
 	if (e->mDoesChangeContinueOffset) {
 		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mContinueOffset, (DreamPlayer*)tInstance);
-		setDolmexicaStoryTextContinueOffset(tInstance, id, offset);
+		setDolmexicaStoryTextContinueOffset(targetInstance, id, offset);
 	}
 	if (e->mDoesChangeName) {
 		string text;
 		evaluateDreamAssignmentAndReturnAsString(text, &e->mName, (DreamPlayer*)tInstance);
-		setDolmexicaStoryTextNameText(tInstance, id, text.data());
+		setDolmexicaStoryTextNameText(targetInstance, id, text.data());
 	}
 	if (e->mDoesChangeNameOffset) {
 		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mNameOffset, (DreamPlayer*)tInstance);
-		setDolmexicaStoryTextNameOffset(tInstance, id, offset);
+		setDolmexicaStoryTextNameOffset(targetInstance, id, offset);
 	}
 	if (e->mDoesChangeNextState) {
 		int nextState = evaluateDreamAssignmentAndReturnAsInteger(&e->mNextState, (DreamPlayer*)tInstance);
-		setDolmexicaStoryTextNextState(tInstance, id, nextState);
+		setDolmexicaStoryTextNextState(targetInstance, id, nextState);
 	}
 
 
 	int buildUp;
 	getSingleIntegerValueOrDefault(&e->mIsBuildingUp, (DreamPlayer*)tInstance, &buildUp, 1);
 	if (!buildUp) {
-		setDolmexicaStoryTextBuiltUp(tInstance, id);
+		setDolmexicaStoryTextBuiltUp(targetInstance, id);
 	}
 
 	return 0;
@@ -6631,27 +6653,12 @@ static int handleChangeCharacterAnimStoryController(DreamMugenStateController* t
 	getSingleIntegerValueOrDefault(&e->mAnimation, (DreamPlayer*)tInstance, &animation, 0);
 
 	if (e->mHasTarget) {
-		int target;
-		getSingleIntegerValueOrDefault(&e->mTarget, (DreamPlayer*)tInstance, &target, -1);
-		tInstance = getDolmexicaStoryHelperInstance(target);
+		tInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
 	}
 
 	changeDolmexicaStoryCharacterAnimation(tInstance, id, animation);
 
 	return 0;
-}
-
-static StoryInstance* getTargetInstanceFromAssignment(DreamMugenAssignment** tAssignment, StoryInstance* tInstance) {
-	string target;
-	evaluateDreamAssignmentAndReturnAsString(target, tAssignment, (DreamPlayer*)tInstance);
-	int targetNumber;
-	if (target == "root") {
-		targetNumber = -1;
-	}
-	else {
-		targetNumber = atoi(target.data());
-	}
-	return getDolmexicaStoryHelperInstance(targetNumber);
 }
 
 static int handleSetCharacterPosStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
@@ -6745,12 +6752,17 @@ static int handleSetCharacterFaceDirectionStoryController(DreamMugenStateControl
 static int handleSetCharacterColorStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
 	AnimationSetSingleValueStoryController* e = (AnimationSetSingleValueStoryController*)tController->mData;
 
+	StoryInstance* targetInstance = tInstance;
+	if (e->mHasTarget) {
+		targetInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
+	}
+
 	int id;
 	Vector3D color;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	color = evaluateDreamAssignmentAndReturnAsVector3D(&e->mValue, (DreamPlayer*)tInstance);
 
-	setDolmexicaStoryCharacterColor(tInstance, id, color);
+	setDolmexicaStoryCharacterColor(targetInstance, id, color);
 
 	return 0;
 }
@@ -6816,7 +6828,7 @@ static int handleCreateHelperStoryController(DreamMugenStateController* tControl
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	getSingleIntegerValueOrDefault(&e->mState, (DreamPlayer*)tInstance, &state, 0);
 
-	addDolmexicaStoryHelper(id, state);
+	addDolmexicaStoryHelper(id, state, tInstance);
 
 	return 0;
 }
@@ -7094,6 +7106,12 @@ static int handleResumeMusicStoryController(StoryInstance* tPlayer) {
 	return 0;
 }
 
+static int handleDestroySelfStoryController(StoryInstance* tPlayer) {
+	if (!tPlayer) return 0;
+	destroyDolmexicaStoryHelper(tPlayer);
+	return 0;
+}
+
 int nullStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleNull(); }
 int createAnimationStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleCreateAnimationStoryController(tController, (StoryInstance*)tPlayer); }
 int removeAnimationStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleRemoveAnimationStoryController(tController, (StoryInstance*)tPlayer); }
@@ -7139,6 +7157,7 @@ int playMusicStoryHandleFunction(DreamMugenStateController* tController, DreamPl
 int stopMusicStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleStopMusicStoryController((StoryInstance*)tPlayer); }
 int pauseMusicStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handlePauseMusicStoryController((StoryInstance*)tPlayer); }
 int resumeMusicStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleResumeMusicStoryController((StoryInstance*)tPlayer); }
+int destroySelfStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleDestroySelfStoryController((StoryInstance*)tPlayer); }
 
 static void setupStoryStateControllerHandlers() {
 	gMugenStateControllerVariableHandler.mStateControllerHandlers.clear();
@@ -7188,6 +7207,7 @@ static void setupStoryStateControllerHandlers() {
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_STOP_MUSIC] = stopMusicStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_PAUSE_MUSIC] = pauseMusicStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_RESUME_MUSIC] = resumeMusicStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_DESTROY_SELF] = destroySelfStoryHandleFunction;
 
 	
 }

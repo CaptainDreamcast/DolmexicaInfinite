@@ -63,9 +63,9 @@ typedef struct {
 	MugenAnimations mAnimations;
 } StoryCharacter;
 
-typedef struct {
+typedef struct StoryInstance_t {
 	std::map<int, StoryAnimation> mStoryAnimations;
-	IntMap mStoryTexts;
+	std::map<int, StoryText> mStoryTexts;
 	std::map<int, StoryCharacter> mStoryCharacters;
 
 	std::map<int, int> mIntVars;
@@ -76,6 +76,8 @@ typedef struct {
 
 
 	int mStateMachineID;
+	int mIsScheduledForDeletion;
+	StoryInstance_t* mParent;
 } StoryInstance;
 
 Screen* getDolmexicaStoryScreen();
@@ -108,6 +110,8 @@ void setDolmexicaStoryTextBackground(StoryInstance* tInstance, int tID, Vector3D
 void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, Vector3DI tSprite, Position tOffset);
 void setDolmexicaStoryTextName(StoryInstance* tInstance, int tID, const char* tText, Vector3DI tFont, Position tOffset);
 void setDolmexicaStoryTextContinue(StoryInstance* tInstance, int tID, int tAnimation, Position tOffset);
+double getDolmexicaStoryTextBasePositionX(StoryInstance* tInstance, int tID);
+double getDolmexicaStoryTextBasePositionY(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryTextBasePosition(StoryInstance* tInstance, int tID, Position tPosition);
 void setDolmexicaStoryTextText(StoryInstance* tInstance, int tID, const char* tText);
 void setDolmexicaStoryTextTextOffset(StoryInstance* tInstance, int tID, Position tOffset);
@@ -176,9 +180,12 @@ void addDolmexicaStoryStringVariable(StoryInstance* tInstance, int tID, int tVal
 
 
 StoryInstance* getDolmexicaStoryRootInstance();
+StoryInstance* getDolmexicaStoryInstanceParent(StoryInstance* tInstance);
 StoryInstance* getDolmexicaStoryHelperInstance(int tID);
-void addDolmexicaStoryHelper(int tID, int tState);
+void addDolmexicaStoryHelper(int tID, int tState, StoryInstance* tParent);
+int getDolmexicaStoryGetHelperAmount(int tID);
 void removeDolmexicaStoryHelper(int tID);
+void destroyDolmexicaStoryHelper(StoryInstance* tInstance);
 int getDolmexicaStoryIDFromString(const char* tString, StoryInstance* tInstance);
 
 void playDolmexicaStoryMusic(const std::string& tPath);

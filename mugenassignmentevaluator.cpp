@@ -2571,6 +2571,12 @@ static AssignmentReturnValue* evaluateAnimTimeStoryArrayAssignment(AssignmentRet
 	return makeNumberAssignmentReturn(getDolmexicaStoryAnimationTimeLeft(tInstance, id));
 }
 
+static AssignmentReturnValue* evaluateRootAnimTimeStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeNumberAssignmentReturn(getDolmexicaStoryAnimationTimeLeft(getDolmexicaStoryRootInstance(), id));
+}
+
 static AssignmentReturnValue* evaluateAnimPosXStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
 	int id = convertAssignmentReturnToNumber(tIndex);
 	*tIsStatic = 0;
@@ -2589,10 +2595,28 @@ static AssignmentReturnValue* evaluateRootCharPosXStoryArrayAssignment(Assignmen
 	return makeFloatAssignmentReturn(getDolmexicaStoryCharacterPositionX(getDolmexicaStoryRootInstance(), id));
 }
 
+static AssignmentReturnValue* evaluateRootTextPosXStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeFloatAssignmentReturn(getDolmexicaStoryTextBasePositionX(getDolmexicaStoryRootInstance(), id));
+}
+
+static AssignmentReturnValue* evaluateRootTextPosYStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeFloatAssignmentReturn(getDolmexicaStoryTextBasePositionY(getDolmexicaStoryRootInstance(), id));
+}
+
 static AssignmentReturnValue* evaluateCharAnimStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
 	int id = convertAssignmentReturnToNumber(tIndex);
 	*tIsStatic = 0;
 	return makeNumberAssignmentReturn(getDolmexicaStoryCharacterAnimation(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateRootCharAnimStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeNumberAssignmentReturn(getDolmexicaStoryCharacterAnimation(getDolmexicaStoryRootInstance(), id));
 }
 
 static AssignmentReturnValue* evaluateCharAnimTimeStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
@@ -2603,10 +2627,24 @@ static AssignmentReturnValue* evaluateCharAnimTimeStoryArrayAssignment(Assignmen
 	return makeNumberAssignmentReturn(getDolmexicaStoryCharacterTimeLeft(tInstance, id));
 }
 
+static AssignmentReturnValue* evaluateRootCharAnimTimeStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	string val;
+	convertAssignmentReturnToString(val, tIndex);
+	int id = getDolmexicaStoryIDFromString(val.data(), tInstance);
+	*tIsStatic = 0;
+	return makeNumberAssignmentReturn(getDolmexicaStoryCharacterTimeLeft(getDolmexicaStoryRootInstance(), id));
+}
+
 static AssignmentReturnValue* evaluateSVarStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
 	int id = convertAssignmentReturnToNumber(tIndex);
 	*tIsStatic = 0;
 	return makeStringAssignmentReturn(getDolmexicaStoryStringVariable(tInstance, id).data());
+}
+
+static AssignmentReturnValue* evaluateFVarStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeFloatAssignmentReturn(getDolmexicaStoryFloatVariable(tInstance, id));
 }
 
 static AssignmentReturnValue* evaluateVarStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
@@ -2651,6 +2689,30 @@ static AssignmentReturnValue* evaluateRootVarStoryArrayAssignment(AssignmentRetu
 	return makeNumberAssignmentReturn(getDolmexicaStoryIntegerVariable(getDolmexicaStoryRootInstance(), id));
 }
 
+static AssignmentReturnValue* evaluateParentSVarStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeStringAssignmentReturn(getDolmexicaStoryStringVariable(getDolmexicaStoryInstanceParent(tInstance), id).data());
+}
+
+static AssignmentReturnValue* evaluateParentFVarStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeFloatAssignmentReturn(getDolmexicaStoryFloatVariable(getDolmexicaStoryInstanceParent(tInstance), id));
+}
+
+static AssignmentReturnValue* evaluateParentVarStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeNumberAssignmentReturn(getDolmexicaStoryIntegerVariable(getDolmexicaStoryInstanceParent(tInstance), id));
+}
+
+static AssignmentReturnValue* evaluateNumHelperStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeNumberAssignmentReturn(getDolmexicaStoryGetHelperAmount(id));
+}
+
 static AssignmentReturnValue* evaluateNameIDStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
 	string text;
 	convertAssignmentReturnToString(text, tIndex);
@@ -2660,12 +2722,18 @@ static AssignmentReturnValue* evaluateNameIDStoryArrayAssignment(AssignmentRetur
 }
 
 static AssignmentReturnValue* animTimeStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* rootAnimTimeStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* animPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* charPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* rootCharPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootCharPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* rootTextPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootTextPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* rootTextPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootTextPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* charAnimStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharAnimStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* rootCharAnimStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootCharAnimStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* charAnimTimeStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* rootCharAnimTimeStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootCharAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* sVarStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateSVarStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* fVarStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateFVarStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* varStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateVarStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* globalVarStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateGlobalVarStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tIsStatic); }
 static AssignmentReturnValue* globalFVarStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateGlobalFVarStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tIsStatic); }
@@ -2673,19 +2741,29 @@ static AssignmentReturnValue* globalSVarStoryFunction(DreamMugenAssignment** tIn
 static AssignmentReturnValue* rootSVarStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootSVarStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* rootFVarStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootFVarStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* rootVarStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootVarStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* parentSVarStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateParentSVarStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* parentFVarStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateParentFVarStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* parentVarStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateParentVarStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* numHelperStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNumHelperStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* nameIDStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNameIDStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 
 static void setupStoryArrayAssignments() {
 	gVariableHandler.mArrays.clear();
 
 	gVariableHandler.mArrays["animtime"] = animTimeStoryFunction;
+	gVariableHandler.mArrays["rootanimtime"] = rootAnimTimeStoryFunction;
 	gVariableHandler.mArrays["x"] = animPosXStoryFunction;
 	gVariableHandler.mArrays["charx"] = charPosXStoryFunction;
 	gVariableHandler.mArrays["rootcharx"] = rootCharPosXStoryFunction;
+	gVariableHandler.mArrays["roottextx"] = rootTextPosXStoryFunction;
+	gVariableHandler.mArrays["roottexty"] = rootTextPosYStoryFunction;
 	gVariableHandler.mArrays["ifelse"] = ifElseFunction;
 	gVariableHandler.mArrays["charanim"] = charAnimStoryFunction;
+	gVariableHandler.mArrays["rootcharanim"] = rootCharAnimStoryFunction;
 	gVariableHandler.mArrays["charanimtime"] = charAnimTimeStoryFunction;
+	gVariableHandler.mArrays["rootcharanimtime"] = rootCharAnimTimeStoryFunction;
 	gVariableHandler.mArrays["svar"] = sVarStoryFunction;
+	gVariableHandler.mArrays["fvar"] = fVarStoryFunction;
 	gVariableHandler.mArrays["var"] = varStoryFunction;
 	gVariableHandler.mArrays["globalvar"] = globalVarStoryFunction;
 	gVariableHandler.mArrays["globalfvar"] = globalFVarStoryFunction;
@@ -2693,6 +2771,10 @@ static void setupStoryArrayAssignments() {
 	gVariableHandler.mArrays["rootsvar"] = rootSVarStoryFunction;
 	gVariableHandler.mArrays["rootfvar"] = rootFVarStoryFunction;
 	gVariableHandler.mArrays["rootvar"] = rootVarStoryFunction;
+	gVariableHandler.mArrays["parentsvar"] = parentSVarStoryFunction;
+	gVariableHandler.mArrays["parentfvar"] = parentFVarStoryFunction;
+	gVariableHandler.mArrays["parentvar"] = parentVarStoryFunction;
+	gVariableHandler.mArrays["numhelper"] = numHelperStoryFunction;
 	gVariableHandler.mArrays["nameid"] = nameIDStoryFunction;
 }
 
