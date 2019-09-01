@@ -201,6 +201,7 @@ void setHitDataPlayer1SpritePriority(DreamPlayer* tPlayer, int tPriority);
 void setHitDataPlayer2SpritePriority(DreamPlayer* tPlayer, int tPriority);
 void setHitDataPlayer1FaceDirection(DreamPlayer* tPlayer, int tFaceDirection);
 void setHitDataPlayer1ChangeFaceDirectionRelativeToPlayer2(DreamPlayer* tPlayer, int tFaceDirection);
+int getActiveHitDataPlayer2ChangeFaceDirectionRelativeToPlayer1(DreamPlayer* tPlayer);
 void setHitDataPlayer2ChangeFaceDirectionRelativeToPlayer1(DreamPlayer* tPlayer, int tFaceDirection);
 
 int getHitDataPlayer1StateNumber(DreamPlayer* tPlayer);

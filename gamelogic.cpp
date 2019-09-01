@@ -18,6 +18,7 @@
 #include "fightresultdisplay.h"
 #include "mugenexplod.h"
 #include "config.h"
+#include "osuhandler.h"
 
 typedef enum {
 	ROUND_STATE_FADE_IN = 0,
@@ -69,6 +70,9 @@ static void roundAnimationFinishedCB() {
 
 static void introFinished() {
 	gData.mIsDisplayingIntro = 0;
+	if (getGameMode() == GAME_MODE_OSU && !shouldPlayOsuMusicInTheBeginning()) {
+		startPlayingOsuSong();
+	}
 	playDreamRoundAnimation(gData.mRoundNumber, roundAnimationFinishedCB);
 }
 
@@ -206,6 +210,9 @@ static void resetGameLogic(void* tCaller) {
 	gotoNextRound(NULL);
 	removeAllWinIcons();
 	resetPlayersEntirely();
+	if (getGameMode() == GAME_MODE_OSU) {
+		resetOsuHandler();
+	}
 
 	gData.mGameTime = 0;
 	gData.mRoundNumber = gData.mStartRound;
@@ -255,6 +262,9 @@ static void koAnimationFinishedCB() {
 
 static void startKO() {
 	disableDreamTimer();
+	if (getGameMode() == GAME_MODE_OSU) {
+		stopOsuHandler();
+	}
 	setRoundWinner();
 	playDreamKOAnimation(koAnimationFinishedCB);
 }
@@ -348,6 +358,9 @@ static void skipIntroCB(void* tCaller) {
 	(void)tCaller;
 	enableDrawing();
 	stopFightAndRoundAnimation();
+	if (getGameMode() == GAME_MODE_OSU && !shouldPlayOsuMusicInTheBeginning() && !isOsuHandlerActive()) {
+		startPlayingOsuSong();
+	}
 	gData.mIsDisplayingIntro = 0;
 	changePlayerState(getRootPlayer(0), 0);
 	changePlayerState(getRootPlayer(1), 0);
@@ -629,6 +642,27 @@ void setGameModeStory() {
 	setPlayerStartLifePercentage(1, 1);
 
 	gData.mMode = GAME_MODE_STORY;
+}
+
+void setGameModeOsu()
+{
+	gData.mRoundsToWin = 1;
+	gData.mStartRound = 1;
+
+	setFightResultActive(0);
+	setTimerInfinite();
+	setPlayersToRealFightMode();
+	setPlayerHuman(0);
+	setPlayerArtificial(1, getDifficulty());
+	setPlayerStartLifePercentage(0, 2);
+	setPlayerStartLifePercentage(1, 2);
+
+	gData.mMode = GAME_MODE_OSU;
+}
+
+void resetGameMode()
+{
+	setGameModeFreePlay();
 }
 
 GameMode getGameMode()

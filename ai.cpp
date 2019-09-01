@@ -7,6 +7,7 @@
 #include <prism/stlutil.h>
 
 #include "mugencommandhandler.h"
+#include "gamelogic.h"
 
 using  namespace std;
 
@@ -93,6 +94,10 @@ static void updateAIGuarding(PlayerAI* e) {
 }
 
 static void updateAICommands(PlayerAI* e) {
+	if (getGameMode() == GAME_MODE_OSU) {
+		return;
+	}
+
 	e->mRandomInputNow++;
 	if (e->mRandomInputNow >= e->mRandomInputDuration) {
 		e->mRandomInputNow = 0;
@@ -146,6 +151,35 @@ void setDreamAIActive(DreamPlayer * p)
 	stl_string_map_map(commands->mCommands, insertSingleCommandName, &e.mCommandNames);
 
 	gAI.mHandledPlayers.push_back(e);
+}
+
+typedef struct {
+	int i;
+	PlayerAI* mFound;
+} FindAICaller;
+
+static void findSameID(FindAICaller* tCaller, PlayerAI& tData) {
+	PlayerAI* e = &tData;
+
+	if (e->mPlayer->mRootID == tCaller->i) {
+		tCaller->mFound = e;
+	}
+}
+
+static PlayerAI* getAIFromPlayerID(int i) {
+	FindAICaller caller;
+	caller.i = i;
+	caller.mFound = nullptr;
+
+	stl_list_map(gAI.mHandledPlayers, findSameID, &caller);
+	if (!caller.mFound) return NULL;
+	else return caller.mFound;
+}
+
+void activateRandomAICommand(int i) {
+	PlayerAI* e = getAIFromPlayerID(i);
+	if (!e) return;
+	setRandomPlayerCommandActive(e);
 }
 
 ActorBlueprint getDreamAIHandler() {

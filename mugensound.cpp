@@ -8,6 +8,9 @@
 #include <prism/file.h>
 #include <prism/stlutil.h>
 
+#include "osuhandler.h"
+#include "gamelogic.h"
+
 using namespace std;
 
 DreamMugenSound makeDreamMugenSound(int tGroup, int tItem)
@@ -18,7 +21,6 @@ DreamMugenSound makeDreamMugenSound(int tGroup, int tItem)
 	return ret;
 }
 
-
 int isMugenBGMMusicPath(const char * tPath)
 {
 	return isMugenBGMMusicPath(tPath, "");
@@ -28,6 +30,7 @@ int isMugenBGMMusicPath(const char* tPath, const char* tStagePath) {
 	if (!strchr(tPath, '.')) return 0;
 	const char* fileExtension = getFileExtension(tPath);
 	if (!strcmp("da", fileExtension)) return 1;
+	if (getGameMode() == GAME_MODE_OSU && !strcmp("osu", fileExtension)) return 1;
 
 	char inFolderPath[1024];
 	sprintf(inFolderPath, "assets/music/%s", tPath);
@@ -76,6 +79,11 @@ static void playMugenBGMMusicCompletePath(const char* tPath, int tIsLooping) {
 
 void playMugenBGMMusicPath(const char* tPath, const char* tStagePath, int tIsLooping) {
 	const char* fileExtension = getFileExtension(tPath);
+	if (!strcmp("osu", fileExtension)) {
+		setOsuFile(tPath);
+		return;
+	}
+
 	if (!strcmp("da", fileExtension)) {
 		playMugenBGMTrack(tPath, tIsLooping);
 		return;

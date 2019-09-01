@@ -12,7 +12,8 @@ typedef enum {
 	GAME_MODE_TRAINING,
 	GAME_MODE_WATCH,
 	GAME_MODE_SUPER_WATCH,
-	GAME_MODE_EXHIBIT
+	GAME_MODE_EXHIBIT,
+	GAME_MODE_OSU
 } GameMode;
 
 ActorBlueprint getDreamGameLogic();
@@ -50,5 +51,7 @@ void setGameModeWatch();
 void setGameModeSuperWatch();
 void setGameModeExhibit(int tEndTime, int tIsDisplayingBars);
 void setGameModeStory();
+void setGameModeOsu();
+void resetGameMode();
 
 GameMode getGameMode();

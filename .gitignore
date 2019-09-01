@@ -1,3 +1,5 @@
+.git_*
+
 assets/*
 assets_normal/*
 assets_*/*
@@ -27,6 +29,7 @@ web2/*
 *.js
 
 windows/.vs/*
+windows/enc_temp_folder/*
 windows/Release/*
 windows/Debug/*
 *.aps

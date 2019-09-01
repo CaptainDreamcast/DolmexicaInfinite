@@ -5,6 +5,7 @@
 
 Screen* getCharacterSelectScreen();
 
+void setCharacterSelectCustomSelectFile(const std::string& tFileName);
 void setCharacterSelectScreenModeName(const char* tModeName);
 void setCharacterSelectFinishedCB(void(*tCB)());
 void setCharacterSelectStageActive();

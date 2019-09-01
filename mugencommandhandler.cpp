@@ -12,6 +12,8 @@
 #include <prism/math.h>
 #include <prism/stlutil.h>
 
+#include "gamelogic.h"
+
 using namespace std;
 
 typedef struct {
@@ -56,6 +58,8 @@ static struct {
 
 	uint32_t mHeldMask[2];
 	uint32_t mPreviousHeldMask[2];
+
+	int mOsuInputAllowedFlag[2];
 } gMugenCommandHandler;
 
 #define MAXIMUM_REGISTERED_COMMAND_AMOUNT 2 // TODO: set dynamically from fightscreen or playerdefinition
@@ -65,6 +69,13 @@ static void loadMugenCommandHandler(void* tData) {
 	(void)tData;
 	gMugenCommandHandler.mRegisteredCommands = vector<RegisteredMugenCommand>(MAXIMUM_REGISTERED_COMMAND_AMOUNT);
 	gMugenCommandHandler.mRegisteredCommandAmount = 0;
+
+	if (getGameMode() == GAME_MODE_OSU) {
+		int i;
+		for (i = 0; i < 2; i++) {
+			gMugenCommandHandler.mOsuInputAllowedFlag[i] = 0;
+		}
+	}
 }
 
 
@@ -194,6 +205,21 @@ void setDreamMugenCommandFaceDirection(int tID, FaceDirection tDirection)
 {
 	RegisteredMugenCommand* e = &gMugenCommandHandler.mRegisteredCommands[tID];
 	e->mIsFacingRight = tDirection == FACE_DIRECTION_RIGHT;
+}
+
+void allowOsuPlayerCommandInputOneFrame(int tRootIndex)
+{
+	gMugenCommandHandler.mOsuInputAllowedFlag[tRootIndex] = 1;
+}
+
+void resetOsuPlayerCommandInputAllowed(int tRootIndex)
+{
+	gMugenCommandHandler.mOsuInputAllowedFlag[tRootIndex] = 0;
+}
+
+int isOsuPlayerCommandInputAllowed(int tRootIndex)
+{
+	return gMugenCommandHandler.mOsuInputAllowedFlag[tRootIndex];
 }
 
 static int handleSingleCommandInputStepAndReturnIfActive(DreamMugenCommandInputStep* tStep, int* oIsStepOver, int tControllerID, int tIsFacingRight);
@@ -521,25 +547,32 @@ static void updateSingleInputMaskEntry(int i, uint32_t tMask, int tHoldValue) {
 	gMugenCommandHandler.mHeldMask[i] |= (tMask * min(tHoldValue, 1));
 }
 
-static void updateInputMask(int i) {
+static void updateInputMaskGeneral(int i, int tButtonPrecondition) {
 	gMugenCommandHandler.mPreviousHeldMask[i] = gMugenCommandHandler.mHeldMask[i];
 	gMugenCommandHandler.mHeldMask[i] = 0;
 
-	updateSingleInputMaskEntry(i, MASK_A, hasPressedASingle(i));
-	updateSingleInputMaskEntry(i, MASK_B, hasPressedBSingle(i));
-	updateSingleInputMaskEntry(i, MASK_C, hasPressedRSingle(i));
-	updateSingleInputMaskEntry(i, MASK_X, hasPressedXSingle(i));
-	updateSingleInputMaskEntry(i, MASK_Y, hasPressedYSingle(i));
-	updateSingleInputMaskEntry(i, MASK_Z, hasPressedLSingle(i));
+	updateSingleInputMaskEntry(i, MASK_A, tButtonPrecondition && hasPressedASingle(i));
+	updateSingleInputMaskEntry(i, MASK_B, tButtonPrecondition && hasPressedBSingle(i));
+	updateSingleInputMaskEntry(i, MASK_C, tButtonPrecondition && hasPressedRSingle(i));
+	updateSingleInputMaskEntry(i, MASK_X, tButtonPrecondition && hasPressedXSingle(i));
+	updateSingleInputMaskEntry(i, MASK_Y, tButtonPrecondition && hasPressedYSingle(i));
+	updateSingleInputMaskEntry(i, MASK_Z, tButtonPrecondition && hasPressedLSingle(i));
 
-	updateSingleInputMaskEntry(i, MASK_START, hasPressedStartSingle(i));
+	updateSingleInputMaskEntry(i, MASK_START, tButtonPrecondition && hasPressedStartSingle(i));
 
 	updateSingleInputMaskEntry(i, MASK_LEFT, hasPressedLeftSingle(i));
 	updateSingleInputMaskEntry(i, MASK_RIGHT, hasPressedRightSingle(i));
 	updateSingleInputMaskEntry(i, MASK_UP, hasPressedUpSingle(i));
-	updateSingleInputMaskEntry(i, MASK_DOWN, hasPressedDownSingle(i));
+	updateSingleInputMaskEntry(i, MASK_DOWN, hasPressedDownSingle(i));	
+}
 
-	
+static void updateInputMask(int i) {
+	if (getGameMode() != GAME_MODE_OSU) {
+		updateInputMaskGeneral(i, 1);
+	}
+	else {
+		updateInputMaskGeneral(i, gMugenCommandHandler.mOsuInputAllowedFlag[i]);
+	}
 }
 
 static void updateInputMasks() {

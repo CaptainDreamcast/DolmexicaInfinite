@@ -67,11 +67,11 @@ static void unloadProjectileHandler(void* tData) {
 static int updateProjectileDurationAndReturnIfOver(Projectile* e) {
 	if (e->mRemoveTime == -1) return 0;
 
-	e->mNow++;
 	if (e->mNow >= e->mRemoveTime) {
 		removeProjectile(e->mPlayer);
 		return 1;
 	}
+	e->mNow++;
 
 	return 0;
 }

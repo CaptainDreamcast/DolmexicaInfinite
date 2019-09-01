@@ -114,13 +114,21 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	}
 	freeMemory(afterLoseState);
 
-	setGameModeStory();
+	const auto mode = getSTLMugenDefStringOrDefaultAsGroup(tGroup, "mode", "");
+	if (mode == "osu") {
+		setGameModeOsu();
+	}
+	else {
+		setGameModeStory();
+	}
+
 	int ailevel = getMugenDefIntegerOrDefaultAsGroup(tGroup, "ailevel", getDifficulty());
 	setPlayerArtificial(1, ailevel);
 
-
 	if (isSelectingFirstCharacter) {
 		char* selectName = getAllocatedMugenDefStringOrDefaultAsGroup(tGroup, "selectname", "Select your fighter");
+		const auto selectFileName = getSTLMugenDefStringOrDefaultAsGroup(tGroup, "selectfile", "");
+		setCharacterSelectCustomSelectFile(selectFileName);
 		setCharacterSelectScreenModeName(selectName);
 		setCharacterSelectOnePlayer();
 		setCharacterSelectStageInactive();
@@ -128,6 +136,14 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 		setNewScreen(getCharacterSelectScreen());
 	}
 	else {
+		for (int i = 0; i < 2; i++) {
+			stringstream ss;
+			ss << "p" << (i + 1) << ".name";
+			if (isMugenDefStringVariableAsGroup(tGroup, ss.str().c_str())) {
+				setCustomPlayerDisplayName(i, getSTLMugenDefStringOrDefaultAsGroup(tGroup, ss.str().c_str(), ""));
+			}
+		}
+
 		internCharacterSelectOverCB();
 	}
 }

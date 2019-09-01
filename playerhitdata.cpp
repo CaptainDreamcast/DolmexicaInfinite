@@ -1145,6 +1145,13 @@ void setHitDataPlayer1ChangeFaceDirectionRelativeToPlayer2(DreamPlayer* tPlayer,
 	e->mPlayer1ChangeFaceDirectionRelativeToPlayer2 = tFaceDirection;
 }
 
+int getActiveHitDataPlayer2ChangeFaceDirectionRelativeToPlayer1(DreamPlayer * tPlayer)
+{
+	assert(stl_map_contains(gPlayerHitData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = &gPlayerHitData.mActiveHitDataMap[tPlayer->mHitDataID];
+	return e->mPlayer2ChangeFaceDirectionRelativeToPlayer1;
+}
+
 void setHitDataPlayer2ChangeFaceDirectionRelativeToPlayer1(DreamPlayer* tPlayer, int tFaceDirection)
 {
 	assert(stl_map_contains(gPlayerHitData.mPassiveHitDataMap, tPlayer->mHitDataID));

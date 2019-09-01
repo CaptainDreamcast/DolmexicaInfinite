@@ -4084,6 +4084,12 @@ static void handleHelperTwoFloatElements(DreamMugenAssignment** tAssignment, Dre
 	tFunc(tHelper, val1, val2);
 }
 
+static void handleHelperTwoIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, int, int), int tDefault1, int tDefault2) {
+	int val1, val2;
+	getTwoIntegerValuesWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
+	tFunc(tHelper, val1, val2);
+}
+
 static void handleHelperFacing(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper) {
 	int facing;
 	getSingleIntegerValueOrDefault(tAssignment, tPlayer, &facing, 1);
@@ -4166,9 +4172,13 @@ static Position getFinalHelperPositionFromPositionType(DreamExplodPositionType t
 
 }
 
-static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	// return 0; // TODO
+static void handleHelperScale(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, double), double tParentScale) {
+	double val;
+	getSingleFloatValueOrDefault(tAssignment, tPlayer, &val, 1.0);
+	tFunc(tHelper, val*tParentScale);
+}
 
+static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	HelperController* e = (HelperController*)tController->mData;
 	DreamPlayer* helper = clonePlayerAsHelper(tPlayer);
 
@@ -4187,8 +4197,8 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 	// TODO: supermovetime
 	// TODO: pausemovetime
 
-	handleHelperOneFloatElement(&e->mSizeScaleX, tPlayer, helper, setPlayerScaleX, getPlayerScaleX(tPlayer));
-	handleHelperOneFloatElement(&e->mSizeScaleY, tPlayer, helper, setPlayerScaleY, getPlayerScaleY(tPlayer));
+	handleHelperScale(&e->mSizeScaleX, tPlayer, helper, setPlayerRelativeScaleX, getPlayerScaleX(tPlayer));
+	handleHelperScale(&e->mSizeScaleY, tPlayer, helper, setPlayerRelativeScaleY, getPlayerScaleY(tPlayer));
 	handleHelperOneIntegerElement(&e->mSizeGroundBack, tPlayer, helper, setPlayerGroundSizeBack, getPlayerGroundSizeBack(tPlayer));
 	handleHelperOneIntegerElement(&e->mSizeGroundFront, tPlayer, helper, setPlayerGroundSizeFront, getPlayerGroundSizeFront(tPlayer));
 	handleHelperOneIntegerElement(&e->mSizeAirBack, tPlayer, helper, setPlayerAirSizeBack, getPlayerAirSizeBack(tPlayer));
@@ -4316,13 +4326,15 @@ static int handleAngleDrawController(DreamMugenStateController* tController, Dre
 
 	if (e->mHasScale) {
 		Vector3D scale = evaluateDreamAssignmentAndReturnAsVector3D(&e->mScale, tPlayer);
-		setPlayerDrawScale(tPlayer, scale);
+		setPlayerTempScaleActive(tPlayer, scale);
 	}
 
 	if (e->mHasValue) {
 		double val = evaluateDreamAssignmentAndReturnAsFloat(&e->mValue, tPlayer);
-		setPlayerDrawAngle(tPlayer, val);
+		setPlayerDrawAngleValue(tPlayer, val);
 	}
+
+	setPlayerDrawAngleActive(tPlayer);
 
 	return 0;
 }
@@ -4349,7 +4361,7 @@ static int handleAngleSetController(DreamMugenStateController* tController, Drea
 	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	double angle = evaluateDreamAssignmentAndReturnAsFloat(&e->mValue, tPlayer);
-	setPlayerFixedDrawAngle(tPlayer, angle);
+	setPlayerDrawAngleValue(tPlayer, angle);
 
 	return 0;
 }
@@ -4628,34 +4640,32 @@ static Position getFinalProjectilePositionFromPositionType(DreamExplodPositionTy
 }
 
 static int handleProjectile(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	//return 0; // TODO
-
 	ProjectileController* e = (ProjectileController*)tController->mData;
 
 	DreamPlayer* p = createNewProjectileFromPlayer(tPlayer);
 
-	handleHitDefinitionOneIntegerElement(&e->mID, p, setProjectileID, -1);
-	handleHitDefinitionOneIntegerElement(&e->mAnimation, p, setProjectileAnimation, 0);
-	handleHitDefinitionOneIntegerElement(&e->mHitAnimation, p, setProjectileHitAnimation, -1);
-	handleHitDefinitionOneIntegerElement(&e->mRemoveAnimation, p, setProjectileRemoveAnimation, getProjectileHitAnimation(p));
-	handleHitDefinitionOneIntegerElement(&e->mCancelAnimation, p, setProjectileCancelAnimation, getProjectileRemoveAnimation(p));
-	handleHitDefinitionTwoFloatElements(&e->mScale, p, setProjectileScale, 1, 1);
-	handleHitDefinitionOneIntegerElement(&e->mIsRemovingProjectileAfterHit, p, setProjectileRemoveAfterHit, 1);
-	handleHitDefinitionOneIntegerElement(&e->mRemoveTime, p, setProjectileRemoveTime, -1);
-	handleHitDefinitionTwoFloatElements(&e->mVelocity, p, setProjectileVelocity, 0, 0);
-	handleHitDefinitionTwoFloatElements(&e->mRemoveVelocity, p, setProjectileRemoveVelocity, 0, 0);
-	handleHitDefinitionTwoFloatElements(&e->mAcceleration, p, setProjectileAcceleration, 0, 0);
-	handleHitDefinitionTwoFloatElements(&e->mVelocityMultipliers, p, setProjectileVelocityMultipliers, 1, 1);
+	handleHelperOneIntegerElement(&e->mID, tPlayer, p, setProjectileID, -1);
+	handleHelperOneIntegerElement(&e->mAnimation, tPlayer, p, setProjectileAnimation, 0);
+	handleHelperOneIntegerElement(&e->mHitAnimation, tPlayer, p, setProjectileHitAnimation, -1);
+	handleHelperOneIntegerElement(&e->mRemoveAnimation, tPlayer, p, setProjectileRemoveAnimation, getProjectileHitAnimation(p));
+	handleHelperOneIntegerElement(&e->mCancelAnimation, tPlayer, p, setProjectileCancelAnimation, getProjectileRemoveAnimation(p));
+	handleHelperTwoFloatElements(&e->mScale, tPlayer, p, setProjectileScale, 1, 1);
+	handleHelperOneIntegerElement(&e->mIsRemovingProjectileAfterHit, tPlayer, p, setProjectileRemoveAfterHit, 1);
+	handleHelperOneIntegerElement(&e->mRemoveTime, tPlayer, p, setProjectileRemoveTime, -1);
+	handleHelperTwoFloatElements(&e->mVelocity, tPlayer, p, setProjectileVelocity, 0, 0);
+	handleHelperTwoFloatElements(&e->mRemoveVelocity, tPlayer, p, setProjectileRemoveVelocity, 0, 0);
+	handleHelperTwoFloatElements(&e->mAcceleration, tPlayer, p, setProjectileAcceleration, 0, 0);
+	handleHelperTwoFloatElements(&e->mVelocityMultipliers, tPlayer, p, setProjectileVelocityMultipliers, 1, 1);
 
 
-	handleHitDefinitionOneIntegerElement(&e->mHitAmountBeforeVanishing, p, setProjectileHitAmountBeforeVanishing, 1);
-	handleHitDefinitionOneIntegerElement(&e->mMissTime, p, setProjectilMisstime, 0);
-	handleHitDefinitionOneIntegerElement(&e->mPriority, p, setProjectilePriority, 1);
-	handleHitDefinitionOneIntegerElement(&e->mSpriteSpriority, p, setProjectileSpritePriority, 3);
+	handleHelperOneIntegerElement(&e->mHitAmountBeforeVanishing, tPlayer, p, setProjectileHitAmountBeforeVanishing, 1);
+	handleHelperOneIntegerElement(&e->mMissTime, tPlayer, p, setProjectilMisstime, 0);
+	handleHelperOneIntegerElement(&e->mPriority, tPlayer, p, setProjectilePriority, 1);
+	handleHelperOneIntegerElement(&e->mSpriteSpriority, tPlayer, p, setProjectileSpritePriority, 3);
 
-	handleHitDefinitionOneIntegerElement(&e->mEdgeBound, p, setProjectileEdgeBound, (int)transformDreamCoordinates(40, 240, getPlayerCoordinateP(p)));
-	handleHitDefinitionOneIntegerElement(&e->mStageBound, p, setProjectileStageBound, (int)transformDreamCoordinates(40, 240, getPlayerCoordinateP(p)));
-	handleHitDefinitionTwoIntegerElements(&e->mHeightBoundValues, p, setProjectileHeightBoundValues, (int)transformDreamCoordinates(-240, 240, getPlayerCoordinateP(p)), (int)transformDreamCoordinates(1, 240, getPlayerCoordinateP(p)));
+	handleHelperOneIntegerElement(&e->mEdgeBound, tPlayer, p, setProjectileEdgeBound, (int)transformDreamCoordinates(40, 240, getPlayerCoordinateP(p)));
+	handleHelperOneIntegerElement(&e->mStageBound, tPlayer, p, setProjectileStageBound, (int)transformDreamCoordinates(40, 240, getPlayerCoordinateP(p)));
+	handleHelperTwoIntegerElements(&e->mHeightBoundValues, tPlayer, p, setProjectileHeightBoundValues, (int)transformDreamCoordinates(-240, 240, getPlayerCoordinateP(p)), (int)transformDreamCoordinates(1, 240, getPlayerCoordinateP(p)));
 
 	Position offset;
 	getTwoFloatValuesWithDefaultValues(&e->mOffset, p, &offset.x, &offset.y, 0, 0);
@@ -4665,17 +4675,17 @@ static int handleProjectile(DreamMugenStateController* tController, DreamPlayer*
 	Position pos = getFinalProjectilePositionFromPositionType((DreamExplodPositionType)positionType, offset, tPlayer);
 	setProjectilePosition(p, pos);
 
-	handleHitDefinitionOneIntegerElement(&e->mShadow, p, setProjectileShadow, 0);
-	handleHitDefinitionOneIntegerElement(&e->mSuperMoveTime, p, setProjectileSuperMoveTime, 0);
-	handleHitDefinitionOneIntegerElement(&e->mPauseMoveTime, p, setProjectilePauseMoveTime, 0);
+	handleHelperOneIntegerElement(&e->mShadow, tPlayer, p, setProjectileShadow, 0);
+	handleHelperOneIntegerElement(&e->mSuperMoveTime, tPlayer, p, setProjectileSuperMoveTime, 0);
+	handleHelperOneIntegerElement(&e->mPauseMoveTime, tPlayer, p, setProjectilePauseMoveTime, 0);
 
-	handleHitDefinitionOneIntegerElement(&e->mHasOwnPalette, p, setProjectileHasOwnPalette, 0);
-	handleHitDefinitionTwoIntegerElements(&e->mRemapPalette, p, setProjectileRemapPalette, -1, 0);
-	handleHitDefinitionOneIntegerElement(&e->mAfterImageTime, p, setProjectileAfterImageTime, 0);
-	handleHitDefinitionOneIntegerElement(&e->mAfterImageLength, p, setProjectileAfterImageLength, 0);
-	handleHitDefinitionOneIntegerElement(&e->mAfterImage, p, setProjectileAfterImage, 0);
+	handleHelperOneIntegerElement(&e->mHasOwnPalette, tPlayer, p, setProjectileHasOwnPalette, 0);
+	handleHelperTwoIntegerElements(&e->mRemapPalette, tPlayer, p, setProjectileRemapPalette, -1, 0);
+	handleHelperOneIntegerElement(&e->mAfterImageTime, tPlayer, p, setProjectileAfterImageTime, 0);
+	handleHelperOneIntegerElement(&e->mAfterImageLength, tPlayer, p, setProjectileAfterImageLength, 0);
+	handleHelperOneIntegerElement(&e->mAfterImage, tPlayer, p, setProjectileAfterImage, 0);
 
-	handleHitDefinitionWithController(&e->mHitDef, p);
+	handleHitDefinitionWithController(&e->mHitDef, p); // TODO: parse from original player
 
 	return 0;
 }
@@ -6109,8 +6119,8 @@ void changeStateStoryParseFunction(DreamMugenStateController* tController, Mugen
 void fadeInStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseFadeStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_FADE_IN); }
 void fadeOutStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseFadeStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_FADE_OUT); }
 void gotoStoryStepStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseSingleRequiredValueController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_GOTO_STORY_STEP); }
-void animationSetPositionStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_POSITION); }
-void animationAddPositionStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_ADD_POSITION); }
+void animationSetPositionStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_POSITION); }
+void animationAddPositionStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStoryTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_ADD_POSITION); }
 void animationSetScaleStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_SCALE); }
 void animationSetFaceDirectionStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationSetFaceDirectionStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_FACEDIRECTION); }
 void animationSetAngleStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseAnimationAngleStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_ANIMATION_SET_ANGLE); }
@@ -6465,37 +6475,47 @@ static int handleGotoStoryStepStoryController(DreamMugenStateController* tContro
 }
 
 static int handleAnimationSetPositionStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
-	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
+	StoryTarget2DPhysicsController* e = (StoryTarget2DPhysicsController*)tController->mData;
 
 	int id;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
+	StoryInstance* targetInstance = tInstance;
+	if (e->mHasTarget) {
+		targetInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
+	}
+
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, (DreamPlayer*)tInstance);
-		setDolmexicaStoryAnimationPositionX(tInstance, id, x);
+		setDolmexicaStoryAnimationPositionX(targetInstance, id, x);
 	}
 
 	if (e->mIsSettingY) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, (DreamPlayer*)tInstance);
-		setDolmexicaStoryAnimationPositionY(tInstance, id, y);
+		setDolmexicaStoryAnimationPositionY(targetInstance, id, y);
 	}
 	return 0;
 }
 
 static int handleAnimationAddPositionStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
-	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
+	StoryTarget2DPhysicsController* e = (StoryTarget2DPhysicsController*)tController->mData;
 
 	int id;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 
+	StoryInstance* targetInstance = tInstance;
+	if (e->mHasTarget) {
+		targetInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
+	}
+
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, (DreamPlayer*)tInstance);
-		addDolmexicaStoryAnimationPositionX(tInstance, id, x);
+		addDolmexicaStoryAnimationPositionX(targetInstance, id, x);
 	}
 
 	if (e->mIsSettingY) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, (DreamPlayer*)tInstance);
-		addDolmexicaStoryAnimationPositionY(tInstance, id, y);
+		addDolmexicaStoryAnimationPositionY(targetInstance, id, y);
 	}
 	return 0;
 }

@@ -16,5 +16,8 @@ void setDreamPlayerCommandNumberActiveForDebug(int tID, int tCommandNumber);
 int getDreamPlayerCommandAmount(int tID);
 
 void setDreamMugenCommandFaceDirection(int tID, FaceDirection tDirection);
+void allowOsuPlayerCommandInputOneFrame(int tRootIndex);
+void resetOsuPlayerCommandInputAllowed(int tRootIndex);
+int isOsuPlayerCommandInputAllowed(int tRootIndex);
 
 ActorBlueprint getDreamMugenCommandHandler();

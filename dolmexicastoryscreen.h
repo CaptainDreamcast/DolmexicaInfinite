@@ -106,6 +106,7 @@ void setDolmexicaStoryAnimationOpacity(StoryInstance* tInstance, int tID, double
 
 void addDolmexicaStoryText(StoryInstance* tInstance, int tID, const char* tText, Vector3DI tFont, Position tBasePosition, Position tTextOffset, double tTextBoxWidth);
 void removeDolmexicaStoryText(StoryInstance* tInstance, int tID);
+int isDolmexicaStoryTextVisible(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryTextBackground(StoryInstance* tInstance, int tID, Vector3DI tSprite, Position tOffset);
 void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, Vector3DI tSprite, Position tOffset);
 void setDolmexicaStoryTextName(StoryInstance* tInstance, int tID, const char* tText, Vector3DI tFont, Position tOffset);

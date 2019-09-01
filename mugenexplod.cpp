@@ -117,8 +117,7 @@ void setExplodHorizontalFacing(int tID, int tFacing)
 {
 	Explod* e = &gMugenExplod.mExplods[tID];
 	int isPositionIndependentType = e->mPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT || e->mPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT;
-	if(isPositionIndependentType || e->mPosition.x >= 0) e->mIsFlippedHorizontally = tFacing == -1;
-	else e->mIsFlippedHorizontally = tFacing == 1;
+	e->mIsFlippedHorizontally = tFacing == -1;
 }
 
 void setExplodVerticalFacing(int tID, int tFacing)

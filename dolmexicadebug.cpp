@@ -186,8 +186,9 @@ static string testcommandNumberCB(void* tCaller, string tCommand) {
 	int commandNumber = atoi(words[1].data());
 	double dist = words.size() >= 3 ? atof(words[2].data()) : 20;
 
-	setPlayerPositionBasedOnScreenCenterX(getRootPlayer(0), -dist / 2, getPlayerCoordinateP(getRootPlayer(0)));
-	setPlayerPositionBasedOnScreenCenterX(getRootPlayer(1), dist / 2, getPlayerCoordinateP(getRootPlayer(1)));
+	const int placementDirection = (words.size() >= 4) ? atoi(words[3].data()) : 1;
+	setPlayerPositionBasedOnScreenCenterX(getRootPlayer(0), -placementDirection * dist / 2, getPlayerCoordinateP(getRootPlayer(0)));
+	setPlayerPositionBasedOnScreenCenterX(getRootPlayer(1), placementDirection * dist / 2, getPlayerCoordinateP(getRootPlayer(1)));
 
 	DreamPlayer* p = getRootPlayer(0);
 	setDreamPlayerCommandNumberActiveForDebug(p->mCommandID, commandNumber);

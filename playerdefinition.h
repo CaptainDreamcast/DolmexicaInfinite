@@ -70,8 +70,14 @@ typedef struct {
 } DreamPlayerHeaderConstants;
 
 typedef struct {
+	int mHasCustomDisplayName;
+	char mDisplayName[100];
+} DreamPlayerHeaderCustomOverrides;
+
+typedef struct {
 	DreamPlayerHeaderConstants mConstants;
 	DreamPlayerFiles mFiles;
+	DreamPlayerHeaderCustomOverrides mCustomOverrides;
 } DreamPlayerHeader;
 
 typedef struct {
@@ -213,6 +219,12 @@ typedef struct Player_t{
 	int mIsHitOverWaitActive;
 	int mHitOverNow;
 	int mHitOverDuration;
+
+	int mIsAngleActive;
+	double mAngle;
+
+	Vector3D mRelativeScale;
+	Vector3D mTempScale;
 
 	int mLife;
 	int mPower;
@@ -493,6 +505,7 @@ MugenAnimations* getPlayerAnimations(DreamPlayer* p);
 MugenAnimation* getPlayerAnimation(DreamPlayer* p, int tNumber);
 MugenSounds* getPlayerSounds(DreamPlayer* p);
 
+void setCustomPlayerDisplayName(int i, const std::string tName);
 int getPlayerCoordinateP(DreamPlayer* p);
 char* getPlayerDisplayName(DreamPlayer* p);
 char* getPlayerName(DreamPlayer* p);
@@ -641,9 +654,9 @@ void turnPlayerAround(DreamPlayer* p);
 DreamPlayer* getPlayerOtherPlayer(DreamPlayer* p);
 
 double getPlayerScaleX(DreamPlayer* p);
-void setPlayerScaleX(DreamPlayer* p, double tScaleX);
+void setPlayerRelativeScaleX(DreamPlayer* p, double tScaleX);
 double getPlayerScaleY(DreamPlayer* p);
-void setPlayerScaleY(DreamPlayer* p, double tScaleY);
+void setPlayerRelativeScaleY(DreamPlayer* p, double tScaleY);
 
 DreamPlayer* clonePlayerAsHelper(DreamPlayer* p);
 void destroyPlayer(DreamPlayer* tPlayer);
@@ -656,11 +669,11 @@ void removeProjectile(DreamPlayer* p);
 
 int getPlayerControlTime(DreamPlayer* p);
 
-void setPlayerDrawScale(DreamPlayer* p, Vector3D tScale);
-void setPlayerDrawAngle(DreamPlayer* p, double tAngle);
+void setPlayerTempScaleActive(DreamPlayer* p, Vector3D tScale);
+void setPlayerDrawAngleActive(DreamPlayer* p);
 void addPlayerDrawAngle(DreamPlayer* p, double tAngle);
 void multiplyPlayerDrawAngle(DreamPlayer* p, double tFactor);
-void setPlayerFixedDrawAngle(DreamPlayer* p, double tAngle);
+void setPlayerDrawAngleValue(DreamPlayer* p, double tAngle);
 
 void bindPlayerToRoot(DreamPlayer* p, int tTime, int tFacing, Vector3D tOffset);
 void bindPlayerToParent(DreamPlayer* p, int tTime, int tFacing, Vector3D tOffset);
@@ -722,3 +735,5 @@ int isPlayerCollisionDebugActive();
 void setPlayerCollisionDebug(int tIsActive);
 
 void turnPlayerTowardsOtherPlayer(DreamPlayer* p);
+
+int isPlayerInputAllowed(DreamPlayer* p);

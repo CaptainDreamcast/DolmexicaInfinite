@@ -39,8 +39,8 @@
 
 using namespace std;
 
-#define SHADOW_Z 33
-#define REFLECTION_Z 34
+#define SHADOW_Z 32
+#define REFLECTION_Z 33
 #define DUST_Z 47
 #define WIDTH_LINE_Z 48
 #define CENTER_POINT_Z 49
@@ -244,6 +244,12 @@ static void resetHelperState(DreamPlayer* p) {
 	p->mHitOverNow = 0;
 	p->mHitOverDuration = 0;
 
+	p->mIsAngleActive = 0;
+	p->mAngle = 0;
+
+	p->mRelativeScale = makePosition(1, 1, 1);
+	p->mTempScale = makePosition(1, 1, 1);
+
 	p->mDefenseMultiplier = 1;
 
 	p->mIsFrozen = 0;
@@ -444,6 +450,7 @@ static void unloadSinglePlayer(DreamPlayer* p, DreamPlayerHeader* tHeader) {
 static void unloadPlayerHeader(int i) {
 	gPlayerDefinition.mPlayerHeader[i].mFiles.mConstants.mStates.mStates = std::map<int, DreamMugenState>();
 
+	gPlayerDefinition.mPlayerHeader[i].mCustomOverrides.mHasCustomDisplayName = 0;
 }
 
 void unloadPlayers() {
@@ -648,7 +655,6 @@ static void updateGettingUp(DreamPlayer* p) {
 
 static void updateHitPause(DreamPlayer* p) {
 	if (!p->mIsHitPaused) {
-		p->mMoveContactCounter = 0;	
 		return;
 	}
 	
@@ -656,7 +662,6 @@ static void updateHitPause(DreamPlayer* p) {
 	p->mHitPauseNow++;
 	if (p->mHitPauseNow >= p->mHitPauseDuration) {
 		setPlayerUnHitPaused(p);
-		p->mMoveContactCounter = 0;
 	}
 }
 
@@ -820,7 +825,6 @@ static void updatePlayerAirJuggle(DreamPlayer* p) {
 static void updatePush(DreamPlayer* p) {
 	if (isPlayerPaused(p)) return;
 	if (isPlayerHelper(p)) return;
-	if (!getPlayerControl(p)) return;
 	if (p->mPushDisabledFlag) return;
 
 	DreamPlayer* otherPlayer = getPlayerOtherPlayer(p);
@@ -851,6 +855,21 @@ static void updatePush(DreamPlayer* p) {
 		}
 	}
 
+}
+
+static void updateAngle(DreamPlayer* p) {
+	if (p->mIsAngleActive) {
+		setMugenAnimationDrawAngle(p->mAnimationID, p->mAngle);
+		p->mIsAngleActive = 0;
+	}
+	else {
+		setMugenAnimationDrawAngle(p->mAnimationID, 0);
+	}
+}
+
+static void updateScale(DreamPlayer* p) {
+	setMugenAnimationDrawScale(p->mAnimationID, p->mHeader->mFiles.mConstants.mSizeData.mScale * p->mRelativeScale * p->mTempScale);
+	p->mTempScale = makePosition(1, 1, 1);
 }
 
 static void updatePushFlags() {
@@ -1093,6 +1112,8 @@ static int updateSinglePlayer(DreamPlayer* p) {
 	updatePlayerAirJuggle(p);
 	updatePlayerDisplayedCombo(p);
 	updatePush(p);
+	updateAngle(p);
+	updateScale(p);
 	updateStageBorderPost(p);
 	updateKOFlags(p);
 	updateTransparencyFlag(p);
@@ -1153,6 +1174,7 @@ static int updateSinglePlayerPreStateMachine(DreamPlayer* p) {
 	}
 
 	updateStageBorderPre(p);
+	updatePush(p);
 	updateWidthFlag(p);
 	updateInvisibilityFlag(p);
 	updateNoJuggleCheckFlag(p);
@@ -1361,6 +1383,7 @@ static void handlePlayerCornerPush(DreamPlayer* p, DreamPlayer* tOtherPlayer) {
 	if (isPlayerHelper(tOtherPlayer) || isPlayerProjectile(tOtherPlayer)) return;
 	if (getPlayerStateType(tOtherPlayer) == MUGEN_STATE_TYPE_AIR) return;
 	if (!isPlayerInCorner(p, getActiveHitDataIsFacingRight(p))) return;
+	if (getActiveHitDataAttackClass(p) == MUGEN_ATTACK_CLASS_HYPER || getActiveHitDataAttackClass(p) == MUGEN_ATTACK_CLASS_SPECIAL || getActiveHitDataAttackType(p) == MUGEN_ATTACK_TYPE_THROW) return;
 
 	double pushOffsetX;
 	if (isPlayerGuarding(p)) {
@@ -1393,7 +1416,18 @@ static void setPlayerHit(DreamPlayer* p, DreamPlayer* tOtherPlayer, void* tHitDa
 	copyHitDataToActive(p, tHitData);
 	setReceivedHitDataInactive(tHitData);
 
-	setPlayerIsFacingRight(p, !getActiveHitDataIsFacingRight(p));
+	const auto player2ChangeFaceDirectionRelativeToPlayer1 = getActiveHitDataPlayer2ChangeFaceDirectionRelativeToPlayer1(p);
+	if (player2ChangeFaceDirectionRelativeToPlayer1) {
+		if (player2ChangeFaceDirectionRelativeToPlayer1 > 0) {
+			setPlayerIsFacingRight(p, !getActiveHitDataIsFacingRight(p));
+		}
+		else {
+			setPlayerIsFacingRight(p, getActiveHitDataIsFacingRight(p));
+		}
+	}
+	else {
+		setPlayerIsFacingRight(p, !getActiveHitDataIsFacingRight(p));
+	}
 
 	if (getPlayerUnguardableFlag(tOtherPlayer) || (isPlayerGuarding(p) && !checkPlayerHitGuardFlagsAndReturnIfGuardable(p, getActiveHitDataGuardFlag(p)))) {
 		setPlayerUnguarding(p);
@@ -2748,6 +2782,13 @@ MugenSounds * getPlayerSounds(DreamPlayer * p)
 	return &p->mHeader->mFiles.mSounds;
 }
 
+void setCustomPlayerDisplayName(int i, const std::string tName)
+{
+	auto header = &gPlayerDefinition.mPlayerHeader[i];
+	strcpy(header->mCustomOverrides.mDisplayName, tName.c_str());
+	header->mCustomOverrides.mHasCustomDisplayName = 1;
+}
+
 int getPlayerCoordinateP(DreamPlayer* p)
 {
 	return p->mHeader->mConstants.mLocalCoordinates.y;
@@ -2755,7 +2796,7 @@ int getPlayerCoordinateP(DreamPlayer* p)
 
 char * getPlayerDisplayName(DreamPlayer* p)
 {
-	return p->mHeader->mConstants.mDisplayName;
+	return p->mHeader->mCustomOverrides.mHasCustomDisplayName ? p->mHeader->mCustomOverrides.mDisplayName : p->mHeader->mConstants.mDisplayName;
 }
 
 char * getPlayerName(DreamPlayer * p)
@@ -3673,22 +3714,22 @@ DreamPlayer* getPlayerOtherPlayer(DreamPlayer* p) {
 
 double getPlayerScaleX(DreamPlayer * p)
 {
-	return p->mHeader->mFiles.mConstants.mSizeData.mScale.x;
+	return p->mHeader->mFiles.mConstants.mSizeData.mScale.x * p->mRelativeScale.x;
 }
 
-void setPlayerScaleX(DreamPlayer * p, double tScaleX)
+void setPlayerRelativeScaleX(DreamPlayer * p, double tScaleX)
 {
-	p->mHeader->mFiles.mConstants.mSizeData.mScale.x = tScaleX;
+	p->mRelativeScale.x = tScaleX;
 }
 
 double getPlayerScaleY(DreamPlayer * p)
 {
-	return p->mHeader->mFiles.mConstants.mSizeData.mScale.y;
+	return p->mHeader->mFiles.mConstants.mSizeData.mScale.y * p->mRelativeScale.y;
 }
 
-void setPlayerScaleY(DreamPlayer * p, double tScaleY)
+void setPlayerRelativeScaleY(DreamPlayer * p, double tScaleY)
 {
-	p->mHeader->mFiles.mConstants.mSizeData.mScale.y = tScaleY;
+	p->mRelativeScale.y = tScaleY;
 }
 
 DreamPlayer * clonePlayerAsHelper(DreamPlayer * p)
@@ -3845,33 +3886,29 @@ int getPlayerControlTime(DreamPlayer * p)
 	}
 }
 
-void setPlayerDrawScale(DreamPlayer * p, Vector3D tScale)
+void setPlayerTempScaleActive(DreamPlayer * p, Vector3D tScale)
 {
-	setMugenAnimationDrawScale(p->mAnimationID, tScale * p->mHeader->mFiles.mConstants.mSizeData.mScale); // TODO: one frame only
+	p->mTempScale = tScale;
 }
 
-void setPlayerDrawAngle(DreamPlayer * p, double tAngle)
+void setPlayerDrawAngleActive(DreamPlayer * p)
 {
-	setMugenAnimationDrawAngle(p->mAnimationID, tAngle); // TODO: one frame only and non-fixed
+	p->mIsAngleActive = 1;
 }
 
 void addPlayerDrawAngle(DreamPlayer * p, double tAngle)
 {
-	double angle = getMugenAnimationDrawAngle(p->mAnimationID);
-	angle += tAngle;
-	setMugenAnimationDrawAngle(p->mAnimationID, angle); // TODO: one frame only
+	p->mAngle += tAngle;
 }
 
 void multiplyPlayerDrawAngle(DreamPlayer * p, double tFactor)
 {
-	double angle = getMugenAnimationDrawAngle(p->mAnimationID);
-	angle *= tFactor;
-	setMugenAnimationDrawAngle(p->mAnimationID, angle); // TODO: one frame only
+	p->mAngle *= tFactor;
 }
 
-void setPlayerFixedDrawAngle(DreamPlayer * p, double tAngle)
+void setPlayerDrawAngleValue(DreamPlayer * p, double tAngle)
 {
-	setMugenAnimationDrawAngle(p->mAnimationID, tAngle); // TODO: one frame only and fixed
+	p->mAngle = tAngle;
 }
 
 static int isHelperBoundToPlayer(DreamPlayer* tHelper, DreamPlayer* tTestBind) {
@@ -4357,4 +4394,9 @@ void turnPlayerTowardsOtherPlayer(DreamPlayer* p) {
 
 	if (x1 > x2) setPlayerFaceDirection(p, FACE_DIRECTION_LEFT);
 	else if (x1 < x2) setPlayerFaceDirection(p, FACE_DIRECTION_RIGHT);
+}
+
+int isPlayerInputAllowed(DreamPlayer * p)
+{
+	return (getGameMode() != GAME_MODE_OSU) || isOsuPlayerCommandInputAllowed(p->mRootID);
 }

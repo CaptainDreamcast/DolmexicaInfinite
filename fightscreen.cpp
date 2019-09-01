@@ -37,6 +37,7 @@
 #include "fightdebug.h"
 #include "fightresultdisplay.h"
 #include "dolmexicadebug.h"
+#include "osuhandler.h"
 
 static struct {
 	void(*mWinCB)();
@@ -131,7 +132,10 @@ static void loadFightScreen() {
 	setUIFaces();
 	
 	playDreamStageMusic();
-	
+	if (getGameMode() == GAME_MODE_OSU) {
+		instantiateActor(getOsuHandler());
+	}
+
 	setFightScreenGameSpeed();
 	
 	changePlayerState(getRootPlayer(0), 5900);
@@ -148,6 +152,7 @@ static void loadFightScreen() {
 
 static void unloadFightScreen() {
 	unloadPlayers();
+	resetGameMode();
 	shutdownDreamMugenStateControllerHandler();
 	shutdownDreamAssignmentEvaluator();
 	shutdownDreamAssignmentReader();

@@ -20,7 +20,7 @@
 
 using namespace std;
 
-#define ENVIRONMENT_COLOR_LOWER_Z 29
+#define ENVIRONMENT_COLOR_LOWER_Z 34
 #define HITSPARK_BASE_Z 51
 #define ENVIRONMENT_COLOR_UPPER_Z 62
 #define UI_BASE_Z 72
@@ -1317,11 +1317,11 @@ static void updateEnvironmentColor() {
 
 	setDreamStageLayer1InvisibleForOneFrame();
 
-	gFightUIData.mEnvironmentEffects.mNow++;
 	if (gFightUIData.mEnvironmentEffects.mNow >= gFightUIData.mEnvironmentEffects.mDuration) {
 		setAnimationScale(gFightUIData.mEnvironmentEffects.mAnimationID, makePosition(0, 0, 0), makePosition(0, 0, 0));
 		gFightUIData.mEnvironmentEffects.mIsActive = 0;
 	}
+	gFightUIData.mEnvironmentEffects.mNow++;
 }
 
 static void updateFightUI(void* tData) {
@@ -1614,6 +1614,9 @@ void setDreamBarInvisibleForOneFrame()
 
 		for (int j = 0; j < gFightUIData.mWinIcons[i].mIconAmount; j++) {
 			setSingleUIComponentInvisibleForOneFrame(gFightUIData.mWinIcons[i].mIconAnimationIDs[j]);
+			if (gFightUIData.mWinIcons[i].mHasIsPerfectIcon[j]) {
+				setSingleUIComponentInvisibleForOneFrame(gFightUIData.mWinIcons[i].mPerfectIconAnimationIDs[j]);
+			}
 		}
 		setSingleUITextInvisibleForOneFrame(gFightUIData.mDisplayName[i].mTextID);
 	}

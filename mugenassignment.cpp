@@ -1029,12 +1029,11 @@ DreamMugenAssignment * parseDreamMugenAssignmentFromString(char * tText)
 	else if (isOperatorArgument(tText)) {
 		return parseMugenOperatorArgumentFromString(tText);
 	}
-
-	else if (isAnd(tText)) {
-		return parseMugenAndFromString(tText);
-	}
 	else if (isOr(tText)) {
 		return parseMugenOrFromString(tText);
+	}
+	else if (isAnd(tText)) {
+		return parseMugenAndFromString(tText);
 	}
 	else if (isBitwiseOr(tText)) {
 		return parseMugenBitwiseOrFromString(tText);
