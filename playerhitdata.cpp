@@ -1560,11 +1560,25 @@ void setHitDataEnvironmentShakeTime(DreamPlayer* tPlayer, int tTime)
 	e->mEnvironmentShakeTime = tTime;
 }
 
+double getHitDataEnvironmentShakeFrequency(DreamPlayer * tPlayer)
+{
+	assert(stl_map_contains(gPlayerHitData.mPassiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = &gPlayerHitData.mPassiveHitDataMap[tPlayer->mHitDataID];
+	return e->mEnvironmentShakeFrequency;
+}
+
 void setHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer, double tFrequency)
 {
 	assert(stl_map_contains(gPlayerHitData.mPassiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = &gPlayerHitData.mPassiveHitDataMap[tPlayer->mHitDataID];
 	e->mEnvironmentShakeFrequency = tFrequency;
+}
+
+int getHitDataEnvironmentShakeAmplitude(DreamPlayer * tPlayer)
+{
+	assert(stl_map_contains(gPlayerHitData.mPassiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = &gPlayerHitData.mPassiveHitDataMap[tPlayer->mHitDataID];
+	return e->mEnvironmentShakeAmplitude;
 }
 
 void setHitDataEnvironmentShakeAmplitude(DreamPlayer* tPlayer, int tAmplitude)
@@ -1606,6 +1620,13 @@ double getActiveHitDataFallEnvironmentShakeFrequency(DreamPlayer * tPlayer)
 {
 	assert(stl_map_contains(gPlayerHitData.mActiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = &gPlayerHitData.mActiveHitDataMap[tPlayer->mHitDataID];
+	return e->mFallEnvironmentShakeFrequency;
+}
+
+double getHitDataFallEnvironmentShakeFrequency(DreamPlayer * tPlayer)
+{
+	assert(stl_map_contains(gPlayerHitData.mPassiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = &gPlayerHitData.mPassiveHitDataMap[tPlayer->mHitDataID];
 	return e->mFallEnvironmentShakeFrequency;
 }
 

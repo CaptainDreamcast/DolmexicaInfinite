@@ -3162,8 +3162,8 @@ static void handleHitDefinitionWithController(HitDefinitionController* e, DreamP
 	handleHitDefinitionSparkNumberSingle(&e->mSparkNumber, tPlayer, setHitDataSparkNumber, getDefaultPlayerSparkNumberIsInPlayerFile(tPlayer), getDefaultPlayerSparkNumber(tPlayer));
 	handleHitDefinitionSparkNumberSingle(&e->mGuardSparkNumber, tPlayer, setHitDataGuardSparkNumber, getDefaultPlayerGuardSparkNumberIsInPlayerFile(tPlayer), getDefaultPlayerGuardSparkNumber(tPlayer));
 	handleHitDefinitionSparkXY(&e->mSparkXY, tPlayer);
-	handleHitDefinitionSingleSound(&e->mHitSound, tPlayer, setHitDataHitSound, 5, 0); // TODO: proper default (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/310)
-	handleHitDefinitionSingleSound(&e->mGuardSound, tPlayer, setHitDataGuardSound, 6, 0); // TODO: proper default (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/310)
+	handleHitDefinitionSingleSound(&e->mHitSound, tPlayer, setHitDataHitSound, 5, 0);
+	handleHitDefinitionSingleSound(&e->mGuardSound, tPlayer, setHitDataGuardSound, 6, 0);
 
 	handleHitDefinitionSingleAttackHeight(&e->mGroundType, tPlayer, setHitDataGroundType, MUGEN_ATTACK_HEIGHT_HIGH);
 	handleHitDefinitionSingleAttackHeight(&e->mAirType, tPlayer, setHitDataAirType, getHitDataGroundType(tPlayer));
@@ -3235,15 +3235,15 @@ static void handleHitDefinitionWithController(HitDefinitionController* e, DreamP
 	handleHitDefinitionThreeIntegerElements(&e->mPaletteEffectMultiplication, tPlayer, setHitDataPaletteEffectMultiplication, 1, 1, 1);
 	handleHitDefinitionThreeIntegerElements(&e->mPaletteEffectAddition, tPlayer, setHitDataPaletteEffectAddition, 0, 0, 0);
 
-	handleHitDefinitionOneIntegerElement(&e->mEnvironmentShakeTime, tPlayer, setHitDataEnvironmentShakeTime, 0); // TODO: proper defaults for the whole screen shake block (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/310)
-	handleHitDefinitionOneFloatElement(&e->mEnvironmentShakeFrequency, tPlayer, setHitDataEnvironmentShakeFrequency, 0);
-	handleHitDefinitionOneIntegerElement(&e->mEnvironmentShakeAmplitude, tPlayer, setHitDataEnvironmentShakeAmplitude, 0);
-	handleHitDefinitionOneFloatElement(&e->mEnvironmentShakePhase, tPlayer, setHitDataEnvironmentShakePhase, 0);
+	handleHitDefinitionOneIntegerElement(&e->mEnvironmentShakeTime, tPlayer, setHitDataEnvironmentShakeTime, 0);
+	handleHitDefinitionOneFloatElement(&e->mEnvironmentShakeFrequency, tPlayer, setHitDataEnvironmentShakeFrequency, 60);
+	handleHitDefinitionOneIntegerElement(&e->mEnvironmentShakeAmplitude, tPlayer, setHitDataEnvironmentShakeAmplitude, (int)transformDreamCoordinates(-4, 240, getDreamStageCoordinateP()));
+	handleHitDefinitionOneFloatElement(&e->mEnvironmentShakePhase, tPlayer, setHitDataEnvironmentShakePhase, getHitDataEnvironmentShakeFrequency(tPlayer) >= 90 ? 90 : 0);
 
-	handleHitDefinitionOneIntegerElement(&e->mFallEnvironmentShakeTime, tPlayer, setHitDataFallEnvironmentShakeTime, 0); // TODO: proper defaults for the whole screen shake block (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/310)
-	handleHitDefinitionOneFloatElement(&e->mFallEnvironmentShakeFrequency, tPlayer, setHitDataFallEnvironmentShakeFrequency, 0);
-	handleHitDefinitionOneIntegerElement(&e->mFallEnvironmentShakeAmplitude, tPlayer, setHitDataFallEnvironmentShakeAmplitude, 0);
-	handleHitDefinitionOneFloatElement(&e->mFallEnvironmentShakePhase, tPlayer, setHitDataFallEnvironmentShakePhase, 0);
+	handleHitDefinitionOneIntegerElement(&e->mFallEnvironmentShakeTime, tPlayer, setHitDataFallEnvironmentShakeTime, 0);
+	handleHitDefinitionOneFloatElement(&e->mFallEnvironmentShakeFrequency, tPlayer, setHitDataFallEnvironmentShakeFrequency, 60);
+	handleHitDefinitionOneIntegerElement(&e->mFallEnvironmentShakeAmplitude, tPlayer, setHitDataFallEnvironmentShakeAmplitude, (int)transformDreamCoordinates(-4, 240, getDreamStageCoordinateP()));
+	handleHitDefinitionOneFloatElement(&e->mFallEnvironmentShakePhase, tPlayer, setHitDataFallEnvironmentShakePhase, getHitDataFallEnvironmentShakeFrequency(tPlayer) >= 90 ? 90 : 0);
 
 	setHitDataIsFacingRight(tPlayer, getPlayerIsFacingRight(tPlayer));
 

@@ -30,6 +30,8 @@ typedef enum {
 } VictoryType;
 
 #define PLAYER_Z 40
+#define PLAYER_Z_PRIORITY_DELTA 0.1
+#define PLAYER_Z_PLAYER_2_OFFSET 0.01
 
 #define MAXIMUM_HITSLOT_FLAG_2_AMOUNT 10
 

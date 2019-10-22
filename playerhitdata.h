@@ -267,7 +267,9 @@ void setHitDataPaletteEffectMultiplication(DreamPlayer* tPlayer, int tR, int tG,
 void setHitDataPaletteEffectAddition(DreamPlayer* tPlayer, int tR, int tG, int tB);
 
 void setHitDataEnvironmentShakeTime(DreamPlayer* tPlayer, int tTime);
+double getHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer);
 void setHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer, double tFrequency);
+int getHitDataEnvironmentShakeAmplitude(DreamPlayer* tPlayer);
 void setHitDataEnvironmentShakeAmplitude(DreamPlayer* tPlayer, int tAmplitude);
 void setHitDataEnvironmentShakePhase(DreamPlayer* tPlayer, double tPhase);
 
@@ -275,6 +277,7 @@ int getActiveHitDataFallEnvironmentShakeTime(DreamPlayer* tPlayer);
 void setActiveHitDataFallEnvironmentShakeTime(DreamPlayer* tPlayer, int tTime);
 void setHitDataFallEnvironmentShakeTime(DreamPlayer* tPlayer, int tTime);
 double getActiveHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer);
+double getHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer);
 void setHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer, double tFrequency);
 int getActiveHitDataFallEnvironmentShakeAmplitude(DreamPlayer* tPlayer);
 void setHitDataFallEnvironmentShakeAmplitude(DreamPlayer* tPlayer, int tAmplitude);

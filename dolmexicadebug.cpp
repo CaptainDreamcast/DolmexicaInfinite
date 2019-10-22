@@ -4,6 +4,7 @@
 #include <prism/stlutil.h>
 #include <prism/debug.h>
 #include <prism/log.h>
+#include <prism/input.h>
 
 #include "gamelogic.h"
 #include "playerdefinition.h"
@@ -27,6 +28,7 @@ typedef struct {
 typedef struct {
 	map<std::string, TrackedInteger> mMap;
 	int mIsOverridingTimeDilatation = 0;
+	double mOverridingTimeDilatationSpeed = 1.0;
 } DolmexicaDebugData;
 
 static DolmexicaDebugData* gDolmexicaDebugData = nullptr;
@@ -327,6 +329,7 @@ static string speedCB(void* /*tCaller*/, string tCommand) {
 	const auto speed = atof(words[1].c_str());
 	setWrapperTimeDilatation(speed);
 	gDolmexicaDebugData->mIsOverridingTimeDilatation = 1;
+	gDolmexicaDebugData->mOverridingTimeDilatationSpeed = speed;
 	return "";
 }
 
@@ -383,9 +386,17 @@ static void updateSingleTrackedInteger(void* tCaller, const std::string& tKey, T
 
 }
 
+static void updateSpeedOverrideToggle() {
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_F9_PRISM)) {
+		gDolmexicaDebugData->mIsOverridingTimeDilatation ^= 1;
+		if (gDolmexicaDebugData->mIsOverridingTimeDilatation) setWrapperTimeDilatation(gDolmexicaDebugData->mOverridingTimeDilatationSpeed);
+		else setWrapperTimeDilatation(1.0);
+	}
+}
+
 static void updateDolmexicaDebugHandler(void* tData) {
 	(void)tData;
-
+	updateSpeedOverrideToggle();
 	stl_string_map_map(gDolmexicaDebugData->mMap, updateSingleTrackedInteger);
 }
 

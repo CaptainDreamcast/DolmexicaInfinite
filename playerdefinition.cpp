@@ -2705,7 +2705,7 @@ int getPlayerAnimationTimeWhenStepStarts(DreamPlayer* p, int tStep) {
 void setPlayerSpritePriority(DreamPlayer* p, int tPriority)
 {
 	Position pos = getMugenAnimationPosition(p->mAnimationElement);
-	pos.z = PLAYER_Z + tPriority * 1 + p->mRootID * 0.1; // TODO: properly (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/305)
+	pos.z = PLAYER_Z + tPriority * PLAYER_Z_PRIORITY_DELTA + p->mRootID * PLAYER_Z_PLAYER_2_OFFSET;
 	setMugenAnimationPosition(p->mAnimationElement, pos);
 }
 
