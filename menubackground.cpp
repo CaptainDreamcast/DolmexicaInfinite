@@ -12,7 +12,7 @@
 
 static struct {
 	Vector3DI mLocalCoordinates;
-} gData;
+} gMenuBackgroundData;
 
 static int isMenuBackgroundGroup(MugenDefScriptGroup* tGroup, const char* tBackgroundGroupName) {
 	if (tGroup == NULL) return 0;
@@ -50,7 +50,7 @@ static BlendType getBackgroundBlendType(MugenDefScriptGroup* tGroup) {
 	return ret;
 }
 
-static void loadNormalMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, MugenSpriteFile* tSprites, MugenAnimations* tAnimations) {
+static void loadNormalMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, MugenSpriteFile* tSprites) {
 	Vector3DI spriteNo = getMugenDefVectorIOrDefaultAsGroup(tGroup, "spriteno", makeVector3DI(0, 0, 0));
 	int layerNo = getMugenDefIntegerOrDefaultAsGroup(tGroup, "layerno", 0);
 	Vector3D start = getMugenDefVectorOrDefaultAsGroup(tGroup, "start", makePosition(0, 0, 0));
@@ -64,8 +64,8 @@ static void loadNormalMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, Mu
 	Vector3D velocity = getMugenDefVectorOrDefaultAsGroup(tGroup, "velocity", makePosition(0, 0, 0));
 	int id = getMugenDefIntegerOrDefaultAsGroup(tGroup, "id", -1);
 
-	(void)mask; // TODO
-	addDreamMugenStageHandlerAnimatedBackgroundElement(start, createOneFrameMugenAnimationForSprite(spriteNo.x, spriteNo.y), 1, tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, layerNo, id, gData.mLocalCoordinates);
+	(void)mask; // TODO (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/127)
+	addDreamMugenStageHandlerAnimatedBackgroundElement(start, createOneFrameMugenAnimationForSprite(spriteNo.x, spriteNo.y), 1, tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, layerNo, id, gMenuBackgroundData.mLocalCoordinates);
 }
 
 static void loadAnimatedMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, MugenSpriteFile* tSprites, MugenAnimations* tAnimations) {
@@ -82,20 +82,20 @@ static void loadAnimatedMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, 
 	Vector3D velocity = getMugenDefVectorOrDefaultAsGroup(tGroup, "velocity", makePosition(0, 0, 0));
 	int id = getMugenDefIntegerOrDefaultAsGroup(tGroup, "id", -1);
 	
-	(void)mask; // TODO
-	addDreamMugenStageHandlerAnimatedBackgroundElement(start, getMugenAnimation(tAnimations, animation), 0, tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, layerNo, id, gData.mLocalCoordinates);
+	(void)mask; // TODO (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/127)
+	addDreamMugenStageHandlerAnimatedBackgroundElement(start, getMugenAnimation(tAnimations, animation), 0, tSprites, delta, tile, tileSpacing, blendType, constraintRectangle, velocity, 1, 0, layerNo, id, gMenuBackgroundData.mLocalCoordinates);
 }
 
 static void loadMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, MugenSpriteFile* tSprites, MugenAnimations* tAnimations) {
 	char* type = getAllocatedMugenDefStringVariableAsGroup(tGroup, "type");
 	if (!strcmp("normal", type) || !strcmp("parallax", type)) {
-		loadNormalMenuBackgroundGroup(tGroup, i, tSprites, tAnimations);
+		loadNormalMenuBackgroundGroup(tGroup, i, tSprites);
 	} else if (!strcmp("anim", type)) {
 		loadAnimatedMenuBackgroundGroup(tGroup, i, tSprites, tAnimations);
 	}
 	else {
 		logWarningFormat("Unimplemented menu background type %s. Try to load normal.", type);
-		loadNormalMenuBackgroundGroup(tGroup, i, tSprites, tAnimations);
+		loadNormalMenuBackgroundGroup(tGroup, i, tSprites);
 	}
 
 	freeMemory(type);
@@ -104,10 +104,10 @@ static void loadMenuBackgroundGroup(MugenDefScriptGroup* tGroup, int i, MugenSpr
 void loadMenuBackground(MugenDefScript * tScript, MugenSpriteFile * tSprites, MugenAnimations * tAnimations, const char * tDefinitionGroupName, const char * tBackgroundGroupName)
 {
 	instantiateActor(getDreamMugenStageHandler());
-	gData.mLocalCoordinates = makeVector3DI(320, 240, 0); // TODO: move outside
-	setDreamStageCoordinates(gData.mLocalCoordinates);
-	setDreamMugenStageHandlerCameraCoordinates(gData.mLocalCoordinates);
-	setDreamMugenStageHandlerCameraRange(makeGeoRectangle(0, 0, gData.mLocalCoordinates.x, gData.mLocalCoordinates.y));
+	gMenuBackgroundData.mLocalCoordinates = makeVector3DI(320, 240, 0); // TODO: move outside (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/180)
+	setDreamStageCoordinates(gMenuBackgroundData.mLocalCoordinates);
+	setDreamMugenStageHandlerCameraCoordinates(gMenuBackgroundData.mLocalCoordinates);
+	setDreamMugenStageHandlerCameraRange(makeGeoRectangle(0, 0, gMenuBackgroundData.mLocalCoordinates.x, gMenuBackgroundData.mLocalCoordinates.y));
 	setDreamMugenStageHandlerCameraPosition(makePosition(0, 0, 0));
 
 	MugenDefScriptGroup* current = &tScript->mGroups[tDefinitionGroupName];

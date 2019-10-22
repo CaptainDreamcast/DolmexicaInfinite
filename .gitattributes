@@ -1,0 +1,29 @@
+.gitattributes text eol=lf
+.gitignore text eol=lf
+LICENSE text eol=lf
+*.md text eol=lf
+
+Makefile text eol=lf
+Makefile.common text eol=lf
+Makefile.commondc text eol=lf
+Makefile.commonweb text eol=lf
+Makefile.dc text eol=lf
+Makefile.web text eol=lf
+
+*.c text eol=lf
+*.h text eol=lf
+*.cpp text eol=lf
+*.asm text eol=lf
+*.I text eol=lf
+
+*.txt text eol=lf
+*.cfg text eol=lf
+
+*.bat text eol=lf
+*.sh text eol=lf
+
+*.sln text eol=lf
+*.vcxproj text eol=lf
+*.vcxproj.filters text eol=lf
+
+*.html text eol=lf

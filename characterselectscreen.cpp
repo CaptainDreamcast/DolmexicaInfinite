@@ -39,6 +39,7 @@ typedef struct {
 
 	Position mNameOffset;
 	Vector3DI mNameFont;
+	double mNameWidth;
 
 	Vector3DI mCursorMoveSound;
 	Vector3DI mCursorDoneSound;
@@ -102,10 +103,10 @@ typedef struct {
 	SelectCharacterType mType;
 	
 	Vector3DI mCellPosition;
-	int mBackgroundAnimationID;
+	MugenAnimationHandlerElement* mBackgroundAnimationElement;
 
 	MugenSpriteFile mSprites;
-	int mPortraitAnimationID;
+	MugenAnimationHandlerElement* mPortraitAnimationElement;
 	char mStageName[1024];
 	char* mDisplayCharacterName;
 	char mCharacterName[200];
@@ -137,10 +138,11 @@ typedef struct {
 	int mIsDone;
 	int mOwner;
 
-	int mSelectorAnimationID;
-	int mBigPortraitAnimationID;
+	MugenAnimationHandlerElement* mSelectorAnimationElement;
+	MugenAnimationHandlerElement* mBigPortraitAnimationElement;
 	int mNameTextID;
 
+	int mHasBeenLoadedBefore;
 	Vector3DI mSelectedCharacter;
 	RandomSelector mRandom;
 } Selector;
@@ -152,6 +154,7 @@ typedef struct {
 
 typedef struct {
 	int mIsUsing;
+	int mIsInOsuMode;
 	int mIsActive;
 	int mIsDone;
 
@@ -214,6 +217,8 @@ static struct {
 
 	CharacterSelectScreenType mSelectScreenType;
 
+	int mCanSelectThisFrame;
+	int mIsReturnDisabled;
 	int mIsFadingOut;
 } gCharacterSelectScreenData;
 
@@ -262,6 +267,9 @@ static void loadMenuPlayerHeader(const char* tPlayerName, PlayerHeader* tHeader)
 	sprintf(fullVariableName, "%s.name.font", tPlayerName);
 	tHeader->mNameFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName, makeVector3DI(1, 0, 0));
 
+	sprintf(fullVariableName, "%s.name.width", tPlayerName);
+	tHeader->mNameWidth = getMugenDefFloatOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName, INF);
+
 	sprintf(fullVariableName, "%s.cursor.move.snd", tPlayerName);
 	tHeader->mCursorMoveSound = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName, makeVector3DI(0, 0, 0));
 
@@ -309,6 +317,14 @@ static void getStagePath(char* tDst, char* tPath) {
 	sprintf(tDst, "assets/%s", tPath);
 }
 
+static int isInOsuModeAndNotOsuStage(MugenDefScript* tScript) {
+	if (!gCharacterSelectScreenData.mStageSelect.mIsInOsuMode) return 0;
+	const std::string fileName = getSTLMugenDefStringOrDefault(tScript, "Music", "bgmusic", "");
+	if (!hasFileExtension(fileName.c_str())) return 1;
+	const auto extension = getFileExtension(fileName.c_str());
+	return !stringEqualCaseIndependent(extension, "osu");
+}
+
 static void addSingleSelectStage(char* tPath) {
 	char path[1024];
 	getStagePath(path, tPath);
@@ -319,17 +335,17 @@ static void addSingleSelectStage(char* tPath) {
 	}
 
 	if (isSelectStageLoadedAlready(path)) return;
-
-	SelectStage* e = (SelectStage*)allocMemory(sizeof(SelectStage));
-	strcpy(e->mPath, path);
-	
-	MugenDefScript script; 
+	MugenDefScript script;
 	loadMugenDefScript(&script, path);
-	e->mName = getAllocatedMugenDefStringVariable(&script, "Info", "name");
-	loadSelectStageCredits(e, &script);
+	const int isUsingStage = !isInOsuModeAndNotOsuStage(&script);
+	if (isUsingStage) {
+		SelectStage* e = (SelectStage*)allocMemory(sizeof(SelectStage));
+		strcpy(e->mPath, path);
+		e->mName = getAllocatedMugenDefStringVariable(&script, "Info", "name");
+		loadSelectStageCredits(e, &script);
+		vector_push_back_owned(&gCharacterSelectScreenData.mSelectStages, e);
+	}
 	unloadMugenDefScript(script);
-	
-	vector_push_back_owned(&gCharacterSelectScreenData.mSelectStages, e);
 }
 
 static void loadExtraStages() {
@@ -456,10 +472,10 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 	sprintf(scriptPath, "%s%s", path, file);
 	sprintf(scriptPathPreloaded, "%s.portraits.preloaded", scriptPath);
 	if (isFile(scriptPathPreloaded)) {
-		e->mSprites = loadMugenSpriteFilePortraits(scriptPathPreloaded, preferredPalette, hasPalettePath, palettePath);
+		e->mSprites = loadMugenSpriteFilePortraits(scriptPathPreloaded, hasPalettePath, palettePath);
 	}
 	else {
-		e->mSprites = loadMugenSpriteFilePortraits(scriptPath, preferredPalette, hasPalettePath, palettePath);
+		e->mSprites = loadMugenSpriteFilePortraits(scriptPath, hasPalettePath, palettePath);
 	}
 
 	strcpy(e->mCharacterName, tCharacterName);
@@ -483,13 +499,13 @@ static Position getCellScreenPosition(Vector3DI tCellPosition) {
 	return pos;
 }
 
-static void showMenuSelectableAnimations(MenuCharacterLoadCaller* tCaller, SelectCharacter* e) {
+static void showMenuSelectableAnimations(MenuCharacterLoadCaller* /*tCaller*/, SelectCharacter* e) {
 	Position pos = getCellScreenPosition(e->mCellPosition);
 	pos.z = 40;
-	e->mPortraitAnimationID = addMugenAnimation(gCharacterSelectScreenData.mHeader.mSmallPortraitAnimation, &e->mSprites, pos);
+	e->mPortraitAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mSmallPortraitAnimation, &e->mSprites, pos);
 	if (!gCharacterSelectScreenData.mHeader.mIsShowingEmptyBoxes) {
 		pos.z = 30;
-		e->mBackgroundAnimationID = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
+		e->mBackgroundAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
 	}
 }
 
@@ -531,10 +547,10 @@ static void loadSingleRandomMenuCharacter(MenuCharacterLoadCaller* tCaller) {
 
 	Position pos = getCellScreenPosition(e->mCellPosition);
 	pos.z = 40;
-	e->mPortraitAnimationID = addMugenAnimation(gCharacterSelectScreenData.mHeader.mRandomSelectionAnimation, &gCharacterSelectScreenData.mSprites, pos);
+	e->mPortraitAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mRandomSelectionAnimation, &gCharacterSelectScreenData.mSprites, pos);
 	if (!gCharacterSelectScreenData.mHeader.mIsShowingEmptyBoxes) {
 		pos.z = 30;
-		e->mBackgroundAnimationID = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
+		e->mBackgroundAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
 	}
 
 	tCaller->i++;
@@ -660,7 +676,7 @@ static void loadSingleMenuCell(Vector3DI tCellPosition) {
 	if (gCharacterSelectScreenData.mHeader.mIsShowingEmptyBoxes) {
 		Position pos = getCellScreenPosition(e->mCellPosition);
 		pos.z = 30;
-		e->mBackgroundAnimationID = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
+		e->mBackgroundAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
 	}
 
 	vector_push_back_owned((Vector*)vector_get(&gCharacterSelectScreenData.mSelectCharacters, tCellPosition.y), e);
@@ -733,34 +749,39 @@ static void loadSingleSelector(int i, int tOwner) {
 	PlayerHeader* player = &gCharacterSelectScreenData.mHeader.mPlayers[i];
 	PlayerHeader* owner = &gCharacterSelectScreenData.mHeader.mPlayers[tOwner];
 
-	gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter = makeVector3DI(player->mCursorStartCell.y, player->mCursorStartCell.x, 0);
+	if (!gCharacterSelectScreenData.mSelectors[i].mHasBeenLoadedBefore) {
+		gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter = makeVector3DI(player->mCursorStartCell.y, player->mCursorStartCell.x, 0);
+	}
 	gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter = findStartCellPosition(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter, i == 0 ? 1 : -1);
 
 	Position p = getCellScreenPosition(makeVector3DI(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter.y, gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter.x, 0));
 	p.z = 60;
-	gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationID = addMugenAnimation(owner->mActiveCursorAnimation, &gCharacterSelectScreenData.mSprites, p);
+	gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement = addMugenAnimation(owner->mActiveCursorAnimation, &gCharacterSelectScreenData.mSprites, p);
 	
 	SelectCharacter* character = getCellCharacter(findStartCellPosition(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter, 1, 1));
 	player->mBigPortraitOffset.z = 30;
-	gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationID = addMugenAnimation(player->mBigPortraitAnimation, &character->mSprites, player->mBigPortraitOffset);
-	setMugenAnimationFaceDirection(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationID, player->mBigPortraitIsFacingRight);
-	setMugenAnimationDrawScale(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationID, makePosition(player->mBigPortraitScale.x, player->mBigPortraitScale.y, 1));
+	gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement = addMugenAnimation(player->mBigPortraitAnimation, &character->mSprites, player->mBigPortraitOffset);
+	setMugenAnimationFaceDirection(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, player->mBigPortraitIsFacingRight);
+	setMugenAnimationDrawScale(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, makePosition(player->mBigPortraitScale.x, player->mBigPortraitScale.y, 1));
 
 	player->mNameOffset.z = 40;
 	gCharacterSelectScreenData.mSelectors[i].mNameTextID = addMugenText(character->mDisplayCharacterName, player->mNameOffset, player->mNameFont.x);
 	setMugenTextColor(gCharacterSelectScreenData.mSelectors[i].mNameTextID, getMugenTextColorFromMugenTextColorIndex(player->mNameFont.y));
 	setMugenTextAlignment(gCharacterSelectScreenData.mSelectors[i].mNameTextID, getMugenTextAlignmentFromMugenAlignmentIndex(player->mNameFont.z));
+	setMugenTextTextBoxWidth(gCharacterSelectScreenData.mSelectors[i].mNameTextID, player->mNameWidth);
 
 	moveSelectionToTarget(i, gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter, 0);
 
 	gCharacterSelectScreenData.mSelectors[i].mOwner = tOwner;
 	gCharacterSelectScreenData.mSelectors[i].mIsActive = 1;
 	gCharacterSelectScreenData.mSelectors[i].mIsDone = 0;
+
+	gCharacterSelectScreenData.mSelectors[i].mHasBeenLoadedBefore = 1;
 }
 
 static void unloadSingleSelector(int i) {
-	removeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationID);
-	removeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationID);
+	removeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement);
+	removeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement);
 	removeMugenText(gCharacterSelectScreenData.mSelectors[i].mNameTextID);
 
 	gCharacterSelectScreenData.mSelectors[i].mIsActive = 0;
@@ -829,6 +850,29 @@ static int isValidSelectPath(const std::string& path, std::string& oFinalSelectP
 	return 0;
 }
 
+static int checkIfCharactersSane() {
+	return vector_size(&gCharacterSelectScreenData.mRealSelectCharacters);
+}
+
+static int checkIfStagesSane() {
+	if (!gCharacterSelectScreenData.mStageSelect.mIsUsing) return 1;
+	return vector_size(&gCharacterSelectScreenData.mSelectStages);
+}
+
+static void setStageSelectorSane() {
+	if (!gCharacterSelectScreenData.mStageSelect.mIsUsing) return;
+	gCharacterSelectScreenData.mStageSelect.mSelectedStage = min(gCharacterSelectScreenData.mStageSelect.mSelectedStage, vector_size(&gCharacterSelectScreenData.mSelectStages) - 1);
+}
+
+static void sanityCheck() {
+	if (!checkIfCharactersSane() || !checkIfStagesSane()) {
+		setNewScreen(getDreamTitleScreen());
+	}
+	else {
+		setStageSelectorSane();
+	}
+}
+
 static void loadCharacterSelectScreen() {
 
 	string selectPath;
@@ -873,6 +917,7 @@ static void loadCharacterSelectScreen() {
 
 	gCharacterSelectScreenData.mIsFadingOut = 0;
 	addFadeIn(gCharacterSelectScreenData.mHeader.mFadeInTime, NULL, NULL);
+	sanityCheck();
 }
 
 static void unloadSelectStageCredits(SelectStage* e) {
@@ -929,6 +974,9 @@ static void unloadSelectCharacters() {
 	delete_vector(&gCharacterSelectScreenData.mSelectCharacters);
 }
 
+static void resetSelectState() {
+	gCharacterSelectScreenData.mIsReturnDisabled = 0;
+}
 
 static void unloadCharacterSelectScreen() {
 	unloadMugenDefScript(gCharacterSelectScreenData.mScript);
@@ -955,6 +1003,7 @@ static void unloadCharacterSelectScreen() {
 	unloadSelectCharacters();
 	unloadSelectStages();
 
+	resetSelectState();
 }
 
 static void handleSingleWrapping(int* tPosition, int tSize) {
@@ -985,7 +1034,7 @@ static Vector3DI findTargetCellPosition(int i, Vector3DI tDelta) {
 
 
 	int maxLength = max(gCharacterSelectScreenData.mHeader.mRows, gCharacterSelectScreenData.mHeader.mColumns);
-	for (int i = 0; i < maxLength; i++) {
+	for (int j = 0; j < maxLength; j++) {
 		handleSingleWrapping(&pos.x, gCharacterSelectScreenData.mHeader.mColumns);
 		handleSingleWrapping(&pos.y, gCharacterSelectScreenData.mHeader.mRows);
 		SelectCharacter* selectChar = getCellCharacter(pos);
@@ -1022,13 +1071,13 @@ static void showSelectCharacterForSelector(int i, SelectCharacter* tCharacter) {
 	PlayerHeader* player = &gCharacterSelectScreenData.mHeader.mPlayers[i];
 
 	if (tCharacter->mType == SELECT_CHARACTER_TYPE_CHARACTER) {
-		setMugenAnimationBaseDrawScale(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationID, 1);
-		setMugenAnimationSprites(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationID, &tCharacter->mSprites);
-		changeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationID, player->mBigPortraitAnimation);
+		setMugenAnimationBaseDrawScale(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, 1);
+		setMugenAnimationSprites(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, &tCharacter->mSprites);
+		changeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, player->mBigPortraitAnimation);
 		changeMugenText(gCharacterSelectScreenData.mSelectors[i].mNameTextID, tCharacter->mDisplayCharacterName);
 	}
 	else {
-		setMugenAnimationBaseDrawScale(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationID, 0);
+		setMugenAnimationBaseDrawScale(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, 0);
 		changeMugenText(gCharacterSelectScreenData.mSelectors[i].mNameTextID, " ");
 	}
 
@@ -1043,7 +1092,7 @@ static void moveSelectionToTarget(int i, Vector3DI tTarget, int tDoesPlaySound) 
 	gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter = tTarget;
 	Position p = getCellScreenPosition(tTarget);
 	p.z = 60;
-	setMugenAnimationPosition(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationID, p);
+	setMugenAnimationPosition(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement, p);
 
 	if (tDoesPlaySound) {
 		tryPlayMugenSound(&gCharacterSelectScreenData.mSounds, owner->mCursorMoveSound.x, owner->mCursorMoveSound.y);
@@ -1142,13 +1191,13 @@ static void updateSingleSelection(int i) {
 }
 
 static void updateStageSelection(int i, int tNewStage, int tDoesPlaySound);
-static void setStageSelectInactive(int i);
+static void setStageSelectInactive();
 
 static int updateCreditStageSelectionAndReturnIfStageSelectionOver(int i) {
 	if (gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return 0;
 
 	if (hasPressedUpFlankSingle(i) || hasPressedDownFlankSingle(i)) {
-		setStageSelectInactive(i);
+		setStageSelectInactive();
 		loadSingleSelector(i, i);
 		return 1;
 	}
@@ -1223,8 +1272,8 @@ static void flashSelection(int i) {
 	Position pos = getCellScreenPosition(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter);
 	pos.z = 41;
 	Animation anim = createAnimation(1, 2);
-	int id = playAnimation(pos, &gCharacterSelectScreenData.mWhiteTexture, anim, makeRectangleFromTexture(gCharacterSelectScreenData.mWhiteTexture), NULL, NULL);
-	setAnimationSize(id, makePosition(25, 25, 1), makePosition(0, 0, 0));
+	AnimationHandlerElement* element = playAnimation(pos, &gCharacterSelectScreenData.mWhiteTexture, anim, makeRectangleFromTexture(gCharacterSelectScreenData.mWhiteTexture), NULL, NULL);
+	setAnimationSize(element, makePosition(25, 25, 1), makePosition(0, 0, 0));
 }
 
 static void updateMugenTextBasedOnVector3DI(int tID, Vector3DI tFontData) {
@@ -1277,7 +1326,7 @@ static void checkSetStageSelectActive(int i) {
 	setStageSelectActive(i);
 }
 
-static void setStageSelectInactive(int i) {
+static void setStageSelectInactive() {
 	changeMugenText(gCharacterSelectScreenData.mStageSelect.mTextID, " ");
 	gCharacterSelectScreenData.mStageSelect.mIsActive = 0;
 }
@@ -1291,7 +1340,7 @@ static int checkSetStageSelectInactive(int i) {
 	int isOtherPlayerFinished = !gCharacterSelectScreenData.mSelectors[otherPlayer].mIsActive || gCharacterSelectScreenData.mSelectors[otherPlayer].mIsDone;
 	if (!gCharacterSelectScreenData.mStageSelect.mIsDone) {
 		if (gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING || gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_MODE || !isOtherPlayerFinished) {
-			setStageSelectInactive(i);
+			setStageSelectInactive();
 		}
 		return 0;
 	}
@@ -1324,7 +1373,7 @@ static void setCharacterSelectionFinished(int i) {
 	if (character->mType == SELECT_CHARACTER_TYPE_EMPTY) return;
 
 	PlayerHeader* owner = &gCharacterSelectScreenData.mHeader.mPlayers[gCharacterSelectScreenData.mSelectors[i].mOwner];
-	changeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationID, owner->mDoneCursorAnimation);
+	changeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement, owner->mDoneCursorAnimation);
 	tryPlayMugenSound(&gCharacterSelectScreenData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y);
 
 	if (character->mType == SELECT_CHARACTER_TYPE_RANDOM) {
@@ -1378,7 +1427,7 @@ static void deselectSelection(int i, int tDoesPlaySound) {
 	if (checkSetStageSelectInactive(i)) return;
 
 	PlayerHeader* owner = &gCharacterSelectScreenData.mHeader.mPlayers[gCharacterSelectScreenData.mSelectors[i].mOwner];
-	changeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationID, owner->mActiveCursorAnimation);
+	changeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement, owner->mActiveCursorAnimation);
 	if(tDoesPlaySound) tryPlayMugenSound(&gCharacterSelectScreenData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y);
 
 	checkSetSecondPlayerInactive(i);
@@ -1387,16 +1436,21 @@ static void deselectSelection(int i, int tDoesPlaySound) {
 }
 
 static void updateSingleSelectionConfirmation(int i) {
+	if (!gCharacterSelectScreenData.mCanSelectThisFrame) return;
 	if (!gCharacterSelectScreenData.mSelectors[i].mIsActive) return;
 	if (gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
 	if (gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING && i == 0 && gCharacterSelectScreenData.mSelectors[1].mIsActive) return;
 
 	if (hasPressedAFlankSingle(gCharacterSelectScreenData.mSelectors[i].mOwner) || hasPressedStartFlankSingle(gCharacterSelectScreenData.mSelectors[i].mOwner)) {
 		setSelectionFinished(i);
+		if (gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING) {
+			gCharacterSelectScreenData.mCanSelectThisFrame = 0;
+		}
 	}
 }
 
 static void updateSingleSelectionDeselect(int i) {
+	if (!gCharacterSelectScreenData.mCanSelectThisFrame) return;
 	if (gCharacterSelectScreenData.mIsFadingOut) return;
 	if (!gCharacterSelectScreenData.mSelectors[i].mIsActive && gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
 	if (gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING && i == 0 && gCharacterSelectScreenData.mSelectors[i].mIsDone) return;
@@ -1406,15 +1460,18 @@ static void updateSingleSelectionDeselect(int i) {
 		int canGoBackToFirstPlayer = i == 1 && gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING && !gCharacterSelectScreenData.mSelectors[i].mIsDone;
 		if (isSelectorDone || canGoBackToFirstPlayer) {
 			deselectSelection(i, 1);
+			if (gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING) {
+				gCharacterSelectScreenData.mCanSelectThisFrame = 0;
+			}
 		}
-		else {
+		else if(!gCharacterSelectScreenData.mIsReturnDisabled){
 			fadeToTitleScreen();
 		}
 	}
 }
 
 static void updateSelectionInputs() {
-
+	gCharacterSelectScreenData.mCanSelectThisFrame = 1;
 	int i;
 	for (i = 0; i < 2; i++) {
 		updateSingleSelectionConfirmation(i);
@@ -1458,8 +1515,9 @@ void setCharacterSelectFinishedCB(void(*tCB)())
 	gCharacterSelectScreenData.mCB = tCB;
 }
 
-void setCharacterSelectStageActive()
+void setCharacterSelectStageActive(int tOnlyOsuStages)
 {
+	gCharacterSelectScreenData.mStageSelect.mIsInOsuMode = tOnlyOsuStages;
 	gCharacterSelectScreenData.mStageSelect.mIsUsing = 1;
 }
 
@@ -1492,6 +1550,11 @@ void setCharacterSelectCredits()
 void setCharacterSelectStory()
 {
 	gCharacterSelectScreenData.mSelectScreenType = CHARACTER_SELECT_SCREEN_TYPE_STORY;
+}
+
+void setCharacterSelectDisableReturnOneTime()
+{
+	gCharacterSelectScreenData.mIsReturnDisabled = 1;
 }
 
 static char* removeEmptyParameterSpace(char* p, int delta, char* startChar) {
@@ -1552,7 +1615,7 @@ void getCharacterSelectNamePath(const char* tName, char* oDst) {
 	if (strchr(tName, '.')) {
 		if (strcmp("zip", getFileExtension(tName))) {
 			logWarningFormat("No support for zipped characters. Error loading %s.", tName);
-			*oDst = '\0'; // TODO: zip format
+			*oDst = '\0';
 		}
 		else sprintf(oDst, "assets/chars/%s", tName);
 	}
@@ -1670,7 +1733,7 @@ void setStageRandom(MugenDefScript * tScript)
 	int index = randfromInteger(0, vector_size(&caller.mElements) - 1);
 	PossibleRandomStageElement* newStage = (PossibleRandomStageElement*)vector_get(&caller.mElements, index);
 	char dummyMusicPath[2];
-	*dummyMusicPath = '\0'; // TODO
+	*dummyMusicPath = '\0';
 	setDreamStageMugenDefinition(newStage->mPath, dummyMusicPath);
 
 	delete_vector(&caller.mElements);

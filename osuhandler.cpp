@@ -18,7 +18,7 @@
 
 typedef struct {
 	int mHasResponded;
-	int mResponseAnimationID;
+	MugenAnimationHandlerElement* mResponseAnimationElement;
 
 	int mHasAIDecided;
 	int mAIDecidedLevel;
@@ -31,8 +31,8 @@ typedef struct {
 
 	OsuColor* mColor;
 
-	int mBodyAnimationID;
-	int mCircleAnimationID;
+	MugenAnimationHandlerElement* mBodyAnimationElement;
+	MugenAnimationHandlerElement* mCircleAnimationElement;
 
 	ActiveHitObjectPlayerResponse mPlayerResponse[2];
 
@@ -49,7 +49,7 @@ typedef struct {
 	OsuSpinnerObject* mObject;
 	int mIsObjectOwned;
 	
-	int mEncouragementAnimationID;
+	MugenAnimationHandlerElement* mEncouragementAnimationElement;
 
 } ActiveSpinnerObject;
 
@@ -106,7 +106,7 @@ static void playOsuMusicFile()
 	getPathToFile(folder, gOsuHandlerData.mPath);
 	sprintf(path, "%s%s", folder, gOsuHandlerData.mOsu.mGeneral.mAudioFileName);
 
-	streamMusicFileOnce(path, 1);
+	streamMusicFileOnce(path);
 	gOsuHandlerData.mIsActive = 1;
 }
 
@@ -122,7 +122,7 @@ int shouldPlayOsuMusicInTheBeginning() {
 	ListIterator it = list_iterator_begin(&gOsuHandlerData.mOsu.mOsuHitObjects);
 	OsuHitObject* e = (OsuHitObject*)list_iterator_get(it);
 
-	int delta = 10000 - (e->mTime - getPreempt()); // TODO: improve
+	int delta = 10000 - (e->mTime - getPreempt());
 	return (delta <= 0);
 }
 
@@ -165,8 +165,8 @@ void resetOsuHandler() {
 	resetOsuHandlerData();
 }
 
-static void loadOsuHandler(void* tData) {
-	gOsuHandlerData.mSprites = loadMugenSpriteFileWithoutPalette("assets/data/osu.sff");
+static void loadOsuHandler(void* /*tData*/) {
+	gOsuHandlerData.mSprites = loadMugenSpriteFileWithoutPalette(std::string("assets/data/osu.sff"));
 	gOsuHandlerData.mAnimations = loadMugenAnimationFile("assets/data/osu.air");
 	gOsuHandlerData.mSounds = loadMugenSoundFile("assets/data/osu.snd");
 
@@ -192,7 +192,7 @@ static int getFadeInTime() {
 
 static double getCircleSizeScale() {
 	double size = 54.4 - 4.48 * gOsuHandlerData.mOsu.mDifficulty.mCircleSize;
-	return size / 32; // TODO
+	return size / 32;
 
 }
 
@@ -240,14 +240,14 @@ static void addActiveHitObject(OsuHitObject* tObject, int tIsOwned) {
 	}
 	e->mColor = (OsuColor*)list_iterator_get(gOsuHandlerData.mCurrentColor);
 
-	e->mCircleAnimationID = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, 1001), &gOsuHandlerData.mSprites, makePosition(parsePositionX(tObject->mX), parsePositionY(tObject->mY), gOsuHandlerData.mGlobalZCounter));
-	setMugenAnimationTransparency(e->mCircleAnimationID, 0);
-	setMugenAnimationBaseDrawScale(e->mCircleAnimationID, getCircleSizeScale());
-	setMugenAnimationColor(e->mCircleAnimationID, e->mColor->mR, e->mColor->mG, e->mColor->mB);
-	e->mBodyAnimationID = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, 1000), &gOsuHandlerData.mSprites, makePosition(parsePositionX(tObject->mX), parsePositionY(tObject->mY), gOsuHandlerData.mGlobalZCounter + 0.001));
-	setMugenAnimationTransparency(e->mBodyAnimationID, 0);
-	setMugenAnimationBaseDrawScale(e->mBodyAnimationID, getCircleSizeScale());
-	setMugenAnimationColor(e->mBodyAnimationID, e->mColor->mR*0.8, e->mColor->mG*0.8, e->mColor->mB*0.8);
+	e->mCircleAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, 1001), &gOsuHandlerData.mSprites, makePosition(parsePositionX(tObject->mX), parsePositionY(tObject->mY), gOsuHandlerData.mGlobalZCounter));
+	setMugenAnimationTransparency(e->mCircleAnimationElement, 0);
+	setMugenAnimationBaseDrawScale(e->mCircleAnimationElement, getCircleSizeScale());
+	setMugenAnimationColor(e->mCircleAnimationElement, e->mColor->mR, e->mColor->mG, e->mColor->mB);
+	e->mBodyAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, 1000), &gOsuHandlerData.mSprites, makePosition(parsePositionX(tObject->mX), parsePositionY(tObject->mY), gOsuHandlerData.mGlobalZCounter + 0.001));
+	setMugenAnimationTransparency(e->mBodyAnimationElement, 0);
+	setMugenAnimationBaseDrawScale(e->mBodyAnimationElement, getCircleSizeScale());
+	setMugenAnimationColor(e->mBodyAnimationElement, e->mColor->mR*0.8, e->mColor->mG*0.8, e->mColor->mB*0.8);
 	gOsuHandlerData.mGlobalZCounter -= 0.003;
 
 	int i;
@@ -260,13 +260,13 @@ static void addActiveHitObject(OsuHitObject* tObject, int tIsOwned) {
 }
 
 static void unloadActiveHitObject(ActiveHitObject* e) {
-	removeMugenAnimation(e->mCircleAnimationID);
-	removeMugenAnimation(e->mBodyAnimationID);
+	removeMugenAnimation(e->mCircleAnimationElement);
+	removeMugenAnimation(e->mBodyAnimationElement);
 
 	int i;
 	for (i = 0; i < 2; i++) {
 		if (e->mPlayerResponse[i].mHasResponded) {
-			removeMugenAnimation(e->mPlayerResponse[i].mResponseAnimationID);
+			removeMugenAnimation(e->mPlayerResponse[i].mResponseAnimationElement);
 		}
 	}
 
@@ -283,19 +283,19 @@ static void addActiveSliderObject(OsuSliderObject* tObject) {
 	list_push_back_owned(&gOsuHandlerData.mActiveSliderObjects, e);
 }
 
-static void unloadActiveSliderObject(ActiveSliderObject* e) { }
+static void unloadActiveSliderObject(ActiveSliderObject* /*e*/) { }
 
 static void addActiveSpinnerObject(OsuSpinnerObject* tObject, int tIsObjectOwned) {
 	ActiveSpinnerObject* e = (ActiveSpinnerObject*)allocMemory(sizeof(ActiveSpinnerObject));
 	e->mObject = tObject;
 	e->mIsObjectOwned = tIsObjectOwned;
-	e->mEncouragementAnimationID = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, 2000), &gOsuHandlerData.mSprites, makePosition(160, 52, 90));
+	e->mEncouragementAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, 2000), &gOsuHandlerData.mSprites, makePosition(160, 52, 90));
 
 	list_push_back_owned(&gOsuHandlerData.mActiveSpinnerObjects, e);
 }
 
 static void unloadActiveSpinnerObject(ActiveSpinnerObject* e) {
-	removeMugenAnimation(e->mEncouragementAnimationID);
+	removeMugenAnimation(e->mEncouragementAnimationElement);
 
 	if (e->mIsObjectOwned) {
 		freeMemory(e->mObject);
@@ -430,8 +430,8 @@ static void updateActiveHitObjectFadeIn(ActiveHitObject* e) {
 	double transparency = (time - start) / (double)(end - start);
 	transparency = std::min(1.0, transparency);
 
-	setMugenAnimationTransparency(e->mCircleAnimationID, transparency);
-	setMugenAnimationTransparency(e->mBodyAnimationID, transparency);
+	setMugenAnimationTransparency(e->mCircleAnimationElement, transparency);
+	setMugenAnimationTransparency(e->mBodyAnimationElement, transparency);
 }
 
 #define HIT_OBJECT_FADE_OUT 200
@@ -445,8 +445,8 @@ static void updateActiveHitObjectFadeOut(ActiveHitObject* e) {
 	transparency = std::min(1.0, transparency);
 	transparency = 1 - transparency;
 
-	setMugenAnimationTransparency(e->mCircleAnimationID, 0);
-	setMugenAnimationTransparency(e->mBodyAnimationID, transparency);
+	setMugenAnimationTransparency(e->mCircleAnimationElement, 0);
+	setMugenAnimationTransparency(e->mBodyAnimationElement, transparency);
 }
 
 static void updateActiveHitObjectTransparency(ActiveHitObject* e) { 
@@ -469,7 +469,7 @@ static void updateActiveHitObjectBrightness(ActiveHitObject* e) {
 	double t = (time - start) / (double)(end - start);
 	double scale = 4 - (4 - 1)*t;
 	scale *= getCircleSizeScale();
-	setMugenAnimationBaseDrawScale(e->mCircleAnimationID, scale);
+	setMugenAnimationBaseDrawScale(e->mCircleAnimationElement, scale);
 }
 
 static void updateActiveHitObjectRingScale(ActiveHitObject* e) {
@@ -481,7 +481,7 @@ static void updateActiveHitObjectRingScale(ActiveHitObject* e) {
 	double t = (time - start) / (double)(end - start);
 	double scale = 4-(4-1)*t;
 	scale *= getCircleSizeScale();
-	setMugenAnimationBaseDrawScale(e->mCircleAnimationID, scale);
+	setMugenAnimationBaseDrawScale(e->mCircleAnimationElement, scale);
 }
 
 static int hasPressedOsuButtonFlank(int i){
@@ -491,12 +491,12 @@ static int hasPressedOsuButtonFlank(int i){
 
 static void addResponse(int i, ActiveHitObject* e, int tLevel) {
 	
-	Position pos = getMugenAnimationPosition(e->mBodyAnimationID);
+	Position pos = getMugenAnimationPosition(e->mBodyAnimationElement);
 
 	pos.x += 20 * (i ? 1 : -1);
 	pos.z += 0.001;
 
-	e->mPlayerResponse[i].mResponseAnimationID = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, 1500 + tLevel), &gOsuHandlerData.mSprites, pos);
+	e->mPlayerResponse[i].mResponseAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, 1500 + tLevel), &gOsuHandlerData.mSprites, pos);
 
 	if (tLevel) {
 		tryPlayMugenSound(&gOsuHandlerData.mSounds, 1, 0);
@@ -534,7 +534,7 @@ static void updateSinglePlayerActiveHitObjectHit(int i, ActiveHitObject* e, Upda
 }
 
 static void setActiveHitObjectBright(ActiveHitObject* e) {
-	setMugenAnimationColor(e->mBodyAnimationID, e->mColor->mR, e->mColor->mG, e->mColor->mB);
+	setMugenAnimationColor(e->mBodyAnimationElement, e->mColor->mR, e->mColor->mG, e->mColor->mB);
 }
 
 #define HIT_OBJECT_HIT_BEGIN 500
@@ -556,7 +556,7 @@ static void updateActiveHitObjectHit(ActiveHitObject* e, UpdateActiveHitObjectCa
 
 }
 
-static void updateActiveHitObjectMiss(ActiveHitObject* e, UpdateActiveHitObjectCaller* tCaller) {
+static void updateActiveHitObjectMiss(ActiveHitObject* e, UpdateActiveHitObjectCaller* /*tCaller*/) {
 	int time = (int)getStreamingSoundTimeElapsedInMilliseconds();
 	int hitWindow50 = getHitWindow50();
 	int endWindow50 = e->mObject->mTime + hitWindow50;
@@ -674,11 +674,11 @@ static void updateActiveSpinnerControl(ActiveSpinnerObject* e) {
 
 
 static void updateActiveSpinnerTextDisplay(ActiveSpinnerObject* e, int tTime) {
-	if (tTime >= e->mObject->mTime && getMugenAnimationAnimationNumber(e->mEncouragementAnimationID) < 2001) {
-		changeMugenAnimation(e->mEncouragementAnimationID, getMugenAnimation(&gOsuHandlerData.mAnimations, 2001));
+	if (tTime >= e->mObject->mTime && getMugenAnimationAnimationNumber(e->mEncouragementAnimationElement) < 2001) {
+		changeMugenAnimation(e->mEncouragementAnimationElement, getMugenAnimation(&gOsuHandlerData.mAnimations, 2001));
 	}
-	if (tTime >= e->mObject->mEndTime && getMugenAnimationAnimationNumber(e->mEncouragementAnimationID) < 2002) {
-		changeMugenAnimation(e->mEncouragementAnimationID, getMugenAnimation(&gOsuHandlerData.mAnimations, 2002));
+	if (tTime >= e->mObject->mEndTime && getMugenAnimationAnimationNumber(e->mEncouragementAnimationElement) < 2002) {
+		changeMugenAnimation(e->mEncouragementAnimationElement, getMugenAnimation(&gOsuHandlerData.mAnimations, 2002));
 	}
 }
 
@@ -691,7 +691,7 @@ static void updateActiveSpinnerTextFadeIn(ActiveSpinnerObject* e, int tTime) {
 	double transparency = (tTime - start) / (double)(end - start);
 	transparency = std::min(1.0, transparency);
 
-	setMugenAnimationTransparency(e->mEncouragementAnimationID, transparency);
+	setMugenAnimationTransparency(e->mEncouragementAnimationElement, transparency);
 }
 
 static void updateActiveSpinnerTextFadeOut(ActiveSpinnerObject* e, int tTime) {
@@ -701,7 +701,7 @@ static void updateActiveSpinnerTextFadeOut(ActiveSpinnerObject* e, int tTime) {
 	double transparency = 1 - (tTime - start) / (double)(end - start);
 	transparency = std::max(0.0, transparency);
 
-	setMugenAnimationTransparency(e->mEncouragementAnimationID, transparency);
+	setMugenAnimationTransparency(e->mEncouragementAnimationElement, transparency);
 }
 
 static double pulseTween(double t) {
@@ -730,7 +730,7 @@ static void updateActiveSpinnerPulse(ActiveSpinnerObject* e, int tTime) {
 	double cyclePosition = (timeDelta % cycleLength) / (double)cycleLength;
 	double t = pulseTween(cyclePosition);
 
-	setMugenAnimationBaseDrawScale(e->mEncouragementAnimationID, t);
+	setMugenAnimationBaseDrawScale(e->mEncouragementAnimationElement, t);
 }
 
 static void updateActiveSpinnerText(ActiveSpinnerObject* e) {

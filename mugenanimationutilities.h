@@ -2,7 +2,9 @@
 
 #include <prism/actorhandler.h>
 
+struct MugenAnimationHandlerElement;
+
 ActorBlueprint getMugenAnimationUtilityHandler();
 
-void setMugenAnimationInvisibleForOneFrame(int tID);
+void setMugenAnimationInvisibleForOneFrame(MugenAnimationHandlerElement* tElement);
 void setMugenTextInvisibleForOneFrame(int tID);

@@ -24,6 +24,9 @@ static struct {
 
 	Vector3D mCameraSpeed;
 
+	Position mCameraEffectPosition;
+	Position mCameraZoom;
+
 	map<int, StageElementIDList> mStageElementsFromID;
 } gMugenStageHandlerData;
 
@@ -35,6 +38,9 @@ static void loadMugenStageHandler(void* tData) {
 	gMugenStageHandlerData.mCameraTargetPosition = makePosition(0, 0, 0);
 	gMugenStageHandlerData.mCameraRange = makeGeoRectangle(-INF, -INF, 2*INF, 2*INF);
 	gMugenStageHandlerData.mCameraSpeed = makePosition(5, 5, 0);
+
+	gMugenStageHandlerData.mCameraEffectPosition = makePosition(0, 0, 0);
+	gMugenStageHandlerData.mCameraZoom = makePosition(1.0, 1.0, 1.0);
 
 	gMugenStageHandlerData.mStaticElements.clear();
 	gMugenStageHandlerData.mStageElementsFromID.clear();
@@ -81,7 +87,7 @@ Vector3DI getTileAmount(StaticStageHandlerElement* e) {
 }
 
 static void updateSingleStaticStageElementTileVelocity(StaticStageHandlerElement* e, StageElementAnimationReference* tSingleAnimation) {
-	if (e->mVelocity.x == 0 && e->mVelocity.y == 0) return; // TODO: fix
+	if (e->mVelocity.x == 0 && e->mVelocity.y == 0) return;
 
 	tSingleAnimation->mOffset = vecAdd(tSingleAnimation->mOffset, e->mVelocity);
 
@@ -138,19 +144,19 @@ static void updateSingleStaticStageElementTileReferencePosition(StaticStageHandl
 	deltaInCameraSpace.z = 0;
 
 
-	Vector3D deltaInElementSpace = vecScale(deltaInCameraSpace, scale); // TODO: fix
+	Vector3D deltaInElementSpace = vecScale(deltaInCameraSpace, scale);
 	tSingleAnimation->mReferencePosition = vecAdd(e->mStart, deltaInElementSpace);
 	tSingleAnimation->mReferencePosition = vecAdd(tSingleAnimation->mReferencePosition, tSingleAnimation->mOffset);
 	tSingleAnimation->mReferencePosition = vecSub(tSingleAnimation->mReferencePosition, makePosition(-e->mCoordinates.x / 2, 0, 0));
 	tSingleAnimation->mReferencePosition.z++;
 
-	double heightDelta = -getDreamCameraPositionY(e->mCoordinates.y); // TODO: camera start position
+	double heightDelta = -getDreamCameraPositionY(e->mCoordinates.y); // TODO: camera start position (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/158)
 	double heightScale = e->mStartScaleY + (e->mScaleDeltaY * heightDelta);
-	setMugenAnimationDrawScale(tSingleAnimation->mID, makePosition(1, heightScale, 1));
+	setMugenAnimationDrawScale(tSingleAnimation->mElement, makePosition(1, heightScale, 1));
 }
 
 static void updateSingleStaticStageElementTileVisibility(StaticStageHandlerElement* e, StageElementAnimationReference* tSingleAnimation) { 
-		setMugenAnimationVisibility(tSingleAnimation->mID, !(e->mInvisibleFlag || e->mIsInvisible || !e->mIsEnabled));
+		setMugenAnimationVisibility(tSingleAnimation->mElement, !(e->mInvisibleFlag || e->mIsInvisible || !e->mIsEnabled));
 }
 
 static void updateSingleStaticStageElementTile(StaticStageHandlerElement* e, StageElementAnimationReference* tSingleAnimation) {
@@ -251,7 +257,7 @@ void setDreamMugenStageHandlerCameraPositionY(double tY)
 
 void resetDreamMugenStageHandlerCameraPosition()
 {
-	gMugenStageHandlerData.mCameraPosition.x = gMugenStageHandlerData.mCameraTargetPosition.x = 0; // TODO: properly
+	gMugenStageHandlerData.mCameraPosition.x = gMugenStageHandlerData.mCameraTargetPosition.x = 0; // TODO: properly (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/158)
 	gMugenStageHandlerData.mCameraPosition.y = gMugenStageHandlerData.mCameraTargetPosition.y = 0;
 	
 }
@@ -275,12 +281,14 @@ static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, in
 static void addSingleMugenStageHandlerBackgroundElementTile(StaticStageHandlerElement* e, MugenSpriteFile* tSprites, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tOffset) {
 	e->mAnimationReferences.push_back(StageElementAnimationReference());
 	StageElementAnimationReference& newAnimation = e->mAnimationReferences.back();
-	newAnimation.mID = addMugenAnimation(e->mAnimation, tSprites, makePosition(0, 0, 0));
-	setMugenAnimationBasePosition(newAnimation.mID, &newAnimation.mReferencePosition);
+	newAnimation.mElement = addMugenAnimation(e->mAnimation, tSprites, makePosition(0, 0, 0));
+	setMugenAnimationBasePosition(newAnimation.mElement, &newAnimation.mReferencePosition);
 	newAnimation.mOffset = tOffset;
-	setMugenAnimationBlendType(newAnimation.mID, tBlendType);
-	setMugenAnimationConstraintRectangle(newAnimation.mID, tConstraintRectangle);
-	setMugenAnimationDrawScale(newAnimation.mID, makePosition(1, e->mStartScaleY, 1));
+	setMugenAnimationBlendType(newAnimation.mElement, tBlendType);
+	setMugenAnimationConstraintRectangle(newAnimation.mElement, tConstraintRectangle);
+	setMugenAnimationDrawScale(newAnimation.mElement, makePosition(1, e->mStartScaleY, 1));
+	setMugenAnimationCameraEffectPositionReference(newAnimation.mElement, getDreamMugenStageHandlerCameraEffectPositionReference());
+	setMugenAnimationCameraScaleReference(newAnimation.mElement, getDreamMugenStageHandlerCameraZoomReference());
 }
 
 static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement* e, MugenSpriteFile* tSprites, Vector3DI tTile, BlendType tBlendType, GeoRectangle tConstraintRectangle) {
@@ -364,9 +372,34 @@ void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAn
 	addStaticElementToIDList(e, tID);
 }
 
-Position * getDreamMugenStageHandlerCameraPositionReference()
+Position* getDreamMugenStageHandlerCameraPositionReference()
 {
 	return &gMugenStageHandlerData.mCameraPosition;
+}
+
+Position* getDreamMugenStageHandlerCameraEffectPositionReference() // TODO: use in fight screen (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/205)
+{
+	return &gMugenStageHandlerData.mCameraEffectPosition;
+}
+
+void setDreamMugenStageHandlerCameraEffectPositionX(double tX)
+{
+	gMugenStageHandlerData.mCameraEffectPosition.x = tX;
+}
+
+void setDreamMugenStageHandlerCameraEffectPositionY(double tY)
+{
+	gMugenStageHandlerData.mCameraEffectPosition.y = tY;
+}
+
+Position* getDreamMugenStageHandlerCameraZoomReference()
+{
+	return &gMugenStageHandlerData.mCameraZoom;
+}
+
+void setDreamMugenStageHandlerCameraZoom(double tZoom)
+{
+	gMugenStageHandlerData.mCameraZoom = makePosition(tZoom, tZoom, 1);
 }
 
 typedef struct {
@@ -402,13 +435,13 @@ void setStageElementInvisible(StaticStageHandlerElement* tElement, int tIsInvisi
 static void pauseSingleMugenAnimationReference(void* tCaller, StageElementAnimationReference& tData) {
 	(void)tCaller;
 	StageElementAnimationReference* e = &tData;
-	pauseMugenAnimation(e->mID);
+	pauseMugenAnimation(e->mElement);
 }
 
 static void unpauseSingleMugenAnimationReference(void* tCaller, StageElementAnimationReference& tData) {
 	(void)tCaller;
 	StageElementAnimationReference* e = &tData;
-	unpauseMugenAnimation(e->mID);
+	unpauseMugenAnimation(e->mElement);
 }
 
 void setStageElementEnabled(StaticStageHandlerElement* tElement, int tIsEnabled) {
@@ -465,7 +498,7 @@ void addStageElementPositionY(StaticStageHandlerElement * tElement, double tPosi
 
 static void changeSingleMugenAnimationReference(int* tCaller, StageElementAnimationReference& tData) {
 	StageElementAnimationReference* e = &tData;
-	changeMugenAnimation(e->mID, getMugenAnimation(getStageAnimations(), *tCaller));
+	changeMugenAnimation(e->mElement, getMugenAnimation(getStageAnimations(), *tCaller));
 }
 
 void setStageElementAnimation(StaticStageHandlerElement * tElement, int tAnimation)

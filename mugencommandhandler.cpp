@@ -62,7 +62,7 @@ static struct {
 	int mOsuInputAllowedFlag[2];
 } gMugenCommandHandler;
 
-#define MAXIMUM_REGISTERED_COMMAND_AMOUNT 2 // TODO: set dynamically from fightscreen or playerdefinition
+#define MAXIMUM_REGISTERED_COMMAND_AMOUNT 2
 
 
 static void loadMugenCommandHandler(void* tData) {
@@ -186,13 +186,14 @@ void setDreamPlayerCommandActiveForAI(int tID, const char * tCommandName, Durati
 	setCommandStateActive(e, tCommandName, tBufferTime);
 }
 
-void setDreamPlayerCommandNumberActiveForDebug(int tID, int tCommandNumber)
+int setDreamPlayerCommandNumberActiveForDebug(int tID, int tCommandNumber)
 {
 	RegisteredMugenCommand* e = &gMugenCommandHandler.mRegisteredCommands[tID];
-	if (tCommandNumber >= (int)e->tCommands->mCommands.size()) return;
+	if (tCommandNumber >= (int)e->tCommands->mCommands.size()) return 0;
 	auto command = stl_map_get_pair_by_index(e->tCommands->mCommands, tCommandNumber);
 
 	setDreamPlayerCommandActiveForAI(tID, command->first.data(), 2);
+	return 1;
 }
 
 int getDreamPlayerCommandAmount(int tID)
@@ -362,7 +363,7 @@ static int isTargetReleased(DreamMugenCommandInputStepTarget tTarget, int tContr
 
 static int handleHoldingCommandInputStep(DreamMugenCommandInputStep* tStep, int* oIsStepOver, int tControllerID, int tIsFacingRight) {
 	int ret = isTargetHeld(tStep->mTarget, tControllerID, tIsFacingRight);
-	*oIsStepOver = 1; // TODO add to active steps for command and always check
+	*oIsStepOver = 1; // TODO add to active steps for command and always check (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/387)
 
 	return ret;
 }

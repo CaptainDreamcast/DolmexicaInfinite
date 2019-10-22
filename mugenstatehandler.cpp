@@ -29,6 +29,7 @@ typedef struct {
 	int mIsInHelperMode;
 	int mIsInputControlDisabled;
 	int mIsDisabled;
+	int mWasUpdatedOutsideHandler;
 
 	int mCurrentJugglePoints;
 } RegisteredState;
@@ -89,16 +90,17 @@ static DreamMugenStates* getCurrentStateMachineStates(RegisteredState* tRegister
 	}
 }
 
-static void updateSingleState(RegisteredState* tRegisteredState, int tState, DreamMugenStates* tStates) {
+static void updateSingleState(RegisteredState* tRegisteredState, int tState, int tForceOwnStates) {
 	if (!gMugenStateHandlerData.mIsInStoryMode && tRegisteredState->mPlayer && (!isPlayer(tRegisteredState->mPlayer) || isPlayerDestroyed(tRegisteredState->mPlayer))) return;
 
 	set<int> visitedStates;
 	
 	int isEvaluating = 1;
 	while (isEvaluating) {
-		if (!stl_map_contains(tStates->mStates, tState)) break;
+		DreamMugenStates* states = tForceOwnStates ? tRegisteredState->mStates : getCurrentStateMachineStates(tRegisteredState);
+		if (!stl_map_contains(states->mStates, tState)) break;
 		visitedStates.insert(tState);
-		DreamMugenState* state = &tStates->mStates[tState];
+		DreamMugenState* state = &states->mStates[tState];
 		MugenStateControllerCaller caller;
 		caller.mRegisteredState = tRegisteredState;
 		caller.mState = state;
@@ -109,7 +111,7 @@ static void updateSingleState(RegisteredState* tRegisteredState, int tState, Dre
 		else {
 			if (tState < 0) break;
 			if (stl_set_contains(visitedStates, tRegisteredState->mState)) {
-				tRegisteredState->mTimeInState--; // TODO: proper fix for state starting time
+				tRegisteredState->mTimeInState--;
 				break;
 			}
 			tState = tRegisteredState->mState;
@@ -120,20 +122,17 @@ static void updateSingleState(RegisteredState* tRegisteredState, int tState, Dre
 static int updateSingleStateMachineByReference(RegisteredState* tRegisteredState) {
 	if (tRegisteredState->mIsPaused) return 0;
 
-	DreamMugenStates* ownStates = tRegisteredState->mStates;
-	DreamMugenStates* activeStates = getCurrentStateMachineStates(tRegisteredState);
-
 	tRegisteredState->mTimeInState++;
 	if (!tRegisteredState->mIsInHelperMode) {
 		if (!tRegisteredState->mIsUsingTemporaryOtherStateMachine) {
-			updateSingleState(tRegisteredState, -3, ownStates);
+			updateSingleState(tRegisteredState, -3, 1);
 		}
-		updateSingleState(tRegisteredState, -2, ownStates);
+		updateSingleState(tRegisteredState, -2, 1);
 	}
 	if (!tRegisteredState->mIsInputControlDisabled) {
-		updateSingleState(tRegisteredState, -1, ownStates);
+		updateSingleState(tRegisteredState, -1, 1);
 	}
-	updateSingleState(tRegisteredState, tRegisteredState->mState, activeStates);
+	updateSingleState(tRegisteredState, tRegisteredState->mState, 0);
 
 	return !gMugenStateHandlerData.mIsInStoryMode && tRegisteredState->mPlayer && isPlayerDestroyed(tRegisteredState->mPlayer);
 }
@@ -141,7 +140,13 @@ static int updateSingleStateMachineByReference(RegisteredState* tRegisteredState
 static int updateSingleStateMachine(void* tCaller, RegisteredState& tData) {
 	(void)tCaller;
 	RegisteredState* registeredState = &tData;
-	return updateSingleStateMachineByReference(registeredState);
+	if (!registeredState->mWasUpdatedOutsideHandler) {
+		return updateSingleStateMachineByReference(registeredState);
+	}
+	else {
+		registeredState->mWasUpdatedOutsideHandler = 0;
+		return 0;
+	}
 }
 
 static void updateStateHandler(void* tData) {
@@ -166,6 +171,7 @@ int registerDreamMugenStateMachine(DreamMugenStates * tStates, DreamPlayer* tPla
 	e.mIsInHelperMode = 0;
 	e.mIsInputControlDisabled = 0;
 	e.mIsDisabled = 0;
+	e.mWasUpdatedOutsideHandler = 0;
 	e.mCurrentJugglePoints = 0;
 
 	return stl_int_map_push_back(gMugenStateHandlerData.mRegisteredStates, e);
@@ -300,15 +306,23 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 {
 	assert(stl_map_contains(gMugenStateHandlerData.mRegisteredStates, tID));
 	RegisteredState* e = &gMugenStateHandlerData.mRegisteredStates[tID];
+	DreamMugenStates* states = getCurrentStateMachineStates(e);
+	if (!stl_map_contains(states->mStates, tNewState)) {
+		if (!e->mPlayer || gMugenStateHandlerData.mIsInStoryMode) {
+			logWarningFormat("ID %d trying to change into nonexistant state %d. Ignoring.", tID, tNewState);
+		}
+		else {
+			logWarningFormat("Player %d %d trying to change into nonexistant state %d. Ignoring.", e->mPlayer->mRootID, e->mPlayer->mID, tNewState);
+		}
+		return;
+	}
+
 	e->mTimeInState = 0;
 
 	logFormat("%d %d->%d", tID, e->mState, tNewState);
 
 	e->mPreviousState = e->mState;
 	e->mState = tNewState;
-
-	DreamMugenStates* states = getCurrentStateMachineStates(e);
-	assert(stl_map_contains(states->mStates, e->mState));
 	
 	DreamMugenState* newState = &states->mStates[e->mState];
 	resetStateControllers(newState);
@@ -365,7 +379,7 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 		setPlayerSpritePriority(e->mPlayer, spritePriority);
 	}
 	
-	setPlayerPositionUnfrozen(e->mPlayer); // TODO: check if correct
+	setPlayerPositionUnfrozen(e->mPlayer);
 
 }
 
@@ -402,6 +416,7 @@ void updateDreamSingleStateMachineByID(int tID) {
 	assert(stl_map_contains(gMugenStateHandlerData.mRegisteredStates, tID));
 	RegisteredState* e = &gMugenStateHandlerData.mRegisteredStates[tID];
 	updateSingleStateMachineByReference(e);
+	e->mWasUpdatedOutsideHandler = 1;
 }
 
 void setStateMachineHandlerToStory()

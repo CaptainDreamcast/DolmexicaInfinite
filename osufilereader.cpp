@@ -264,14 +264,14 @@ static void loadSingleOsuFileHitObject(void* tCaller, void* tData) {
 		return;
 	}
 
-	uint8_t type = atoi(vector.mElement[3]);
+	uint8_t type = (uint8_t)atoi(vector.mElement[3]);
 	if (type & OSU_TYPE_MASK_HIT_OBJECT) {
 		OsuHitObject* e = (OsuHitObject*)allocMemory(sizeof(OsuHitObject));
 		e->mX = atoi(vector.mElement[0]);
 		e->mY = atoi(vector.mElement[1]);
 		e->mTime = atoi(vector.mElement[2]);
-		e->mType = atoi(vector.mElement[3]);
-		e->mHitSound = atoi(vector.mElement[4]);
+		e->mType = (uint8_t)atoi(vector.mElement[3]);
+		e->mHitSound = (uint8_t)atoi(vector.mElement[4]);
 
 		list_push_back_owned(&caller->mDst->mOsuHitObjects, e);
 	}
@@ -284,8 +284,8 @@ static void loadSingleOsuFileHitObject(void* tCaller, void* tData) {
 		e->mX = atoi(vector.mElement[0]);
 		e->mY = atoi(vector.mElement[1]);
 		e->mTime = atoi(vector.mElement[2]);
-		e->mType = atoi(vector.mElement[3]);
-		e->mHitSound = atoi(vector.mElement[4]);
+		e->mType = (uint8_t)atoi(vector.mElement[3]);
+		e->mHitSound = (uint8_t)atoi(vector.mElement[4]);
 		e->mEndPosition = parseEndPositionFromPathString(vector.mElement[5]);
 		e->mRepeat = atoi(vector.mElement[6]);
 		e->mPixelLength = atof(vector.mElement[7]);
@@ -301,8 +301,8 @@ static void loadSingleOsuFileHitObject(void* tCaller, void* tData) {
 		e->mX = atoi(vector.mElement[0]);
 		e->mY = atoi(vector.mElement[1]);
 		e->mTime = atoi(vector.mElement[2]);
-		e->mType = atoi(vector.mElement[3]);
-		e->mHitSound = atoi(vector.mElement[4]);
+		e->mType = (uint8_t)atoi(vector.mElement[3]);
+		e->mHitSound = (uint8_t)atoi(vector.mElement[4]);
 		e->mEndTime = atoi(vector.mElement[5]);
 
 		list_push_back_owned(&caller->mDst->mOsuHitObjects, e);

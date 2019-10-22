@@ -1,0 +1,85 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.15
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DolmexicaInfinite", "DolmexicaInfinite.vcxproj", "{1F70946A-55A5-4CA3-88C5-7DA417B967FF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "prism", "..\..\addons\prism\windows\vs17\prism.vcxproj", "{3572E463-893D-4815-8ECC-E65F3B8C6D90}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "prismDreamcast", "..\..\addons\prism\windows\vs17\prismDreamcast.vcxproj", "{73ABF5A4-0792-466B-BFE3-BA09374E41F1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "prismWeb", "..\..\addons\prism\windows\vs17\prismWeb.vcxproj", "{10E9C155-833F-4A97-90C8-8072EE59B89E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DolmexicaInfiniteDreamcast", "DolmexicaInfiniteDreamcast.vcxproj", "{887F558F-20D5-4669-8A4B-A21E0D8335A1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{73ABF5A4-0792-466B-BFE3-BA09374E41F1} = {73ABF5A4-0792-466B-BFE3-BA09374E41F1}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DolmexicaInfiniteWeb", "DolmexicaInfiniteWeb.vcxproj", "{8CFB7282-D86E-4281-A8F8-86B463449870}"
+	ProjectSection(ProjectDependencies) = postProject
+		{10E9C155-833F-4A97-90C8-8072EE59B89E} = {10E9C155-833F-4A97-90C8-8072EE59B89E}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1F70946A-55A5-4CA3-88C5-7DA417B967FF}.Debug|x86.ActiveCfg = Debug|Win32
+		{1F70946A-55A5-4CA3-88C5-7DA417B967FF}.Debug|x86.Build.0 = Debug|Win32
+		{1F70946A-55A5-4CA3-88C5-7DA417B967FF}.Release|x86.ActiveCfg = Release|Win32
+		{1F70946A-55A5-4CA3-88C5-7DA417B967FF}.Release|x86.Build.0 = Release|Win32
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Debug|x86.ActiveCfg = Debug|Win32
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Debug|x86.Build.0 = Debug|Win32
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Release|x86.ActiveCfg = Release|Win32
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Release|x86.Build.0 = Release|Win32
+		{73ABF5A4-0792-466B-BFE3-BA09374E41F1}.Debug|x86.ActiveCfg = Debug|Win32
+		{73ABF5A4-0792-466B-BFE3-BA09374E41F1}.Debug|x86.Build.0 = Debug|Win32
+		{73ABF5A4-0792-466B-BFE3-BA09374E41F1}.Release|x86.ActiveCfg = Release|Win32
+		{73ABF5A4-0792-466B-BFE3-BA09374E41F1}.Release|x86.Build.0 = Release|Win32
+		{10E9C155-833F-4A97-90C8-8072EE59B89E}.Debug|x86.ActiveCfg = Debug|Win32
+		{10E9C155-833F-4A97-90C8-8072EE59B89E}.Debug|x86.Build.0 = Debug|Win32
+		{10E9C155-833F-4A97-90C8-8072EE59B89E}.Release|x86.ActiveCfg = Release|Win32
+		{10E9C155-833F-4A97-90C8-8072EE59B89E}.Release|x86.Build.0 = Release|Win32
+		{887F558F-20D5-4669-8A4B-A21E0D8335A1}.Debug|x86.ActiveCfg = Debug|Win32
+		{887F558F-20D5-4669-8A4B-A21E0D8335A1}.Debug|x86.Build.0 = Debug|Win32
+		{887F558F-20D5-4669-8A4B-A21E0D8335A1}.Release|x86.ActiveCfg = Release|Win32
+		{887F558F-20D5-4669-8A4B-A21E0D8335A1}.Release|x86.Build.0 = Release|Win32
+		{8CFB7282-D86E-4281-A8F8-86B463449870}.Debug|x86.ActiveCfg = Debug|Win32
+		{8CFB7282-D86E-4281-A8F8-86B463449870}.Debug|x86.Build.0 = Debug|Win32
+		{8CFB7282-D86E-4281-A8F8-86B463449870}.Release|x86.ActiveCfg = Release|Win32
+		{8CFB7282-D86E-4281-A8F8-86B463449870}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F219532E-BC9B-4122-8845-4A8E8D3B528A}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+EndGlobal

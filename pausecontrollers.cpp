@@ -14,11 +14,11 @@
 
 void setDreamSuperPauseActive(DreamPlayer * tPlayer)
 {
-	// TODO: check multiple
+	// TODO: check multiple (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/302)
 	PlayerPauseData* e = &tPlayer->mPause;
 
 	setPlayerSuperPaused(tPlayer);
-	// TODO: stuff
+	// TODO: stuff (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/302)
 
 	e->mIsActive = 1;
 }
@@ -33,7 +33,7 @@ static void setSuperPauseInactive(DreamPlayer* tPlayer) {
 	PlayerPauseData* e = &tPlayer->mPause;
 
 	if (e->mHasAnimation) {
-		removeMugenAnimation(e->mMugenAnimationID);
+		removeMugenAnimation(e->mMugenAnimationElement);
 	}
 
 	setPlayerUnSuperPaused(tPlayer);
@@ -46,7 +46,7 @@ void updatePlayerPause(DreamPlayer* tPlayer) {
 	if (!e->mIsActive) return;
 
 	e->mNow++;
-	if (e->mNow >= e->mDuration)  // TODO: fix
+	if (e->mNow >= e->mDuration)  // TODO: fix (probably mNow++ behind like everywhere else) (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/302)
 	{
 		setSuperPauseInactive(tPlayer);
 	}
@@ -69,7 +69,7 @@ void setDreamSuperPauseBufferTimeForCommandsDuringPauseEnd(DreamPlayer* tPlayer,
 void setDreamSuperPauseMoveTime(DreamPlayer* tPlayer, int tMoveTime)
 {
 	PlayerPauseData* e = &tPlayer->mPause;
-	e->mMoveTime = tMoveTime; // TODO: do something with this
+	e->mMoveTime = tMoveTime; // TODO: do something with this (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/302)
 }
 
 void setDreamSuperPauseIsPausingBG(DreamPlayer* tPlayer, int tIsPausingBG)
@@ -103,17 +103,14 @@ void setDreamSuperPauseAnimation(DreamPlayer* tPlayer, int tIsInPlayerFile, int 
 	}
 
 	e->mHasAnimation = 1;
-	e->mMugenAnimationID = addMugenAnimation(animation, sprites, makePosition(0, 0, 0));
-	setMugenAnimationBasePosition(e->mMugenAnimationID, &e->mAnimationReferencePosition);
-	setMugenAnimationCameraPositionReference(e->mMugenAnimationID, getDreamMugenStageHandlerCameraPositionReference());
+	e->mMugenAnimationElement = addMugenAnimation(animation, sprites, makePosition(0, 0, 0));
+	setMugenAnimationBasePosition(e->mMugenAnimationElement, &e->mAnimationReferencePosition);
+	setMugenAnimationCameraPositionReference(e->mMugenAnimationElement, getDreamMugenStageHandlerCameraPositionReference());
 }
 
-void setDreamSuperPauseSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tSoundGroup, int tSoundItem)
+void setDreamSuperPauseSound(DreamPlayer* /*tPlayer*/, int /*tIsInPlayerFile*/, int /*tSoundGroup*/, int /*tSoundItem*/)
 {
-	(void)tIsInPlayerFile;
-	(void)tSoundGroup;
-	(void)tSoundItem;
-	// TODO
+	// TODO (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/302)
 }
 
 void setDreamSuperPausePosition(DreamPlayer* tPlayer, double tX, double tY)
@@ -125,7 +122,7 @@ void setDreamSuperPausePosition(DreamPlayer* tPlayer, double tX, double tY)
 
 	Position mPlayerPosition = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(tPlayer)) + getPlayerPosition(tPlayer, getPlayerCoordinateP(tPlayer));
 	e->mAnimationReferencePosition = vecAdd(makePosition(tX, tY, 0), mPlayerPosition);
-	e->mAnimationReferencePosition.z = SUPERPAUSE_Z; // TODO: better
+	e->mAnimationReferencePosition.z = SUPERPAUSE_Z; // TODO: better (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/302)
 }
 
 void setDreamSuperPauseDarkening(DreamPlayer* tPlayer, int tIsDarkening)

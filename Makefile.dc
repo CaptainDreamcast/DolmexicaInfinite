@@ -1,5 +1,5 @@
 include Makefile.common
-include $(KOS_BASE)/addons/prism/Makefile.commondc
+include /mnt/c/DEV/PROJECTS/addons/prism/Makefile.commondc
 
 all: complete
 

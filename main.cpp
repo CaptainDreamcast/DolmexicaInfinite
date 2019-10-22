@@ -1,5 +1,4 @@
 #include <prism/framerateselectscreen.h>
-#include <prism/pvr.h>
 #include <prism/physics.h>
 #include <prism/file.h>
 #include <prism/drawing.h>
@@ -19,12 +18,12 @@
 #include "titlescreen.h"
 #include "fightscreen.h"
 #include "playerdefinition.h"
-#include "warningscreen.h"
 #include "dolmexicastoryscreen.h"
 #include "stage.h"
 #include "config.h"
 #include "dolmexicadebug.h"
 #include "debugscreen.h"
+#include "initscreen.h"
 
 char romdisk_buffer[1];
 int romdisk_buffer_length;
@@ -38,14 +37,6 @@ extern uint8 romdisk[];
 KOS_INIT_ROMDISK(romdisk);
 
 #endif
-
-int isInDevelopMode() {
-#ifdef DEVELOP
-    return 1;
-#else
-    return 0;
-#endif
-}
 
 void exitGame() {
 	shutdownPrismWrapper();
@@ -62,20 +53,13 @@ void exitGame() {
 #endif
 }
 
-void setMainFileSystem() {
-#ifdef DEVELOP
-	setFileSystem("/pc");
-#else
-	setFileSystem("/cd");
-#endif
-}
-
 int main(int argc, char** argv) {
 	(void)argc;
 	(void)argv;
 
-#ifdef DEVELOP	
-	setMinimumLogType(LOG_TYPE_NORMAL);
+#ifdef DEVELOP
+	setDevelopMode();
+	setMinimumLogType(isOnDreamcast() ? LOG_TYPE_NONE : LOG_TYPE_NORMAL);
 #else
 	setMinimumLogType(LOG_TYPE_NONE);
 #endif
@@ -83,8 +67,10 @@ int main(int argc, char** argv) {
 	setGameName("DOLMEXICA INFINITE");
 	setScreenSize(320, 240);
 
-	setMainFileSystem();	
-	loadMugenTextHandler();
+	if (!isOnDreamcast()) {
+		setMugenSpriteFileReaderSubTextureSplit(8, 1024);
+	}
+
 	initPrismWrapperWithMugenFlags();
 
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
@@ -99,7 +85,7 @@ int main(int argc, char** argv) {
 	initClipboardForGame();
 	setScreenEffectZ(99);
 	loadMugenConfig();
-	setScreenAfterWrapperLogoScreen(getDreamTitleScreen());
+	setScreenAfterWrapperLogoScreen(getInitScreen());
 	
 #ifdef DEVELOP	
 	setVolume(0);
@@ -109,7 +95,7 @@ int main(int argc, char** argv) {
 	initDolmexicaDebug();
 #endif
 
-	startScreenHandling(getDreamTitleScreen());
+	startScreenHandling(getInitScreen());
 	
 	exitGame();
 	

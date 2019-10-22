@@ -8,7 +8,6 @@
 
 ActorBlueprint getBackgroundStateHandler();
 
-// TODO: make faster by mixing with stage loading
 void setBackgroundStatesFromScript(MugenDefScript* tScript);
 
 

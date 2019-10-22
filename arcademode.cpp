@@ -108,7 +108,7 @@ static void addSingleEnemyToSelection(void* tCaller, void* tData) {
 		freeMemory(e);
 		return;
 	}
-	if (!strcmp("random", stringVector.mElement[1])) { // TODO: fix when assets removed
+	if (!strcmp("random", stringVector.mElement[1])) {
 		strcpy(e->mStagePath, stringVector.mElement[1]);
 	}
 	else {
@@ -322,9 +322,13 @@ static void loadSingleStoryboard(MugenDefScript* tScript, const char* tFolder, c
 	*oHasStoryboard = getMugenDefIntegerOrDefault(tScript, tGroup, "enabled", 0);
 	if (!(*oHasStoryboard)) return;
 
-	char* name = getAllocatedMugenDefStringOrDefault(tScript, tGroup, "storyboard", "");
-	sprintf(oStoryBoardPath, "%s%s", tFolder, name); // TODO: non-relative
-	freeMemory(name);
+	const auto name = getSTLMugenDefStringOrDefault(tScript, tGroup, "storyboard", "");
+	if (isFile(name.c_str())) {
+		strcpy(oStoryBoardPath, name.c_str());
+	}
+	else {
+		sprintf(oStoryBoardPath, "%s%s", tFolder, name.c_str());
+	}
 }
 
 static void loadStoryboardsFromScript(MugenDefScript* tScript, const char* tFolder) {
@@ -359,4 +363,9 @@ void startArcadeMode()
 	setCharacterSelectStageInactive();
 	setCharacterSelectFinishedCB(characterSelectFinishedCB);
 	setNewScreen(getCharacterSelectScreen());
+}
+
+int getArcadeModeMatchNumber()
+{
+	return gArcadeModeData.mCurrentEnemy + 1;
 }

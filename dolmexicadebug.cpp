@@ -14,6 +14,8 @@
 #include "mugencommandhandler.h"
 #include "mugenassignmentevaluator.h"
 #include "titlescreen.h"
+#include "storymode.h"
+#include "randomwatchmode.h"
 
 using namespace std;
 
@@ -24,6 +26,7 @@ typedef struct {
 
 typedef struct {
 	map<std::string, TrackedInteger> mMap;
+	int mIsOverridingTimeDilatation = 0;
 } DolmexicaDebugData;
 
 static DolmexicaDebugData* gDolmexicaDebugData = nullptr;
@@ -49,7 +52,7 @@ static void mockFightFinishedCB() {
 	setNewScreen(getDreamTitleScreen());
 }
 
-static string fightCB(void* tCaller, string tCommand) {
+static string fightCB(void* /*tCaller*/, string tCommand) {
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
 	
@@ -58,13 +61,19 @@ static string fightCB(void* tCaller, string tCommand) {
 	setPlayerDefinitionPath(0, path);
 	getCharacterSelectNamePath(words[2].data(), path);
 	setPlayerDefinitionPath(1, path);
-	setDreamStageMugenDefinition("assets/stages/kfm.def", "");
 
 	if (words.size() >= 4) {
 		if (words[3] == "watch") {
 			setGameModeWatch();
-		} else 	if (words[3] == "superwatch") {
+		} 
+		else if (words[3] == "superwatch") {
 			setGameModeSuperWatch();
+		}
+		else if (words[3] == "osu") {
+			setGameModeOsu();
+		}
+		else if (words[3] == "versus") {
+			setGameModeVersus();
 		}
 		else {
 			setGameModeTraining();
@@ -72,6 +81,13 @@ static string fightCB(void* tCaller, string tCommand) {
 	}
 	else {
 		setGameModeTraining();
+	}
+
+	if (words.size() >= 5) {
+		setDreamStageMugenDefinition(("assets/stages/" + words[4]).data(), "");
+	}
+	else {
+		setDreamStageMugenDefinition("assets/stages/kfm.def", "");
 	}
 
 	startFightScreen(mockFightFinishedCB);
@@ -191,9 +207,8 @@ static string testcommandNumberCB(void* tCaller, string tCommand) {
 	setPlayerPositionBasedOnScreenCenterX(getRootPlayer(1), placementDirection * dist / 2, getPlayerCoordinateP(getRootPlayer(1)));
 
 	DreamPlayer* p = getRootPlayer(0);
-	setDreamPlayerCommandNumberActiveForDebug(p->mCommandID, commandNumber);
-
-	return "";
+	const auto result = setDreamPlayerCommandNumberActiveForDebug(p->mCommandID, commandNumber);
+	return result ? "" : "Over command amount";
 }
 
 static string evalCB(void* tCaller, string tCommand) {
@@ -211,7 +226,7 @@ static string evalCB(void* tCaller, string tCommand) {
 	auto assignment = parseDreamMugenAssignmentFromString(buffer);
 	string result;
 	evaluateDreamAssignmentAndReturnAsString(result, &assignment, p);
-	// destroyDreamMugenAssignment(assignment); // TODO: fix leak, only debug anyway though
+	destroyDreamMugenAssignment(assignment);
 	string ret = result;
 	return ret;
 }
@@ -236,7 +251,7 @@ static string evalhelperCB(void* tCaller, string tCommand) {
 	auto assignment = parseDreamMugenAssignmentFromString(buffer);
 	string result;
 	evaluateDreamAssignmentAndReturnAsString(result, &assignment, p);
-	// destroyDreamMugenAssignment(assignment); // TODO: fix leak, only debug anyway though
+	destroyDreamMugenAssignment(assignment);
 	string ret = result;
 	return ret;
 }
@@ -287,6 +302,42 @@ static string stateCB(void* tCaller, string tCommand) {
 	return "";
 }
 
+static string storyCB(void* /*tCaller*/, string tCommand) {
+	const auto words = splitCommandString(tCommand);
+	if (words.size() < 2) return "Too few arguments";
+	const auto& name = words[1];
+
+	int step = 0;
+	if (words.size() >= 3) {
+		step = atoi(words[2].c_str());
+	}
+
+	startStoryModeWithForcedStartState(name.c_str(), step);
+	return "";
+}
+
+static string randomwatchCB(void* /*tCaller*/, string /*tCommand*/) {
+	startRandomWatchMode();
+	return "";
+}
+
+static string speedCB(void* /*tCaller*/, string tCommand) {
+	const auto words = splitCommandString(tCommand);
+	if (words.size() < 2) return "Too few arguments";
+	const auto speed = atof(words[1].c_str());
+	setWrapperTimeDilatation(speed);
+	gDolmexicaDebugData->mIsOverridingTimeDilatation = 1;
+	return "";
+}
+
+static string roundamountCB(void* /*tCaller*/, string tCommand) {
+	const auto words = splitCommandString(tCommand);
+	if (words.size() < 2) return "Too few arguments";
+	const auto rounds = atoi(words[1].c_str());
+	setRoundsToWin(rounds);
+	return "";
+}
+
 void initDolmexicaDebug()
 {
 	gDolmexicaDebugData = new DolmexicaDebugData();
@@ -307,6 +358,10 @@ void initDolmexicaDebug()
 	addPrismDebugConsoleCommand("trackvar", trackvarCB);
 	addPrismDebugConsoleCommand("untrackvar", untrackvarCB);
 	addPrismDebugConsoleCommand("state", stateCB);
+	addPrismDebugConsoleCommand("story", storyCB);
+	addPrismDebugConsoleCommand("randomwatch", randomwatchCB);
+	addPrismDebugConsoleCommand("speed", speedCB);
+	addPrismDebugConsoleCommand("roundamount", roundamountCB);
 }
 
 static void loadDolmexicaDebugHandler(void* tData) {
@@ -336,4 +391,10 @@ static void updateDolmexicaDebugHandler(void* tData) {
 
 ActorBlueprint getDolmexicaDebug() {
 	return makeActorBlueprint(loadDolmexicaDebugHandler, NULL, updateDolmexicaDebugHandler);
+}
+
+int isDebugOverridingTimeDilatation()
+{
+	if (!gDolmexicaDebugData) return 0;
+	return gDolmexicaDebugData->mIsOverridingTimeDilatation;
 }

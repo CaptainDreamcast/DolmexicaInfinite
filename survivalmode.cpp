@@ -24,7 +24,7 @@ static struct {
 	int mRoundsToWin;
 
 	double mLifePercentage;
-} gData;
+} gSurvivalModeData;
 
 static void updateSurvivalResultMessage() {
 	char message[100];
@@ -32,15 +32,15 @@ static void updateSurvivalResultMessage() {
 
 	int srcI;
 	char* dst = message;
-	int len = strlen(gData.mResultMessageFormat);
+	int len = strlen(gSurvivalModeData.mResultMessageFormat);
 	for (srcI = 0; srcI < len; srcI++) {
-		if (gData.mResultMessageFormat[srcI] == '%' && gData.mResultMessageFormat[srcI + 1] == 'i') {
-			sprintf(dst, "%d", gData.mCurrentEnemy);
+		if (gSurvivalModeData.mResultMessageFormat[srcI] == '%' && gSurvivalModeData.mResultMessageFormat[srcI + 1] == 'i') {
+			sprintf(dst, "%d", gSurvivalModeData.mCurrentEnemy);
 			dst += strlen(dst);
 			srcI++;
 		}
 		else {
-			*dst = gData.mResultMessageFormat[srcI];
+			*dst = gSurvivalModeData.mResultMessageFormat[srcI];
 			dst++;
 		}
 
@@ -51,7 +51,7 @@ static void updateSurvivalResultMessage() {
 }
 
 static void updateSurvivalResultIsShowingWinPose() {
-	setFightResultIsShowingWinPose(gData.mCurrentEnemy >= gData.mRoundsToWin);
+	setFightResultIsShowingWinPose(gSurvivalModeData.mCurrentEnemy >= gSurvivalModeData.mRoundsToWin);
 }
 
 static void updateSurvivalEnemy() {
@@ -62,22 +62,22 @@ static void updateSurvivalEnemy() {
 
 
 static void fightFinishedCB() {
-	gData.mCurrentEnemy++;
-	if (gData.mCurrentEnemy) {
-		gData.mLifePercentage = getPlayerLifePercentage(getRootPlayer(0));
+	gSurvivalModeData.mCurrentEnemy++;
+	if (gSurvivalModeData.mCurrentEnemy) {
+		gSurvivalModeData.mLifePercentage = getPlayerLifePercentage(getRootPlayer(0));
 	}
 
 	updateSurvivalEnemy();
 	updateSurvivalResultMessage();
 	updateSurvivalResultIsShowingWinPose();
-	setGameModeSurvival(gData.mLifePercentage, gData.mCurrentEnemy+1);
+	setGameModeSurvival(gSurvivalModeData.mLifePercentage, gSurvivalModeData.mCurrentEnemy+1);
 	startFightScreen(fightFinishedCB);
 }
 
 static void loadResultScreenFromScript(MugenDefScript* tScript) {
 	int isEnabled = getMugenDefIntegerOrDefault(tScript, "Survival Results Screen", "enabled", 0);
 	char* message = getAllocatedMugenDefStringOrDefault(tScript, "Survival Results Screen", "winstext.text", "Congratulations!");
-	strcpy(gData.mResultMessageFormat, message);
+	strcpy(gSurvivalModeData.mResultMessageFormat, message);
 	Vector3DI font = getMugenDefVectorIOrDefault(tScript, "Survival Results Screen", "winstext.font", makeVector3DI(2, 0, 0));
 	Position offset = getMugenDefVectorOrDefault(tScript, "Survival Results Screen", "winstext.offset", makePosition(0, 0, 0));
 	int displayTime = getMugenDefIntegerOrDefault(tScript, "Survival Results Screen", "winstext.displaytime", -1);
@@ -85,7 +85,7 @@ static void loadResultScreenFromScript(MugenDefScript* tScript) {
 	int fadeInTime = getMugenDefIntegerOrDefault(tScript, "Survival Results Screen", "fadein.time", 30);
 	int poseTime = getMugenDefIntegerOrDefault(tScript, "Survival Results Screen", "pose.time", 300);
 	int fadeOutTime = getMugenDefIntegerOrDefault(tScript, "Survival Results Screen", "fadeout.time", 30);
-	gData.mRoundsToWin = getMugenDefIntegerOrDefault(tScript, "Survival Results Screen", "roundstowin", 5);
+	gSurvivalModeData.mRoundsToWin = getMugenDefIntegerOrDefault(tScript, "Survival Results Screen", "roundstowin", 5);
 
 	setFightResultData(isEnabled, message, font, offset, displayTime, layerNo, fadeInTime, poseTime, fadeOutTime, 1);
 
@@ -107,8 +107,8 @@ static void loadSurvivalModeHeaderFromScript() {
 
 void startSurvivalMode()
 {
-	gData.mCurrentEnemy = -1;
-	gData.mLifePercentage = 1;
+	gSurvivalModeData.mCurrentEnemy = -1;
+	gSurvivalModeData.mLifePercentage = 1;
 	setPlayerStartLifePercentage(0, 1);
 
 	loadSurvivalModeHeaderFromScript();
@@ -117,4 +117,9 @@ void startSurvivalMode()
 	setCharacterSelectStageActive();
 	setCharacterSelectFinishedCB(fightFinishedCB);
 	setNewScreen(getCharacterSelectScreen());
+}
+
+int getSurvivalModeMatchNumber()
+{
+	return gSurvivalModeData.mCurrentEnemy + 1;
 }

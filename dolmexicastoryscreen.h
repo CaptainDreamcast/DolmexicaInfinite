@@ -8,12 +8,12 @@
 
 typedef struct {
 	int mID;
-	int mAnimationID;
+	MugenAnimationHandlerElement* mAnimationElement;
 
 	int mIsBoundToStage;
 	int mHasShadow;
 	double mShadowBasePositionY;
-	int mShadowAnimationID;
+	MugenAnimationHandlerElement* mShadowAnimationElement;
 
 	int mIsDeleted;
 } StoryAnimation;
@@ -27,17 +27,21 @@ typedef struct {
 
 	int mHasBackground;
 	Position mBackgroundOffset;
+	int mIsBackgroundAnimationOwned;
 	MugenAnimation* mBackgroundAnimation;
-	int mBackgroundAnimationID;
+	MugenAnimationHandlerElement* mBackgroundAnimationElement;
 
 	int mHasFace;
 	Position mFaceOffset;
+	int mIsFaceAnimationOwned;
 	MugenAnimation* mFaceAnimation;
-	int mFaceAnimationID;
+	MugenAnimationHandlerElement* mFaceAnimationElement;
 
 	int mHasContinue;
-	Position mContinueOffset; // TODO: sprites
-	int mContinueAnimationID;
+	Position mContinueOffset;
+	int mIsContinueAnimationOwned;
+	MugenAnimation* mContinueAnimation;
+	MugenAnimationHandlerElement* mContinueAnimationElement;
 
 	int mHasName;
 	Position mNameOffset;
@@ -108,8 +112,11 @@ void addDolmexicaStoryText(StoryInstance* tInstance, int tID, const char* tText,
 void removeDolmexicaStoryText(StoryInstance* tInstance, int tID);
 int isDolmexicaStoryTextVisible(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryTextBackground(StoryInstance* tInstance, int tID, Vector3DI tSprite, Position tOffset);
+void setDolmexicaStoryTextBackground(StoryInstance* tInstance, int tID, int tAnimation, Position tOffset);
 void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, Vector3DI tSprite, Position tOffset);
+void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, int tAnimation, Position tOffset);
 void setDolmexicaStoryTextName(StoryInstance* tInstance, int tID, const char* tText, Vector3DI tFont, Position tOffset);
+void setDolmexicaStoryTextContinue(StoryInstance* tInstance, int tID, Vector3DI tSprite, Position tOffset);
 void setDolmexicaStoryTextContinue(StoryInstance* tInstance, int tID, int tAnimation, Position tOffset);
 double getDolmexicaStoryTextBasePositionX(StoryInstance* tInstance, int tID);
 double getDolmexicaStoryTextBasePositionY(StoryInstance* tInstance, int tID);
@@ -137,15 +144,15 @@ void setDolmexicaStoryIDName(StoryInstance* tInstance, int tID, std::string tNam
 int getDolmexicaStoryTextIDFromName(StoryInstance* tInstance, std::string tName);
 
 void changeDolmexicaStoryState(StoryInstance* tInstance, int tNextState);
+void changeDolmexicaStoryStateOutsideStateHandler(StoryInstance* tInstance, int tNextState);
 void endDolmexicaStoryboard(StoryInstance* tInstance, int tNextStoryState);
-
 
 int getDolmexicaStoryTimeInState(StoryInstance* tInstance);
 
 int getDolmexicaStoryAnimationTimeLeft(StoryInstance* tInstance, int tID);
 double getDolmexicaStoryAnimationPositionX(StoryInstance* tInstance, int tID);
 
-void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* tName, int tAnimation, Position tPosition);
+void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* tName, int tPreferredPalette, int tAnimation, Position tPosition);
 void removeDolmexicaStoryCharacter(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryCharacterBoundToStage(StoryInstance* tInstance, int tID, int tIsBoundToStage);
 void setDolmexicaStoryCharacterShadow(StoryInstance* tInstance, int tID, double tBasePositionY);
@@ -193,3 +200,7 @@ void playDolmexicaStoryMusic(const std::string& tPath);
 void stopDolmexicaStoryMusic();
 void pauseDolmexicaStoryMusic();
 void resumeDolmexicaStoryMusic();
+
+void setDolmexicaStoryCameraFocusX(double x);
+void setDolmexicaStoryCameraFocusY(double y);
+void setDolmexicaStoryCameraZoom(double tScale);

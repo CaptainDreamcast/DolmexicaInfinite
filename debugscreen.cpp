@@ -45,7 +45,7 @@ static void loadDebugScreen() {
 	setDreamStageMugenDefinition("assets/stages/kfm.def", "");
 	setGameModeTraining();
 
-	malloc_stats();
+	logMemoryPlatform();
 	logg("create mem stack\n");
 	gDebugScreenData.mMemoryStack = createMemoryStack(1024 * 1024 * 5); // should be 3
 
@@ -56,7 +56,7 @@ static void loadDebugScreen() {
 
 	setStateMachineHandlerToFight();
 
-	malloc_stats();
+	logMemoryPlatform();
 	logg("init custom handlers\n");
 
 	instantiateActor(getMugenAnimationUtilityHandler());
@@ -69,12 +69,12 @@ static void loadDebugScreen() {
 	instantiateActor(getDreamMugenStateHandler());
 	instantiateActor(getDreamExplodHandler());
 
-	malloc_stats();
+	logMemoryPlatform();
 	logg("init stage\n");
 
 	instantiateActor(getDreamStageBP());
 
-	malloc_stats();
+	logMemoryPlatform();
 	logg("init players\n");
 
 	loadPlayers(&gDebugScreenData.mMemoryStack);
@@ -88,25 +88,14 @@ static void loadDebugScreen() {
 		instantiateActor(getFightDebug());
 	}
 
-	malloc_stats();
+	logMemoryPlatform();
 	logg("shrinking memory stack\n");
-	resizeMemoryStackToCurrentSize(&gDebugScreenData.mMemoryStack); // TODO: test extensively
+	resizeMemoryStackToCurrentSize(&gDebugScreenData.mMemoryStack);
 }
 
 static void updateDebugScreen() {
 	abortScreenHandling();
 	return;
-
-	DreamMugenAssignment* ass = parseDreamMugenAssignmentFromString("(command = \"b\" || command = \"holddown\") \
-		&& ((statetype = C && ctrl) || (stateno = 200 && movecontact) || (stateno = 200 && movecontact) || (stateno = 200 && movecontact) \
-		|| (stateno = 200 && movecontact) || (stateno = 225 && var(2) != 0) || (stateno = 200 && movecontact) || (stateno = 200 && movecontact) \
-		|| (stateno = 200 && movecontact) || (stateno = 200 && movecontact) || (stateno = 200 && movecontact))");
-
-	for (int i = 0; i < 10000000; i++) {
-		evaluateDreamAssignment(&ass, getRootPlayer(0));
-	}
-
-	abortScreenHandling();
 }
 
 Screen gDebugScreen;

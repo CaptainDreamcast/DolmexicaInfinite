@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.421
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DolmexicaInfiniteWeb", "DolmexicaInfiniteWeb.vcxproj", "{887F558F-20D5-4669-8A4B-A21E0D8335A1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{10E9C155-833F-4A97-90C8-8072EE59B89E} = {10E9C155-833F-4A97-90C8-8072EE59B89E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "prismWeb", "..\..\addons\prism\windows\vs17\prismWeb.vcxproj", "{10E9C155-833F-4A97-90C8-8072EE59B89E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{887F558F-20D5-4669-8A4B-A21E0D8335A1}.Debug|x86.ActiveCfg = Debug|Win32
+		{887F558F-20D5-4669-8A4B-A21E0D8335A1}.Debug|x86.Build.0 = Debug|Win32
+		{887F558F-20D5-4669-8A4B-A21E0D8335A1}.Release|x86.ActiveCfg = Release|Win32
+		{887F558F-20D5-4669-8A4B-A21E0D8335A1}.Release|x86.Build.0 = Release|Win32
+		{10E9C155-833F-4A97-90C8-8072EE59B89E}.Debug|x86.ActiveCfg = Debug|Win32
+		{10E9C155-833F-4A97-90C8-8072EE59B89E}.Debug|x86.Build.0 = Debug|Win32
+		{10E9C155-833F-4A97-90C8-8072EE59B89E}.Release|x86.ActiveCfg = Release|Win32
+		{10E9C155-833F-4A97-90C8-8072EE59B89E}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EAAF70F4-3B40-486D-BAAF-C0D795B677BF}
+	EndGlobalSection
+EndGlobal

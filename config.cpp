@@ -14,10 +14,10 @@ static struct {
 	double mDefaultAttackDamageReceivedToPowerMultiplier;
 
 	int mDebug;
-	int mAllowDebugMode; // TODO
-	int mAllowDebugKeys; // TODO
-	int mSpeedup; // TODO
-	char mStartStage[200]; // TODO
+	int mAllowDebugMode; // TODO (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/407)
+	int mAllowDebugKeys; // TODO (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/407)
+	int mSpeedup; // TODO (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/407)
+	char mStartStage[200]; // TODO (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/407)
 	int mDifficulty;
 	int mLifeStartPercentageNumber;
 	int mIsTimerInfinite;
@@ -25,6 +25,7 @@ static struct {
 	int mGameSpeed;
 	int mWavVolume;
 	int mMidiVolume;
+	std::string mTitle;
 
 	map<int, int> mGlobalVariables;
 	map<int, double> mGlobalFVariables;
@@ -53,20 +54,34 @@ static void loadWindowTitle(MugenDefScript* tScript) {
 	if (isOnDreamcast()) return;
 	if (!isMugenDefStringVariable(tScript, "Misc", "title")) return;
 
-	char* text = getAllocatedMugenDefStringOrDefault(tScript, "Misc", "title", "DOLMEXICA INFINITE");
-	updateGameName(text);
-	freeMemory(text);
+	gConfigData.mTitle = getSTLMugenDefStringOrDefault(tScript, "Misc", "title", "DOLMEXICA INFINITE");
+	updateGameName(gConfigData.mTitle.c_str());
+
+	string iconPath = getSTLMugenDefStringOrDefault(tScript, "Misc", "icon", "");
+	if (isFile("assets/data/" + iconPath)) {
+		setIcon(("assets/data/" + iconPath).c_str());
+	}
 }
 
 void loadMugenConfig() {
-	MugenDefScript script; 
-	loadMugenDefScript(&script, "assets/data/mugen.cfg");
+	MugenDefScript script;
+	if (isFile("assets/data/dolmexica.cfg")) {
+		loadMugenDefScript(&script, "assets/data/dolmexica.cfg");
+	}
+	else {
+		loadMugenDefScript(&script, "assets/data/mugen.cfg");
+	}
 	loadRules(&script);
 	loadDebug(&script);
 	loadWindowTitle(&script);
 	unloadMugenDefScript(script);
 
-	setDefaultOptionVariables(); // TODO: load saved values
+	setDefaultOptionVariables(); // TODO: load saved values (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/201)
+}
+
+std::string getGameTitle()
+{
+	return gConfigData.mTitle;
 }
 
 double getDreamDefaultAttackDamageDoneToPowerMultiplier()
@@ -222,7 +237,7 @@ void addGlobalStringVariable(int tID, std::string tValue)
 
 void addGlobalStringVariable(int tID, int tValue)
 {
-	gConfigData.mGlobalStringVariables[tID][0] += tValue;
+	gConfigData.mGlobalStringVariables[tID][0] += (char)tValue;
 }
 
 std::string getGlobalStringVariable(int tID)

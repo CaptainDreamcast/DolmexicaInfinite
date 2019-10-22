@@ -20,7 +20,7 @@ typedef struct {
 	Vector3D mOffset;
 	int mTime;
 
-	int mAnimationID;
+	MugenAnimationHandlerElement* mAnimationElement;
 } Layer;
 
 typedef struct {
@@ -181,7 +181,7 @@ static void activateLayer(Scene* tScene, Layer* tLayer, int i) {
 	Position pos = vecAdd(tScene->mLayerAllPosition, tLayer->mOffset);
 	pos.z = 10 + i;
 
-	tLayer->mAnimationID = addMugenAnimation(tLayer->mAnimation, &gStoryScreenData.mSprites, pos);
+	tLayer->mAnimationElement = addMugenAnimation(tLayer->mAnimation, &gStoryScreenData.mSprites, pos);
 	tLayer->mStage = 1;
 }
 
@@ -216,7 +216,7 @@ static void unloadLayer(int i) {
 	if (!layer->mIsActive) return;
 	if (layer->mStage != 1) return;
 
-	removeMugenAnimation(layer->mAnimationID);
+	removeMugenAnimation(layer->mAnimationElement);
 }
 
 static void unloadScene() {
@@ -241,7 +241,7 @@ static void fadeOutSceneOver(void* tCaller) {
 		startScene();
 	}
 	else {
-		gStoryScreenData.mCurrentScene--; // TODO: check
+		gStoryScreenData.mCurrentScene--;
 		gotoNextScreen();
 	}
 }

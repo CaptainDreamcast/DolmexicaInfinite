@@ -68,10 +68,10 @@ typedef struct {
 static struct {
 	BackgroundStates mStates;
 
-} gData;
+} gMugenBackgroundStateHandlerData;
 
-static void loadBackgroundStateHandler(void* tData) {
-	gData.mStates.mBackgroundStateGroups = new_vector();
+static void loadBackgroundStateHandler(void* /*tData*/) {
+	gMugenBackgroundStateHandlerData.mStates.mBackgroundStateGroups = new_vector();
 }
 
 static void handleNullController() {}
@@ -220,7 +220,7 @@ static void updateSingleBackgroundGroup(void* tCaller, void* tData) {
 
 static void updateBackgroundStateHandler(void* tData) {
 	(void)tData;
-	vector_map(&gData.mStates.mBackgroundStateGroups, updateSingleBackgroundGroup, NULL);
+	vector_map(&gMugenBackgroundStateHandlerData.mStates.mBackgroundStateGroups, updateSingleBackgroundGroup, NULL);
 }
 
 ActorBlueprint getBackgroundStateHandler() {
@@ -344,11 +344,11 @@ static Vector3DI getTimeFromControllerGroup(MugenDefScriptGroup* tGroup) {
 }
 
 static void loadBackgroundStateController(MugenDefScriptGroup* tGroup) {
-	if (!vector_size(&gData.mStates.mBackgroundStateGroups)) {
+	if (!vector_size(&gMugenBackgroundStateHandlerData.mStates.mBackgroundStateGroups)) {
 		logErrorFormat("Unable to add background state %s, no state group defined. Ignoring.", tGroup->mName.data());
 		return;
 	}
-	BackgroundStateGroup* group = (BackgroundStateGroup*)vector_get_back(&gData.mStates.mBackgroundStateGroups);
+	BackgroundStateGroup* group = (BackgroundStateGroup*)vector_get_back(&gMugenBackgroundStateHandlerData.mStates.mBackgroundStateGroups);
 	BackgroundState* e = (BackgroundState*)allocMemory(sizeof(BackgroundState));
 
 	loadBackgroundStateControllerElements(tGroup, &e->mElements);
@@ -369,13 +369,13 @@ static void loadBackgroundStateControllerDef(MugenDefScriptGroup* tGroup) {
 	group->mLoopTime = getMugenDefIntegerOrDefaultAsGroup(tGroup, "looptime", -1);
 	group->mStates = new_vector();
 	group->mTime = 0;
-	vector_push_back_owned(&gData.mStates.mBackgroundStateGroups, group);
+	vector_push_back_owned(&gMugenBackgroundStateHandlerData.mStates.mBackgroundStateGroups, group);
 }
 
 
 static void loadBackgroundStatesFromGroup(MugenDefScriptGroup* tGroup) {
 	char firstW[100];
-	int items = sscanf(tGroup->mName.data(), "%s", firstW); // TODO: remove firstW
+	int items = sscanf(tGroup->mName.data(), "%s", firstW);
 	if (!items) return;
 	turnStringLowercase(firstW);
 

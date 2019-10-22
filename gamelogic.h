@@ -22,6 +22,7 @@ int getDreamGameTime();
 
 int getDreamRoundNumber();
 int getRoundsToWin();
+void setRoundsToWin(int tRoundsToWin);
 int getDreamRoundStateNumber();
 int getDreamMatchNumber();
 
@@ -49,7 +50,7 @@ void setGameModeSurvival(double tLifePercentage, int tRound);
 void setGameModeTraining(); 
 void setGameModeWatch();
 void setGameModeSuperWatch();
-void setGameModeExhibit(int tEndTime, int tIsDisplayingBars);
+void setGameModeExhibit(int tEndTime, int tIsDisplayingBars, int tIsDisplayingDebug);
 void setGameModeStory();
 void setGameModeOsu();
 void resetGameMode();

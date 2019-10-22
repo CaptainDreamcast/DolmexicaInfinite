@@ -13,12 +13,50 @@
 
 using namespace std;
 
+static struct {
+	int mIsPlayingMusic;
+	int mIsPausedFlag;
+} gDolmexicaMugenSoundData;
+
+static void loadDolmexicaSoundHandler(void*) {
+	gDolmexicaMugenSoundData.mIsPlayingMusic = 0;
+	gDolmexicaMugenSoundData.mIsPausedFlag = 0;
+}
+
+static void updatePauseFlag() {
+	if (!gDolmexicaMugenSoundData.mIsPausedFlag) return;
+
+	if (gDolmexicaMugenSoundData.mIsPausedFlag == 2) {
+		resumeMusic();
+		gDolmexicaMugenSoundData.mIsPausedFlag = 0;
+	}
+	else {
+		gDolmexicaMugenSoundData.mIsPausedFlag++;
+	}
+}
+
+static void updateDolmexicaSoundHandler(void*) {
+	if (!gDolmexicaMugenSoundData.mIsPlayingMusic) return;
+	updatePauseFlag();
+}
+
+ActorBlueprint getDolmexicaSoundHandler()
+{
+	return makeActorBlueprint(loadDolmexicaSoundHandler, NULL, updateDolmexicaSoundHandler);
+}
+
 DreamMugenSound makeDreamMugenSound(int tGroup, int tItem)
 {
 	DreamMugenSound ret;
 	ret.mGroup = tGroup;
 	ret.mItem = tItem;
 	return ret;
+}
+
+void setNoMusicFlag()
+{
+	pauseMusic();
+	gDolmexicaMugenSoundData.mIsPausedFlag = 1;
 }
 
 int isMugenBGMMusicPath(const char * tPath)
@@ -65,6 +103,7 @@ static void playMugenBGMTrack(const char* tPath, int tIsLooping) {
 	else {
 		playTrackOnce(trackNumber);
 	}
+	gDolmexicaMugenSoundData.mIsPlayingMusic = 1;
 }
 
 static void playMugenBGMMusicCompletePath(const char* tPath, int tIsLooping) {
@@ -74,6 +113,7 @@ static void playMugenBGMMusicCompletePath(const char* tPath, int tIsLooping) {
 	else {
 		streamMusicFileOnce(tPath);
 	}
+	gDolmexicaMugenSoundData.mIsPlayingMusic = 1;
 }
 
 
@@ -89,7 +129,6 @@ void playMugenBGMMusicPath(const char* tPath, const char* tStagePath, int tIsLoo
 		return;
 	}
 
-	// TODO: remove duplication
 	char inFolderPath[1024];
 	sprintf(inFolderPath, "assets/music/%s", tPath); 
 	if (isFile(inFolderPath)) {

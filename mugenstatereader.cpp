@@ -230,7 +230,7 @@ static void handleSingleMugenStateDefElement(MugenStateDefCaller* tCaller, const
 
 static void removeState(DreamMugenStates* tStates, int tState) {
 	// DreamMugenState* e = &tStates->mStates[tState];
-	// unloadSingleState(e); // TODO: reinsert
+	// unloadSingleState(e); // TODO: reinsert (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/132)
 	tStates->mStates.erase(tState);
 }
 
@@ -265,7 +265,7 @@ static void handleMugenStateDef(DreamMugenStates* tStates, MugenDefScriptGroup* 
 	stl_string_map_map(tGroup->mElements, handleSingleMugenStateDefElement, &caller);
 
 	if (stl_map_contains(tStates->mStates, state.mID)) {
-		removeState(tStates, state.mID); // TODO
+		removeState(tStates, state.mID); // TODO (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/132)
 	}
 	tStates->mStates[state.mID] = state;
 }

@@ -4,8 +4,7 @@
 
 #include <prism/screeneffect.h>
 #include <prism/wrapper.h>
-#include <prism/framerate.h>
-#include <prism/wrapper.h>
+#include <prism/system.h>
 #include <prism/input.h>
 #include <prism/log.h>
 #include <prism/math.h>
@@ -15,10 +14,13 @@
 #include "mugenstagehandler.h"
 #include "titlescreen.h"
 #include "fightscreen.h"
+#include "fightdebug.h"
 #include "fightresultdisplay.h"
 #include "mugenexplod.h"
 #include "config.h"
 #include "osuhandler.h"
+#include "arcademode.h"
+#include "survivalmode.h"
 
 typedef enum {
 	ROUND_STATE_FADE_IN = 0,
@@ -57,10 +59,13 @@ static struct {
 	
 
 	GameMode mMode;
-} gData;
+} gGameLogicData;
 
 static void fightAnimationFinishedCB() {
-	gData.mRoundStateNumber = ROUND_STATE_FIGHT;
+	changePlayerStateIfDifferent(getRootPlayer(0), 0);
+	changePlayerStateIfDifferent(getRootPlayer(1), 0);
+
+	gGameLogicData.mRoundStateNumber = ROUND_STATE_FIGHT;
 	enableDreamTimer();
 }
 
@@ -69,16 +74,16 @@ static void roundAnimationFinishedCB() {
 }
 
 static void introFinished() {
-	gData.mIsDisplayingIntro = 0;
+	gGameLogicData.mIsDisplayingIntro = 0;
 	if (getGameMode() == GAME_MODE_OSU && !shouldPlayOsuMusicInTheBeginning()) {
 		startPlayingOsuSong();
 	}
-	playDreamRoundAnimation(gData.mRoundNumber, roundAnimationFinishedCB);
+	playDreamRoundAnimation(gGameLogicData.mRoundNumber, roundAnimationFinishedCB);
 }
 
 static void startIntro() {
-	gData.mRoundStateNumber = ROUND_STATE_INTRO;
-	gData.mIsDisplayingIntro = 2;
+	gGameLogicData.mRoundStateNumber = ROUND_STATE_INTRO;
+	gGameLogicData.mIsDisplayingIntro = 2;
 }
 
 static void fadeInFinished(void* tData) {
@@ -89,9 +94,9 @@ static void fadeInFinished(void* tData) {
 
 static void startRound() {
 	disableDreamTimer();
-	gData.mRoundStateNumber = ROUND_STATE_FADE_IN;
-	gData.mIsDisplayingIntro = 0;
-	gData.mIsDisplayingWinPose = 0;
+	gGameLogicData.mRoundStateNumber = ROUND_STATE_FADE_IN;
+	gGameLogicData.mIsDisplayingIntro = 0;
+	gGameLogicData.mIsDisplayingWinPose = 0;
 	setPlayerControl(getRootPlayer(0), 0);
 	setPlayerControl(getRootPlayer(1), 0);
 	if (hasLoadedPlayerSprites()) {
@@ -104,55 +109,55 @@ static void startRound() {
 static void gotoNextRound(void*);
 
 static void setWinIcon() {
-	VictoryType type = getPlayerVictoryType(gData.mRoundWinner);
-	int isPerfect = isPlayerAtFullLife(gData.mRoundWinner);
+	VictoryType type = getPlayerVictoryType(gGameLogicData.mRoundWinner);
+	int isPerfect = isPlayerAtFullLife(gGameLogicData.mRoundWinner);
 
 	if (type == VICTORY_TYPE_NORMAL) {
-		addNormalWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+		addNormalWinIcon(gGameLogicData.mRoundWinner->mRootID, isPerfect);
 	}
 	else if (type == VICTORY_TYPE_SPECIAL) {
-		addSpecialWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+		addSpecialWinIcon(gGameLogicData.mRoundWinner->mRootID, isPerfect);
 	}
 	else if (type == VICTORY_TYPE_HYPER) {
-		addHyperWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+		addHyperWinIcon(gGameLogicData.mRoundWinner->mRootID, isPerfect);
 	}
 	else if (type == VICTORY_TYPE_THROW) {
-		addThrowWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+		addThrowWinIcon(gGameLogicData.mRoundWinner->mRootID, isPerfect);
 	}
 	else if (type == VICTORY_TYPE_CHEESE) {
-		addCheeseWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+		addCheeseWinIcon(gGameLogicData.mRoundWinner->mRootID, isPerfect);
 	}
 	else if (type == VICTORY_TYPE_TIMEOVER) {
-		addTimeoverWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+		addTimeoverWinIcon(gGameLogicData.mRoundWinner->mRootID, isPerfect);
 	}
 	else if (type == VICTORY_TYPE_SUICIDE) {
-		addSuicideWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+		addSuicideWinIcon(gGameLogicData.mRoundWinner->mRootID, isPerfect);
 	}
 	else if (type == VICTORY_TYPE_TEAMMATE) {
-		addTeammateWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+		addTeammateWinIcon(gGameLogicData.mRoundWinner->mRootID, isPerfect);
 	}
 	else {
 		logWarningFormat("Unrecognized win icon type %d. Defaulting to normal.", type);
-		addNormalWinIcon(gData.mRoundWinner->mRootID, isPerfect);
+		addNormalWinIcon(gGameLogicData.mRoundWinner->mRootID, isPerfect);
 	}
 }
 
 static void setRoundWinner() {
 	if (getPlayerLife(getRootPlayer(0)) >= getPlayerLife(getRootPlayer(1))) {
-		gData.mRoundWinner = getRootPlayer(0);
+		gGameLogicData.mRoundWinner = getRootPlayer(0);
 	}
 	else {
-		gData.mRoundWinner = getRootPlayer(1);
+		gGameLogicData.mRoundWinner = getRootPlayer(1);
 	}
 
 	setWinIcon();
-	gData.mRoundStateNumber = ROUND_STATE_OVER;
+	gGameLogicData.mRoundStateNumber = ROUND_STATE_OVER;
 	setPlayerControl(getRootPlayer(0), 0);
 	setPlayerControl(getRootPlayer(1), 0);
 }
 
 static void setMatchWinner() {
-	gData.mMatchWinnerIndex = gData.mRoundWinner->mRootID;
+	gGameLogicData.mMatchWinnerIndex = gGameLogicData.mRoundWinner->mRootID;
 }
 
 static void startWinPose();
@@ -167,16 +172,16 @@ static void loadGameLogic(void* tData) {
 	(void)tData;
 	setDreamTimeDisplayFinishedCB(timerFinishedCB);
 
-	gData.mGameTime = 0;
-	gData.mRoundNumber = gData.mStartRound;
+	gGameLogicData.mGameTime = 0;
+	gGameLogicData.mRoundNumber = gGameLogicData.mStartRound;
 	startRound();
 }
 
 static void updateIntro() {
-	if (!gData.mIsDisplayingIntro) return;
+	if (!gGameLogicData.mIsDisplayingIntro) return;
 	
-	if (gData.mIsDisplayingIntro == 2) { // TODO: fix call stuff
-		gData.mIsDisplayingIntro--;
+	if (gGameLogicData.mIsDisplayingIntro == 2) {
+		gGameLogicData.mIsDisplayingIntro--;
 		return;
 	}
 	
@@ -214,8 +219,8 @@ static void resetGameLogic(void* tCaller) {
 		resetOsuHandler();
 	}
 
-	gData.mGameTime = 0;
-	gData.mRoundNumber = gData.mStartRound;
+	gGameLogicData.mGameTime = 0;
+	gGameLogicData.mRoundNumber = gGameLogicData.mStartRound;
 }
 
 static void resetGameStart() {
@@ -233,8 +238,8 @@ static void startContinue() {
 static void winAnimationFinishedCB() {
 	setMatchWinner();
 
-	int isShowingResultsSurvival = gData.mMode == GAME_MODE_SURVIVAL && !isPlayerHuman(gData.mRoundWinner);
-	if (gData.mIsContinueActive && getPlayerAILevel(gData.mRoundWinner)) {
+	int isShowingResultsSurvival = gGameLogicData.mMode == GAME_MODE_SURVIVAL && !isPlayerHuman(gGameLogicData.mRoundWinner);
+	if (gGameLogicData.mIsContinueActive && getPlayerAILevel(gGameLogicData.mRoundWinner)) {
 		startContinue();
 	}
 	else if (isShowingFightResults() || isShowingResultsSurvival) {
@@ -245,15 +250,14 @@ static void winAnimationFinishedCB() {
 }
 
 static void startWinPose() {
-	turnPlayerTowardsOtherPlayer(gData.mRoundWinner);
+	turnPlayerTowardsOtherPlayer(gGameLogicData.mRoundWinner);
 
-	if (hasPlayerStateSelf(gData.mRoundWinner, 180)) {
-		changePlayerState(gData.mRoundWinner, 180);
-
+	if (hasPlayerStateSelf(gGameLogicData.mRoundWinner, 180)) {
+		changePlayerState(gGameLogicData.mRoundWinner, 180);
 	}
 
-	gData.mRoundStateNumber = ROUND_STATE_WIN_POSE;
-	gData.mIsDisplayingWinPose = 1;
+	gGameLogicData.mRoundStateNumber = ROUND_STATE_WIN_POSE;
+	gGameLogicData.mIsDisplayingWinPose = 1;
 }
 
 static void koAnimationFinishedCB() {
@@ -270,7 +274,7 @@ static void startKO() {
 }
 
 static void updateWinCondition() {
-	if (gData.mRoundStateNumber != 2) return;
+	if (gGameLogicData.mRoundStateNumber != 2) return;
 
 	int i;
 	for (i = 0; i < 2; i++) {
@@ -283,12 +287,12 @@ static void updateWinCondition() {
 }
 
 static void updateNoControl() {
-	if (gData.mRoundStateNumber < 3) return;
+	if (gGameLogicData.mRoundStateNumber < 3) return;
 	setPlayerControl(getRootPlayer(0), 0);
 	setPlayerControl(getRootPlayer(1), 0);
 }
 
-static void resetRoundData(void* tCaller) {
+static void resetRoundData(void* /*tCaller*/) {
 	enableDrawing();
 	resetPlayers();
 	resetDreamMugenStageHandlerCameraPosition();
@@ -301,49 +305,53 @@ static void resetRoundData(void* tCaller) {
 static void gotoNextRound(void* tCaller) {
 	(void)tCaller;
 	increasePlayerRoundsExisted();
-	gData.mRoundNumber++;
+	gGameLogicData.mRoundNumber++;
 	resetRoundData(NULL);
 }
 
 static void restoreSurvivalHealth() {
-	if (gData.mMode != GAME_MODE_SURVIVAL) return;
-	if (!isPlayerHuman(gData.mRoundWinner)) return;
+	if (gGameLogicData.mMode != GAME_MODE_SURVIVAL) return;
+	if (!isPlayerHuman(gGameLogicData.mRoundWinner)) return;
 
-	addPlayerLife(gData.mRoundWinner, getPlayerLifeMax(gData.mRoundWinner) / 2);
+	addPlayerLife(gGameLogicData.mRoundWinner, gGameLogicData.mRoundWinner, getPlayerLifeMax(gGameLogicData.mRoundWinner) / 2);
 }
 
 static void updateWinPose() {
-	if (!gData.mIsDisplayingWinPose) return;
+	if (!gGameLogicData.mIsDisplayingWinPose) return;
 
 	int hasSkipped = hasPressedStartFlankSingle(0) || hasPressedStartFlankSingle(1);
-	int isTimeOver = !getPlayerAnimationTimeDeltaUntilFinished(gData.mRoundWinner);
-	int isStepInfinite = isMugenAnimationStepDurationInfinite(getPlayerAnimationStepDuration(gData.mRoundWinner)); 
-	int isOver = isTimeOver || isStepInfinite;
+	int isTimeOver = !getPlayerAnimationTimeDeltaUntilFinished(gGameLogicData.mRoundWinner) || hasPlayerAnimationLooped(gGameLogicData.mRoundWinner);
+	int isStepInfinite = isMugenAnimationStepDurationInfinite(getPlayerAnimationStepDuration(gGameLogicData.mRoundWinner)); 
+	int isOver = (isTimeOver || isStepInfinite) && !gGameLogicData.mRoundNotOverFlag;
 	if (isOver || hasSkipped) {
-		increasePlayerRoundsWon(gData.mRoundWinner);
-		if (hasPlayerWon(gData.mRoundWinner)) {
+		increasePlayerRoundsWon(gGameLogicData.mRoundWinner);
+		if (hasPlayerWon(gGameLogicData.mRoundWinner)) {
 			restoreSurvivalHealth();
-			playDreamWinAnimation(getPlayerDisplayName(gData.mRoundWinner), winAnimationFinishedCB);
+			playDreamWinAnimation(getPlayerDisplayName(gGameLogicData.mRoundWinner), winAnimationFinishedCB);
 		}
 		else {
 			addFadeOut(30, gotoNextRound, NULL);
 		}
-		gData.mIsDisplayingWinPose = 0;
+		gGameLogicData.mIsDisplayingWinPose = 0;
 	}
 
 }
 
-static void updateExhibitMode() {
-	if (gData.mMode != GAME_MODE_EXHIBIT) return;
+static void updateRoundNotOverFlag() {
+	gGameLogicData.mRoundNotOverFlag = 0;
+}
 
-	if (!gData.mExhibit.mIsDisplayingBars) {
+static void updateExhibitMode() {
+	if (gGameLogicData.mMode != GAME_MODE_EXHIBIT) return;
+
+	if (!gGameLogicData.mExhibit.mIsDisplayingBars) {
 		setDreamBarInvisibleForOneFrame();
 	}
 
-	int isOver = (hasPressedStartFlank() || gData.mGameTime >= gData.mExhibit.mEndTime);
-	if (!gData.mExhibit.mIsFadingOut && isOver) {
+	int isOver = (hasPressedStartFlank() || gGameLogicData.mGameTime >= gGameLogicData.mExhibit.mEndTime);
+	if (!gGameLogicData.mExhibit.mIsFadingOut && isOver) {
 		addFadeOut(180, goToNextScreen, NULL);
-		gData.mExhibit.mIsFadingOut = 1;
+		gGameLogicData.mExhibit.mIsFadingOut = 1;
 	}
 }
 
@@ -361,15 +369,17 @@ static void skipIntroCB(void* tCaller) {
 	if (getGameMode() == GAME_MODE_OSU && !shouldPlayOsuMusicInTheBeginning() && !isOsuHandlerActive()) {
 		startPlayingOsuSong();
 	}
-	gData.mIsDisplayingIntro = 0;
+	gGameLogicData.mIsDisplayingIntro = 0;
 	changePlayerState(getRootPlayer(0), 0);
 	changePlayerState(getRootPlayer(1), 0);
+	resetPlayerPosition(getRootPlayer(0));
+	resetPlayerPosition(getRootPlayer(1));
 	removeAllExplods();
 	addFadeIn(10, skipIntroFinishedCB, NULL);
 }
 
 static void updateIntroSkip() {
-	if (gData.mRoundStateNumber != ROUND_STATE_INTRO) return;
+	if (gGameLogicData.mRoundStateNumber != ROUND_STATE_INTRO) return;
 
 	if (hasPressedStartFlankSingle(0) || hasPressedStartFlankSingle(1)) {
 		addFadeOut(10, skipIntroCB, NULL);
@@ -378,12 +388,13 @@ static void updateIntroSkip() {
 
 static void updateGameLogic(void* tData) {
 	(void)tData;
-	gData.mGameTime++;
+	gGameLogicData.mGameTime++;
 
 	updateIntro();
 	updateWinCondition();
 	updateNoControl();
 	updateWinPose();
+	updateRoundNotOverFlag();
 	updateExhibitMode();
 	updateIntroSkip();
 }
@@ -395,62 +406,74 @@ ActorBlueprint getDreamGameLogic() {
 
 int getDreamGameTime()
 {
-	return gData.mGameTime;
+	return gGameLogicData.mGameTime;
 }
 
 int getDreamRoundNumber()
 {
-	return gData.mRoundNumber; 
+	return gGameLogicData.mRoundNumber; 
 }
 
 int getRoundsToWin()
 {
-	return gData.mRoundsToWin;
+	return gGameLogicData.mRoundsToWin;
+}
+
+void setRoundsToWin(int tRoundsToWin)
+{
+	gGameLogicData.mRoundsToWin = tRoundsToWin;
 }
 
 int getDreamRoundStateNumber()
 {
-	return gData.mRoundStateNumber;
+	return gGameLogicData.mRoundStateNumber;
 }
 
 int getDreamMatchNumber()
 {
-	return 1; // TODO
+	switch (getGameMode()) {
+	case GAME_MODE_ARCADE:
+		return getArcadeModeMatchNumber();
+	case GAME_MODE_SURVIVAL:
+		return getSurvivalModeMatchNumber();
+	default:
+		return 1;
+	}
 }
 
 int isDreamMatchOver()
 {
-	return 0; // TODO
+	return gGameLogicData.mRoundStateNumber >= ROUND_STATE_WIN_POSE;
 }
 
 void setDreamRoundNotOverFlag()
 {
-	gData.mRoundNotOverFlag = 1; // TODO: use
+	gGameLogicData.mRoundNotOverFlag = 1;
 }
 
 int isDreamGameModeTwoPlayer()
 {
-	return !gData.mIsInSinglePlayerMode;
+	return !gGameLogicData.mIsInSinglePlayerMode;
 }
 
 void setDreamGameModeSinglePlayer()
 {
-	gData.mIsInSinglePlayerMode = 1;
+	gGameLogicData.mIsInSinglePlayerMode = 1;
 }
 
 void setDreamGameModeTwoPlayer()
 {
-	gData.mIsInSinglePlayerMode = 0;
+	gGameLogicData.mIsInSinglePlayerMode = 0;
 }
 
 int getDreamTicksPerSecond()
 {
-	return 60; // TODO: variable framerate
+	return 60;
 }
 
 int getDreamMatchWinnerIndex()
 {
-	return gData.mMatchWinnerIndex;
+	return gGameLogicData.mMatchWinnerIndex;
 }
 
 void resetRound() {
@@ -471,17 +494,17 @@ void skipFightIntroWithoutFading()
 
 void setFightContinueActive()
 {
-	gData.mIsContinueActive = 1;
+	gGameLogicData.mIsContinueActive = 1;
 }
 
 void setFightContinueInactive()
 {
-	gData.mIsContinueActive = 0;
+	gGameLogicData.mIsContinueActive = 0;
 }
 
 void setGameModeArcade() {
-	gData.mRoundsToWin = 2;
-	gData.mStartRound = 1;
+	gGameLogicData.mRoundsToWin = 2;
+	gGameLogicData.mStartRound = 1;
 
 	setFightContinueActive();
 	setTimerFinite();
@@ -493,13 +516,13 @@ void setGameModeArcade() {
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
 
-	gData.mMode = GAME_MODE_ARCADE;
+	gGameLogicData.mMode = GAME_MODE_ARCADE;
 }
 
 void setGameModeFreePlay()
 {
-	gData.mRoundsToWin = 2;
-	gData.mStartRound = 1;
+	gGameLogicData.mRoundsToWin = 2;
+	gGameLogicData.mStartRound = 1;
 
 	setFightContinueActive();
 	setTimerFinite();
@@ -511,12 +534,12 @@ void setGameModeFreePlay()
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
 
-	gData.mMode = GAME_MODE_FREE_PLAY;
+	gGameLogicData.mMode = GAME_MODE_FREE_PLAY;
 }
 
 void setGameModeVersus() {
-	gData.mRoundsToWin = 2;
-	gData.mStartRound = 1;
+	gGameLogicData.mRoundsToWin = 2;
+	gGameLogicData.mStartRound = 1;
 
 	setFightResultActive(0);
 	setFightContinueInactive();
@@ -529,12 +552,12 @@ void setGameModeVersus() {
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
 
-	gData.mMode = GAME_MODE_VERSUS;
+	gGameLogicData.mMode = GAME_MODE_VERSUS;
 }
 
 void setGameModeSurvival(double tLifePercentage, int tRound) {
-	gData.mRoundsToWin = 1;
-	gData.mStartRound = tRound;
+	gGameLogicData.mRoundsToWin = 1;
+	gGameLogicData.mStartRound = tRound;
 
 	setFightResultActive(0);
 	setFightContinueInactive();
@@ -547,12 +570,12 @@ void setGameModeSurvival(double tLifePercentage, int tRound) {
 	setPlayerStartLifePercentage(0, tLifePercentage);
 	setPlayerStartLifePercentage(1, 1);
 
-	gData.mMode = GAME_MODE_SURVIVAL;
+	gGameLogicData.mMode = GAME_MODE_SURVIVAL;
 }
 
 void setGameModeTraining() {
-	gData.mRoundsToWin = 2;
-	gData.mStartRound = 1;
+	gGameLogicData.mRoundsToWin = 2;
+	gGameLogicData.mStartRound = 1;
 
 	setFightResultActive(0);
 	setFightContinueActive();
@@ -565,13 +588,13 @@ void setGameModeTraining() {
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
 
-	gData.mMode = GAME_MODE_TRAINING;
+	gGameLogicData.mMode = GAME_MODE_TRAINING;
 }
 
 void setGameModeWatch()
 {
-	gData.mRoundsToWin = 2;
-	gData.mStartRound = 1;
+	gGameLogicData.mRoundsToWin = 2;
+	gGameLogicData.mStartRound = 1;
 
 	setFightResultActive(0);
 	setFightContinueInactive();
@@ -584,13 +607,13 @@ void setGameModeWatch()
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
 
-	gData.mMode = GAME_MODE_WATCH;
+	gGameLogicData.mMode = GAME_MODE_WATCH;
 }
 
 void setGameModeSuperWatch()
 {
-	gData.mRoundsToWin = 2;
-	gData.mStartRound = 1;
+	gGameLogicData.mRoundsToWin = 2;
+	gGameLogicData.mStartRound = 1;
 
 	setFightResultActive(0);
 	setFightContinueInactive();
@@ -603,13 +626,13 @@ void setGameModeSuperWatch()
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
 
-	gData.mMode = GAME_MODE_SUPER_WATCH;
+	gGameLogicData.mMode = GAME_MODE_SUPER_WATCH;
 }
 
-void setGameModeExhibit(int tEndTime, int tIsDisplayingBars)
+void setGameModeExhibit(int tEndTime, int tIsDisplayingBars, int tIsDisplayingDebug)
 {
-	gData.mRoundsToWin = 1;
-	gData.mStartRound = 1;
+	gGameLogicData.mRoundsToWin = 1;
+	gGameLogicData.mStartRound = 1;
 
 	setFightResultActive(0);
 	setFightContinueInactive();
@@ -621,17 +644,19 @@ void setGameModeExhibit(int tEndTime, int tIsDisplayingBars)
 	setPlayerPreferredPalette(1, 2);
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
+	if (isMugenDebugActive() && tIsDisplayingDebug) {
+		setFightDebugToPlayerOneBeforeFight();
+	}
+	gGameLogicData.mExhibit.mEndTime = tEndTime;
+	gGameLogicData.mExhibit.mIsDisplayingBars = tIsDisplayingBars;
+	gGameLogicData.mExhibit.mIsFadingOut = 0;
 
-	gData.mExhibit.mEndTime = tEndTime;
-	gData.mExhibit.mIsDisplayingBars = tIsDisplayingBars;
-	gData.mExhibit.mIsFadingOut = 0;
-
-	gData.mMode = GAME_MODE_EXHIBIT;
+	gGameLogicData.mMode = GAME_MODE_EXHIBIT;
 }
 
 void setGameModeStory() {
-	gData.mRoundsToWin = 2;
-	gData.mStartRound = 1;
+	gGameLogicData.mRoundsToWin = 2;
+	gGameLogicData.mStartRound = 1;
 
 	setFightResultActive(0);
 	setTimerFinite();
@@ -641,31 +666,36 @@ void setGameModeStory() {
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
 
-	gData.mMode = GAME_MODE_STORY;
+	gGameLogicData.mMode = GAME_MODE_STORY;
 }
 
 void setGameModeOsu()
 {
-	gData.mRoundsToWin = 1;
-	gData.mStartRound = 1;
+	gGameLogicData.mRoundsToWin = 1;
+	gGameLogicData.mStartRound = 1;
 
 	setFightResultActive(0);
 	setTimerInfinite();
 	setPlayersToRealFightMode();
 	setPlayerHuman(0);
 	setPlayerArtificial(1, getDifficulty());
+	setPlayerPreferredPalette(0, 1);
+	setPlayerPreferredPalette(1, 2);
 	setPlayerStartLifePercentage(0, 2);
 	setPlayerStartLifePercentage(1, 2);
 
-	gData.mMode = GAME_MODE_OSU;
+	gGameLogicData.mMode = GAME_MODE_OSU;
 }
 
 void resetGameMode()
 {
-	setGameModeFreePlay();
+	if (getGameMode() == GAME_MODE_OSU)
+	{
+		setGameModeFreePlay();
+	}
 }
 
 GameMode getGameMode()
 {
-	return gData.mMode;
+	return gGameLogicData.mMode;
 }

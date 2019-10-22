@@ -22,7 +22,7 @@ typedef struct {
 	char mData[200];
 } AssignmentReturnValue;
 
-typedef enum {
+enum DreamMugenAssignmentType : uint8_t {
 	MUGEN_ASSIGNMENT_TYPE_FIXED_BOOLEAN,
 	MUGEN_ASSIGNMENT_TYPE_AND,
 	MUGEN_ASSIGNMENT_TYPE_OR,
@@ -55,7 +55,7 @@ typedef enum {
 	MUGEN_ASSIGNMENT_TYPE_BITWISE_OR,
 	MUGEN_ASSIGNMENT_TYPE_STATIC,
 	MUGEN_ASSIGNMENT_TYPE_AMOUNT
-} DreamMugenAssignmentType;
+};
 
 typedef struct {
 	uint8_t mType;
@@ -137,7 +137,7 @@ DreamMugenAssignment* makeDreamOrMugenAssignment(DreamMugenAssignment* a, DreamM
 DreamMugenAssignment*  parseDreamMugenAssignmentFromString(char* tText);
 DreamMugenAssignment*  parseDreamMugenAssignmentFromString(const char* tText);
 
-int fetchDreamAssignmentFromGroupAndReturnWhetherItExists(const char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tOutput);
+uint8_t fetchDreamAssignmentFromGroupAndReturnWhetherItExists(const char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tOutput);
 void fetchDreamAssignmentFromGroupAsElement(MugenDefScriptGroupElement* tElement, DreamMugenAssignment** tOutput);
 
 int doDreamAssignmentStringsBeginsWithPattern(char* tPattern, char* tText);

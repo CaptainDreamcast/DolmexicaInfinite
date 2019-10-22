@@ -114,8 +114,8 @@ static void updateAICommands(PlayerAI* e) {
 	}
 }
 
-static void updateSingleAI(void* tCaller, PlayerAI& tData) {
-	(void)tCaller;
+static void updateSingleAI(void* /*tCaller*/, PlayerAI& tData) {
+	if (getDreamRoundStateNumber() != 2) return;
 	PlayerAI* e = &tData;
 
 	updateAIMovement(e);

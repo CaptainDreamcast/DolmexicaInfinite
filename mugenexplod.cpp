@@ -36,7 +36,7 @@ typedef struct {
 	Acceleration mAcceleration;
 
 	Vector3DI mRandomOffset;
-	int mRemoveTime;
+	int mRemoveTime = -2;
 	int mIsSuperMove;
 
 	int mSuperMoveTime;
@@ -58,8 +58,8 @@ typedef struct {
 	DreamExplodTransparencyType mTransparencyType;
 
 	int mIsFacingRight;
-	int mPhysicsID;
-	int mAnimationID;
+	PhysicsHandlerElement* mPhysicsElement;
+	MugenAnimationHandlerElement* mAnimationElement;
 	int mNow;
 
 } Explod;
@@ -116,7 +116,6 @@ void setExplodPositionType(int tID, DreamExplodPositionType tType)
 void setExplodHorizontalFacing(int tID, int tFacing)
 {
 	Explod* e = &gMugenExplod.mExplods[tID];
-	int isPositionIndependentType = e->mPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT || e->mPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT;
 	e->mIsFlippedHorizontally = tFacing == -1;
 }
 
@@ -126,7 +125,6 @@ void setExplodVerticalFacing(int tID, int tFacing)
 	e->mIsFlippedVertically = tFacing == -1;
 }
 
-// TODO: use bind time
 void setExplodBindTime(int tID, int tBindTime)
 {
 	Explod* e = &gMugenExplod.mExplods[tID];
@@ -303,32 +301,32 @@ void finalizeExplod(int tID)
 		e->mIsFacingRight = 1;
 	}
 
-	e->mPhysicsID = addToPhysicsHandler(makePosition(0, 0, 0));
+	e->mPhysicsElement = addToPhysicsHandler(makePosition(0, 0, 0));
 
 	if (!e->mIsFacingRight) {
 		e->mVelocity.x = -e->mVelocity.x;
 		e->mAcceleration.x = -e->mAcceleration.x;
 		e->mIsFlippedHorizontally = !e->mIsFlippedHorizontally;
 	}
-	addAccelerationToHandledPhysics(e->mPhysicsID, e->mVelocity);
+	addAccelerationToHandledPhysics(e->mPhysicsElement, e->mVelocity);
 
 	Position p = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(e->mPlayer)) + getFinalExplodPositionFromPositionType(e->mPositionType, e->mPosition, e->mPlayer);
 	p.z = PLAYER_Z + 1 * e->mSpritePriority;
-	e->mAnimationID = addMugenAnimation(animation, sprites, p);
-	setMugenAnimationBasePosition(e->mAnimationID, getHandledPhysicsPositionReference(e->mPhysicsID));
-	setMugenAnimationCameraPositionReference(e->mAnimationID, getDreamMugenStageHandlerCameraPositionReference());
-	setMugenAnimationCallback(e->mAnimationID, explodAnimationFinishedCB, e);
-	setMugenAnimationFaceDirection(e->mAnimationID, !e->mIsFlippedHorizontally);
-	setMugenAnimationVerticalFaceDirection(e->mAnimationID, !e->mIsFlippedVertically);
-	setMugenAnimationDrawScale(e->mAnimationID, e->mScale);
+	e->mAnimationElement = addMugenAnimation(animation, sprites, p);
+	setMugenAnimationBasePosition(e->mAnimationElement, getHandledPhysicsPositionReference(e->mPhysicsElement));
+	setMugenAnimationCameraPositionReference(e->mAnimationElement, getDreamMugenStageHandlerCameraPositionReference());
+	setMugenAnimationCallback(e->mAnimationElement, explodAnimationFinishedCB, e);
+	setMugenAnimationFaceDirection(e->mAnimationElement, !e->mIsFlippedHorizontally);
+	setMugenAnimationVerticalFaceDirection(e->mAnimationElement, !e->mIsFlippedVertically);
+	setMugenAnimationDrawScale(e->mAnimationElement, e->mScale);
 
 	e->mNow = 0;
 }
 
 
 static void unloadExplod(Explod* e) {
-	removeMugenAnimation(e->mAnimationID);
-	removeFromPhysicsHandler(e->mPhysicsID);
+	removeMugenAnimation(e->mAnimationElement);
+	removeFromPhysicsHandler(e->mPhysicsElement);
 }
 
 typedef struct {
@@ -375,7 +373,7 @@ void removeAllExplodsForPlayer(DreamPlayer * tPlayer)
 	stl_int_map_remove_predicate(gMugenExplod.mExplods, removeSingleExplod, &caller);
 }
 
-static int removeSingleExplodAlways(void* tCaller, Explod& tData) {
+static int removeSingleExplodAlways(void* /*tCaller*/, Explod& tData) {
 	Explod* e = &tData;
 
 	unloadExplod(e);
@@ -457,7 +455,7 @@ static void explodAnimationFinishedCB(void* tCaller) {
 	Explod* e = (Explod*)tCaller;
 	if (e->mRemoveTime != -2) return;
 
-	e->mRemoveTime = 0; // TODO
+	e->mRemoveTime = 0;
 }
 
 static void updateExplodBindTime(Explod* e) {
@@ -469,7 +467,7 @@ static void updateExplodBindTime(Explod* e) {
 
 	auto pos = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(e->mPlayer)) + getFinalExplodPositionFromPositionType(e->mPositionType, e->mPosition, e->mPlayer);
 	pos.z = PLAYER_Z + 1 * e->mSpritePriority;
-	setMugenAnimationPosition(e->mAnimationID, pos);
+	setMugenAnimationPosition(e->mAnimationElement, pos);
 
 	e->mBindTime--;
 }
@@ -483,14 +481,14 @@ static int updateExplodRemoveTime(Explod* e) {
 }
 
 static void updateExplodPhysics(Explod* e) {
-	addAccelerationToHandledPhysics(e->mPhysicsID, e->mAcceleration);
+	addAccelerationToHandledPhysics(e->mPhysicsElement, e->mAcceleration);
 }
 
 static void updateStaticExplodPosition(Explod* e) {
 	if (e->mPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT || e->mPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT) {
 		Position p = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(e->mPlayer)) + getFinalExplodPositionFromPositionType(e->mPositionType, e->mPosition, e->mPlayer);
 		p.z = PLAYER_Z + 1 * e->mSpritePriority;
-		setMugenAnimationPosition(e->mAnimationID, p);
+		setMugenAnimationPosition(e->mAnimationElement, p);
 	}
 }
 
@@ -511,7 +509,7 @@ static int updateSingleExplod(void* tCaller, Explod& tData) {
 	return 0;
 }
 
-static void updateExplods(void* tData) {
+static void updateExplods(void* /*tData*/) {
 	stl_int_map_remove_predicate(gMugenExplod.mExplods, updateSingleExplod);
 }
 
@@ -519,8 +517,6 @@ ActorBlueprint getDreamExplodHandler() {
 	return makeActorBlueprint(loadExplods, unloadExplods, updateExplods);
 }
 
-
-// TODO: use bind time
 typedef struct {
 	DreamPlayer* mPlayer;
 	int mID;

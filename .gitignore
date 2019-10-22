@@ -51,7 +51,6 @@ windows/Debug/*
 *.sdf
 *.suo
 *.tlog
-*.user
 *.db
 *.opendb
 *.ilk

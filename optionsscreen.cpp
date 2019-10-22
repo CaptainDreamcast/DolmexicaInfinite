@@ -122,7 +122,7 @@ static struct {
 	InputConfigOptionsScreen mInputConfig;
 	KeyConfigOptionsScreen mKeyConfig;
 	int mHeaderTextID;
-	int mBackgroundAnimationID;
+	AnimationHandlerElement* mBackgroundAnimationElement;
 
 	OptionScreenType mActiveScreen;
 } gOptionsScreenData;
@@ -171,8 +171,8 @@ static void setGameSpeedOptionText();
 static void setVolumeOptionText(GeneralSettingType tType, int(*tGet)());
 
 static void loadGeneralOptionsScreen() {
-	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationID, makePosition(52, 35, 40));
-	setAnimationSize(gOptionsScreenData.mBackgroundAnimationID, makePosition(216, 185, 1), makePosition(0, 0, 0));
+	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationElement, makePosition(52, 35, 40));
+	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, makePosition(216, 185, 1), makePosition(0, 0, 0));
 	
 	changeMugenText(gOptionsScreenData.mHeaderTextID, "OPTIONS");
 	setMugenTextPosition(gOptionsScreenData.mHeaderTextID, makePosition(160, 20, 60));
@@ -276,8 +276,8 @@ static void setSelectedInputConfigOptionInactive(int i) {
 }
 
 static void loadInputConfigOptionsScreen() {
-	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationID, makePosition(13, 35, 40));
-	setAnimationSize(gOptionsScreenData.mBackgroundAnimationID, makePosition(292, 121, 1), makePosition(0, 0, 0));
+	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationElement, makePosition(13, 35, 40));
+	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, makePosition(292, 121, 1), makePosition(0, 0, 0));
 
 
 	changeMugenText(gOptionsScreenData.mHeaderTextID, "INPUT CONFIG");
@@ -441,6 +441,12 @@ static string gKeyNames[KEYBOARD_AMOUNT_PRISM] = {
 	"F4",
 	"F5",
 	"F6",
+	"F7",
+	"F8",
+	"F9",
+	"F10",
+	"F11",
+	"F12",
 	"ScrollLock",
 	"Pause",
 	"Caret",
@@ -468,8 +474,8 @@ static string gButtonNames[11] = {
 };
 
 static void loadKeyConfigOptionsScreen() {
-	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationID, makePosition(33, 15, 40));
-	setAnimationSize(gOptionsScreenData.mBackgroundAnimationID, makePosition(252, 221, 1), makePosition(0, 0, 0));
+	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationElement, makePosition(33, 15, 40));
+	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, makePosition(252, 221, 1), makePosition(0, 0, 0));
 
 	changeMugenText(gOptionsScreenData.mHeaderTextID, "KEY CONFIG");
 	setMugenTextPosition(gOptionsScreenData.mHeaderTextID, makePosition(161, 11, 60));
@@ -629,9 +635,9 @@ static void loadOptionsScreen() {
 	loadMenuBackground(&gOptionsScreenData.mScript, &gOptionsScreenData.mSprites, &gOptionsScreenData.mAnimations, "OptionBGdef", "OptionBG");
 
 	gOptionsScreenData.mHeaderTextID = addMugenTextMugenStyle("OPTIONS", makePosition(160, 20, 60), makeVector3DI(2, 0, 0));
-	gOptionsScreenData.mBackgroundAnimationID = playOneFrameAnimationLoop(makePosition(52, 35, 40), &gOptionsScreenData.mWhiteTexture);
-	setAnimationColor(gOptionsScreenData.mBackgroundAnimationID, 0, 0, 0.6);
-	setAnimationTransparency(gOptionsScreenData.mBackgroundAnimationID, 0.7);
+	gOptionsScreenData.mBackgroundAnimationElement = playOneFrameAnimationLoop(makePosition(52, 35, 40), &gOptionsScreenData.mWhiteTexture);
+	setAnimationColor(gOptionsScreenData.mBackgroundAnimationElement, 0, 0, 0.6);
+	setAnimationTransparency(gOptionsScreenData.mBackgroundAnimationElement, 0.7);
 
 	loadGeneralOptionsScreen();
 
@@ -677,7 +683,7 @@ static void updateOptionScreenGeneralSelect() {
 	else if (gOptionsScreenData.mGeneral.mSelected == GENERAL_SETTING_DEFAULT_VALUES) {
 		setDefaultOptionVariables();
 		generalToInputConfigOptions();
-		inputConfigToGeneralOptions(); // TODO: properly
+		inputConfigToGeneralOptions();
 	}
 }
 
@@ -1058,7 +1064,7 @@ static void updateOptionScreenKeyConfigSelect() {
 static void updateOptionScreenKeyConfig() {
 	if (gOptionsScreenData.mKeyConfig.mIsSettingInput) return;
 
-	if (!gOptionsScreenData.mKeyConfig.mSettingFlankDone) { // TODO: remove when flank issue is fixed
+	if (!gOptionsScreenData.mKeyConfig.mSettingFlankDone) { // TODO: remove when flank issue is fixed (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/384)
 		gOptionsScreenData.mKeyConfig.mSettingFlankDone = 1;
 		hasPressedAFlank();
 		hasPressedBFlank();

@@ -21,13 +21,13 @@ static struct {
 	int mIsDisplayingFightBars;
 	int mIntroCycleAmount;
 
-	int mIsShowingDebugInfo; // TODO
-} gData;
+	int mIsShowingDebugInfo;
+} gExhibitModeData;
 
 static void fightFinishedCB();
 
 static void versusScreenFinishedCB() {
-	setGameModeExhibit(gData.mFightEndTime, gData.mIsDisplayingFightBars);
+	setGameModeExhibit(gExhibitModeData.mFightEndTime, gExhibitModeData.mIsDisplayingFightBars, gExhibitModeData.mIsShowingDebugInfo);
 	startFightScreen(fightFinishedCB);
 }
 
@@ -37,14 +37,14 @@ static void fightFinishedCB() {
 
 static void loadExhibitHeader(MugenDefScript* tScript) {
 
-	gData.mIsSelectEnabled = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "select.enabled", 0);
-	gData.mIsVersusEnabled = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "vsscreen.enabled", 0);
-	gData.mFightEndTime = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "fight.endtime", 1500);
-	gData.mIsPlayingFightBGM = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "fight.playbgm", 0);
-	gData.mIsDisplayingFightBars = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "fight.bars.display", 0);
-	gData.mIntroCycleAmount = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "intro.waitcycles", 1);
+	gExhibitModeData.mIsSelectEnabled = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "select.enabled", 0);
+	gExhibitModeData.mIsVersusEnabled = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "vsscreen.enabled", 0);
+	gExhibitModeData.mFightEndTime = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "fight.endtime", 1500);
+	gExhibitModeData.mIsPlayingFightBGM = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "fight.playbgm", 0);
+	gExhibitModeData.mIsDisplayingFightBars = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "fight.bars.display", 0);
+	gExhibitModeData.mIntroCycleAmount = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "intro.waitcycles", 1);
 
-	gData.mIsShowingDebugInfo = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "debuginfo", 0);
+	gExhibitModeData.mIsShowingDebugInfo = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "debuginfo", 0);
 }
 
 static void loadRandomCharacters() {
@@ -66,7 +66,7 @@ void startExhibitMode()
 	unloadMugenDefScript(script);
 
 	loadRandomCharacters();
-	if (gData.mIsVersusEnabled) {
+	if (gExhibitModeData.mIsVersusEnabled) {
 		setVersusScreenFinishedCB(versusScreenFinishedCB);
 		setNewScreen(getVersusScreen());
 	}

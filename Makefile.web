@@ -1,9 +1,13 @@
 include Makefile.common
 
-all: complete
+all: complete build_assets
+
+build_assets:
+	-python $(EMSDK)/fastcomp/emscripten/tools/file_packager.py web/assets.data --use-preload-plugins --preload assets@assets --js-output=web/assets.js
+	-python $(EMSDK)/fastcomp/emscripten/tools/file_packager.py web/tracks.data --use-preload-plugins --preload tracks@tracks --js-output=web/tracks.js
+	-python $(EMSDK)/fastcomp/emscripten/tools/file_packager.py web/debug.data --use-preload-plugins --preload debug@debug --js-output=web/debug.js
 
 clean_user:
 	
-PRISM_PATH = ..\addons\prism
-ADDITIONAL_PRELOADS = --preload-file assets
+PRISM_PATH = /mnt/c/DEV/PROJECTS/addons/prism
 include ../addons/prism/Makefile.commonweb

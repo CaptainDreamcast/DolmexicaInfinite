@@ -2,6 +2,8 @@
 
 #include "playerdefinition.h"
 
+struct CollisionListData;
+
 void setupDreamGameCollisions();
-int getDreamPlayerPassiveCollisionList(DreamPlayer* p);
-int getDreamPlayerAttackCollisionList(DreamPlayer* p);
+CollisionListData* getDreamPlayerPassiveCollisionList(DreamPlayer* p);
+CollisionListData* getDreamPlayerAttackCollisionList(DreamPlayer* p);

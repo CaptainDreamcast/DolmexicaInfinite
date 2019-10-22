@@ -25,7 +25,7 @@ static struct {
 
 	int mNextStateAfterWin;
 	int mNextStateAfterLose;
-} gData;
+} gStoryModeData;
 
 static MugenDefScriptGroup* getMugenDefStoryScriptGroupByIndex(MugenDefScript* tScript, int tIndex) {
 	MugenDefScriptGroup* current = tScript->mFirstGroup;
@@ -44,7 +44,7 @@ static void loadStoryboardGroup(MugenDefScriptGroup* tGroup) {
 	char path[1024];
 	char folder[1024];
 
-	getPathToFile(folder, gData.mStoryPath);
+	getPathToFile(folder, gStoryModeData.mStoryPath);
 	char* file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "file");
 
 	sprintf(path, "assets/%s%s", folder, file);
@@ -59,8 +59,8 @@ static void loadStoryboardGroup(MugenDefScriptGroup* tGroup) {
 }
 
 static void fightFinishedCB() {
-	if(getDreamMatchWinnerIndex()) storyModeOverCB(gData.mNextStateAfterLose);
-	else storyModeOverCB(gData.mNextStateAfterWin);
+	if(getDreamMatchWinnerIndex()) storyModeOverCB(gStoryModeData.mNextStateAfterLose);
+	else storyModeOverCB(gStoryModeData.mNextStateAfterWin);
 }
 
 static void internCharacterSelectOverCB() {
@@ -72,7 +72,7 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	char folder[1024];
 	char* file;
 
-	getPathToFile(folder, gData.mStoryPath);
+	getPathToFile(folder, gStoryModeData.mStoryPath);
 
 	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "player1");
 	int isSelectingFirstCharacter = !strcmp("select", file);
@@ -83,12 +83,6 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "player2");
 	sprintf(path, "assets/chars/%s/%s.def", file, file);
 	setPlayerDefinitionPath(1, path);
-
-
-	int palette1 = getMugenDefIntegerOrDefaultAsGroup(tGroup, "palette1", 1);
-	setPlayerPreferredPalette(0, palette1);
-	int palette2 = getMugenDefIntegerOrDefaultAsGroup(tGroup, "palette2", 2);
-	setPlayerPreferredPalette(1, palette2);
 
 	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "stage");
 	sprintf(path, "assets/%s", file);
@@ -101,15 +95,15 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	setDreamStageMugenDefinition(path, musicPath.data());
 
 
-	gData.mNextStateAfterWin = getMugenDefIntegerOrDefaultAsGroup(tGroup, "win", gData.mCurrentState + 1);
+	gStoryModeData.mNextStateAfterWin = getMugenDefIntegerOrDefaultAsGroup(tGroup, "win", gStoryModeData.mCurrentState + 1);
 	char* afterLoseState = getAllocatedMugenDefStringOrDefaultAsGroup(tGroup, "lose", "continue");
 	turnStringLowercase(afterLoseState);
 	if (!strcmp("continue", afterLoseState)) {
-		gData.mNextStateAfterLose = -1;
+		gStoryModeData.mNextStateAfterLose = -1;
 		setFightContinueActive();
 	}
 	else {
-		gData.mNextStateAfterLose = atoi(afterLoseState);
+		gStoryModeData.mNextStateAfterLose = atoi(afterLoseState);
 		setFightContinueInactive();
 	}
 	freeMemory(afterLoseState);
@@ -122,8 +116,18 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 		setGameModeStory();
 	}
 
+	int palette1 = getMugenDefIntegerOrDefaultAsGroup(tGroup, "palette1", 1);
+	setPlayerPreferredPalette(0, palette1);
+	int palette2 = getMugenDefIntegerOrDefaultAsGroup(tGroup, "palette2", 2);
+	setPlayerPreferredPalette(1, palette2);
+
 	int ailevel = getMugenDefIntegerOrDefaultAsGroup(tGroup, "ailevel", getDifficulty());
 	setPlayerArtificial(1, ailevel);
+
+	int rounds = getMugenDefIntegerOrDefaultAsGroup(tGroup, "rounds", 0);
+	if (rounds > 0) {
+		setRoundsToWin(rounds);
+	}
 
 	if (isSelectingFirstCharacter) {
 		char* selectName = getAllocatedMugenDefStringOrDefaultAsGroup(tGroup, "selectname", "Select your fighter");
@@ -133,6 +137,7 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 		setCharacterSelectOnePlayer();
 		setCharacterSelectStageInactive();
 		setCharacterSelectFinishedCB(internCharacterSelectOverCB);
+		setCharacterSelectDisableReturnOneTime();
 		setNewScreen(getCharacterSelectScreen());
 	}
 	else {
@@ -154,13 +159,13 @@ static void loadTitleGroup() {
 
 static void loadStoryModeScreen() {
 	char path[1024];
-	sprintf(path, "assets/%s", gData.mStoryPath);
+	sprintf(path, "assets/%s", gStoryModeData.mStoryPath);
 	MugenDefScript script; 
 	loadMugenDefScript(&script, path);
 
-	MugenDefScriptGroup* group = getMugenDefStoryScriptGroupByIndex(&script, gData.mCurrentState);
+	MugenDefScriptGroup* group = getMugenDefStoryScriptGroupByIndex(&script, gStoryModeData.mCurrentState);
 	if (!group || !isMugenDefStringVariableAsGroup(group, "type")) {
-		logWarningFormat("Unable to read story state %d (from %s). Returning to title.", gData.mCurrentState, gData.mStoryPath);
+		logWarningFormat("Unable to read story state %d (from %s). Returning to title.", gStoryModeData.mCurrentState, gStoryModeData.mStoryPath);
 		setNewScreen(getDreamTitleScreen());
 		return;
 	}
@@ -174,7 +179,7 @@ static void loadStoryModeScreen() {
 		loadTitleGroup();
 	}
 	else {
-		logWarningFormat("Unable to read story state %d type %s (from %s). Returning to title.", gData.mCurrentState, type, gData.mStoryPath);
+		logWarningFormat("Unable to read story state %d type %s (from %s). Returning to title.", gStoryModeData.mCurrentState, type, gStoryModeData.mStoryPath);
 		setNewScreen(getDreamTitleScreen());
 	}
 	freeMemory(type);
@@ -190,11 +195,11 @@ static Screen* getStoryModeScreen() {
 static void loadStoryHeader() {
 
 	char path[1024];
-	sprintf(path, "assets/%s", gData.mStoryPath);
+	sprintf(path, "assets/%s", gStoryModeData.mStoryPath);
 	MugenDefScript storyScript;
 	loadMugenDefScript(&storyScript, path);
 
-	gData.mCurrentState = getMugenDefIntegerOrDefault(&storyScript, "Info", "startstate", 0);
+	gStoryModeData.mCurrentState = getMugenDefIntegerOrDefault(&storyScript, "Info", "startstate", 0);
 }
 
 static void startFirstStoryElement(MugenDefScriptGroup* tStories) {
@@ -245,11 +250,19 @@ void startStoryMode()
 
 void storyModeOverCB(int tStep)
 {
-	gData.mCurrentState = tStep;
+	gStoryModeData.mCurrentState = tStep;
 	setNewScreen(getStoryModeScreen());
 }
 
-void setStoryModeStoryPath(char * tPath)
+void setStoryModeStoryPath(const char * tPath)
 {
-	strcpy(gData.mStoryPath, tPath);
+	strcpy(gStoryModeData.mStoryPath, tPath);
+}
+
+void startStoryModeWithForcedStartState(const char * tPath, int tStartState)
+{
+	setStoryModeStoryPath(tPath);
+	loadStoryHeader();
+	gStoryModeData.mCurrentState = tStartState;
+	setNewScreen(getStoryModeScreen());
 }

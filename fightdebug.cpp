@@ -10,6 +10,8 @@
 #include "stage.h"
 #include "gamelogic.h"
 #include "fightui.h"
+#include "dolmexicadebug.h"
+#include "config.h"
 
 #define DEBUG_Z 79
 
@@ -31,10 +33,10 @@ static struct {
 
 	int mSpeedLevel;
 	int mIsTimeFrozen;
-} gData;
+} gFightDebugData;
 
 static void loadPlayerDebugData(Position tBasePosition, MugenTextAlignment tAlignment) {
-	PlayerDebugData* e = &gData.mPlayer;
+	PlayerDebugData* e = &gFightDebugData.mPlayer;
 	e->mBasePosition = tBasePosition;
 
 	Position pos = e->mBasePosition;
@@ -67,20 +69,22 @@ static void loadFightDebug(void* tData) {
 
 static void unloadFightDebug(void* tData) {
 	(void)tData;
-	setWrapperTimeDilatation(1);
+	if (!isDebugOverridingTimeDilatation()) {
+		setWrapperTimeDilatation(1);
+	}
 }
 
 static void setPlayerTextActive() {
-	gData.mPlayer.mTarget = getRootPlayer(0);
+	gFightDebugData.mPlayer.mTarget = getRootPlayer(0);
 }
 
 static void setDebugTextActive() {
 	setPlayerTextActive();
-	gData.mPlayer.mActive = 1;
+	gFightDebugData.mPlayer.mActive = 1;
 }
 
 static void setPlayerTextInactive() {
-	PlayerDebugData* e = &gData.mPlayer;
+	PlayerDebugData* e = &gFightDebugData.mPlayer;
 	
 	char text[3];
 	text[0] = '\0';
@@ -93,17 +97,24 @@ static void setPlayerTextInactive() {
 static void setDebugTextInactive() {
 	setPlayerTextInactive();
 
-	gData.mPlayer.mActive = 0;
+	gFightDebugData.mPlayer.mActive = 0;
 }
 
 static void setTargetPlayer() {
-	gData.mPlayer.mTarget = getPlayerByIndex(gData.mPlayer.mTargetIndex);
+	gFightDebugData.mPlayer.mTarget = getPlayerByIndex(gFightDebugData.mPlayer.mTargetIndex);
+}
+
+void setFightDebugToPlayerOneBeforeFight()
+{
+	gFightDebugData.mPlayer.mTargetIndex = 0;
+	gFightDebugData.mPlayer.mTarget = getRootPlayer(0);
+	gFightDebugData.mPlayer.mActive = 1;
 }
 
 void switchFightDebugTextActivity() {
-	if (gData.mPlayer.mActive) {
-		gData.mPlayer.mTargetIndex++;
-		if (gData.mPlayer.mTargetIndex >= getTotalPlayerAmount()) {
+	if (gFightDebugData.mPlayer.mActive) {
+		gFightDebugData.mPlayer.mTargetIndex++;
+		if (gFightDebugData.mPlayer.mTargetIndex >= getTotalPlayerAmount()) {
 			setDebugTextInactive();
 		}
 		else {
@@ -112,19 +123,24 @@ void switchFightDebugTextActivity() {
 
 	}
 	else {
-		gData.mPlayer.mTargetIndex = 0;
+		gFightDebugData.mPlayer.mTargetIndex = 0;
 		setTargetPlayer();
 		setDebugTextActive();
 	}
 }
 
 static void setSpeedLevel() {
-	if (gData.mIsTimeFrozen) {
-		setWrapperTimeDilatation(1); // TODO
+	if (isDebugOverridingTimeDilatation()) return;
+
+	if (gFightDebugData.mIsTimeFrozen) {
+		pauseWrapper();
 		return;
 	}
+	else {
+		resumeWrapper();
+	}
 
-	switch (gData.mSpeedLevel) {
+	switch (gFightDebugData.mSpeedLevel) {
 	case 0:
 		setWrapperTimeDilatation(1);
 		break;
@@ -143,17 +159,17 @@ static void setSpeedLevel() {
 }
 
 static void switchDebugTimeDilatation() {
-	gData.mSpeedLevel = (gData.mSpeedLevel + 1) % 4;
+	gFightDebugData.mSpeedLevel = (gFightDebugData.mSpeedLevel + 1) % 4;
 	setSpeedLevel();
 }
 
 static void switchDebugTimeOff() {
-	gData.mIsTimeFrozen ^= 1;
+	gFightDebugData.mIsTimeFrozen ^= 1;
 	setSpeedLevel();
 }
 
 static void setPlayerTextColor(double tR, double tG, double tB) {
-	PlayerDebugData* e = &gData.mPlayer;
+	PlayerDebugData* e = &gFightDebugData.mPlayer;
 
 	int j;
 	for (j = 0; j < PLAYER_TEXT_AMOUNT; j++) {
@@ -163,10 +179,10 @@ static void setPlayerTextColor(double tR, double tG, double tB) {
 
 static void setDebugTextColor() {
 	double r, g, b;
-	if (gData.mTextColorStep == 0) {
+	if (gFightDebugData.mTextColorStep == 0) {
 		r = g = b = 0;
 	}
-	else if (gData.mTextColorStep == 1) {
+	else if (gFightDebugData.mTextColorStep == 1) {
 		r = g = b = 1;
 	}
 	else {
@@ -178,7 +194,7 @@ static void setDebugTextColor() {
 }
 
 static void switchDebugTextColor() {
-	gData.mTextColorStep = (gData.mTextColorStep + 1) % 3;
+	gFightDebugData.mTextColorStep = (gFightDebugData.mTextColorStep + 1) % 3;
 	setDebugTextColor();
 }
 
@@ -186,10 +202,21 @@ void switchFightCollisionDebugActivity() {
 	setPlayerCollisionDebug(!isPlayerCollisionDebugActive());
 }
 
-
+static void saveDolmexicaScreenshot() {
+	std::string title = getGameTitle();
+	removeInvalidFileNameElementsFromString(title);
+	for (int i = 1; i < 1000; i++) {
+		std::stringstream ss;
+		ss << title << "_" << i << ".png";
+		if (!isFile(ss.str().c_str())) {
+			saveScreenShot(ss.str().c_str());
+			break;
+		}
+	}
+}
 
 static void updateDebugInputWindows() {
-	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_D_PRISM)) { // TODO: proper
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_D_PRISM)) {
 		switchFightDebugTextActivity();
 	} 
 	else if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_D_PRISM)) {
@@ -203,24 +230,24 @@ static void updateDebugInputWindows() {
 
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_F1_PRISM)) {
-		setPlayerLife(getRootPlayer(0), 0);
+		setPlayerLife(getRootPlayer(0), getRootPlayer(0), 0);
 	}
 	else if (hasPressedKeyboardKeyFlank(KEYBOARD_F1_PRISM)) {
-		setPlayerLife(getRootPlayer(1), 0);
+		setPlayerLife(getRootPlayer(1), getRootPlayer(1), 0);
 	}
 
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_F2_PRISM)) {
-		setPlayerLife(getRootPlayer(0), 1);
+		setPlayerLife(getRootPlayer(0), getRootPlayer(0), 1);
 	}
 	else if (hasPressedKeyboardKeyFlank(KEYBOARD_F2_PRISM)) {
-		setPlayerLife(getRootPlayer(0), 1);
-		setPlayerLife(getRootPlayer(1), 1);
+		setPlayerLife(getRootPlayer(0), getRootPlayer(0), 1);
+		setPlayerLife(getRootPlayer(1), getRootPlayer(1), 1);
 	}
 
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_F2_PRISM)) {
-		setPlayerLife(getRootPlayer(0), 1);
+		setPlayerLife(getRootPlayer(0), getRootPlayer(0), 1);
 	}
 
 	if (hasPressedKeyboardKeyFlank(KEYBOARD_F3_PRISM)) {
@@ -240,21 +267,23 @@ static void updateDebugInputWindows() {
 		setTimerFinished();
 	}
 
-	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_PAUSE_PRISM)) {
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_F6_PRISM)) {
 		switchDebugTimeDilatation();
 	}
 
-	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_PAUSE_PRISM)) {
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_F6_PRISM)) {
 		switchDebugTimeOff();
 	}
 
-
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_F12_PRISM)) {
+		saveDolmexicaScreenshot();
+	}
 }
 
 static void updateDebugInputDreamcast() {
-	int wasStartPressed = hasPressedStartFlank(); // TODO: remove when fixed
+	int wasStartPressed = hasPressedStartFlank();
 
-	if (wasStartPressed && hasPressedR()) { // TODO: proper
+	if (wasStartPressed && hasPressedR()) {
 		switchFightDebugTextActivity();
 	} 
 
@@ -267,24 +296,24 @@ static void updateDebugInputDreamcast() {
 	} 
 	
 	if (wasStartPressed && hasPressedL()) {
-		setPlayerLife(getRootPlayer(1), 0);
+		setPlayerLife(getRootPlayer(1), getRootPlayer(1), 0);
 	}
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_F1_PRISM)) {
-		setPlayerLife(getRootPlayer(0), 0);
+		setPlayerLife(getRootPlayer(0), getRootPlayer(0), 0);
 	}
 
 	if (hasPressedKeyboardKeyFlank(KEYBOARD_F2_PRISM)) {
-		setPlayerLife(getRootPlayer(0), 1);
-		setPlayerLife(getRootPlayer(1), 1);
+		setPlayerLife(getRootPlayer(0), getRootPlayer(0), 1);
+		setPlayerLife(getRootPlayer(1), getRootPlayer(1), 1);
 	}
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_F2_PRISM)) {
-		setPlayerLife(getRootPlayer(0), 1);
+		setPlayerLife(getRootPlayer(0), getRootPlayer(0), 1);
 	}
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_F2_PRISM)) {
-		setPlayerLife(getRootPlayer(0), 1);
+		setPlayerLife(getRootPlayer(0), getRootPlayer(0), 1);
 	}
 
 	if (hasPressedKeyboardKeyFlank(KEYBOARD_F3_PRISM)) {
@@ -321,8 +350,8 @@ static void updateDebugInput() {
 }
 
 static void updateSingleDebugText() {
-	PlayerDebugData* e = &gData.mPlayer;
-	DreamPlayer* player = gData.mPlayer.mTarget;
+	PlayerDebugData* e = &gFightDebugData.mPlayer;
+	DreamPlayer* player = gFightDebugData.mPlayer.mTarget;
 
 	int j = 0;
 	char text[1000];
@@ -330,7 +359,7 @@ static void updateSingleDebugText() {
 	changeMugenText(e->mTextIDs[j++], text);
 
 	if (player) {
-		sprintf(text, "%s %d (%d)", getPlayerDisplayName(player), gData.mPlayer.mTargetIndex, getPlayerID(getPlayerRoot(player)));
+		sprintf(text, "%s %d (%d)", getPlayerDisplayName(player), gFightDebugData.mPlayer.mTargetIndex, getPlayerID(getPlayerRoot(player)));
 		changeMugenText(e->mTextIDs[j++], text);
 		sprintf(text, "ACTIONID: %d; SPR: %d,%d; ELEMNO: %d/%d; TIME: %d/%d", getPlayerAnimationNumber(player), getPlayerSpriteGroup(player), getPlayerSpriteElement(player), getPlayerAnimationStep(player) + 1, getPlayerAnimationStepAmount(player), getPlayerAnimationTime(player), getPlayerAnimationDuration(player));
 		changeMugenText(e->mTextIDs[j++], text);
@@ -338,7 +367,7 @@ static void updateSingleDebugText() {
 		changeMugenText(e->mTextIDs[j++], text);
 	}
 	else {
-		sprintf(text, "DESTROYED %d", gData.mPlayer.mTargetIndex);
+		sprintf(text, "DESTROYED %d", gFightDebugData.mPlayer.mTargetIndex);
 		changeMugenText(e->mTextIDs[j++], text);
 		sprintf(text, " ");
 		changeMugenText(e->mTextIDs[j++], text);
@@ -348,17 +377,17 @@ static void updateSingleDebugText() {
 }
 
 static void updateTarget() {
-	if (!isPlayer(gData.mPlayer.mTarget)) gData.mPlayer.mTarget = NULL;
+	if (!isPlayer(gFightDebugData.mPlayer.mTarget)) gFightDebugData.mPlayer.mTarget = NULL;
 }
 
 static void updateDebugText() {
-	if (!gData.mPlayer.mActive) return;
+	if (!gFightDebugData.mPlayer.mActive) return;
 
 	updateTarget();
 	updateSingleDebugText();
 }
 
-static void updateFightDebug(void* tData) {
+static void updateFightDebug(void* /*tData*/) {
 	updateDebugInput();
 	updateDebugText();
 }

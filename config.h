@@ -6,6 +6,7 @@
 
 void loadMugenConfig();
 
+std::string getGameTitle();
 double getDreamDefaultAttackDamageDoneToPowerMultiplier();
 double getDreamDefaultAttackDamageReceivedToPowerMultiplier();
 

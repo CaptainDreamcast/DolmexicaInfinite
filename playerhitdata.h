@@ -141,6 +141,7 @@ void setHitDataGroundSlideTime(DreamPlayer* tPlayer, int tSlideTime);
 int getActiveHitDataGuardHitTime(DreamPlayer* tPlayer);
 int getHitDataGuardHitTime(DreamPlayer* tPlayer);
 void setHitDataGuardHitTime(DreamPlayer* tPlayer, int tHitTime);
+int getActiveHitDataGuardSlideTime(DreamPlayer* tPlayer);
 int getHitDataGuardSlideTime(DreamPlayer* tPlayer);
 void setHitDataGuardSlideTime(DreamPlayer* tPlayer, int tSlideTime);
 
@@ -229,6 +230,7 @@ void setHitDataFallYVelocity(DreamPlayer* tPlayer, double tY);
 int getActiveHitDataFallRecovery(DreamPlayer* tPlayer);
 int getHitDataFallRecovery(DreamPlayer* tPlayer);
 void setHitDataFallRecovery(DreamPlayer* tPlayer, int tCanRecover);
+int getActiveHitDataFallRecoveryTime(DreamPlayer* tPlayer);
 void setHitDataFallRecoveryTime(DreamPlayer* tPlayer, int tRecoverTime);
 int getActiveHitDataFallDamage(DreamPlayer* tPlayer);
 void setHitDataFallDamage(DreamPlayer* tPlayer, int tDamage);

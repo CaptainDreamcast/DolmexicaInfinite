@@ -14,7 +14,7 @@ typedef enum {
 } ActiveElementType;
 
 typedef struct {
-	int mID;
+	MugenAnimationHandlerElement* mElement;
 	int mIsInvisible;
 } ActiveAnimation;
 
@@ -31,11 +31,11 @@ typedef struct {
 static struct {
 	IntMap mActiveElements;
 
-} gData;
+} gMugenAnimationUtilityData;
 
 static void loadUtilityHandler(void* tData) {
 	(void)tData;
-	gData.mActiveElements = new_int_map();
+	gMugenAnimationUtilityData.mActiveElements = new_int_map();
 }
 
 static int unloadSingleActiveElement(void* tCaller, void* tData) {
@@ -45,14 +45,14 @@ static int unloadSingleActiveElement(void* tCaller, void* tData) {
 	return 1;
 }
 
-static void unloadUtilityHandler(void* tData) {
-	int_map_remove_predicate(&gData.mActiveElements, unloadSingleActiveElement, NULL);
-	delete_int_map(&gData.mActiveElements);
+static void unloadUtilityHandler(void* /*tData*/) {
+	int_map_remove_predicate(&gMugenAnimationUtilityData.mActiveElements, unloadSingleActiveElement, NULL);
+	delete_int_map(&gMugenAnimationUtilityData.mActiveElements);
 }
 
 static void updateSingleActiveAnimation(ActiveAnimation* e) {
-	if (e->mIsInvisible && isRegisteredMugenAnimation(e->mID)) {
-		setMugenAnimationVisibility(e->mID, 1);
+	if (e->mIsInvisible && isRegisteredMugenAnimation(e->mElement)) {
+		setMugenAnimationVisibility(e->mElement, 1);
 	}
 }
 
@@ -82,7 +82,7 @@ static int updateSingleActiveElement(void* tCaller, void* tData) {
 
 static void updateUtilityHandler(void* tData) {
 	(void)tData;
-	int_map_remove_predicate(&gData.mActiveElements, updateSingleActiveElement, NULL);
+	int_map_remove_predicate(&gMugenAnimationUtilityData.mActiveElements, updateSingleActiveElement, NULL);
 }
 
 ActorBlueprint getMugenAnimationUtilityHandler() {
@@ -93,18 +93,18 @@ static void addActiveElement(ActiveElementType tType, void* tData) {
 	ActiveElement* e = (ActiveElement*)allocMemory(sizeof(ActiveElement));
 	e->mType = tType;
 	e->mData = tData;
-	int_map_push_back_owned(&gData.mActiveElements, e);
+	int_map_push_back_owned(&gMugenAnimationUtilityData.mActiveElements, e);
 }
 
-static void addActiveAnimation(int tID, int tIsInvisible) {
+static void addActiveAnimation(MugenAnimationHandlerElement* tElement) {
 	ActiveAnimation* e = (ActiveAnimation*)allocMemory(sizeof(ActiveAnimation));
-	e->mID = tID;
+	e->mElement = tElement;
 	e->mIsInvisible = 1;
 
 	addActiveElement(ACTIVE_ELEMENT_TYPE_ANIMATION, e);
 }
 
-static void addActiveText(int tID, int tIsInvisible) {
+static void addActiveText(int tID) {
 	ActiveText* e = (ActiveText*)allocMemory(sizeof(ActiveText));
 	e->mID = tID;
 	e->mIsInvisible = 1;
@@ -112,14 +112,14 @@ static void addActiveText(int tID, int tIsInvisible) {
 	addActiveElement(ACTIVE_ELEMENT_TYPE_TEXT, e);
 }
 
-void setMugenAnimationInvisibleForOneFrame(int tID)
+void setMugenAnimationInvisibleForOneFrame(MugenAnimationHandlerElement* tElement)
 {
-	setMugenAnimationVisibility(tID, 0);
-	addActiveAnimation(tID, 1);
+	setMugenAnimationVisibility(tElement, 0);
+	addActiveAnimation(tElement);
 }
 
 void setMugenTextInvisibleForOneFrame(int tID)
 {
 	setMugenTextVisibility(tID, 0);
-	addActiveText(tID, 1);
+	addActiveText(tID);
 }

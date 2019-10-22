@@ -270,7 +270,7 @@ void copyHitDataToActive(DreamPlayer* tPlayer, void * tHitData)
 int isReceivedHitDataActive(void* tHitData)
 {
 	PlayerHitData* passive = (PlayerHitData*)tHitData;
-	return passive->mIsActive;
+	return passive->mIsActive && stl_map_contains(gPlayerHitData.mPassiveHitDataMap, passive->mPlayer->mHitDataID);
 }
 
 int isHitDataActive(DreamPlayer* tPlayer)
@@ -313,7 +313,7 @@ void setHitDataInactive(DreamPlayer* tPlayer)
 
 void setActiveHitDataInactive(DreamPlayer * tPlayer)
 {
-	if (!stl_map_contains(gPlayerHitData.mActiveHitDataMap, tPlayer->mHitDataID)) return; // TODO: fix
+	if (!stl_map_contains(gPlayerHitData.mActiveHitDataMap, tPlayer->mHitDataID)) return;
 	
 	PlayerHitData* e = &gPlayerHitData.mActiveHitDataMap[tPlayer->mHitDataID];
 	e->mIsActive = 0;
@@ -780,6 +780,13 @@ void setHitDataGuardHitTime(DreamPlayer* tPlayer, int tHitTime)
 	e->mGuardHitTime = tHitTime;
 }
 
+int getActiveHitDataGuardSlideTime(DreamPlayer * tPlayer)
+{
+	assert(stl_map_contains(gPlayerHitData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = &gPlayerHitData.mActiveHitDataMap[tPlayer->mHitDataID];
+	return e->mGuardSlideTime;
+}
+
 int getHitDataGuardSlideTime(DreamPlayer* tPlayer)
 {
 	assert(stl_map_contains(gPlayerHitData.mPassiveHitDataMap, tPlayer->mHitDataID));
@@ -845,7 +852,7 @@ void setHitDataGuardDistance(DreamPlayer* tPlayer, int tDistance)
 
 double getActiveHitDataYAccel(DreamPlayer * tPlayer)
 {
-	if (isActiveHitDataActive(tPlayer)) { // TODO: properly
+	if (isActiveHitDataActive(tPlayer)) {
 		assert(stl_map_contains(gPlayerHitData.mActiveHitDataMap, tPlayer->mHitDataID));
 		PlayerHitData* e = &gPlayerHitData.mActiveHitDataMap[tPlayer->mHitDataID];
 		return e->mVerticalAcceleration;
@@ -1325,6 +1332,13 @@ void setHitDataFallRecovery(DreamPlayer* tPlayer, int tCanRecover)
 	assert(stl_map_contains(gPlayerHitData.mPassiveHitDataMap, tPlayer->mHitDataID));
 	PlayerHitData* e = &gPlayerHitData.mPassiveHitDataMap[tPlayer->mHitDataID];
 	e->mCanRecoverFall = tCanRecover;
+}
+
+int getActiveHitDataFallRecoveryTime(DreamPlayer * tPlayer)
+{
+	assert(stl_map_contains(gPlayerHitData.mActiveHitDataMap, tPlayer->mHitDataID));
+	PlayerHitData* e = &gPlayerHitData.mActiveHitDataMap[tPlayer->mHitDataID];
+	return e->mFallRecoveryTime;
 }
 
 void setHitDataFallRecoveryTime(DreamPlayer* tPlayer, int tRecoverTime)

@@ -26,7 +26,7 @@ typedef struct {
 	MugenSpriteFile mSprites;
 	char* mDisplayCharacterName;
 	MugenAnimation* mAnimation;
-	int mAnimationID;
+	MugenAnimationHandlerElement* mAnimationElement;
 	int mTextID;
 } VersusPlayer;
 
@@ -73,7 +73,7 @@ static void loadPlayerAnimationsAndName(int i) {
 	getMugenDefStringOrDefault(file, &script, "Files", "sprite", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
-	player->mSprites = loadMugenSpriteFilePortraits(scriptPath, preferredPalette, hasPalettePath, palettePath);
+	player->mSprites = loadMugenSpriteFilePortraits(scriptPath, hasPalettePath, palettePath);
 	player->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "Info", "displayname");
 
 	unloadMugenDefScript(script);
@@ -81,8 +81,8 @@ static void loadPlayerAnimationsAndName(int i) {
 	Position pos = player->mPosition;
 	pos.z = 50;
 	player->mAnimation = createOneFrameMugenAnimationForSprite(9000, 1);
-	player->mAnimationID = addMugenAnimation(player->mAnimation, &player->mSprites, pos);
-	setMugenAnimationFaceDirection(player->mAnimationID, player->mIsFacingRight);
+	player->mAnimationElement = addMugenAnimation(player->mAnimation, &player->mSprites, pos);
+	setMugenAnimationFaceDirection(player->mAnimationElement, player->mIsFacingRight);
 
 	pos = player->mNamePosition;
 	pos.z = 51;
@@ -145,8 +145,6 @@ static void loadVersusMusic() {
 static void screenTimeFinishedCB(void* tCaller);
 
 static void loadVersusScreen() {
-
-	// TODO: properly
 	char folder[1024];
 	loadMugenDefScript(&gVersusScreenData.mScript, "assets/data/system.def");
 	gVersusScreenData.mAnimations = loadMugenAnimationFile("assets/data/system.def");
@@ -180,11 +178,11 @@ static void unloadVersusScreen() {
 	}
 }
 
-static void gotoNextScreenCB(void* tCaller) {
+static void gotoNextScreenCB(void* /*tCaller*/) {
 	gVersusScreenData.mCB();
 }
 
-static void screenTimeFinishedCB(void* tCaller) {
+static void screenTimeFinishedCB(void* /*tCaller*/) {
 	addFadeOut(gVersusScreenData.mHeader.mFadeOutTime, gotoNextScreenCB, NULL);
 }
 

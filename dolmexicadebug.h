@@ -5,3 +5,5 @@
 void initDolmexicaDebug();
 
 ActorBlueprint getDolmexicaDebug();
+
+int isDebugOverridingTimeDilatation();

@@ -10,9 +10,11 @@
 
 #define BACKGROUND_UPPER_BASE_Z 52
 
+struct MugenAnimationHandlerElement;
+
 typedef struct {
-	int mID;
-	Position mReferencePosition; // TODO rewrite without reference position and remove list
+	MugenAnimationHandlerElement* mElement;
+	Position mReferencePosition;
 	Position mOffset;
 
 } StageElementAnimationReference;
@@ -52,6 +54,11 @@ void resetDreamMugenStageHandlerCameraPosition();
 
 void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, double tStartScaleY, double tScaleDeltaY, int tLayerNo, int tID, Vector3DI tCoordinates);
 Position* getDreamMugenStageHandlerCameraPositionReference();
+Position* getDreamMugenStageHandlerCameraEffectPositionReference();
+void setDreamMugenStageHandlerCameraEffectPositionX(double tX);
+void setDreamMugenStageHandlerCameraEffectPositionY(double tY);
+Position* getDreamMugenStageHandlerCameraZoomReference();
+void setDreamMugenStageHandlerCameraZoom(double tZoom);
 
 void setDreamStageInvisibleForOneFrame();
 void setDreamStageLayer1InvisibleForOneFrame();

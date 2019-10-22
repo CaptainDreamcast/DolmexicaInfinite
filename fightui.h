@@ -30,7 +30,6 @@ void setDreamTimeDisplayFinishedCB(void(*tTimeDisplayFinishedFunc)());
 
 void setDreamBarInvisibleForOneFrame();
 
-void setDreamNoMusicFlag();
 void setTimerFreezeFlag();
 void setTimerInfinite();
 void setTimerFinite();

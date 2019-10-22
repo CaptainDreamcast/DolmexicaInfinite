@@ -3,31 +3,31 @@
 #include <prism/collisionhandler.h>
 
 static struct {
-	int mPlayerAttackCollisionList[2];
-	int mPlayerPassiveCollisionList[2];
+	CollisionListData* mPlayerAttackCollisionList[2];
+	CollisionListData* mPlayerPassiveCollisionList[2];
 
-} gData;
+} gDolmexicaCollisionData;
 
 void setupDreamGameCollisions()
 {
 	int i;
 	for (i = 0; i < 2; i++) {
-		gData.mPlayerPassiveCollisionList[i] = addCollisionListToHandler();
-		gData.mPlayerAttackCollisionList[i] = addCollisionListToHandler();
+		gDolmexicaCollisionData.mPlayerPassiveCollisionList[i] = addCollisionListToHandler();
+		gDolmexicaCollisionData.mPlayerAttackCollisionList[i] = addCollisionListToHandler();
 	}
 
 	for (i = 0; i < 2; i++) {
 		int other = i ^ 1;
-		addCollisionHandlerCheck(gData.mPlayerAttackCollisionList[i], gData.mPlayerPassiveCollisionList[other]);
+		addCollisionHandlerCheck(gDolmexicaCollisionData.mPlayerAttackCollisionList[i], gDolmexicaCollisionData.mPlayerPassiveCollisionList[other]);
 	}
 }
 
-int getDreamPlayerPassiveCollisionList(DreamPlayer* p)
+CollisionListData* getDreamPlayerPassiveCollisionList(DreamPlayer* p)
 {
-	return gData.mPlayerPassiveCollisionList[p->mRootID];
+	return gDolmexicaCollisionData.mPlayerPassiveCollisionList[p->mRootID];
 }
 
-int getDreamPlayerAttackCollisionList(DreamPlayer* p)
+CollisionListData* getDreamPlayerAttackCollisionList(DreamPlayer* p)
 {
-	return gData.mPlayerAttackCollisionList[p->mRootID];
+	return gDolmexicaCollisionData.mPlayerAttackCollisionList[p->mRootID];
 }

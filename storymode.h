@@ -4,4 +4,5 @@ void startStoryMode();
 
 
 void storyModeOverCB(int tStep);
-void setStoryModeStoryPath(char* tPath);
+void setStoryModeStoryPath(const char* tPath);
+void startStoryModeWithForcedStartState(const char* tPath, int tStartState);

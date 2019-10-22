@@ -1,6 +1,8 @@
 #pragma once
 
-void startIntroFirstTime();
+#include <prism/wrapper.h>
+
+Screen* startIntroFirstTimeAndReturnScreen();
 
 int hasLogoStoryboard();
 void playLogoStoryboard();

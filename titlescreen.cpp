@@ -33,6 +33,7 @@
 #include "watchmode.h"
 #include "superwatchmode.h"
 #include "randomwatchmode.h"
+#include "osumode.h"
 #include "exhibitmode.h"
 #include "freeplaymode.h"
 #include "intro.h"
@@ -90,7 +91,7 @@ static struct {
 	int mBoxCursorID;
 
 	TextureData mWhiteTexture;
-	int mCreditBGAnimationID;
+	AnimationHandlerElement* mCreditBGAnimationElement;
 	int mLeftCreditTextID;
 	int mRightCreditTextID;
 
@@ -186,6 +187,15 @@ static void gotoRandomWatchMode(void* tCaller) {
 
 static void randomWatchCB() {
 	addFadeOut(gTitleScreenData.mHeader.mFadeOutTime, gotoRandomWatchMode, NULL);
+}
+
+static void gotoOsuMode(void* tCaller) {
+	(void)tCaller;
+	startOsuMode();
+}
+
+static void osuCB() {
+	addFadeOut(gTitleScreenData.mHeader.mFadeOutTime, gotoOsuMode, NULL);
 }
 
 static void gotoFreePlayMode(void* tCaller) {
@@ -306,13 +316,13 @@ static void setSelectedMenuElementInactive() {
 }
 
 static void loadCredits() {
-	gTitleScreenData.mCreditBGAnimationID = playOneFrameAnimationLoop(makePosition(0, 230, 50), &gTitleScreenData.mWhiteTexture);
-	setAnimationSize(gTitleScreenData.mCreditBGAnimationID, makePosition(320, 20, 1), makePosition(0, 0, 0));
-	setAnimationColor(gTitleScreenData.mCreditBGAnimationID, 0, 0, 0.5);
+	gTitleScreenData.mCreditBGAnimationElement = playOneFrameAnimationLoop(makePosition(0, 230, 50), &gTitleScreenData.mWhiteTexture);
+	setAnimationSize(gTitleScreenData.mCreditBGAnimationElement, makePosition(320, 20, 1), makePosition(0, 0, 0));
+	setAnimationColor(gTitleScreenData.mCreditBGAnimationElement, 0, 0, 0.5);
 
-	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 10", makePosition(0, 240, 51), 1);
+	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 11", makePosition(0, 240, 51), 1);
 	
-	gTitleScreenData.mRightCreditTextID = addMugenText("09/09/19 Presented by Dogma", makePosition(320, 240, 51), 1);
+	gTitleScreenData.mRightCreditTextID = addMugenText("11/01/19 Presented by Dogma", makePosition(320, 240, 51), 1);
 	setMugenTextAlignment(gTitleScreenData.mRightCreditTextID, MUGEN_TEXT_ALIGNMENT_RIGHT);
 }
 
@@ -375,6 +385,7 @@ static void loadTitleScreen() {
 	addMenuPoint("menu.itemname.watch", watchCB);
 	addMenuPoint("menu.itemname.superwatch", superWatchCB);
 	addMenuPoint("menu.itemname.randomwatch", randomWatchCB);
+	addMenuPoint("menu.itemname.osu", osuCB);
 	addMenuPoint("menu.itemname.options", optionsCB);
 	addMenuPoint("menu.itemname.credits", creditsCB);
 	addMenuPoint("menu.itemname.exit", exitCB);
@@ -477,8 +488,6 @@ static void updateDemoMode() {
 }
 
 static void updateTitleScreen() {
-	// startFightScreen(); // TODO
-	
 	updateItemSelection();
 	updateMenuBasePosition();
 	updateMenuElementPositions();

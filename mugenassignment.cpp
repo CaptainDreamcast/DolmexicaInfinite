@@ -25,30 +25,30 @@ static struct {
 
 	int mHasCommandHandlerEntryForLookup;
 	int mCommandHandlerID;
-} gData;
+} gMugenAssignmentData;
 
 void setupDreamAssignmentReader(MemoryStack* tMemoryStack) {
-	gData.mMemoryStack = tMemoryStack;
+	gMugenAssignmentData.mMemoryStack = tMemoryStack;
 }
 
 void shutdownDreamAssignmentReader()
 {
-	gData.mMemoryStack = NULL;
+	gMugenAssignmentData.mMemoryStack = NULL;
 }
 
 void setDreamAssignmentCommandLookupID(int tID)
 {
-	gData.mCommandHandlerID = tID;
-	gData.mHasCommandHandlerEntryForLookup = 1;
+	gMugenAssignmentData.mCommandHandlerID = tID;
+	gMugenAssignmentData.mHasCommandHandlerEntryForLookup = 1;
 }
 
 void resetDreamAssignmentCommandLookupID()
 {
-	gData.mHasCommandHandlerEntryForLookup = 0;
+	gMugenAssignmentData.mHasCommandHandlerEntryForLookup = 0;
 }
 
 static void* allocMemoryOnMemoryStackOrMemory(uint32_t tSize) {
-	if (gData.mMemoryStack) return allocMemoryOnMemoryStack(gData.mMemoryStack, tSize);
+	if (gMugenAssignmentData.mMemoryStack) return allocMemoryOnMemoryStack(gMugenAssignmentData.mMemoryStack, tSize);
 	else return allocMemory(tSize);
 }
 
@@ -77,6 +77,11 @@ static void unloadDreamMugenAssignmentDependOnTwo(DreamMugenAssignment * tAssign
 	DreamMugenDependOnTwoAssignment* e = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	destroyDreamMugenAssignment(e->a);
 	destroyDreamMugenAssignment(e->b);
+}
+
+static void unloadDreamMugenAssignmentArray(DreamMugenAssignment * tAssignment) {
+	DreamMugenArrayAssignment* e = (DreamMugenArrayAssignment*)tAssignment;
+	destroyDreamMugenAssignment(e->mIndex);
 }
 
 static void unloadDreamMugenAssignmentRange(DreamMugenAssignment * tAssignment) {
@@ -136,8 +141,10 @@ void destroyDreamMugenAssignment(DreamMugenAssignment * tAssignment)
 	case MUGEN_ASSIGNMENT_TYPE_DIVISION:
 	case MUGEN_ASSIGNMENT_TYPE_VECTOR:
 	case MUGEN_ASSIGNMENT_TYPE_OPERATOR_ARGUMENT:
-	case MUGEN_ASSIGNMENT_TYPE_ARRAY:
 		unloadDreamMugenAssignmentDependOnTwo(tAssignment);
+		break;
+	case MUGEN_ASSIGNMENT_TYPE_ARRAY:
+		unloadDreamMugenAssignmentArray(tAssignment);
 		break;
 	case MUGEN_ASSIGNMENT_TYPE_RANGE:
 		unloadDreamMugenAssignmentRange(tAssignment);
@@ -205,7 +212,8 @@ static DreamMugenAssignment * makeMugenArrayAssignment(char* tName, DreamMugenAs
 	string s = string(tName);
 	if (!stl_map_contains(m, s)) {
 		logWarningFormat("Unrecognized array %s\n. Defaulting to bottom.", tName);
-		return makeDreamFalseMugenAssignment(); // TODO: proper bottom
+		DreamMugenAssignment* bottomReplacementReturn = makeDreamFalseMugenAssignment();
+		return bottomReplacementReturn;
 	}
 	AssignmentReturnValue*(*func)(DreamMugenAssignment**, DreamPlayer*, int*) = m[s];
 
@@ -509,7 +517,6 @@ static DreamMugenAssignment* parseMugenVariableSetFromString(char* tText) {
 static int isComparison(char* tText) {
 	int position;
 
-	// TODO: check for multiple
 	if(!isOnHighestLevel(tText, "=", &position)) return 0;
 	if (position == 0) return 0;
 	if (tText[position - 1] == '!') return 0;
@@ -635,7 +642,6 @@ static int isMultiplication(char* tText) {
 	int position = 0;
 	int n = strlen(tText);
 
-	// TODO: check for multiple
 	if (!isOnHighestLevel(tText, "*", &position)) return 0;
 	if (position == 0) return 0;
 	if (position < n-1 && tText[position + 1] == '*') return 0;
@@ -716,10 +722,10 @@ static int isStringConstant(char* tText) {
 }
 
 static DreamMugenAssignment* parseStringConstantFromString(char* tText) {
-	if (gData.mHasCommandHandlerEntryForLookup) {
+	if (gMugenAssignmentData.mHasCommandHandlerEntryForLookup) {
 		string potentialCommand(tText + 1, strlen(tText + 1) - 1);
 		int potentialCommandIndex;
-		if (isDreamCommandForLookup(gData.mCommandHandlerID, potentialCommand.data(), &potentialCommandIndex)) {
+		if (isDreamCommandForLookup(gMugenAssignmentData.mCommandHandlerID, potentialCommand.data(), &potentialCommandIndex)) {
 			return makeDreamNumberMugenAssignment(potentialCommandIndex);
 		}
 	}
@@ -804,7 +810,7 @@ static void sanitizeTextBack(char* tText) {
 	int i;
 	for (i = n - 1; i >= 0; i--) {
 		if (tText[i] == ' ' || tText[i] == '\t') tText[i] = '\0';
-		else if (tText[i] == ',') tText[i] = '\0'; // TODO: think about trailing commas
+		else if (tText[i] == ',') tText[i] = '\0';
 		else return;
 	}
 }
@@ -848,16 +854,35 @@ static DreamMugenAssignment* parseArrayFromString(char* tText) {
 	return makeMugenArrayAssignment(saneText1, b);
 }
 
-static int isVectorAssignment(char* tText) {
-	char* text = (char*)allocMemory(strlen(tText) + 2);
-	strcpy(text, tText);
+static int isVectorAssignment(char* tText, int tPotentialCommaPosition) {
+	int endPosition = -1;
+	while (endPosition < tPotentialCommaPosition) {
+		int newPosition;
+		if (!isOnHighestLevelWithStartPosition(tText, "=", &newPosition, endPosition + 1, 1)) break;
+		if (newPosition >= tPotentialCommaPosition) break;
+		endPosition = newPosition;
+	}
+	endPosition--;
+	while (endPosition >= 0 && isEmptyCharacter(tText[endPosition])) {
+		endPosition--;
+	}
+	if (endPosition <= 0) return 0;
+	int startPosition = endPosition;
+	while (startPosition > 0 && !isEmptyCharacter(tText[startPosition])) {
+		startPosition--;
+	}
+	if (isEmptyCharacter(tText[startPosition])) startPosition++;
+
+	const char* textArea = tText + startPosition;
+	char* text = (char*)allocMemory(strlen(textArea) + 2);
+	strcpy(text, textArea);
 	turnStringLowercase(text);
 
 	int ret;
 	if (doDreamAssignmentStringsBeginsWithPattern("animelem", text)) ret = 1;
 	else if (doDreamAssignmentStringsBeginsWithPattern("timemod", text)) ret = 1;
+	else if (doDreamAssignmentStringsBeginsWithPattern("hitdefattr", text)) ret = 1;
 	else ret = 0;
-	// TODO: properly
 
 	freeMemory(text);
 	return ret;
@@ -879,7 +904,6 @@ static int isVectorTarget(char* tText) {
 	else if (doDreamAssignmentStringsBeginsWithPattern("playerid", text)) ret = 1;
 	else if (doDreamAssignmentStringsBeginsWithPattern("parent", text)) ret = 1;
 	else ret = 0;
-	// TODO: properly
 
 	freeMemory(text);
 	return ret;
@@ -938,14 +962,14 @@ static int hasContextFreeComma(char* tText, int* tPosition) {
 }
 
 static int isVector(char* tText) {
-	return hasContextFreeComma(tText, NULL) && !isVectorAssignment(tText);
+	int position;
+	return hasContextFreeComma(tText, &position) && !isVectorAssignment(tText, position);
 }
 
 static DreamMugenAssignment* parseMugenContextFreeVectorFromString(char* tText) {
 	int position;
 	hasContextFreeComma(tText, &position);
 
-	// TODO: handle when second element is gone
 	return parseTwoElementMugenAssignmentFromStringWithFixedPosition(tText, MUGEN_ASSIGNMENT_TYPE_VECTOR, ",", position);
 }
 
@@ -1122,7 +1146,7 @@ DreamMugenAssignment*  parseDreamMugenAssignmentFromString(const char* tText) {
 	return parseDreamMugenAssignmentFromString(evalText);
 }
 
-int fetchDreamAssignmentFromGroupAndReturnWhetherItExists(const char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tOutput) {
+uint8_t fetchDreamAssignmentFromGroupAndReturnWhetherItExists(const char* tName, MugenDefScriptGroup* tGroup, DreamMugenAssignment** tOutput) {
 	if (!stl_string_map_contains_array(tGroup->mElements, tName)) {
 		*tOutput = NULL;
 		return 0;
