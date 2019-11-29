@@ -29,6 +29,8 @@ typedef struct {
 	map<std::string, TrackedInteger> mMap;
 	int mIsOverridingTimeDilatation = 0;
 	double mOverridingTimeDilatationSpeed = 1.0;
+
+	map<std::string, std::set<int>> mStoryCharAnimations;
 } DolmexicaDebugData;
 
 static DolmexicaDebugData* gDolmexicaDebugData = nullptr;
@@ -341,6 +343,23 @@ static string roundamountCB(void* /*tCaller*/, string tCommand) {
 	return "";
 }
 
+static string writeStoryAnimsCB(void* /*tCaller*/, string /*tCommand*/) {
+	stringstream ss;
+	
+	for (const auto& it : gDolmexicaDebugData->mStoryCharAnimations) {
+		ss << it.first << std::endl << std::endl;
+		for (const auto val : it.second) {
+			ss << val << std::endl;
+		}
+		ss << "------------------" << std::endl;
+
+	}
+
+	bufferToFile("debug/anims.txt", makeBuffer((void*)ss.str().c_str(), ss.str().size()));
+
+	return "";
+}
+
 void initDolmexicaDebug()
 {
 	gDolmexicaDebugData = new DolmexicaDebugData();
@@ -365,6 +384,7 @@ void initDolmexicaDebug()
 	addPrismDebugConsoleCommand("randomwatch", randomwatchCB);
 	addPrismDebugConsoleCommand("speed", speedCB);
 	addPrismDebugConsoleCommand("roundamount", roundamountCB);
+	addPrismDebugConsoleCommand("writestoryanims", writeStoryAnimsCB);
 }
 
 static void loadDolmexicaDebugHandler(void* tData) {
@@ -408,4 +428,12 @@ int isDebugOverridingTimeDilatation()
 {
 	if (!gDolmexicaDebugData) return 0;
 	return gDolmexicaDebugData->mIsOverridingTimeDilatation;
+}
+
+void addDebugDolmexicaStoryCharacterAnimation(const char * tCharacter, int tAnimation)
+{
+	if (!gDolmexicaDebugData) return;
+	string name = tCharacter;
+	turnStringLowercase(name);
+	gDolmexicaDebugData->mStoryCharAnimations[name].insert(tAnimation);
 }

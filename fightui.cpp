@@ -17,6 +17,7 @@
 #include "mugenstagehandler.h"
 #include "mugenanimationutilities.h"
 #include "config.h"
+#include "gamelogic.h"
 
 using namespace std;
 
@@ -206,7 +207,6 @@ typedef struct {
 	void(*mCB)();
 } Round;
 
-// TODO: Double KO, etc. (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/398)
 typedef struct {
 	Position mPosition;
 	int mOwnsAnimation;
@@ -237,13 +237,48 @@ typedef struct {
 
 	int mHasPlayedSound;
 	int mSoundTime;
-	Vector3DI mSound;
+	Vector3DI mSound; // TODO: make optional (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/650)
 
 	MugenAnimationHandlerElement* mAnimationElement;
 
 	void(*mCB)();
-
 } KO;
+
+typedef struct {
+	int mTextID;
+
+	Position mPosition;
+	char mText[1024];
+	int mNow;
+	int mDisplayTime;
+
+	Vector3DI mFont;
+
+	int mHasPlayedSound;
+	int mHasSound;
+	Vector3DI mSound;
+
+	int mIsDisplaying;
+	void(*mCB)();
+} DKO;
+
+typedef struct {
+	int mTextID;
+
+	Position mPosition;
+	char mText[1024];
+	int mNow;
+	int mDisplayTime;
+
+	Vector3DI mFont;
+
+	int mHasPlayedSound;
+	int mHasSound;
+	Vector3DI mSound;
+
+	int mIsDisplaying;
+	void(*mCB)();
+} TO;
 
 typedef struct {
 	int mTextID;
@@ -260,6 +295,20 @@ typedef struct {
 	int mIsDisplaying;
 	void(*mCB)();
 } WinDisplay;
+
+typedef struct {
+	int mTextID;
+
+	Position mPosition;
+	char mText[1024];
+	int mNow;
+	int mDisplayTime;
+
+	Vector3DI mFont;
+
+	int mIsDisplaying;
+	void(*mCB)();
+} DrawDisplay;
 
 typedef struct {
 	int mIsCountingDownControl;
@@ -333,6 +382,21 @@ typedef struct {
 	MugenAnimationHandlerElement* mAnimationElement;
 } HitSpark;
 
+typedef struct {
+	int mTime;
+} Slowdown;
+
+typedef struct {
+	int mWaitTime;
+} Start;
+
+typedef struct {
+	int mWaitTime;
+	int mHitTime;
+	int mWinTime;
+	int mTime;
+} Over;
+
 // TODO: "time" component for everything, which offsets when single element is shown after call (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/397)
 static struct {
 	MugenSpriteFile mFightSprites;
@@ -353,11 +417,17 @@ static struct {
 	Round mRound;
 	FightDisplay mFight;
 	KO mKO;
+	DKO mDKO;
+	TO mTO;
 	WinDisplay mWin;
+	DrawDisplay mDraw;
 	Continue mContinue;
 	WinIcon mWinIcons[2];
 
 	ControlCountdown mControl;
+	Slowdown mSlow;
+	Start mStart;
+	Over mOver;
 
 	EnvironmentColorEffect mEnvironmentEffects;
 	EnvironmentShakeEffect mEnvironmentShake;
@@ -813,6 +883,40 @@ static void loadKO(MugenDefScript* tScript) {
 	gFightUIData.mKO.mIsDisplaying = 0;
 }
 
+static void loadDKO(MugenDefScript* tScript) {
+	Position basePosition;
+	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
+	basePosition.z = UI_BASE_Z;
+
+	loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "Round", "dko", 1, &gFightUIData.mDKO.mPosition, 1, gFightUIData.mDKO.mText, &gFightUIData.mDKO.mFont);
+
+	gFightUIData.mDKO.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "Round", "dko.displaytime", 0);
+
+	gFightUIData.mDKO.mHasSound = isMugenDefVectorIVariable(tScript, "Round", "dko.snd");
+	if (gFightUIData.mDKO.mHasSound) {
+		gFightUIData.mDKO.mSound = getMugenDefVectorIOrDefault(tScript, "Round", "dko.snd", makeVector3DI(1, 0, 0));
+	}
+
+	gFightUIData.mDKO.mIsDisplaying = 0;
+}
+
+static void loadTO(MugenDefScript* tScript) {
+	Position basePosition;
+	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
+	basePosition.z = UI_BASE_Z;
+
+	loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "Round", "to", 1, &gFightUIData.mTO.mPosition, 1, gFightUIData.mTO.mText, &gFightUIData.mTO.mFont);
+
+	gFightUIData.mTO.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "Round", "to.displaytime", 0);
+
+	gFightUIData.mTO.mHasSound = isMugenDefVectorIVariable(tScript, "Round", "to.snd");
+	if (gFightUIData.mTO.mHasSound) {
+		gFightUIData.mTO.mSound = getMugenDefVectorIOrDefault(tScript, "Round", "to.snd", makeVector3DI(1, 0, 0));
+	}
+
+	gFightUIData.mTO.mIsDisplaying = 0;
+}
+
 static void loadWinDisplay(MugenDefScript* tScript) {
 	Position basePosition;
 	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
@@ -825,10 +929,45 @@ static void loadWinDisplay(MugenDefScript* tScript) {
 	gFightUIData.mWin.mIsDisplaying = 0;
 }
 
+static void loadDrawDisplay(MugenDefScript* tScript) {
+	Position basePosition;
+	basePosition = getMugenDefVectorOrDefault(tScript, "Round", "pos", makePosition(0, 0, 0));
+	basePosition.z = UI_BASE_Z;
+
+	loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "Round", "draw", 1, &gFightUIData.mDraw.mPosition, 1, gFightUIData.mDraw.mText, &gFightUIData.mDraw.mFont);
+
+	gFightUIData.mDraw.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "Round", "draw.displaytime", 0);
+
+	gFightUIData.mDraw.mIsDisplaying = 0;
+}
+
 static void loadControl(MugenDefScript* tScript) {
 	gFightUIData.mControl.mControlReturnTime = getMugenDefIntegerOrDefault(tScript, "Round", "ctrl.time", 0);
 
 	gFightUIData.mControl.mIsCountingDownControl = 0;
+}
+
+static void loadSlow(MugenDefScript* tScript) {
+	gFightUIData.mSlow.mTime = getMugenDefIntegerOrDefault(tScript, "Round", "slow.time", 0);
+}
+
+static void loadStart(MugenDefScript* tScript) {
+	gFightUIData.mStart.mWaitTime = getMugenDefIntegerOrDefault(tScript, "Round", "start.waittime", 0);
+}
+
+static void loadOver(MugenDefScript* tScript) {
+	gFightUIData.mOver.mWaitTime = getMugenDefIntegerOrDefault(tScript, "Round", "over.waittime", 0);
+	gFightUIData.mOver.mHitTime = getMugenDefIntegerOrDefault(tScript, "Round", "over.hittime", 0);
+	gFightUIData.mOver.mWinTime = getMugenDefIntegerOrDefault(tScript, "Round", "over.wintime", 0);
+	gFightUIData.mOver.mTime = getMugenDefIntegerOrDefault(tScript, "Round", "over.time", 0);
+}
+
+static void loadMatch(MugenDefScript* tScript) {
+	const auto wins = getMugenDefIntegerOrDefault(tScript, "Round", "match.wins", 2);
+	if (!hasCustomRoundsToWinAmount()) {
+		setRoundsToWin(wins);
+	}
+	// const auto maxDrawGames = getMugenDefIntegerOrDefault(tScript, "Round", "match.maxdrawgames", 1); // not used in Dolmexica
 }
 
 static void loadHitSparks() {
@@ -865,8 +1004,15 @@ static void loadFightUI(void* tData) {
 	loadRound(&script);
 	loadFight(&script);
 	loadKO(&script);
+	loadDKO(&script);
+	loadTO(&script);
 	loadWinDisplay(&script);
+	loadDrawDisplay(&script);
 	loadControl(&script);
+	loadSlow(&script);
+	loadStart(&script);
+	loadOver(&script);
+	loadMatch(&script);
 	loadContinue();
 	unloadMugenDefScript(script);
 
@@ -1216,6 +1362,57 @@ static void updateKODisplay() {
 	updateKOFinish();
 }
 
+static void updateDKOSound() {
+
+	if (gFightUIData.mDKO.mNow >= gFightUIData.mKO.mSoundTime && !gFightUIData.mDKO.mHasPlayedSound) { // DKO does not have own soundtime
+		if (gFightUIData.mDKO.mHasSound) {
+			tryPlayMugenSound(&gFightUIData.mFightSounds, gFightUIData.mDKO.mSound.x, gFightUIData.mDKO.mSound.y);
+		}
+		gFightUIData.mDKO.mHasPlayedSound = 1;
+	}
+}
+
+static void updateDKOFinish() {
+	if (gFightUIData.mDKO.mNow >= gFightUIData.mDKO.mDisplayTime) {
+		removeMugenText(gFightUIData.mDKO.mTextID);
+		gFightUIData.mDKO.mCB();
+		gFightUIData.mDKO.mIsDisplaying = 0;
+	}
+}
+
+static void updateDKODisplay() {
+	if (!gFightUIData.mDKO.mIsDisplaying) return;
+
+	gFightUIData.mDKO.mNow++;
+	updateDKOSound();
+	updateDKOFinish();
+}
+
+static void updateTOSound() {
+
+	if (gFightUIData.mTO.mNow >= gFightUIData.mKO.mSoundTime && !gFightUIData.mTO.mHasPlayedSound) { // TO does not have own soundtime
+		if (gFightUIData.mTO.mHasSound) {
+			tryPlayMugenSound(&gFightUIData.mFightSounds, gFightUIData.mTO.mSound.x, gFightUIData.mTO.mSound.y);
+		}
+		gFightUIData.mTO.mHasPlayedSound = 1;
+	}
+}
+
+static void updateTOFinish() {
+	if (gFightUIData.mTO.mNow >= gFightUIData.mTO.mDisplayTime) {
+		removeMugenText(gFightUIData.mTO.mTextID);
+		gFightUIData.mTO.mCB();
+		gFightUIData.mTO.mIsDisplaying = 0;
+	}
+}
+
+static void updateTODisplay() {
+	if (!gFightUIData.mTO.mIsDisplaying) return;
+
+	gFightUIData.mTO.mNow++;
+	updateTOSound();
+	updateTOFinish();
+}
 
 static void updateWinDisplay() {
 	if (!gFightUIData.mWin.mIsDisplaying) return;
@@ -1228,6 +1425,16 @@ static void updateWinDisplay() {
 	}
 }
 
+static void updateDrawDisplay() {
+	if (!gFightUIData.mDraw.mIsDisplaying) return;
+
+	gFightUIData.mDraw.mNow++;
+	if (gFightUIData.mDraw.mNow >= gFightUIData.mDraw.mDisplayTime || hasPressedStartFlank()) {
+		removeDisplayedText(gFightUIData.mDraw.mTextID);
+		gFightUIData.mDraw.mCB();
+		gFightUIData.mDraw.mIsDisplaying = 0;
+	}
+}
 
 static void updateControlCountdown() {
 	if (!gFightUIData.mControl.mIsCountingDownControl) return;
@@ -1324,6 +1531,22 @@ static void updateEnvironmentColor() {
 	gFightUIData.mEnvironmentEffects.mNow++;
 }
 
+static double calculateEnvironmentShake(int t) {
+	return sin(gFightUIData.mEnvironmentShake.mPhaseOffset + t * (gFightUIData.mEnvironmentShake.mFrequency / 360.0) * 2.0 * M_PI) * gFightUIData.mEnvironmentShake.mAmplitude;
+}
+
+static void updateEnvironmentShake() {
+	if (!gFightUIData.mEnvironmentShake.mIsActive) return;
+
+	setDreamMugenStageHandlerScreenShake(makePosition(0.f, calculateEnvironmentShake(gFightUIData.mEnvironmentShake.mNow), 0.f));
+
+	if (gFightUIData.mEnvironmentShake.mNow >= gFightUIData.mEnvironmentShake.mDuration) {
+		setDreamMugenStageHandlerScreenShake(makePosition(0.f, 0.f, 0.f));
+		gFightUIData.mEnvironmentShake.mIsActive = 0;
+	}
+	gFightUIData.mEnvironmentShake.mNow++;
+}
+
 static void updateFightUI(void* tData) {
 	(void)tData;
 	updateHitSparks();
@@ -1331,15 +1554,16 @@ static void updateFightUI(void* tData) {
 	updateRoundDisplay();
 	updateFightDisplay();
 	updateKODisplay();
+	updateDKODisplay();
+	updateTODisplay();
 	updateWinDisplay();
+	updateDrawDisplay();
 	updateControlCountdown();
 	updateTimeDisplay();
 	updateContinueDisplay();
 	updateEnvironmentColor();
+	updateEnvironmentShake();
 }
-
-
-
 
 ActorBlueprint getDreamFightUIBP() {
 	return makeActorBlueprint(loadFightUI, unloadFightUI, updateFightUI);
@@ -1530,6 +1754,26 @@ void playDreamKOAnimation(void(*tFunc)())
 	gFightUIData.mKO.mIsDisplaying = 1;
 }
 
+void playDreamDKOAnimation(void(*tFunc)())
+{
+	playDisplayText(&gFightUIData.mDKO.mTextID, gFightUIData.mDKO.mText, gFightUIData.mDKO.mPosition, gFightUIData.mDKO.mFont);
+
+	gFightUIData.mDKO.mNow = 0;
+	gFightUIData.mDKO.mHasPlayedSound = 0;
+	gFightUIData.mDKO.mCB = tFunc;
+	gFightUIData.mDKO.mIsDisplaying = 1;
+}
+
+void playDreamTOAnimation(void(*tFunc)())
+{
+	playDisplayText(&gFightUIData.mTO.mTextID, gFightUIData.mTO.mText, gFightUIData.mTO.mPosition, gFightUIData.mTO.mFont);
+
+	gFightUIData.mTO.mNow = 0;
+	gFightUIData.mTO.mHasPlayedSound = 0;
+	gFightUIData.mTO.mCB = tFunc;
+	gFightUIData.mTO.mIsDisplaying = 1;
+}
+
 static void parseWinText(char* tDst, char* tSrc, char* tName, Position* oDisplayPosition, Position tPosition) {
 	int i, o = 0;
 	int bonus = 0;
@@ -1559,6 +1803,15 @@ void playDreamWinAnimation(char * tName, void(*tFunc)())
 	gFightUIData.mWin.mNow = 0;
 	gFightUIData.mWin.mCB = tFunc;
 	gFightUIData.mWin.mIsDisplaying = 1;
+}
+
+void playDreamDrawAnimation(void(*tFunc)())
+{
+	playDisplayText(&gFightUIData.mDraw.mTextID, gFightUIData.mDraw.mText, gFightUIData.mDraw.mPosition, gFightUIData.mDraw.mFont);
+
+	gFightUIData.mDraw.mNow = 0;
+	gFightUIData.mDraw.mCB = tFunc;
+	gFightUIData.mDraw.mIsDisplaying = 1;
 }
 
 void playDreamContinueAnimation(void(*tAnimationFinishedFunc)(), void(*tContinuePressedFunc)())
@@ -1643,7 +1896,7 @@ void setTimerFinite()
 
 int isTimerFinished()
 {
-	return gFightUIData.mTime.mIsActive && !gFightUIData.mTime.mIsInfinite && gFightUIData.mTime.mIsFinished;
+	return !gFightUIData.mTime.mIsInfinite && gFightUIData.mTime.mIsFinished;
 }
 
 void setEnvironmentColor(Vector3DI tColors, int tTime, int tIsUnderCharacters)
@@ -1658,7 +1911,6 @@ void setEnvironmentColor(Vector3DI tColors, int tTime, int tIsUnderCharacters)
 
 }
 
-// TODO: use environment shake (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/295)
 void setEnvironmentShake(int tDuration, double tFrequency, int tAmplitude, double tPhaseOffset)
 {
 	gFightUIData.mEnvironmentShake.mFrequency = tFrequency;
@@ -1787,4 +2039,34 @@ void setComboUIDisplay(int i, int tAmount)
 	changeMugenText(combo->mNumberTextID, number);
 	combo->mDisplayNow = 0;
 	combo->mIsActive = 1;
+}
+
+int getSlowTime()
+{
+	return gFightUIData.mSlow.mTime;
+}
+
+int getStartWaitTime()
+{
+	return gFightUIData.mStart.mWaitTime;
+}
+
+int getOverWaitTime()
+{
+	return gFightUIData.mOver.mWaitTime;
+}
+
+int getOverHitTime()
+{
+	return gFightUIData.mOver.mHitTime;
+}
+
+int getOverWinTime()
+{
+	return gFightUIData.mOver.mWinTime;
+}
+
+int getOverTime()
+{
+	return gFightUIData.mOver.mTime;
 }

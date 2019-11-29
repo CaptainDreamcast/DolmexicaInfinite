@@ -177,7 +177,7 @@ typedef struct {
 	int mAttack;
 	int mDefense;
 	int mFallDefenseUp;
-	Duration mLiedownTime;
+	int mLiedownTime;
 	int mAirJugglePoints;
 	int mIsSparkNoInPlayerFile;
 	int mSparkNo;

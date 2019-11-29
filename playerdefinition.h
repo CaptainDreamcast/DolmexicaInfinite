@@ -9,6 +9,7 @@
 
 #include "mugenstatereader.h"
 #include "mugencommandreader.h"
+#include "playerhitdata.h"
 
 struct PhysicsHandlerElement;
 
@@ -32,20 +33,6 @@ typedef enum {
 #define PLAYER_Z 40
 #define PLAYER_Z_PRIORITY_DELTA 0.1
 #define PLAYER_Z_PLAYER_2_OFFSET 0.01
-
-#define MAXIMUM_HITSLOT_FLAG_2_AMOUNT 10
-
-typedef struct {
-	int mIsActive;
-
-	char mFlag1[10];
-	char mFlag2[MAXIMUM_HITSLOT_FLAG_2_AMOUNT][10];
-	int mFlag2Amount;
-
-	int mNow;
-	int mTime;
-	int mIsHitBy;
-} DreamHitDefAttributeSlot;
 
 typedef struct {
 	char mDefinitionPath[1024];
@@ -107,33 +94,11 @@ typedef struct {
 
 } DreamPlayerDebugData;
 
-typedef struct {
-	int mIsActive;
-
-	int mNow;
-	int mDuration;
-
-	int mBufferTimeForCommandsDuringPauseEnd;
-	int mMoveTime;
-	int mIsPausingBG;
-
-	int mHasAnimation;
-	MugenAnimationHandlerElement* mMugenAnimationElement;
-	// TODO: sound (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/302)
-
-	Position mAnimationReferencePosition;
-
-	int mIsDarkening;
-	double mPlayer2DefenseMultiplier;
-
-	int mIsSettingPlayerUnhittable;
-} PlayerPauseData;
-
-typedef struct Player_t{
+struct DreamPlayer {
 	DreamPlayerHeader* mHeader;
 
-	struct Player_t* mRoot;
-	struct Player_t* mOtherPlayer;
+	DreamPlayer* mRoot;
+	DreamPlayer* mOtherPlayer;
 	int mPreferredPalette;
 	int mRootID;
 	int mControllerID;
@@ -144,13 +109,19 @@ typedef struct Player_t{
 	int mProjectileDataID;
 
 	List mHelpers; // contains DreamPlayer
-	List mReceivedHitData; // contains unowned void* of HitData
-	struct Player_t* mParent;
+	List mReceivedHitData; // contains owned void* of HitData
+	DreamPlayer* mParent;
 	int mHelperIDInParent;
 	int mHelperIDInRoot;
 	int mHelperIDInStore;
 
 	IntMap mProjectiles; // contains DreamPlayer
+	int mHasLastContactProjectile;
+	int mLastContactProjectileID;
+	int mLastContactProjectileTime;
+	int mLastContactProjectileWasCanceled;
+	int mLastContactProjectileWasGuarded;
+	int mLastContactProjectileWasHit;
 
 	int mAILevel;
 
@@ -166,6 +137,9 @@ typedef struct Player_t{
 
 	PhysicsHandlerElement* mPhysicsElement;
 	int mHitDataID;
+	PlayerHitData mPassiveHitData;
+	PlayerHitData mActiveHitData;
+	PlayerHitOverrides mHitOverrides;
 
 	DreamMugenStateType mStateType;
 	DreamMugenStateMoveType mMoveType;
@@ -175,6 +149,7 @@ typedef struct Player_t{
 	int mMoveContactCounter;
 	int mMoveHit;
 	int mMoveGuarded;
+	int mLastHitGuarded;
 	int mIsAlive;
 	FaceDirection mFaceDirection;
 
@@ -213,13 +188,11 @@ typedef struct Player_t{
 	Position mFreezePosition;
 
 	int mIsLyingDown;
-	Duration mLyingDownTime;
+	int mLyingDownTime;
 
 	int mIsHitPaused;
 	int mHitPauseNow;
 	int mHitPauseDuration;
-
-	int mIsSuperPaused;
 
 	int mIsHitShakeActive;
 	int mHitShakeNow;
@@ -254,7 +227,7 @@ typedef struct Player_t{
 	int mBoundFaceSet;
 	Position mBoundOffset;
 	DreamPlayerBindPositionType mBoundPositionType;
-	struct Player_t* mBoundTarget;
+	DreamPlayer* mBoundTarget;
 	int mBoundID;
 
 	List mBoundHelpers;
@@ -282,10 +255,9 @@ typedef struct Player_t{
 	DreamPlayerShadow mShadow;
 	DreamPlayerReflection mReflection;
 	DreamPlayerDebugData mDebug;
-	PlayerPauseData mPause;
 
 	int mIsDestroyed;
-} DreamPlayer;
+};
 
 void loadPlayers(MemoryStack* tMemoryStack);
 void loadPlayerSprites();
@@ -466,6 +438,7 @@ void changePlayerStateToOtherPlayerStateMachineBeforeImmediatelyEvaluatingIt(Dre
 void changePlayerStateBeforeImmediatelyEvaluatingIt(DreamPlayer* p, int mNewState);
 void changePlayerStateToSelfBeforeImmediatelyEvaluatingIt(DreamPlayer* p, int tNewState);
 void changePlayerStateIfDifferent(DreamPlayer* p, int tNewState);
+void setPlayerStatemachineToUpdateAgain(DreamPlayer* p);
 
 void changePlayerAnimation(DreamPlayer* p, int tNewAnimation);
 void changePlayerAnimationWithStartStep(DreamPlayer* p, int tNewAnimation, int tStartStep);
@@ -509,6 +482,7 @@ int isPlayerFalling(DreamPlayer* p);
 int canPlayerRecoverFromFalling(DreamPlayer* p);
 int isPlayerHitShakeOver(DreamPlayer* p);
 int isPlayerHitOver(DreamPlayer* p);
+int getPlayerHitTime(DreamPlayer* p);
 double getPlayerHitVelocityX(DreamPlayer* p, int tCoordinateP);
 double getPlayerHitVelocityY(DreamPlayer* p, int tCoordinateP);
 
@@ -533,9 +507,8 @@ char* getPlayerAuthorName(DreamPlayer* p);
 int isPlayerPaused(DreamPlayer* p);
 void setPlayerHitPaused(DreamPlayer* p, int tDuration);
 void setPlayerUnHitPaused(DreamPlayer* p);
-void setPlayerSuperPaused(DreamPlayer* p);
-void setPlayerUnSuperPaused(DreamPlayer* p);
 
+double getPlayerDeathVelAddY(DreamPlayer* p);
 void addPlayerDamage(DreamPlayer* p, DreamPlayer* tDamagingPlayer, int tDamage);
 
 int getPlayerTargetAmount(DreamPlayer* p);
@@ -555,6 +528,8 @@ int getPlayerProjectileTimeSinceContact(DreamPlayer* p, int tID);
 int getPlayerProjectileTimeSinceGuarded(DreamPlayer* p, int tID);
 int getPlayerProjectileTimeSinceHit(DreamPlayer* p, int tID);
 int getPlayerProjectileHit(DreamPlayer* p, int tID);
+int getPlayerProjectileContact(DreamPlayer* p, int tID);
+int getPlayerProjectileGuarded(DreamPlayer* p, int tID);
 
 int getPlayerTimeLeftInHitPause(DreamPlayer* p);
 
@@ -616,7 +591,7 @@ void setPlayerMoveHit(DreamPlayer* p);
 void setPlayerMoveHitReset(DreamPlayer* p);
 int getPlayerMoveGuarded(DreamPlayer* p);
 void setPlayerMoveGuarded(DreamPlayer* p);
-
+int getLastPlayerHitGuarded(DreamPlayer* p);
 
 int getPlayerFallAmountInCombo(DreamPlayer* p);
 void increasePlayerFallAmountInCombo(DreamPlayer* p);
@@ -689,6 +664,7 @@ DreamPlayer* createNewProjectileFromPlayer(DreamPlayer* p);
 void removeProjectile(DreamPlayer* p);
 
 int getPlayerControlTime(DreamPlayer* p);
+int getPlayerRecoverTime(DreamPlayer* p);
 
 void setPlayerTempScaleActive(DreamPlayer* p, Vector3D tScale);
 void setPlayerDrawAngleActive(DreamPlayer* p);
@@ -750,6 +726,7 @@ void setPlayersToTrainingMode();
 void setPlayersToRealFightMode();
 
 int isPlayer(DreamPlayer* p);
+int isGeneralPlayer(DreamPlayer* p);
 int isPlayerTargetValid(DreamPlayer* p);
 
 int isPlayerCollisionDebugActive();
@@ -758,3 +735,5 @@ void setPlayerCollisionDebug(int tIsActive);
 void turnPlayerTowardsOtherPlayer(DreamPlayer* p);
 
 int isPlayerInputAllowed(DreamPlayer* p);
+
+void setPlayersSpeed(double tSpeed);

@@ -24,7 +24,10 @@ MugenSounds* getDreamCommonSounds();
 void playDreamRoundAnimation(int tRound, void(*tFunc)());
 void playDreamFightAnimation(void(*tFunc)());
 void playDreamKOAnimation(void(*tFunc)());
+void playDreamDKOAnimation(void(*tFunc)());
+void playDreamTOAnimation(void(*tFunc)());
 void playDreamWinAnimation(char* tName, void(*tFunc)());
+void playDreamDrawAnimation(void(*tFunc)());
 void playDreamContinueAnimation(void(*tAnimationFinishedFunc)(), void(*tContinuePressedFunc)());
 void setDreamTimeDisplayFinishedCB(void(*tTimeDisplayFinishedFunc)());
 
@@ -52,5 +55,12 @@ void stopFightAndRoundAnimation();
 
 void setUIFaces();
 void setComboUIDisplay(int i, int tAmount);
+
+int getSlowTime();
+int getStartWaitTime();
+int getOverWaitTime();
+int getOverHitTime();
+int getOverWinTime();
+int getOverTime();
 
 ActorBlueprint getDreamFightUIBP();

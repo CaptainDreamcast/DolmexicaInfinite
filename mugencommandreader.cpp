@@ -191,7 +191,7 @@ int isReleaseStep(char* tInputStep) {
 	return tInputStep[0] == '~';
 }
 
-static Duration extractDurationFromReleaseInputStep(char* tInputStep) {
+static int extractDurationFromReleaseInputStep(char* tInputStep) {
 	assert(tInputStep[0] == '~');
 
 	char temp[100];
@@ -288,7 +288,7 @@ static void handleCommandNameEntry(CommandCaller* tCaller, MugenDefScriptGroupEl
 	freeMemory(name);
 }
 
-static void handleCommandTimeEntry(Duration* tDst, MugenDefScriptGroupElement* tElement) {
+static void handleCommandTimeEntry(int* tDst, MugenDefScriptGroupElement* tElement) {
 	assert(isMugenDefNumberVariableAsElement(tElement));
 	*tDst = getMugenDefNumberVariableAsElement(tElement);
 }

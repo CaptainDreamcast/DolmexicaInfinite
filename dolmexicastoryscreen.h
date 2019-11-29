@@ -65,6 +65,8 @@ typedef struct {
 
 	MugenSpriteFile mSprites;
 	MugenAnimations mAnimations;
+
+	std::string mName;
 } StoryCharacter;
 
 typedef struct StoryInstance_t {
@@ -130,6 +132,7 @@ void setDolmexicaStoryTextFaceOffset(StoryInstance* tInstance, int tID, Position
 void setDolmexicaStoryTextContinueAnimation(StoryInstance* tInstance, int tID, int tAnimation);
 void setDolmexicaStoryTextContinueOffset(StoryInstance* tInstance, int tID, Position tOffset);
 void setDolmexicaStoryTextNameText(StoryInstance* tInstance, int tID, const char* tText);
+void setDolmexicaStoryTextNameFont(StoryInstance* tInstance, int tID, Vector3DI tFont);
 void setDolmexicaStoryTextNameOffset(StoryInstance* tInstance, int tID, Position tOffset);
 
 void setDolmexicaStoryTextNextState(StoryInstance* tInstance, int tID, int tNextState);

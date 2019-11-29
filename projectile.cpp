@@ -140,11 +140,17 @@ static void projectileHitAnimationFinishedCB(void* tCaller) {
 }
 
 
-void handleProjectileHit(DreamPlayer * tProjectile)
+void handleProjectileHit(DreamPlayer* tProjectile, int tWasGuarded, int tWasCanceled)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, tProjectile->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, tProjectile->mProjectileDataID);
-
+	DreamPlayer* owner = tProjectile->mParent;
+	owner->mHasLastContactProjectile = 1;
+	owner->mLastContactProjectileTime = 0;
+	owner->mLastContactProjectileID = e->mID;
+	owner->mLastContactProjectileWasCanceled = tWasCanceled;
+	owner->mLastContactProjectileWasGuarded = !tWasCanceled && tWasGuarded;
+	owner->mLastContactProjectileWasHit = !tWasCanceled && !tWasGuarded;
 
 	if (e->mHitAnimation != -1) {
 		changePlayerAnimation(tProjectile, e->mHitAnimation);

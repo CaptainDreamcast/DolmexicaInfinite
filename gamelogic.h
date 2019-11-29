@@ -22,6 +22,7 @@ int getDreamGameTime();
 
 int getDreamRoundNumber();
 int getRoundsToWin();
+int hasCustomRoundsToWinAmount();
 void setRoundsToWin(int tRoundsToWin);
 int getDreamRoundStateNumber();
 int getDreamMatchNumber();
@@ -35,6 +36,9 @@ void setDreamGameModeTwoPlayer();
 
 int getDreamTicksPerSecond();
 int getDreamMatchWinnerIndex();
+int isDreamRoundKO();
+int isDreamRoundDraw();
+int getDreamTimeSinceKO();
 
 void resetRound();
 void reloadFight();

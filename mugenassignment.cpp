@@ -48,7 +48,7 @@ void resetDreamAssignmentCommandLookupID()
 }
 
 static void* allocMemoryOnMemoryStackOrMemory(uint32_t tSize) {
-	if (gMugenAssignmentData.mMemoryStack) return allocMemoryOnMemoryStack(gMugenAssignmentData.mMemoryStack, tSize);
+	if (gMugenAssignmentData.mMemoryStack && canFitOnMemoryStack(gMugenAssignmentData.mMemoryStack, tSize)) return allocMemoryOnMemoryStack(gMugenAssignmentData.mMemoryStack, tSize);
 	else return allocMemory(tSize);
 }
 
@@ -224,8 +224,6 @@ static DreamMugenAssignment * makeMugenArrayAssignment(char* tName, DreamMugenAs
 	data->mType = MUGEN_ASSIGNMENT_TYPE_ARRAY;
 	return (DreamMugenAssignment*)data;
 }
-
-
 
 DreamMugenAssignment * makeDreamNumberMugenAssignment(int tVal)
 {

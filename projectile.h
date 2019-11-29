@@ -8,7 +8,7 @@ ActorBlueprint getProjectileHandler();
 
 void addAdditionalProjectileData(DreamPlayer* tProjectile);
 void removeAdditionalProjectileData(DreamPlayer* tProjectile);
-void handleProjectileHit(DreamPlayer* tProjectile);
+void handleProjectileHit(DreamPlayer* tProjectile, int tWasGuarded, int tWasCanceled);
 
 void setProjectileID(DreamPlayer* p, int tID);
 int getProjectileID(DreamPlayer* p);

@@ -356,7 +356,7 @@ static void loadMugenConstantsHeader(DreamMugenConstantsHeader* tHeader, MugenDe
 	tHeader->mAttack = getMugenDefIntegerOrDefault(tScript, "Data", "attack", 100);
 	tHeader->mDefense = getMugenDefIntegerOrDefault(tScript, "Data", "defence", 100);
 	tHeader->mFallDefenseUp = getMugenDefIntegerOrDefault(tScript, "Data", "fall.defence_up", 50);
-	tHeader->mLiedownTime = getMugenDefFloatOrDefault(tScript, "Data", "liedown.time", 60);
+	tHeader->mLiedownTime = getMugenDefIntegerOrDefault(tScript, "Data", "liedown.time", 60);
 	tHeader->mAirJugglePoints = getMugenDefIntegerOrDefault(tScript, "Data", "airjuggle", 15);
 
 	loadSingleSparkNumber(&tHeader->mIsSparkNoInPlayerFile, &tHeader->mSparkNo, tScript, "Data", "sparkno", 2);

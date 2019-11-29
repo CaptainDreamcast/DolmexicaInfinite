@@ -106,7 +106,7 @@ static void parseStateControllerTriggers(DreamMugenStateController* tController,
 }
 
 static void* allocMemoryOnMemoryStackOrMemory(uint32_t tSize) {
-	if (gMugenStateControllerVariableHandler.mMemoryStack) return allocMemoryOnMemoryStack(gMugenStateControllerVariableHandler.mMemoryStack, tSize);
+	if (gMugenStateControllerVariableHandler.mMemoryStack && canFitOnMemoryStack(gMugenStateControllerVariableHandler.mMemoryStack, tSize)) return allocMemoryOnMemoryStack(gMugenStateControllerVariableHandler.mMemoryStack, tSize);
 	else return allocMemory(tSize);
 }
 
@@ -400,14 +400,14 @@ static void readHitDefinitionFromGroup(HitDefinitionController* e, MugenDefScrip
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palfx.mul", tGroup, &e->mPaletteEffectMultiplication);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("palfx.add", tGroup, &e->mPaletteEffectAddition);
 
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("envshake.time", tGroup, &e->mEnvironmentShakeTime, "0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("envshake.freq", tGroup, &e->mEnvironmentShakeFrequency, "0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("envshake.ampl", tGroup, &e->mEnvironmentShakeAmplitude, "0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("envshake.phase", tGroup, &e->mEnvironmentShakePhase, "0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.envshake.time", tGroup, &e->mFallEnvironmentShakeTime, "0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.envshake.freq", tGroup, &e->mFallEnvironmentShakeFrequency, "0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.envshake.ampl", tGroup, &e->mFallEnvironmentShakeAmplitude, "0");
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.envshake.phase", tGroup, &e->mFallEnvironmentShakePhase, "0");
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("envshake.time", tGroup, &e->mEnvironmentShakeTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("envshake.freq", tGroup, &e->mEnvironmentShakeFrequency);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("envshake.ampl", tGroup, &e->mEnvironmentShakeAmplitude);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("envshake.phase", tGroup, &e->mEnvironmentShakePhase);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.envshake.time", tGroup, &e->mFallEnvironmentShakeTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.envshake.freq", tGroup, &e->mFallEnvironmentShakeFrequency);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.envshake.ampl", tGroup, &e->mFallEnvironmentShakeAmplitude);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("fall.envshake.phase", tGroup, &e->mFallEnvironmentShakePhase);
 
 }
 
@@ -2122,20 +2122,18 @@ static void unloadHitOverrideController(DreamMugenStateController* tController) 
 
 typedef struct {
 	DreamMugenAssignment* mTime;
-
-	DreamMugenAssignment* mEndCommandBufferTime;
+	DreamMugenAssignment* mBufferTimeForCommandsDuringPauseEnd;
 	DreamMugenAssignment* mMoveTime;
-	DreamMugenAssignment* mPauseBG;
+	DreamMugenAssignment* mDoesPauseBackground;
 } PauseController;
 
 static void parsePauseController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
 	PauseController* e = (PauseController*)allocMemoryOnMemoryStackOrMemory(sizeof(PauseController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("time", tGroup, &e->mTime);
-
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("endcmdbuftime", tGroup, &e->mEndCommandBufferTime);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("endcmdbuftime", tGroup, &e->mBufferTimeForCommandsDuringPauseEnd);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("movetime", tGroup, &e->mMoveTime);
-	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausebg", tGroup, &e->mPauseBG);
+	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pausebg", tGroup, &e->mDoesPauseBackground);
 
 	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PAUSE;
 	tController->mData = e;
@@ -2145,10 +2143,9 @@ static void unloadPauseController(DreamMugenStateController* tController) {
 	PauseController* e = (PauseController*)tController->mData;
 
 	destroyDreamMugenAssignment(e->mTime);
-
-	destroyDreamMugenAssignment(e->mEndCommandBufferTime);
+	destroyDreamMugenAssignment(e->mBufferTimeForCommandsDuringPauseEnd);
 	destroyDreamMugenAssignment(e->mMoveTime);
-	destroyDreamMugenAssignment(e->mPauseBG);
+	destroyDreamMugenAssignment(e->mDoesPauseBackground);
 
 	freeMemory(e);
 }
@@ -3181,7 +3178,7 @@ static void handleHitDefinitionWithController(HitDefinitionController* e, DreamP
 	handleHitDefinitionTwoFloatElements(&e->mAirVelocity, tPlayer, setHitDataAirVelocity, 0, 0);
 	handleHitDefinitionTwoFloatElements(&e->mAirGuardVelocity, tPlayer, setHitDataAirGuardVelocity, getHitDataAirVelocityX(tPlayer) * 1.5, getHitDataAirVelocityY(tPlayer) / 2);
 
-	handleHitDefinitionOneFloatElement(&e->mGroundCornerPushVelocityOffset, tPlayer, setGroundCornerPushVelocityOffset, getHitDataAttackType(tPlayer) == MUGEN_ATTACK_TYPE_ATTACK ? 0 : 1.3*getHitDataGuardVelocity(tPlayer));
+	handleHitDefinitionOneFloatElement(&e->mGroundCornerPushVelocityOffset, tPlayer, setGroundCornerPushVelocityOffset, getHitDataAttackType(tPlayer) == MUGEN_ATTACK_TYPE_ATTACK ? 0.0 : 1.3*getHitDataGuardVelocity(tPlayer));
 	handleHitDefinitionOneFloatElement(&e->mAirCornerPushVelocityOffset, tPlayer, setAirCornerPushVelocityOffset, getGroundCornerPushVelocityOffset(tPlayer));
 	handleHitDefinitionOneFloatElement(&e->mDownCornerPushVelocityOffset, tPlayer, setDownCornerPushVelocityOffset, getGroundCornerPushVelocityOffset(tPlayer));
 	handleHitDefinitionOneFloatElement(&e->mGuardCornerPushVelocityOffset, tPlayer, setGuardCornerPushVelocityOffset, getGroundCornerPushVelocityOffset(tPlayer));
@@ -3204,7 +3201,7 @@ static void handleHitDefinitionWithController(HitDefinitionController* e, DreamP
 	handleHitDefinitionOneIntegerElement(&e->mPlayer1StateNumber, tPlayer, setPlayer1StateNumber, -1);
 	handleHitDefinitionOneIntegerElement(&e->mPlayer2StateNumber, tPlayer, setPlayer2StateNumber, -1);
 	handleHitDefinitionOneIntegerElement(&e->mPlayer2CapableOfGettingPlayer1State, tPlayer, setHitDataPlayer2CapableOfGettingPlayer1State, 1);
-	handleHitDefinitionOneIntegerElement(&e->mForceStanding, tPlayer, setHitDataForceStanding, getHitDataGroundVelocityY(tPlayer) != 0 ? 1 : 0);
+	handleHitDefinitionOneIntegerElement(&e->mForceStanding, tPlayer, setHitDataForceStanding, getHitDataGroundVelocityY(tPlayer) != 0.0 ? 1 : 0);
 
 	handleHitDefinitionOneIntegerElement(&e->mFall, tPlayer, setHitDataFall, 0);
 	handleHitDefinitionOneFloatElement(&e->mFallXVelocity, tPlayer, setHitDataFallXVelocity, 0);
@@ -3236,14 +3233,14 @@ static void handleHitDefinitionWithController(HitDefinitionController* e, DreamP
 	handleHitDefinitionThreeIntegerElements(&e->mPaletteEffectAddition, tPlayer, setHitDataPaletteEffectAddition, 0, 0, 0);
 
 	handleHitDefinitionOneIntegerElement(&e->mEnvironmentShakeTime, tPlayer, setHitDataEnvironmentShakeTime, 0);
-	handleHitDefinitionOneFloatElement(&e->mEnvironmentShakeFrequency, tPlayer, setHitDataEnvironmentShakeFrequency, 60);
-	handleHitDefinitionOneIntegerElement(&e->mEnvironmentShakeAmplitude, tPlayer, setHitDataEnvironmentShakeAmplitude, (int)transformDreamCoordinates(-4, 240, getDreamStageCoordinateP()));
-	handleHitDefinitionOneFloatElement(&e->mEnvironmentShakePhase, tPlayer, setHitDataEnvironmentShakePhase, getHitDataEnvironmentShakeFrequency(tPlayer) >= 90 ? 90 : 0);
+	handleHitDefinitionOneFloatElement(&e->mEnvironmentShakeFrequency, tPlayer, setHitDataEnvironmentShakeFrequency, 60.0);
+	handleHitDefinitionOneIntegerElement(&e->mEnvironmentShakeAmplitude, tPlayer, setHitDataEnvironmentShakeAmplitude, (int)transformDreamCoordinates(-4.0, 240, getDreamStageCoordinateP()));
+	handleHitDefinitionOneFloatElement(&e->mEnvironmentShakePhase, tPlayer, setHitDataEnvironmentShakePhase, (getHitDataEnvironmentShakeFrequency(tPlayer) >= 90.0) ? 90.0 : 0.0);
 
 	handleHitDefinitionOneIntegerElement(&e->mFallEnvironmentShakeTime, tPlayer, setHitDataFallEnvironmentShakeTime, 0);
-	handleHitDefinitionOneFloatElement(&e->mFallEnvironmentShakeFrequency, tPlayer, setHitDataFallEnvironmentShakeFrequency, 60);
-	handleHitDefinitionOneIntegerElement(&e->mFallEnvironmentShakeAmplitude, tPlayer, setHitDataFallEnvironmentShakeAmplitude, (int)transformDreamCoordinates(-4, 240, getDreamStageCoordinateP()));
-	handleHitDefinitionOneFloatElement(&e->mFallEnvironmentShakePhase, tPlayer, setHitDataFallEnvironmentShakePhase, getHitDataFallEnvironmentShakeFrequency(tPlayer) >= 90 ? 90 : 0);
+	handleHitDefinitionOneFloatElement(&e->mFallEnvironmentShakeFrequency, tPlayer, setHitDataFallEnvironmentShakeFrequency, 60.0);
+	handleHitDefinitionOneIntegerElement(&e->mFallEnvironmentShakeAmplitude, tPlayer, setHitDataFallEnvironmentShakeAmplitude, (int)transformDreamCoordinates(-4.0, 240, getDreamStageCoordinateP()));
+	handleHitDefinitionOneFloatElement(&e->mFallEnvironmentShakePhase, tPlayer, setHitDataFallEnvironmentShakePhase, getHitDataFallEnvironmentShakeFrequency(tPlayer) >= 90.0 ? 90.0 : 0);
 
 	setHitDataIsFacingRight(tPlayer, getPlayerIsFacingRight(tPlayer));
 
@@ -4047,6 +4044,8 @@ static void handleSuperPauseSound(DreamMugenAssignment** tAssignment, DreamPlaye
 static int handleSuperPause(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	SuperPauseController* e = (SuperPauseController*)tController->mData;
 
+	setDreamSuperPauseActive(tPlayer);
+
 	handleHitDefinitionOneIntegerElement(&e->mTime, tPlayer, setDreamSuperPauseTime, 30);
 	handleHitDefinitionOneIntegerElement(&e->mBufferTimeForCommandsDuringPauseEnd, tPlayer, setDreamSuperPauseBufferTimeForCommandsDuringPauseEnd, 0);
 	handleHitDefinitionOneIntegerElement(&e->mMoveTime, tPlayer, setDreamSuperPauseMoveTime, 0);
@@ -4061,15 +4060,18 @@ static int handleSuperPause(DreamMugenStateController* tController, DreamPlayer*
 	handleHitDefinitionOneIntegerElement(&e->mPowerToAdd, tPlayer, setDreamSuperPausePowerToAdd, 0);
 	handleHitDefinitionOneIntegerElement(&e->mSetPlayerUnhittable, tPlayer, setDreamSuperPausePlayerUnhittability, 1);
 
-	setDreamSuperPauseActive(tPlayer);
-
 	return 0;
 }
 
 static int handlePauseController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	(void)tController;
-	(void)tPlayer;
-	// TODO: rework pause system (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/302)
+	PauseController* e = (PauseController*)tController->mData;
+
+	setDreamPauseActive(tPlayer);
+
+	handleHitDefinitionOneIntegerElement(&e->mTime, tPlayer, setDreamPauseTime, 30);
+	handleHitDefinitionOneIntegerElement(&e->mBufferTimeForCommandsDuringPauseEnd, tPlayer, setDreamPauseBufferTimeForCommandsDuringPauseEnd, 0);
+	handleHitDefinitionOneIntegerElement(&e->mMoveTime, tPlayer, setDreamPauseMoveTime, 0);
+	handleHitDefinitionOneIntegerElement(&e->mDoesPauseBackground, tPlayer, setDreamPauseIsPausingBG, 1);
 
 	return 0;
 }
@@ -4783,8 +4785,8 @@ static int handleEnvironmentShakeController(DreamMugenStateController* tControll
 
 	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &time, 1);
 	getSingleFloatValueOrDefault(&e->mFrequency, tPlayer, &freq, 60);
-	getSingleIntegerValueOrDefault(&e->mAmplitude, tPlayer, &ampl, (int)transformDreamCoordinates(-4, 240, getDreamStageCoordinateP()));
-	getSingleFloatValueOrDefault(&e->mPhaseOffset, tPlayer, &phase, freq >= 90 ? 90 : 0);
+	getSingleIntegerValueOrDefault(&e->mAmplitude, tPlayer, &ampl, (int)transformDreamCoordinates(-4.0, 240, getDreamStageCoordinateP()));
+	getSingleFloatValueOrDefault(&e->mPhaseOffset, tPlayer, &phase, freq >= 90.0 ? 90.0 : 0.0);
 
 	setEnvironmentShake(time, freq, ampl, phase);
 
@@ -5758,6 +5760,8 @@ typedef struct {
 
 	int mDoesChangeName;
 	DreamMugenAssignment* mName;
+	int mDoesChangeNameFont;
+	DreamMugenAssignment* mNameFont;
 	int mDoesChangeNameOffset;
 	DreamMugenAssignment* mNameOffset;
 
@@ -5790,6 +5794,7 @@ static void parseChangeTextStoryController(DreamMugenStateController* tControlle
 	e->mDoesChangeContinueOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("continue.offset", tGroup, &e->mContinueOffset);
 
 	e->mDoesChangeName = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name", tGroup, &e->mName);
+	e->mDoesChangeNameFont = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name.font", tGroup, &e->mNameFont);
 	e->mDoesChangeNameOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name.offset", tGroup, &e->mNameOffset);
 
 	e->mDoesChangeText = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("text", tGroup, &e->mText);
@@ -6426,6 +6431,10 @@ static int handleChangeTextStoryController(DreamMugenStateController* tControlle
 		string text;
 		evaluateDreamAssignmentAndReturnAsString(text, &e->mName, (DreamPlayer*)tInstance);
 		setDolmexicaStoryTextNameText(targetInstance, id, text.data());
+	}
+	if (e->mDoesChangeNameFont) {
+		Vector3DI font = evaluateDreamAssignmentAndReturnAsVector3DI(&e->mNameFont, (DreamPlayer*)tInstance);
+		setDolmexicaStoryTextNameFont(targetInstance, id, font);
 	}
 	if (e->mDoesChangeNameOffset) {
 		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mNameOffset, (DreamPlayer*)tInstance);

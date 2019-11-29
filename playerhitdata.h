@@ -3,7 +3,9 @@
 #include <prism/actorhandler.h>
 
 #include "mugenstatereader.h"
-#include "playerdefinition.h"
+#include "mugensound.h"
+
+struct DreamPlayer;
 
 typedef enum {
 	MUGEN_ATTACK_CLASS_NORMAL,
@@ -49,10 +51,184 @@ typedef enum {
 	MUGEN_HIT_PRIORITY_MISS,
 } MugenHitPriorityType;
 
-ActorBlueprint getHitDataHandler();
+#define MAXIMUM_HITSLOT_FLAG_2_AMOUNT 10
 
-int initPlayerHitDataAndReturnID(DreamPlayer* tPlayer);
-void removePlayerHitData(DreamPlayer* tPlayer);
+typedef struct {
+	int mIsActive;
+
+	char mFlag1[10];
+	char mFlag2[MAXIMUM_HITSLOT_FLAG_2_AMOUNT][10];
+	int mFlag2Amount;
+
+	int mNow;
+	int mTime;
+	int mIsHitBy;
+} DreamHitDefAttributeSlot;
+
+typedef struct {
+	int mIsActive;
+	DreamPlayer* mPlayer;
+
+	DreamMugenStateType mType;
+	MugenAttackClass mAttackClass;
+	MugenAttackType mAttackType;
+
+	char mHitFlag[10];
+	char mGuardFlag[10];
+
+	MugenAffectTeam mAffectTeam;
+	MugenHitAnimationType mAnimationType;
+	MugenHitAnimationType mAirAnimationType;
+	MugenHitAnimationType mFallAnimationType;
+
+	int mPriority;
+	MugenHitPriorityType mPriorityType;
+
+	int mDamage;
+	int mGuardDamage;
+
+	int mPlayer1PauseTime;
+	int mPlayer2ShakeTime;
+	int mGuardPlayer1PauseTime;
+	int mGuardPlayer2ShakeTime;
+
+	int mIsSparkInPlayerFile;
+	int mSparkNumber;
+
+	int mIsGuardSparkInPlayerFile;
+	int mGuardSparkNumber;
+
+	Position mSparkOffset;
+
+	int mIsHitSoundInPlayerFile;
+	DreamMugenSound mHitSound;
+	int mIsGuardSoundInPlayerFile;
+	DreamMugenSound mGuardSound;
+
+	MugenAttackHeight mGroundType;
+	MugenAttackHeight mAirType;
+
+	int mGroundSlideTime;
+	int mGuardSlideTime;
+	int mGroundHitTime;
+	int mGuardHitTime;
+	int mAirHitTime;
+
+	int mGuardControlTime;
+	int mGuardDistance;
+
+	double mVerticalAcceleration;
+	Velocity mGroundVelocity;
+	double mGuardVelocity;
+	Velocity mAirVelocity;
+	Velocity mAirGuardVelocity;
+
+	double mGroundCornerPushVelocityOffset;
+	double mAirCornerPushVelocityOffset;
+	double mDownCornerPushVelocityOffset;
+	double mGuardCornerPushVelocityOffset;
+	double mAirGuardCornerPushVelocityOffset;
+
+	int mAirGuardControlTime;
+	int mAirJugglePoints;
+
+	int mHasMinimumDistance;
+	Vector3DI mMinimumDistance;
+
+	int mHasMaximumDistance;
+	Vector3DI mMaximumDistance;
+
+	int mHasSnap;
+	Vector3DI mSnap;
+
+	int mPlayer1DrawingPriority;
+	int mPlayer2DrawingPriority;
+
+	int mIsPlayer1TurningAround;
+	int mPlayer1ChangeFaceDirectionRelativeToPlayer2;
+	int mPlayer2ChangeFaceDirectionRelativeToPlayer1;
+
+	int mPlayer1StateNumber;
+	int mPlayer2StateNumber;
+
+	int mCanPlayer2GetPlayer1State;
+	int mIsForcingPlayer2ToStandingPosition;
+
+	int mFall;
+	Velocity mFallVelocity;
+
+	int mCanRecoverFall;
+	int mFallRecoveryTime;
+	int mFallDamage;
+
+	int mAirFall;
+	int mForcePlayer2OutOfFallState;
+
+	Velocity mDownVelocity;
+	int mDownHitTime;
+	int mDownDoesBounce;
+
+	int mHitID;
+	int mChainID;
+	Vector3DI mNoChainIDs;
+
+	int mDoesOnlyHitOneEnemy;
+
+	int mCanKill;
+	int mCanGuardKill;
+	int mCanFallKill;
+
+	int mNumberOfHitsForComboCounter;
+
+	int mGetPlayer1Power;
+	int mGetPlayer1GuardPower;
+
+	int mGivePlayer2Power;
+	int mGivePlayer2GuardPower;
+
+	int mPaletteEffectTime;
+	Vector3DI mPaletteEffectMultiplication;
+	Vector3DI mPaletteEffectAddition;
+
+	int mEnvironmentShakeTime;
+	double mEnvironmentShakeFrequency;
+	int mEnvironmentShakeAmplitude;
+	double mEnvironmentShakePhase;
+
+	int mFallEnvironmentShakeTime;
+	double mFallEnvironmentShakeFrequency;
+	int mFallEnvironmentShakeAmplitude;
+	double mFallEnvironmentShakePhase;
+
+	Velocity mVelocity;
+
+	int mIsFacingRight;
+
+	DreamHitDefAttributeSlot mReversalDef;
+} PlayerHitData;
+
+typedef struct {
+	int mIsActive;
+
+	DreamMugenStateType mStateType;
+	MugenAttackClass mAttackClass;
+	MugenAttackType mAttackType;
+	int mStateNo;
+	int mSlot;
+
+	int mNow;
+	int mDuration;
+
+	int mDoesForceAir;
+} HitOverride;
+
+typedef struct {
+	HitOverride mHitOverrides[8];
+} PlayerHitOverrides;
+
+void updatePlayerHitData(DreamPlayer* tPlayer);
+
+void initPlayerHitData(DreamPlayer* tPlayer);
 
 void copyHitDataToActive(DreamPlayer* tPlayer, void* tHitData);
 
@@ -243,14 +419,16 @@ void setHitDataDownVelocity(DreamPlayer* tPlayer, double tX, double tY);
 void setHitDataDownHitTime(DreamPlayer* tPlayer, int tHitTime);
 void setHitDataDownBounce(DreamPlayer* tPlayer, int tDoesBounce);
 
-void setHitDataHitID(DreamPlayer* tPlayer, int tID);
 int getActiveHitDataHitID(DreamPlayer* tPlayer);
+void setHitDataHitID(DreamPlayer* tPlayer, int tID);
+int getActiveHitDataChainID(DreamPlayer* tPlayer);
 void setHitDataChainID(DreamPlayer* tPlayer, int tID);
 void setHitDataNoChainID(DreamPlayer* tPlayer, int tID1, int tID2);
 
 void setHitDataHitOnce(DreamPlayer* tPlayer, int tIsOnlyAffectingOneOpponent);
 void setHitDataKill(DreamPlayer* tPlayer, int tCanKill);
 void setHitDataGuardKill(DreamPlayer* tPlayer, int tCanKill);
+int getActiveHitDataFallKill(DreamPlayer* tPlayer);
 void setHitDataFallKill(DreamPlayer* tPlayer, int tCanKill);
 void setHitDataNumberOfHits(DreamPlayer* tPlayer, int tNumberOfHits);
 int getActiveHitDataPlayer1PowerAdded(DreamPlayer* tPlayer);
@@ -266,11 +444,15 @@ void setHitDataPaletteEffectTime(DreamPlayer* tPlayer, int tEffectTime);
 void setHitDataPaletteEffectMultiplication(DreamPlayer* tPlayer, int tR, int tG, int tB);
 void setHitDataPaletteEffectAddition(DreamPlayer* tPlayer, int tR, int tG, int tB);
 
+int getActiveHitDataEnvironmentShakeTime(DreamPlayer* tPlayer);
 void setHitDataEnvironmentShakeTime(DreamPlayer* tPlayer, int tTime);
+double getActiveHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer);
 double getHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer);
 void setHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer, double tFrequency);
+int getActiveHitDataEnvironmentShakeAmplitude(DreamPlayer* tPlayer);
 int getHitDataEnvironmentShakeAmplitude(DreamPlayer* tPlayer);
 void setHitDataEnvironmentShakeAmplitude(DreamPlayer* tPlayer, int tAmplitude);
+double getActiveHitDataEnvironmentShakePhase(DreamPlayer* tPlayer);
 void setHitDataEnvironmentShakePhase(DreamPlayer* tPlayer, double tPhase);
 
 int getActiveHitDataFallEnvironmentShakeTime(DreamPlayer* tPlayer);

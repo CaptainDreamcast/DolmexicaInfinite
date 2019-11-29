@@ -39,6 +39,7 @@
 #include "dolmexicadebug.h"
 #include "osuhandler.h"
 #include "mugensound.h"
+#include "pausecontrollers.h"
 
 static struct {
 	void(*mWinCB)();
@@ -96,7 +97,6 @@ static void loadFightScreen() {
 
 	instantiateActor(getMugenAnimationUtilityHandler());
 	instantiateActor(getDreamAIHandler());
-	instantiateActor(getHitDataHandler());
 	instantiateActor(getProjectileHandler());
 	instantiateActor(getDolmexicaSoundHandler());
 
@@ -107,7 +107,6 @@ static void loadFightScreen() {
 		int actorID = instantiateActor(getFightDebug());
 		setActorUnpausable(actorID);
 	}
-	instantiateActor(getDreamExplodHandler());
 	
 	logMemoryPlatform();
 	logg("init stage");
@@ -138,7 +137,10 @@ static void loadFightScreen() {
 		instantiateActor(getOsuHandler());
 	}
 
+	instantiateActor(getPauseControllerHandler());
 	instantiateActor(getPostStateMachinePlayersBlueprint());
+	instantiateActor(getDreamExplodHandler());
+
 	if (isInDevelopMode()) {
 		instantiateActor(getDolmexicaDebug());
 	}
@@ -147,6 +149,8 @@ static void loadFightScreen() {
 	
 	changePlayerState(getRootPlayer(0), 5900);
 	changePlayerState(getRootPlayer(1), 5900);
+	setPlayerStatemachineToUpdateAgain(getRootPlayer(0));
+	setPlayerStatemachineToUpdateAgain(getRootPlayer(1));
 
 	logMemoryPlatform();
 

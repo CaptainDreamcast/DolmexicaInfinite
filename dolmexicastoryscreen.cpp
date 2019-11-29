@@ -10,6 +10,7 @@
 #include <prism/input.h>
 #include <prism/stlutil.h>
 #include <prism/sound.h>
+#include <prism/debug.h>
 
 #include "mugenassignmentevaluator.h"
 #include "mugenstatecontrollers.h"
@@ -21,6 +22,7 @@
 #include "characterselectscreen.h"
 #include "mugencommandhandler.h"
 #include "mugensound.h"
+#include "dolmexicadebug.h"
 
 using namespace std;
 
@@ -105,7 +107,6 @@ static void initStoryInstance(StoryInstance& e){
 
 static void unloadStoryInstance(StoryInstance& e) {
 	removeDreamRegisteredStateMachine(e.mStateMachineID);
-	// TODO: unload texts, animations and characters (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/404)
 }
 
 static void loadStoryScreen() {
@@ -802,6 +803,14 @@ void setDolmexicaStoryTextNameText(StoryInstance * tInstance, int tID, const cha
 	changeMugenText(e->mNameID, tText);
 }
 
+void setDolmexicaStoryTextNameFont(StoryInstance * tInstance, int tID, Vector3DI tFont)
+{
+	StoryText* e = &tInstance->mStoryTexts[tID];
+	setMugenTextFont(e->mNameID, tFont.x);
+	setMugenTextColor(e->mNameID, getMugenTextColorFromMugenTextColorIndex(tFont.y));
+	setMugenTextAlignment(e->mNameID, getMugenTextAlignmentFromMugenAlignmentIndex(tFont.z));
+}
+
 void setDolmexicaStoryTextNameOffset(StoryInstance * tInstance, int tID, Position tOffset)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
@@ -950,7 +959,8 @@ void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* t
 	}
 
 	StoryCharacter e;
-	
+	e.mName = tName;
+
 	char file[1024];
 	char path[1024];
 	char fullPath[1024];
@@ -985,6 +995,10 @@ void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* t
 
 	tPosition.z = DOLMEXICA_STORY_ANIMATION_BASE_Z + tID * 0.1;
 	initDolmexicaStoryAnimation(tInstance->mStoryCharacters[tID].mAnimation, tID, tAnimation, tPosition, &tInstance->mStoryCharacters[tID].mSprites, &tInstance->mStoryCharacters[tID].mAnimations);
+
+	if (isInDevelopMode()) {
+		addDebugDolmexicaStoryCharacterAnimation(e.mName.c_str(), tAnimation);
+	}
 }
 
 void removeDolmexicaStoryCharacter(StoryInstance* tInstance, int tID)
@@ -1017,6 +1031,9 @@ int getDolmexicaStoryCharacterAnimation(StoryInstance * tInstance, int tID)
 void changeDolmexicaStoryCharacterAnimation(StoryInstance* tInstance, int tID, int tAnimation)
 {
 	StoryCharacter& e = tInstance->mStoryCharacters[tID];
+	if (isInDevelopMode()) {
+		addDebugDolmexicaStoryCharacterAnimation(e.mName.c_str(), tAnimation);
+	}
 	changeDolmexicaStoryAnimationInternal(e.mAnimation, tAnimation, &e.mAnimations);
 }
 

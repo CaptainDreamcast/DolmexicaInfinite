@@ -37,12 +37,17 @@ typedef struct {
 static struct {
 	map<int, RegisteredState> mRegisteredStates;
 	int mIsInStoryMode;
+
+	double mTimeDilatationNow;
+	double mTimeDilatation;
 } gMugenStateHandlerData;
 
 static void loadStateHandler(void* tData) {
 	(void)tData;
 	
 	gMugenStateHandlerData.mRegisteredStates.clear();
+	gMugenStateHandlerData.mTimeDilatationNow = 0.0;
+	gMugenStateHandlerData.mTimeDilatation = 1.0;
 }
 
 static void unloadStateHandler(void* tData) {
@@ -151,7 +156,12 @@ static int updateSingleStateMachine(void* tCaller, RegisteredState& tData) {
 
 static void updateStateHandler(void* tData) {
 	(void)tData;
-	stl_int_map_remove_predicate(gMugenStateHandlerData.mRegisteredStates, updateSingleStateMachine);
+	gMugenStateHandlerData.mTimeDilatationNow += gMugenStateHandlerData.mTimeDilatation;
+	int updateAmount = (int)gMugenStateHandlerData.mTimeDilatationNow;
+	gMugenStateHandlerData.mTimeDilatationNow -= updateAmount;
+	while (updateAmount--) {
+		stl_int_map_remove_predicate(gMugenStateHandlerData.mRegisteredStates, updateSingleStateMachine);
+	}
 }
 
 ActorBlueprint getDreamMugenStateHandler() {
@@ -208,6 +218,13 @@ int getDreamRegisteredStatePreviousState(int tID)
 	return e->mPreviousState;
 }
 
+int isDreamRegisteredStateMachinePaused(int tID)
+{
+	assert(stl_map_contains(gMugenStateHandlerData.mRegisteredStates, tID));
+	RegisteredState* e = &gMugenStateHandlerData.mRegisteredStates[tID];
+	return e->mIsPaused;
+}
+
 void pauseDreamRegisteredStateMachine(int tID)
 {
 	assert(stl_map_contains(gMugenStateHandlerData.mRegisteredStates, tID));
@@ -221,6 +238,12 @@ void unpauseDreamRegisteredStateMachine(int tID)
 	RegisteredState* e = &gMugenStateHandlerData.mRegisteredStates[tID];
 	if (e->mIsDisabled) return;
 	e->mIsPaused = 0;
+}
+
+void setDreamRegisteredStateMachinePauseStatus(int tID, int tIsPaused)
+{
+	if (tIsPaused) pauseDreamRegisteredStateMachine(tID);
+	else unpauseDreamRegisteredStateMachine(tID);
 }
 
 void disableDreamRegisteredStateMachine(int tID)
@@ -419,6 +442,14 @@ void updateDreamSingleStateMachineByID(int tID) {
 	e->mWasUpdatedOutsideHandler = 1;
 }
 
+void setDreamSingleStateMachineToUpdateAgainByID(int tID)
+{
+	assert(stl_map_contains(gMugenStateHandlerData.mRegisteredStates, tID));
+	RegisteredState* e = &gMugenStateHandlerData.mRegisteredStates[tID];
+	updateSingleStateMachineByReference(e);
+	e->mWasUpdatedOutsideHandler = 0;
+}
+
 void setStateMachineHandlerToStory()
 {
 	gMugenStateHandlerData.mIsInStoryMode = 1;
@@ -427,4 +458,9 @@ void setStateMachineHandlerToStory()
 void setStateMachineHandlerToFight()
 {
 	gMugenStateHandlerData.mIsInStoryMode = 0;
+}
+
+void setStateMachineHandlerSpeed(double tSpeed)
+{
+	gMugenStateHandlerData.mTimeDilatation = tSpeed;
 }

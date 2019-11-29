@@ -269,7 +269,7 @@ static int isBackgroundElementGroup(MugenDefScriptGroup* tGroup) {
 
 static void addBackgroundElementToStageHandler(StageBackgroundElement* e, MugenAnimation* tAnimation, int tOwnsAnimation) {
 	e->mStart.z = e->mListPosition*0.01 + e->mLayerNo * BACKGROUND_UPPER_BASE_Z;
-	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, tOwnsAnimation, &gStageData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), e->mVelocity, e->mStartScaleY, e->mScaleDeltaY, e->mLayerNo, e->mID, gStageData.mStageInfo.mLocalCoordinates);
+	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, tOwnsAnimation, &gStageData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), e->mVelocity, e->mStartScaleY, e->mScaleDeltaY, gStageData.mStageInfo.mScale, e->mLayerNo, e->mID, gStageData.mStageInfo.mLocalCoordinates);
 }
 
 static BlendType getBackgroundBlendType(MugenDefScriptGroup* tGroup) {
@@ -384,7 +384,8 @@ static void loadStageBackgroundElements(char* tPath, MugenDefScript* s) {
 static void setStageCamera() {
 	double sizeX = gStageData.mCamera.mBoundRight - gStageData.mCamera.mBoundLeft;
 	double sizeY = gStageData.mCamera.mBoundLow - gStageData.mCamera.mBoundHigh;
-	setDreamMugenStageHandlerCameraRange(makeGeoRectangle(gStageData.mCamera.mBoundLeft, gStageData.mCamera.mBoundHigh, sizeX, sizeY));
+	double scale = gStageData.mStageInfo.mLocalCoordinates.y / double(getDreamMugenStageHandlerCameraCoordinates().y);
+	setDreamMugenStageHandlerCameraRange(makeGeoRectangle(gStageData.mCamera.mBoundLeft, gStageData.mCamera.mBoundHigh, sizeX, sizeY) * scale);
 }
 
 static void loadStage(void* tData)
@@ -406,7 +407,8 @@ static void loadStage(void* tData)
 	loadStageShadow(&s);
 	loadStageReflection(&s);
 	loadStageMusic(&s);
-	setDreamMugenStageHandlerCameraCoordinates(makeVector3DI(320, 240, 0)); // TODO (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/180)
+	const auto sz = getScreenSize();
+	setDreamMugenStageHandlerCameraCoordinates(makeVector3DI(sz.x, sz.y, 0));
 
 	setStageCamera();
 	loadStageBackgroundElements(gStageData.mDefinitionPath, &s);
@@ -451,8 +453,8 @@ static void updateCameraMovementX() {
 }
 
 static void updateCameraMovementY() {
-	double y1 = getPlayerPositionY(getRootPlayer(0), gStageData.mStageInfo.mLocalCoordinates.y);
-	double y2 = getPlayerPositionY(getRootPlayer(1), gStageData.mStageInfo.mLocalCoordinates.y);
+	double y1 = getPlayerPositionY(getRootPlayer(0), getDreamMugenStageHandlerCameraCoordinates().y);
+	double y2 = getPlayerPositionY(getRootPlayer(1), getDreamMugenStageHandlerCameraCoordinates().y);
 	double mini = min(y1, y2);
 
 	double cameraY = mini*gStageData.mCamera.mVerticalFollow;
@@ -499,8 +501,7 @@ void playDreamStageMusic()
 
 double parseDreamCoordinatesToLocalCoordinateSystem(double tCoordinate, int tOtherCoordinateSystemAsP)
 {
-	ScreenSize sz = getScreenSize();
-	int currentP = sz.y; 
+	int currentP = gStageData.mStageInfo.mLocalCoordinates.y; 
 	double fac = currentP / (double)tOtherCoordinateSystemAsP;
 
 	return tCoordinate*fac;
@@ -532,8 +533,7 @@ int doesDreamPlayerStartFacingLeft(int i)
 double getDreamCameraPositionX(int tCoordinateP)
 {
 	Position p = *getDreamMugenStageHandlerCameraPositionReference();
-	ScreenSize sz = getScreenSize();
-	p = transformDreamCoordinatesVector(p, sz.y, tCoordinateP);
+	p = transformDreamCoordinatesVector(p, getDreamMugenStageHandlerCameraCoordinates().y, tCoordinateP);
 
 	return p.x;
 }
@@ -541,8 +541,7 @@ double getDreamCameraPositionX(int tCoordinateP)
 double getDreamCameraPositionY(int tCoordinateP)
 {
 	Position p = *getDreamMugenStageHandlerCameraPositionReference();
-	ScreenSize sz = getScreenSize();
-	p = transformDreamCoordinatesVector(p, sz.y, tCoordinateP);
+	p = transformDreamCoordinatesVector(p, getDreamMugenStageHandlerCameraCoordinates().y, tCoordinateP);
 
 	return p.y;
 }
@@ -555,8 +554,7 @@ double getDreamCameraZoom(int tCoordinateP)
 
 double getDreamScreenFactorFromCoordinateP(int tCoordinateP)
 {
-	ScreenSize sz = getScreenSize();
-	return sz.y / (double)tCoordinateP;
+	return gStageData.mStageInfo.mLocalCoordinates.y / (double)tCoordinateP;
 }
 
 int getDreamStageCoordinateP()
@@ -610,8 +608,7 @@ double getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(int tCoordin
 double getDreamStageLeftOfScreenBasedOnPlayer(int tCoordinateP)
 {
 	Position p = *getDreamMugenStageHandlerCameraPositionReference();
-	ScreenSize sz = getScreenSize();
-	p = transformDreamCoordinatesVector(p, sz.y, tCoordinateP);
+	p = transformDreamCoordinatesVector(p, getDreamMugenStageHandlerCameraCoordinates().y, tCoordinateP);
 
 	return p.x;
 }
@@ -619,9 +616,8 @@ double getDreamStageLeftOfScreenBasedOnPlayer(int tCoordinateP)
 double getDreamStageRightOfScreenBasedOnPlayer(int tCoordinateP)
 {
 	Position p = *getDreamMugenStageHandlerCameraPositionReference();
-	ScreenSize sz = getScreenSize();
-	p = transformDreamCoordinatesVector(p, sz.y, tCoordinateP);
-	double screenSize = transformDreamCoordinates(sz.x, sz.y, tCoordinateP);
+	p = transformDreamCoordinatesVector(p, getDreamMugenStageHandlerCameraCoordinates().y, tCoordinateP);
+	double screenSize = transformDreamCoordinates(gStageData.mStageInfo.mLocalCoordinates.x, gStageData.mStageInfo.mLocalCoordinates.y, tCoordinateP);
 
 	return p.x + screenSize;
 }
@@ -636,22 +632,22 @@ Position getDreamStageCenterOfScreenBasedOnPlayer(int tCoordinateP)
 
 int getDreamGameWidth(int tCoordinateP)
 {
-	return (int)transformDreamCoordinates(640, 480, tCoordinateP); // TODO: non-hardcoded (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/180) + zoom (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/205)
+	return (int)transformDreamCoordinates(640, 480, tCoordinateP); // TODO: zoom (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/205)
 }
 
 int getDreamGameHeight(int tCoordinateP)
 {
-	return (int)transformDreamCoordinates(480, 480, tCoordinateP); // TODO: non-hardcoded (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/180) + zoom (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/205)
+	return (int)transformDreamCoordinates(480, 480, tCoordinateP); // TODO: zoom (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/205)
 }
 
 int getDreamScreenWidth(int tCoordinateP)
 {
-	return (int)transformDreamCoordinates(640, 480, tCoordinateP); // TODO: non-hardcoded (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/180)
+	return (int)transformDreamCoordinates(640, 480, tCoordinateP);
 }
 
 int getDreamScreenHeight(int tCoordinateP)
 {
-	return (int)transformDreamCoordinates(480, 480, tCoordinateP); // TODO: non-hardcoded (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/180)
+	return (int)transformDreamCoordinates(480, 480, tCoordinateP);
 }
 
 char * getDreamStageAuthor()

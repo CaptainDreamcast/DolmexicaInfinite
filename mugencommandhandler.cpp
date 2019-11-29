@@ -19,8 +19,8 @@ using namespace std;
 typedef struct {
 	string mName;
 	int mIsActive;
-	Duration mNow;
-	Duration mBufferTime;
+	int mNow;
+	int mBufferTime;
 	int mLookupID;
 } MugenCommandState;
 
@@ -33,7 +33,7 @@ typedef struct {
 	string mName;
 	DreamMugenCommandInput* mInput;
 	int mStep;
-	Duration mNow;
+	int mNow;
 } ActiveMugenCommand;
 
 typedef struct {
@@ -166,7 +166,7 @@ int isDreamCommandActiveByLookupIndex(int tID, int tLookupIndex)
 	return state->mIsActive;
 }
 
-static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, const string& tName, Duration tBufferTime);
+static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, const string& tName, int tBufferTime);
 
 int isDreamCommandForLookup(int tID, const char * tCommandName, int * oLookupIndex)
 {
@@ -180,7 +180,7 @@ int isDreamCommandForLookup(int tID, const char * tCommandName, int * oLookupInd
 	return 1;
 }
 
-void setDreamPlayerCommandActiveForAI(int tID, const char * tCommandName, Duration tBufferTime)
+void setDreamPlayerCommandActiveForAI(int tID, const char * tCommandName, int tBufferTime)
 {
 	RegisteredMugenCommand* e = &gMugenCommandHandler.mRegisteredCommands[tID];
 	setCommandStateActive(e, tCommandName, tBufferTime);
@@ -408,7 +408,7 @@ static void removeActiveCommand(ActiveMugenCommand* tCommand, RegisteredMugenCom
 	state->mIsBeingProcessed = 0;
 }
 
-static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, const string& tName, Duration tBufferTime) {
+static void setCommandStateActive(RegisteredMugenCommand* tRegisteredCommand, const string& tName, int tBufferTime) {
 	MugenCommandState* state = &tRegisteredCommand->tStates.mStates[tName];
 	state->mIsActive = 1;
 	state->mNow = 0;
@@ -440,10 +440,11 @@ static int updateSingleActiveMugenCommand(RegisteredMugenCommand* tCaller, Activ
 	RegisteredMugenCommand* registeredCommand = (RegisteredMugenCommand*)tCaller;
 	ActiveMugenCommand* command = &tData;
 
-	if (handleDurationAndCheckIfOver(&command->mNow, command->mInput->mTime)) {
+	if (command->mNow >= command->mInput->mTime) {
 		removeActiveCommand(command, registeredCommand);
 		return 1;
 	}
+	command->mNow++;
 
 	int isRunning = 1;
 	while (isRunning) {
@@ -535,9 +536,10 @@ static void updateSingleCommandState(void* tCaller, const string& tKey, MugenCom
 	MugenCommandState* state = &tData;
 	if (!state->mIsActive) return;
 
-	if (handleDurationAndCheckIfOver(&state->mNow, state->mBufferTime)) {
+	if (state->mNow >= state->mBufferTime) {
 		setCommandStateInactive(state);
 	}
+	state->mNow++;
 }
 
 static void updateCommandStates(RegisteredMugenCommand* tCommand) {

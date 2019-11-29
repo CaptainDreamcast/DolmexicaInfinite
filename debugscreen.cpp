@@ -61,7 +61,6 @@ static void loadDebugScreen() {
 
 	instantiateActor(getMugenAnimationUtilityHandler());
 	instantiateActor(getDreamAIHandler());
-	instantiateActor(getHitDataHandler());
 	instantiateActor(getProjectileHandler());
 
 	instantiateActor(getPreStateMachinePlayersBlueprint());

@@ -25,6 +25,8 @@ typedef struct {
 	Position mDelta;
 	Vector3DI mCoordinates;
 	Vector3D mVelocity;
+	Vector3D mGlobalScale;
+	Vector3D mDrawScale;
 
 	MugenSpriteFile* mSprites;
 	MugenAnimation* mAnimation;
@@ -43,6 +45,7 @@ typedef struct {
 	int mInvisibleFlag;
 } StaticStageHandlerElement;
 
+Vector3DI getDreamMugenStageHandlerCameraCoordinates();
 void setDreamMugenStageHandlerCameraCoordinates(Vector3DI tCoordinates);
 void setDreamMugenStageHandlerCameraRange(GeoRectangle tRect);
 void setDreamMugenStageHandlerCameraPosition(Position p);
@@ -50,15 +53,18 @@ void addDreamMugenStageHandlerCameraPositionX(double tX);
 void setDreamMugenStageHandlerCameraPositionX(double tX);
 void addDreamMugenStageHandlerCameraPositionY(double tY);
 void setDreamMugenStageHandlerCameraPositionY(double tY);
+void setDreamMugenStageHandlerScreenShake(const Position& tScreenShake);
 void resetDreamMugenStageHandlerCameraPosition();
 
-void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, double tStartScaleY, double tScaleDeltaY, int tLayerNo, int tID, Vector3DI tCoordinates);
+void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, double tStartScaleY, double tScaleDeltaY, Position tDrawScale, int tLayerNo, int tID, Vector3DI tCoordinates);
 Position* getDreamMugenStageHandlerCameraPositionReference();
 Position* getDreamMugenStageHandlerCameraEffectPositionReference();
 void setDreamMugenStageHandlerCameraEffectPositionX(double tX);
 void setDreamMugenStageHandlerCameraEffectPositionY(double tY);
 Position* getDreamMugenStageHandlerCameraZoomReference();
 void setDreamMugenStageHandlerCameraZoom(double tZoom);
+
+void setDreamMugenStageHandlerSpeed(double tSpeed);
 
 void setDreamStageInvisibleForOneFrame();
 void setDreamStageLayer1InvisibleForOneFrame();

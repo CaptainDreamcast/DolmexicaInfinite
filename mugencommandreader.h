@@ -47,7 +47,7 @@ typedef struct {
 } DreamMugenCommandInputStepMultipleTargetData;
 
 typedef struct {
-	Duration mDuration;
+	int mDuration;
 } DreamMugenCommandInputStepReleaseData;
 
 typedef struct{
@@ -59,8 +59,8 @@ typedef struct{
 
 typedef struct {
 	Vector mInputSteps;
-	Duration mTime;
-	Duration mBufferTime;
+	int mTime;
+	int mBufferTime;
 } DreamMugenCommandInput;
 
 typedef struct {

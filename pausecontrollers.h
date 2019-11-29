@@ -5,8 +5,7 @@
 
 #include "playerdefinition.h"
 
-int initPlayerPauseData(DreamPlayer* tPlayer);
-void updatePlayerPause(DreamPlayer* tPlayer);
+ActorBlueprint getPauseControllerHandler();
 
 void setDreamSuperPauseTime(DreamPlayer* tPlayer, int tTime);
 void setDreamSuperPauseBufferTimeForCommandsDuringPauseEnd(DreamPlayer* tPlayer, int tBufferTime);
@@ -20,4 +19,13 @@ void setDreamSuperPausePlayer2DefenseMultiplier(DreamPlayer* tPlayer, double tMu
 void setDreamSuperPausePowerToAdd(DreamPlayer* tPlayer, int tPowerToAdd);
 void setDreamSuperPausePlayerUnhittability(DreamPlayer* tPlayer, int tIsUnhittable);
 void setDreamSuperPauseActive(DreamPlayer* tPlayer);
+int isDreamSuperPauseActive();
 
+void setDreamPauseTime(DreamPlayer* tPlayer, int tTime);
+void setDreamPauseBufferTimeForCommandsDuringPauseEnd(DreamPlayer* tPlayer, int tBufferTime);
+void setDreamPauseMoveTime(DreamPlayer* tPlayer, int tMoveTime);
+void setDreamPauseIsPausingBG(DreamPlayer* tPlayer, int tIsPausingBG);
+void setDreamPauseActive(DreamPlayer* tPlayer);
+int isDreamPauseActive();
+
+int isDreamAnyPauseActive();
