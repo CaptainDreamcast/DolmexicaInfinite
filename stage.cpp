@@ -14,11 +14,14 @@
 #include <prism/mugendefreader.h>
 #include <prism/mugenspritefilereader.h>
 #include <prism/sound.h>
+#include <libOPNMIDI/include/libOPNMIDI.h>
+#include <libOPNMIDI/include/libADLMIDI.h>
 
 #include "playerdefinition.h"
 #include "mugenstagehandler.h"
 #include "mugenbackgroundstatehandler.h"
 #include "mugensound.h"
+#include "tsf.h"
 
 using namespace std;
 
