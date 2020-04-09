@@ -32,6 +32,8 @@ windows/.vs/*
 windows/enc_temp_folder/*
 windows/Release/*
 windows/Debug/*
+windows/packages/*
+windows/Test/*
 *.aps
 *.exe
 *.dll
@@ -56,3 +58,4 @@ windows/Debug/*
 *.ilk
 *.psess
 *.vspx
+*.testdurations

@@ -291,15 +291,20 @@ static int isEmptyCharacter(char tChar) {
 }
 
 static int isOperatorCharacter(char tChar) {
-	return tChar == '-' || tChar == '+' || tChar == '|' || tChar == '&' || tChar == '*' || tChar == '/' || tChar == '!';
+	return tChar == '-' || tChar == '+' || tChar == '|' || tChar == '^' || tChar == '&' || tChar == '*' || tChar == '/' || tChar == '!' || tChar == '~';
 }
 
-static int isBinaryOperator(char* tText, int tPosition) {
+static int isNonUnaryOperatorCharacter(char tChar) {
+	return tChar == '+' || tChar == '|' || tChar == '^' || tChar == '&' || tChar == '*' || tChar == '/';
+}
+
+static int isBinaryOperator(const char* tText, int tPosition) {
 	int p = tPosition - 1;
 	int poss = 0;
 	while (p >= 0) {
 		if (isEmptyCharacter(tText[p])) p--;
 		else if (isOperatorCharacter(tText[p])) return 0;
+		else if (tText[p] == ',') return 0;
 		else {
 			poss = 1;
 			break;
@@ -313,7 +318,7 @@ static int isBinaryOperator(char* tText, int tPosition) {
 	poss = 0;
 	while (p < n) {
 		if (isEmptyCharacter(tText[p])) p++;
-		else if (isOperatorCharacter(tText[p])) return 0;
+		else if (isNonUnaryOperatorCharacter(tText[p])) return 0;
 		else {
 			poss = 1;
 			break;
@@ -323,22 +328,23 @@ static int isBinaryOperator(char* tText, int tPosition) {
 	return poss;
 }
 
-static int isOnHighestLevelWithStartPosition(char* tText, const char* tPattern, int* tOptionalPosition, int tStart, int isBinary) {
+static int isOnHighestLevelWithStartPositionGoingLeftToRight(char* tText, const char* tPattern, int* tOptionalPosition, int tStart, int isBinary) {
 	int n = strlen(tText);
 	int m = strlen(tPattern);
 
 	int depth1 = 0;
 	int depth2 = 0;
-	int depth3 = 0;
 	int i;
 	for (i = tStart; i < n - m + 1; i++) {
-		if (tText[i] == '(') depth1++;
-		if (tText[i] == ')') depth1--;
-		if (tText[i] == '[') depth2++;
-		if (tText[i] == ']') depth2--;
-		if (tText[i] == '"') depth3 ^= 1;
+		if (!depth2) {
+			if (tText[i] == '(') depth1++;
+			if (tText[i] == ')') depth1--;
+			if (tText[i] == '[') depth1++;
+			if (tText[i] == ']') depth1--;
+		}
+		if (tText[i] == '"') depth2 ^= 1;
 
-		if (depth1 || depth2 || depth3) continue;
+		if (depth1 || depth2) continue;
 
 		int isSame = 1;
 		int j;
@@ -358,12 +364,98 @@ static int isOnHighestLevelWithStartPosition(char* tText, const char* tPattern, 
 	return 0;
 }
 
-static int isOnHighestLevel(char* tText, const char* tPattern, int* tOptionalPosition) {
-	return isOnHighestLevelWithStartPosition(tText, tPattern, tOptionalPosition, 0, 0);
+// start is first position in string that can hold end of pattern, e.g. strlen(tText) - 1
+static int isOnHighestLevelWithStartPositionGoingRightToLeft(char* tText, const char* tPattern, int* tOptionalPosition, int tStart, int isBinary) {
+	int m = strlen(tPattern);
+
+	int depth1 = 0;
+	int depth2 = 0;
+	int i;
+	for (i = tStart; i >= 0; i--) {
+		if (!depth2) {
+			if (tText[i] == ')') depth1++;
+			if (tText[i] == '(') depth1--;
+			if (tText[i] == ']') depth1++;
+			if (tText[i] == '[') depth1--;
+		}
+		if (tText[i] == '"') depth2 ^= 1;
+
+		if (depth1 || depth2) continue;
+		if (i > tStart - m + 1) continue;
+
+		int isSame = 1;
+		int j;
+		for (j = 0; j < m; j++) {
+			if (tText[i + j] != tPattern[j]) {
+				isSame = 0;
+				break;
+			}
+		}
+
+		if (isSame && (!isBinary || isBinaryOperator(tText, i))) {
+			if (tOptionalPosition) *tOptionalPosition = i;
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
-static int isOnHighestLevelBinary(char* tText, const char* tPattern, int* tOptionalPosition) {
-	return isOnHighestLevelWithStartPosition(tText, tPattern, tOptionalPosition, 0, 1);
+static int isOnHighestLevelMultipleWithStartPositionGoingRightToLeft(const char* tText, const std::vector<std::tuple<int(*)(const char*, int, int), DreamMugenAssignmentType, std::string>>& tPatterns, int tPatternSize, int* tOptionalPosition, int* tOptionalFoundIndex, int tStart, int tIsBinary) {
+	int n = strlen(tText);
+	int m = tPatternSize;
+
+	int depth1 = 0;
+	int depth2 = 0;
+	int i;
+	for (i = tStart; i >= 0; i--) {
+		if (!depth2) {
+			if (tText[i] == ')') depth1++;
+			if (tText[i] == '(') depth1--;
+			if (tText[i] == ']') depth1++;
+			if (tText[i] == '[') depth1--;
+		}
+		if (tText[i] == '"') depth2 ^= 1;
+
+		if (depth1 || depth2) continue;
+		if (i > tStart - m + 1) continue;
+
+		auto isSame = 0;
+		for (int j = 0; j < int(tPatterns.size()); j++) {
+			if (std::get<0>(tPatterns[j])(tText, n, i)) {
+				if (tOptionalPosition) *tOptionalPosition = i;
+				if (tOptionalFoundIndex) *tOptionalFoundIndex = j;
+				isSame = 1;
+				break;
+			}
+		}
+
+		if (isSame && (!tIsBinary || isBinaryOperator(tText, i))) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+static int isOnHighestLevelLeftToRight(char* tText, const char* tPattern, int* tOptionalPosition) {
+	return isOnHighestLevelWithStartPositionGoingLeftToRight(tText, tPattern, tOptionalPosition, 0, 0);
+}
+
+static int isOnHighestLevelRightToLeft(char* tText, const char* tPattern, int* tOptionalPosition) {
+	return isOnHighestLevelWithStartPositionGoingRightToLeft(tText, tPattern, tOptionalPosition, strlen(tText) - 1, 0);
+}
+
+static int isOnHighestLevelBinaryRightToLeft(char* tText, const char* tPattern, int* tOptionalPosition) {
+	return isOnHighestLevelWithStartPositionGoingRightToLeft(tText, tPattern, tOptionalPosition, strlen(tText) - 1, 1);
+}
+
+static int isOnHighestLevelMultipleRightToLeft(const char* tText, const std::vector<std::tuple<int(*)(const char*, int, int), DreamMugenAssignmentType, std::string>>& tPatterns, int tPatternSize, int* tOptionalPosition, int* tOptionalFoundIndex) {
+	return isOnHighestLevelMultipleWithStartPositionGoingRightToLeft(tText, tPatterns, tPatternSize, tOptionalPosition, tOptionalFoundIndex, strlen(tText) - 1, 0);
+}
+
+static int isOnHighestLevelBinaryMultipleRightToLeft(const char* tText, const std::vector<std::tuple<int(*)(const char*, int, int), DreamMugenAssignmentType, std::string>>& tPatterns, int tPatternSize, int* tOptionalPosition, int* tOptionalFoundIndex) {
+	return isOnHighestLevelMultipleWithStartPositionGoingRightToLeft(tText, tPatterns, tPatternSize, tOptionalPosition, tOptionalFoundIndex, strlen(tText) - 1, 1);
 }
 
 static DreamMugenAssignment* parseOneElementMugenAssignmentFromString(char* tText, DreamMugenAssignmentType tType) {
@@ -399,18 +491,37 @@ static DreamMugenAssignment* parseTwoElementMugenAssignmentFromStringWithFixedPo
 	return makeMugenTwoElementAssignment(tType, a, b);
 }
 
-static DreamMugenAssignment* parseTwoElementMugenAssignmentFromString(char* tText, DreamMugenAssignmentType tType, const char* tPattern) {
+static DreamMugenAssignment* parseTwoElementLeftToRightMugenAssignmentFromString(char* tText, DreamMugenAssignmentType tType, const char* tPattern) {
 	int pos = -1;
-	isOnHighestLevel(tText, tPattern, &pos);
+	isOnHighestLevelLeftToRight(tText, tPattern, &pos);
 	return parseTwoElementMugenAssignmentFromStringWithFixedPosition(tText, tType, tPattern, pos);
 }
 
-static DreamMugenAssignment* parseBinaryTwoElementMugenAssignmentFromString(char* tText, DreamMugenAssignmentType tType, const char* tPattern) {
+static DreamMugenAssignment* parseTwoElementRightToLeftMugenAssignmentFromString(char* tText, DreamMugenAssignmentType tType, const char* tPattern) {
 	int pos = -1;
-	isOnHighestLevelBinary(tText, tPattern, &pos);
+	isOnHighestLevelRightToLeft(tText, tPattern, &pos);
 	return parseTwoElementMugenAssignmentFromStringWithFixedPosition(tText, tType, tPattern, pos);
 }
 
+static DreamMugenAssignment* parseBinaryTwoElementRightToLeftMugenAssignmentFromString(char* tText, DreamMugenAssignmentType tType, const char* tPattern) {
+	int pos = -1;
+	isOnHighestLevelBinaryRightToLeft(tText, tPattern, &pos);
+	return parseTwoElementMugenAssignmentFromStringWithFixedPosition(tText, tType, tPattern, pos);
+}
+
+static DreamMugenAssignment* parseTwoElementMultipleRightToLeftMugenAssignmentFromString(char* tText, const std::vector<std::tuple<int(*)(const char*, int, int), DreamMugenAssignmentType, std::string>>& tPatterns, int tPatternSize) {
+	int pos = -1;
+	int index = -1;
+	isOnHighestLevelMultipleRightToLeft(tText, tPatterns, tPatternSize, &pos, &index);
+	return parseTwoElementMugenAssignmentFromStringWithFixedPosition(tText, std::get<1>(tPatterns[index]), std::get<2>(tPatterns[index]).c_str(), pos);
+}
+
+static DreamMugenAssignment* parseBinaryTwoElementMultipleRightToLeftMugenAssignmentFromString(char* tText, const std::vector<std::tuple<int(*)(const char*, int, int), DreamMugenAssignmentType, std::string>>& tPatterns, int tPatternSize) {
+	int pos = -1;
+	int index = -1;
+	isOnHighestLevelBinaryMultipleRightToLeft(tText, tPatterns, tPatternSize, &pos, &index);
+	return parseTwoElementMugenAssignmentFromStringWithFixedPosition(tText, std::get<1>(tPatterns[index]), std::get<2>(tPatterns[index]).c_str(), pos);
+}
 
 static DreamMugenAssignment* parseMugenNullFromString() {
 	DreamMugenFixedBooleanAssignment* data = (DreamMugenFixedBooleanAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenFixedBooleanAssignment));
@@ -455,6 +566,15 @@ static DreamMugenAssignment* parseMugenNegationFromString(char* tText) {
 	return parseOneElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_NEGATION);
 }
 
+static int isBitwiseInversion(const char* tText) {
+	return (tText[0] == '~');
+}
+
+static DreamMugenAssignment* parseMugenBitwiseInversionFromString(char* tText) {
+	tText++;
+	return parseOneElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_BITWISE_INVERSION);
+}
+
 static int isUnaryMinus(char* tText) {
 	return (tText[0] == '-');
 }
@@ -495,176 +615,196 @@ static DreamMugenAssignment* parseMugenRangeFromString(char* tText) {
 	return (DreamMugenAssignment*)e;
 }
 
-
-static int isInequality(char* tText) {
-	return isOnHighestLevel(tText, "!=", NULL);
-}
-
-static DreamMugenAssignment* parseMugenInequalityFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_INEQUALITY, "!=");
-}
-
 static int isVariableSet(char* tText) {
-	return isOnHighestLevel(tText, ":=", NULL);
+	return isOnHighestLevelLeftToRight(tText, ":=", NULL);
 }
 
 static DreamMugenAssignment* parseMugenVariableSetFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_SET_VARIABLE, ":=");
+	return parseTwoElementLeftToRightMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_SET_VARIABLE, ":=");
 }
 
-static int isComparison(char* tText) {
-	int position;
-
-	if(!isOnHighestLevel(tText, "=", &position)) return 0;
-	if (position == 0) return 0;
-	if (tText[position - 1] == '!') return 0;
-	if (tText[position - 1] == '<') return 0;
-	if (tText[position - 1] == '>') return 0;
-	if (tText[position - 1] == ':') return 0;
-
+static int isEqualityCharacter(const char* tText, int /*n*/, int tPos) {
+	if (tText[tPos] != '=') return 0;
+	if (tPos > 0 && (tText[tPos - 1] == '!' || tText[tPos - 1] == '<' || tText[tPos - 1] == '>' || tText[tPos - 1] == ':')) return 0;
+	if (tPos == 0) return 0;
 	return 1;
 }
 
-static DreamMugenAssignment* parseMugenComparisonFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_COMPARISON, "=");
+static int isInequalityCharacter(const char* tText, int n, int tPos) {
+	if (tText[tPos] != '!') return 0;
+	if (tPos >= n - 1) return 0;
+	if (tText[tPos + 1] != '=') return 0;
+	if (tPos == 0) return 0;
+	return 1;
+}
+
+static int isComparisonGroup(const char* tText) {
+	std::vector<std::tuple<int(*)(const char*, int, int), DreamMugenAssignmentType, std::string>> patterns;
+	patterns.push_back(std::make_tuple(isEqualityCharacter, MUGEN_ASSIGNMENT_TYPE_COMPARISON, "="));
+	patterns.push_back(std::make_tuple(isInequalityCharacter, MUGEN_ASSIGNMENT_TYPE_INEQUALITY, "!="));
+	return isOnHighestLevelBinaryMultipleRightToLeft(tText, patterns, 1, NULL, NULL);
+}
+
+static DreamMugenAssignment* parseMugenComparisonGroupFromString(char* tText) {
+	std::vector<std::tuple<int(*)(const char*, int, int), DreamMugenAssignmentType, std::string>> patterns;
+	patterns.push_back(std::make_tuple(isEqualityCharacter, MUGEN_ASSIGNMENT_TYPE_COMPARISON, "="));
+	patterns.push_back(std::make_tuple(isInequalityCharacter, MUGEN_ASSIGNMENT_TYPE_INEQUALITY, "!="));
+	return parseBinaryTwoElementMultipleRightToLeftMugenAssignmentFromString(tText, patterns, 1);
 }
 
 static int isAnd(char* tText) {
-	return isOnHighestLevel(tText, "&&", NULL);
+	return isOnHighestLevelRightToLeft(tText, "&&", NULL);
 }
 
 static DreamMugenAssignment* parseMugenAndFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_AND, "&&");
+	return parseTwoElementRightToLeftMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_AND, "&&");
+}
+
+static int isXor(char* tText) {
+	return isOnHighestLevelRightToLeft(tText, "^^", NULL);
+}
+
+static DreamMugenAssignment* parseMugenXorFromString(char* tText) {
+	return parseTwoElementRightToLeftMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_XOR, "^^");
 }
 
 static int isOr(char* tText) {
-	return isOnHighestLevel(tText, "||", NULL);
+	return isOnHighestLevelRightToLeft(tText, "||", NULL);
 }
 
 static DreamMugenAssignment* parseMugenOrFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_OR, "||");
+	return parseTwoElementRightToLeftMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_OR, "||");
 }
 
 static int isBitwiseAnd(char* tText) {
-	return isOnHighestLevel(tText, "&", NULL);
+	return isOnHighestLevelRightToLeft(tText, "&", NULL);
 }
 
 static DreamMugenAssignment* parseMugenBitwiseAndFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_BITWISE_AND, "&");
+	return parseTwoElementRightToLeftMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_BITWISE_AND, "&");
+}
+
+static int isBitwiseXor(char* tText) {
+	return isOnHighestLevelRightToLeft(tText, "^", NULL);
+}
+
+static DreamMugenAssignment* parseMugenBitwiseXorFromString(char* tText) {
+	return parseTwoElementRightToLeftMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_BITWISE_XOR, "^");
 }
 
 static int isBitwiseOr(char* tText) {
-	return isOnHighestLevel(tText, "|", NULL);
+	return isOnHighestLevelRightToLeft(tText, "|", NULL);
 }
 
 static DreamMugenAssignment* parseMugenBitwiseOrFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_BITWISE_OR, "|");
+	return parseTwoElementRightToLeftMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_BITWISE_OR, "|");
 }
 
-static int isLessOrEqualThan(char* tText) {
-	int position;
-	if (!isOnHighestLevel(tText, "<=", &position)) return 0;
-	if (position == 0) return 0;
-
+static int isGreaterThanCharacter(const char* tText, int n, int tPos) {
+	if (tText[tPos] != '>') return 0;
+	if (tPos < (n - 1) && tText[tPos + 1] == '=') return 0;
+	if (tPos == 0) return 0;
 	return 1;
 }
 
-static DreamMugenAssignment* parseMugenLessOrEqualFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_LESS_OR_EQUAL, "<=");
-}
-
-static int isLessThan(char* tText) {
-	int position;
-	if (!isOnHighestLevel(tText, "<", &position)) return 0;
-	if (position == 0) return 0;
-
+static int isGreaterThanEqualCharacter(const char* tText, int n, int tPos) {
+	if (tText[tPos] != '>') return 0;
+	if (tPos >= n - 1) return 0;
+	if (tText[tPos + 1] != '=') return 0;
+	if (tPos == 0) return 0;
 	return 1;
 }
 
-static DreamMugenAssignment* parseMugenLessFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_LESS, "<");
-}
-
-static int isGreaterOrEqualThan(char* tText) {
-	int position;
-	if (!isOnHighestLevel(tText, ">=", &position)) return 0;
-	if (position == 0) return 0;
-
+static int isLessThanCharacter(const char* tText, int n, int tPos) {
+	if (tText[tPos] != '<') return 0;
+	if (tPos < (n - 1) && tText[tPos + 1] == '=') return 0;
+	if (tPos == 0) return 0;
 	return 1;
 }
 
-static DreamMugenAssignment* parseMugenGreaterOrEqualFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_GREATER_OR_EQUAL, ">=");
-}
-
-static int isGreaterThan(char* tText) {
-	int position;
-	if(!isOnHighestLevel(tText, ">", &position)) return 0;
-	if (position == 0) return 0;
-
+static int isLessThanEqualCharacter(const char* tText, int n, int tPos) {
+	if (tText[tPos] != '<') return 0;
+	if (tPos >= n - 1) return 0;
+	if (tText[tPos + 1] != '=') return 0;
+	if (tPos == 0) return 0;
 	return 1;
 }
 
-static DreamMugenAssignment* parseMugenGreaterFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_GREATER, ">");
+static int isOrdinalGroup(const char* tText) {
+	std::vector<std::tuple<int(*)(const char*, int, int), DreamMugenAssignmentType, std::string>> patterns;
+	patterns.push_back(std::make_tuple(isGreaterThanCharacter, MUGEN_ASSIGNMENT_TYPE_GREATER, ">"));
+	patterns.push_back(std::make_tuple(isGreaterThanEqualCharacter, MUGEN_ASSIGNMENT_TYPE_GREATER_OR_EQUAL, ">="));
+	patterns.push_back(std::make_tuple(isLessThanCharacter, MUGEN_ASSIGNMENT_TYPE_LESS, "<"));
+	patterns.push_back(std::make_tuple(isLessThanEqualCharacter, MUGEN_ASSIGNMENT_TYPE_LESS_OR_EQUAL, "<="));
+	return isOnHighestLevelMultipleRightToLeft(tText, patterns, 1, NULL, NULL);
+}
+
+static DreamMugenAssignment* parseMugenOrdinalGroupFromString(char* tText) {
+	std::vector<std::tuple<int(*)(const char*, int, int), DreamMugenAssignmentType, std::string>> patterns;
+	patterns.push_back(std::make_tuple(isGreaterThanCharacter, MUGEN_ASSIGNMENT_TYPE_GREATER, ">"));
+	patterns.push_back(std::make_tuple(isGreaterThanEqualCharacter, MUGEN_ASSIGNMENT_TYPE_GREATER_OR_EQUAL, ">="));
+	patterns.push_back(std::make_tuple(isLessThanCharacter, MUGEN_ASSIGNMENT_TYPE_LESS, "<"));
+	patterns.push_back(std::make_tuple(isLessThanEqualCharacter, MUGEN_ASSIGNMENT_TYPE_LESS_OR_EQUAL, "<="));
+	return parseTwoElementMultipleRightToLeftMugenAssignmentFromString(tText, patterns, 1);
 }
 
 static int isExponentiation(char* tText) {
-	return isOnHighestLevel(tText, "**", NULL);
+	return isOnHighestLevelRightToLeft(tText, "**", NULL);
 }
 
 static DreamMugenAssignment* parseMugenExponentiationFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_EXPONENTIATION, "**");
+	return parseTwoElementRightToLeftMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_EXPONENTIATION, "**");
 }
 
 static int isAddition(char* tText) {
 	int plusPosition;
-	if(!isOnHighestLevel(tText, "+", &plusPosition)) return 0;
+	if(!isOnHighestLevelRightToLeft(tText, "+", &plusPosition)) return 0;
 	int len = strlen(tText);
 	return plusPosition < len -1;
 }
 
 static DreamMugenAssignment* parseMugenAdditionFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_ADDITION, "+");
+	return parseTwoElementRightToLeftMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_ADDITION, "+");
 }
 
 static int isSubtraction(char* tText) {
-	return isOnHighestLevelBinary(tText, "-", NULL);
+	return isOnHighestLevelBinaryRightToLeft(tText, "-", NULL);
 }
 
 static DreamMugenAssignment* parseMugenSubtractionFromString(char* tText) {
-	return parseBinaryTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_SUBTRACTION, "-");
+	return parseBinaryTwoElementRightToLeftMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_SUBTRACTION, "-");
 }
 
-static int isMultiplication(char* tText) {
-	int position = 0;
-	int n = strlen(tText);
-
-	if (!isOnHighestLevel(tText, "*", &position)) return 0;
-	if (position == 0) return 0;
-	if (position < n-1 && tText[position + 1] == '*') return 0;
-
+static int isMultiplicationCharacter(const char* tText, int n, int tPos) {
+	if (tText[tPos] != '*') return 0;
+	if (tPos == 0) return 0;
+	if (tPos > 0 && tText[tPos - 1] == '*') return 0;
+	if (tPos < n - 1 && tText[tPos + 1] == '*') return 0;
 	return 1;
 }
 
-static DreamMugenAssignment* parseMugenMultiplicationFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_MULTIPLICATION, "*");
+static int isDivisionCharacter(const char* tText, int /*n*/, int tPos) {
+	return (tText[tPos] == '/');
 }
 
-static int isDivision(char* tText) {
-	return isOnHighestLevel(tText, "/", NULL);
+static int isModuloCharacter(const char* tText, int /*n*/, int tPos) {
+	return (tText[tPos] == '%');
 }
 
-static DreamMugenAssignment* parseMugenDivisionFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_DIVISION, "/");
+static int isMultiplicativeGroup(const char* tText) {
+	std::vector<std::tuple<int(*)(const char*, int, int), DreamMugenAssignmentType, std::string>> patterns;
+	patterns.push_back(std::make_tuple(isMultiplicationCharacter, MUGEN_ASSIGNMENT_TYPE_MULTIPLICATION, "*"));
+	patterns.push_back(std::make_tuple(isDivisionCharacter, MUGEN_ASSIGNMENT_TYPE_DIVISION, "/"));
+	patterns.push_back(std::make_tuple(isModuloCharacter, MUGEN_ASSIGNMENT_TYPE_MODULO, "%"));
+	return isOnHighestLevelMultipleRightToLeft(tText, patterns, 1, NULL, NULL);
 }
 
-static int isModulo(char* tText) {
-	return isOnHighestLevel(tText, "%", NULL);
-}
-
-static DreamMugenAssignment* parseMugenModuloFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_MODULO, "%");
+static DreamMugenAssignment* parseMugenMultiplicativeGroupFromString(char* tText) {
+	std::vector<std::tuple<int(*)(const char*, int, int), DreamMugenAssignmentType, std::string>> patterns;
+	patterns.push_back(std::make_tuple(isMultiplicationCharacter, MUGEN_ASSIGNMENT_TYPE_MULTIPLICATION, "*"));
+	patterns.push_back(std::make_tuple(isDivisionCharacter, MUGEN_ASSIGNMENT_TYPE_DIVISION, "/"));
+	patterns.push_back(std::make_tuple(isModuloCharacter, MUGEN_ASSIGNMENT_TYPE_MODULO, "%"));
+	return parseTwoElementMultipleRightToLeftMugenAssignmentFromString(tText, patterns, 1);
 }
 
 static int isNumericalConstant(char* tText) {
@@ -856,7 +996,7 @@ static int isVectorAssignment(char* tText, int tPotentialCommaPosition) {
 	int endPosition = -1;
 	while (endPosition < tPotentialCommaPosition) {
 		int newPosition;
-		if (!isOnHighestLevelWithStartPosition(tText, "=", &newPosition, endPosition + 1, 1)) break;
+		if (!isOnHighestLevelWithStartPositionGoingLeftToRight(tText, "=", &newPosition, endPosition + 1, 1)) break;
 		if (newPosition >= tPotentialCommaPosition) break;
 		endPosition = newPosition;
 	}
@@ -914,20 +1054,19 @@ static int isCommaContextFree(char* tText, int tPosition) {
 	int end = tPosition+1;
 
 	int depth1 = 0;
-	int depth2 = 0;
 	while (tPosition >= 0) {
 		if (tText[tPosition] == ')') depth1++;
 		if (tText[tPosition] == '(') {
 			if (!depth1) break;
 			else depth1--;
 		}
-		if (tText[tPosition] == ']') depth2++;
+		if (tText[tPosition] == ']') depth1++;
 		if (tText[tPosition] == '[') {
-			if (!depth2) break;
-			else depth2--;
+			if (!depth1) break;
+			else depth1--;
 		}
 
-		if (!depth1 && !depth2 && (tText[tPosition] == ',' || isEmptyCharacter(tText[tPosition]) || isOperatorCharacter(tText[tPosition]))) break;
+		if (!depth1 && (tText[tPosition] == ',' || isEmptyCharacter(tText[tPosition]) || isOperatorCharacter(tText[tPosition]))) break;
 		tPosition--;
 	}
 	assert(tPosition >= -1);
@@ -947,7 +1086,7 @@ static int hasContextFreeComma(char* tText, int* tPosition) {
 	int isRunning = 1;
 	int position = 0;
 	while (isRunning) {
-		if (!isOnHighestLevelWithStartPosition(tText, ",", &position, position, 0)) return 0;
+		if (!isOnHighestLevelWithStartPositionGoingLeftToRight(tText, ",", &position, position, 0)) return 0;
 		if (isCommaContextFree(tText, position)) {
 			if (tPosition) *tPosition = position;
 			return 1;
@@ -972,11 +1111,11 @@ static DreamMugenAssignment* parseMugenContextFreeVectorFromString(char* tText) 
 }
 
 static int isVectorInsideAssignmentOrTargetAccess(char* tText) {
-	return isOnHighestLevel(tText, ",", NULL);
+	return isOnHighestLevelLeftToRight(tText, ",", NULL);
 }
 
 static DreamMugenAssignment* parseMugenVectorFromString(char* tText) {
-	return parseTwoElementMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_VECTOR, ",");
+	return parseTwoElementLeftToRightMugenAssignmentFromString(tText, MUGEN_ASSIGNMENT_TYPE_VECTOR, ",");
 }
 
 static int isOperatorAndReturnType(char* tText, char* tDst) {
@@ -984,35 +1123,35 @@ static int isOperatorAndReturnType(char* tText, char* tDst) {
 	int isThere;
 	int isDifferent;
 
-	isThere = isOnHighestLevel(tText, ">=", &position);
+	isThere = isOnHighestLevelLeftToRight(tText, ">=", &position);
 	isDifferent = strcmp(">=", tText);
 	if (isThere && isDifferent && position == 0) {
 		strcpy(tDst, ">=");
 		return 1;
 	}
 
-	isThere = isOnHighestLevel(tText, "<=", &position);
+	isThere = isOnHighestLevelLeftToRight(tText, "<=", &position);
 	isDifferent = strcmp("<=", tText);
 	if (isThere && isDifferent && position == 0) {
 		strcpy(tDst, "<=");
 		return 1;
 	}
 
-	isThere = isOnHighestLevel(tText, "=", &position);
+	isThere = isOnHighestLevelLeftToRight(tText, "=", &position);
 	isDifferent = strcmp("=", tText);
 	if (isThere && isDifferent && position == 0) {
 		strcpy(tDst, "=");
 		return 1;
 	}
 
-	isThere = isOnHighestLevel(tText, "<", &position);
+	isThere = isOnHighestLevelLeftToRight(tText, "<", &position);
 	isDifferent = strcmp("<", tText);
 	if (isThere && isDifferent && position == 0 && tText[1] != '=') {
 		strcpy(tDst, "<");
 		return 1;
 	}
 
-	isThere = isOnHighestLevel(tText, ">", &position);
+	isThere = isOnHighestLevelLeftToRight(tText, ">", &position);
 	isDifferent = strcmp(">", tText);
 	if (isThere && isDifferent && position == 0 && tText[1] != '=') {
 		strcpy(tDst, ">");
@@ -1035,7 +1174,7 @@ static DreamMugenAssignment* parseMugenOperatorArgumentFromString(char* tText) {
 	isOperatorAndReturnType(tText, dst);
 
 	sprintf(text, "%s $$ %s", dst, tText + strlen(dst));
-	return parseTwoElementMugenAssignmentFromString(text, MUGEN_ASSIGNMENT_TYPE_OPERATOR_ARGUMENT, "$$");
+	return parseTwoElementLeftToRightMugenAssignmentFromString(text, MUGEN_ASSIGNMENT_TYPE_OPERATOR_ARGUMENT, "$$");
 }
 
 DreamMugenAssignment * parseDreamMugenAssignmentFromString(char * tText)
@@ -1054,11 +1193,17 @@ DreamMugenAssignment * parseDreamMugenAssignmentFromString(char * tText)
 	else if (isOr(tText)) {
 		return parseMugenOrFromString(tText);
 	}
+	else if (isXor(tText)) {
+		return parseMugenXorFromString(tText);
+	}
 	else if (isAnd(tText)) {
 		return parseMugenAndFromString(tText);
 	}
 	else if (isBitwiseOr(tText)) {
 		return parseMugenBitwiseOrFromString(tText);
+	}
+	else if (isBitwiseXor(tText)) {
+		return parseMugenBitwiseXorFromString(tText);
 	}
 	else if (isBitwiseAnd(tText)) {
 		return parseMugenBitwiseAndFromString(tText);
@@ -1066,45 +1211,29 @@ DreamMugenAssignment * parseDreamMugenAssignmentFromString(char * tText)
 	else if (isVariableSet(tText)) {
 		return parseMugenVariableSetFromString(tText);
 	}
-	else if (isInequality(tText)) {
-		return parseMugenInequalityFromString(tText);
+	else if (isComparisonGroup(tText)) {
+		return parseMugenComparisonGroupFromString(tText);
 	}
-	else if (isComparison(tText)) {
-		return parseMugenComparisonFromString(tText);
+	else if (isOrdinalGroup(tText)) {
+		return parseMugenOrdinalGroupFromString(tText);
 	}
-	else if (isGreaterOrEqualThan(tText)) {
-		return parseMugenGreaterOrEqualFromString(tText);
-	}
-	else if (isLessOrEqualThan(tText)) {
-		return parseMugenLessOrEqualFromString(tText);
-	}
-	else if (isLessThan(tText)) {
-		return parseMugenLessFromString(tText);
-	}
-	else if (isGreaterThan(tText)) {
-		return parseMugenGreaterFromString(tText);
-	}
-
 	else if (isAddition(tText)) {
 		return parseMugenAdditionFromString(tText);
 	}
 	else if (isSubtraction(tText)) {
 		return parseMugenSubtractionFromString(tText);
 	}
-	else if (isModulo(tText)) {
-		return parseMugenModuloFromString(tText);
-	}
-	else if (isMultiplication(tText)) {
-		return parseMugenMultiplicationFromString(tText);
-	}
-	else if (isDivision(tText)) {
-		return parseMugenDivisionFromString(tText);
+	else if (isMultiplicativeGroup(tText)) {
+		return parseMugenMultiplicativeGroupFromString(tText);
 	}
 	else if (isExponentiation(tText)) {
 		return parseMugenExponentiationFromString(tText);
 	}
 	else if (isNegation(tText)) {
 		return parseMugenNegationFromString(tText);
+	}
+	else if (isBitwiseInversion(tText)) {
+		return parseMugenBitwiseInversionFromString(tText);
 	}
 	else if (isUnaryMinus(tText)) {
 		return parseMugenUnaryMinusFromString(tText);

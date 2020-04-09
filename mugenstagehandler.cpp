@@ -37,8 +37,6 @@ static struct {
 	map<int, StageElementIDList> mStageElementsFromID;
 } gMugenStageHandlerData;
 
-
-
 static void loadMugenStageHandler(void* tData) {
 	(void)tData;
 	gMugenStageHandlerData.mCameraShakeOffset = makePosition(0,0,0);
@@ -85,38 +83,29 @@ typedef struct{
 	StaticStageHandlerElement* e;
 } updateStageTileCaller;
 
-int getTileAmountSingleAxis(int tSize, double tMinCam, double tMaxCam, int tScreenSize) {
-	int length = (int)(tMaxCam - (tMinCam - tSize)) + tScreenSize;
+int getTileAmountSingleAxis(int tSize, int tScreenSize, double tDelta) {
+	const auto length = (int)((2 * tScreenSize + tSize) * (1 / tDelta));
 	return length / tSize + 1;
 }
 
 Vector3DI getTileAmount(StaticStageHandlerElement* e) {
-	double cameraToElementScale = e->mCoordinates.y / getCameraCoordP();
-	int x = getTileAmountSingleAxis(e->mTileSize.x, gMugenStageHandlerData.mCameraRange.mTopLeft.x*cameraToElementScale, gMugenStageHandlerData.mCameraRange.mBottomRight.x*cameraToElementScale, e->mCoordinates.x);
-	int y = getTileAmountSingleAxis(e->mTileSize.y, gMugenStageHandlerData.mCameraRange.mTopLeft.y*cameraToElementScale, gMugenStageHandlerData.mCameraRange.mBottomRight.y*cameraToElementScale, e->mCoordinates.y);
-
+	const auto deltaX = !e->mDelta.x ? 1 : e->mDelta.x;
+	const auto deltaY = !e->mDelta.y ? 1 : e->mDelta.y;
+	const auto x = getTileAmountSingleAxis(e->mTileSize.x + e->mTileSpacing.x, e->mCoordinates.x, deltaX);
+	const auto y = getTileAmountSingleAxis(e->mTileSize.y + e->mTileSpacing.y, e->mCoordinates.y, deltaY);
 	return makeVector3DI(x, y, 0);
 }
 
-static void updateSingleStaticStageElementTileVelocity(StaticStageHandlerElement* e, StageElementAnimationReference* tSingleAnimation) {
-	if (e->mVelocity.x == 0 && e->mVelocity.y == 0) return;
+static void updateSingleStaticStageElementTileVelocityAndTiling(StaticStageHandlerElement* e, StageElementAnimationReference* tSingleAnimation) {
+	if (e->mVelocity.x != 0 || e->mVelocity.y != 0) {
+		tSingleAnimation->mOffset = vecAdd(tSingleAnimation->mOffset, e->mVelocity);
+	}
 
-	tSingleAnimation->mOffset = vecAdd(tSingleAnimation->mOffset, e->mVelocity);
-
-	Vector3DI amount = getTileAmount(e);
-	Vector3D offset = getAnimationFirstElementSpriteOffset(e->mAnimation, e->mSprites);
-
-	double cameraToElementScale = e->mCoordinates.y / getCameraCoordP();
-	Vector3D minCam;
-	minCam.x = gMugenStageHandlerData.mCameraRange.mTopLeft.x*cameraToElementScale;
-	minCam.y = gMugenStageHandlerData.mCameraRange.mTopLeft.y*cameraToElementScale;
-
-	Vector3D maxCam;
-	maxCam.x = gMugenStageHandlerData.mCameraRange.mBottomRight.x*cameraToElementScale;
-	maxCam.y = gMugenStageHandlerData.mCameraRange.mBottomRight.y*cameraToElementScale;
+	const auto amount = getTileAmount(e);
+	const auto offset = getAnimationFirstElementSpriteOffset(e->mAnimation, e->mSprites);
 
 	int totalSizeX, totalSizeY;
-	int stepAmount = vector_size(&e->mAnimation->mSteps);
+	const auto stepAmount = vector_size(&e->mAnimation->mSteps);
 	if (stepAmount > 1) {
 		totalSizeX = e->mTileSpacing.x;
 		totalSizeY = e->mTileSpacing.y;
@@ -126,24 +115,27 @@ static void updateSingleStaticStageElementTileVelocity(StaticStageHandlerElement
 		totalSizeY = e->mTileSize.y + e->mTileSpacing.y;
 	}
 
-	double right = tSingleAnimation->mOffset.x + e->mTileSize.x - offset.x + (e->mCoordinates.x / 2);
-	if (right < minCam.x) {
-		tSingleAnimation->mOffset.x += amount.x*totalSizeX;
-	}
-	double left = tSingleAnimation->mOffset.x - offset.x + (e->mCoordinates.x / 2);
-	double cameraRight = maxCam.x + e->mCoordinates.x;
-	if (left > cameraRight) {
-		tSingleAnimation->mOffset.x -= amount.x*totalSizeX;
+	const auto sz = getScreenSize();
+	if (e->mTile.x == 1) {
+		const auto right = tSingleAnimation->mReferencePosition.x + e->mTileSize.x - offset.x;
+		if (right < 0) {
+			tSingleAnimation->mOffset.x += amount.x*totalSizeX;
+		}
+		const auto left = tSingleAnimation->mReferencePosition.x - offset.x;
+		if (left > sz.x) {
+			tSingleAnimation->mOffset.x -= amount.x*totalSizeX;
+		}
 	}
 
-	double down = tSingleAnimation->mOffset.y + e->mTileSize.y - offset.y;
-	if (down < minCam.y) {
-		tSingleAnimation->mOffset.y += amount.y*totalSizeY;
-	}
-	double up = tSingleAnimation->mOffset.y - offset.y;
-	double cameraDown = maxCam.y + e->mCoordinates.y;
-	if (up > cameraDown) {
-		tSingleAnimation->mOffset.y -= amount.y*totalSizeY;
+	if (e->mTile.y == 1) {
+		const auto down = tSingleAnimation->mReferencePosition.y + e->mTileSize.y - offset.y;
+		if (down < 0) {
+			tSingleAnimation->mOffset.y += amount.y*totalSizeY;
+		}
+		const auto up = tSingleAnimation->mReferencePosition.y - offset.y;
+		if (up > sz.y) {
+			tSingleAnimation->mOffset.y -= amount.y*totalSizeY;
+		}
 	}
 }
 
@@ -160,8 +152,9 @@ static void updateSingleStaticStageElementTileReferencePosition(StaticStageHandl
 	tSingleAnimation->mReferencePosition = vecScale3D(tSingleAnimation->mReferencePosition, e->mGlobalScale);
 	tSingleAnimation->mReferencePosition.z++;
 
-	double heightDelta = -getDreamCameraPositionY(e->mCoordinates.y); // TODO: camera start position (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/158)
-	double heightScale = e->mStartScaleY + (e->mScaleDeltaY * heightDelta);
+	const auto cameraStartPosition = getDreamCameraStartPosition(e->mCoordinates.y);
+	const auto heightDelta = cameraStartPosition.y - getDreamCameraPositionY(e->mCoordinates.y);
+	const auto heightScale = e->mStartScaleY + (e->mScaleDeltaY * heightDelta);
 	setMugenAnimationDrawScale(tSingleAnimation->mElement, e->mDrawScale * e->mGlobalScale * makePosition(1, heightScale, 1));
 }
 
@@ -173,7 +166,7 @@ static void updateSingleStaticStageElementTile(StaticStageHandlerElement* e, Sta
 	updateSingleStaticStageElementTileVisibility(e, tSingleAnimation);
 	if (!e->mIsEnabled) return;
 
-	updateSingleStaticStageElementTileVelocity(e, tSingleAnimation);
+	updateSingleStaticStageElementTileVelocityAndTiling(e, tSingleAnimation);
 	updateSingleStaticStageElementTileReferencePosition(e, tSingleAnimation);
 }
 
@@ -280,19 +273,19 @@ void setDreamMugenStageHandlerScreenShake(const Position& tScreenShake)
 
 void resetDreamMugenStageHandlerCameraPosition()
 {
-	gMugenStageHandlerData.mCameraPosition.x = gMugenStageHandlerData.mCameraPositionPreEffects.x = gMugenStageHandlerData.mCameraTargetPosition.x = 0; // TODO: properly (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/158)
-	gMugenStageHandlerData.mCameraPosition.y = gMugenStageHandlerData.mCameraPositionPreEffects.y = gMugenStageHandlerData.mCameraTargetPosition.y = 0;
+	const auto startPos = getDreamCameraStartPosition(getDreamStageCoordinateP());
+	gMugenStageHandlerData.mCameraPosition.x = gMugenStageHandlerData.mCameraPositionPreEffects.x = gMugenStageHandlerData.mCameraTargetPosition.x = startPos.x;
+	gMugenStageHandlerData.mCameraPosition.y = gMugenStageHandlerData.mCameraPositionPreEffects.y = gMugenStageHandlerData.mCameraTargetPosition.y = startPos.y;
 }
 
-static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, int tSpacing, double tMinCam, double tMaxCam, double tDeltaScale, double tCoordinates) {
+static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, int tSpacing, int tCoordinates, double tDelta) {
 	if (!tTile) {
 		*tStart = 0;
 		*tAmount = 1;
 	}
-	else if (tTile == 1) {
-		*tStart = (int)tMinCam - (tSize + tSpacing) - (int)(tCoordinates / 2);
-		int length = (int)(((tMaxCam - (tMinCam - (tSize + tSpacing))) + tCoordinates)*tDeltaScale);
-		*tAmount = length / (tSize + tSpacing) + 1; 
+	else if (tTile == 1) {		
+		*tAmount = getTileAmountSingleAxis(tSize + tSpacing, tCoordinates, tDelta);
+		*tStart = 0 - (*tAmount) / 2;
 	}
 	else {
 		*tStart = 0;
@@ -300,20 +293,22 @@ static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, in
 	}
 }
 
-static void addSingleMugenStageHandlerBackgroundElementTile(StaticStageHandlerElement* e, MugenSpriteFile* tSprites, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tOffset) {
+static void addSingleMugenStageHandlerBackgroundElementTile(StaticStageHandlerElement* e, MugenSpriteFile* tSprites, BlendType tBlendType, const Vector3D& tAlpha, GeoRectangle tConstraintRectangle, Vector3D tOffset) {
 	e->mAnimationReferences.push_back(StageElementAnimationReference());
 	StageElementAnimationReference& newAnimation = e->mAnimationReferences.back();
 	newAnimation.mElement = addMugenAnimation(e->mAnimation, tSprites, makePosition(0, 0, 0));
 	setMugenAnimationBasePosition(newAnimation.mElement, &newAnimation.mReferencePosition);
 	newAnimation.mOffset = tOffset;
 	setMugenAnimationBlendType(newAnimation.mElement, tBlendType);
+	setMugenAnimationTransparency(newAnimation.mElement, tAlpha.x);
+	setMugenAnimationDestinationTransparency(newAnimation.mElement, tAlpha.y);
 	setMugenAnimationConstraintRectangle(newAnimation.mElement, tConstraintRectangle);
 	setMugenAnimationDrawScale(newAnimation.mElement, e->mDrawScale * e->mGlobalScale * makePosition(1, e->mStartScaleY, 1));
 	setMugenAnimationCameraEffectPositionReference(newAnimation.mElement, getDreamMugenStageHandlerCameraEffectPositionReference());
 	setMugenAnimationCameraScaleReference(newAnimation.mElement, getDreamMugenStageHandlerCameraZoomReference());
 }
 
-static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement* e, MugenSpriteFile* tSprites, Vector3DI tTile, BlendType tBlendType, GeoRectangle tConstraintRectangle) {
+static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement* e, MugenSpriteFile* tSprites, Vector3DI tTile, BlendType tBlendType, const Vector3D& tAlpha, GeoRectangle tConstraintRectangle) {
 	int startX;
 	int startY;
 	int amountX;
@@ -327,11 +322,10 @@ static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement
 		size = getAnimationFirstElementSpriteSize(e->mAnimation, tSprites);
 	}
 
-	double deltaScaleX = e->mDelta.x ? (1 / e->mDelta.x) : 1;
-	double deltaScaleY = e->mDelta.y ? (1 / e->mDelta.y) : 1;
-	double cameraToElementScale = e->mCoordinates.y / getCameraCoordP();
-	handleSingleTile(tTile.x, &startX, &amountX, size.x, e->mTileSpacing.x, gMugenStageHandlerData.mCameraRange.mTopLeft.x*cameraToElementScale, gMugenStageHandlerData.mCameraRange.mBottomRight.x*cameraToElementScale, deltaScaleX, e->mCoordinates.x);
-	handleSingleTile(tTile.y, &startY, &amountY, size.y, e->mTileSpacing.y, gMugenStageHandlerData.mCameraRange.mTopLeft.y*cameraToElementScale, gMugenStageHandlerData.mCameraRange.mBottomRight.y*cameraToElementScale, deltaScaleY, e->mCoordinates.y);
+	const auto deltaX = !e->mDelta.x ? 1 : e->mDelta.x;
+	const auto deltaY = !e->mDelta.y ? 1 : e->mDelta.y;
+	handleSingleTile(tTile.x, &startX, &amountX, size.x, e->mTileSpacing.x, e->mCoordinates.x, deltaX);
+	handleSingleTile(tTile.y, &startY, &amountY, size.y, e->mTileSpacing.y, e->mCoordinates.y, deltaY);
 	
 	Vector3D offset = makePosition(startX, startY, 0);
 	int j;
@@ -339,15 +333,14 @@ static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement
 		int i;
 		offset.x = startX;
 		for (i = 0; i < amountX; i++) {
-			addSingleMugenStageHandlerBackgroundElementTile(e, tSprites, tBlendType, tConstraintRectangle, offset);
+			addSingleMugenStageHandlerBackgroundElementTile(e, tSprites, tBlendType, tAlpha, tConstraintRectangle, offset);
 			offset.x += size.x + e->mTileSpacing.x;
-			offset.z += 0.001;
+			offset.z += 0.0001;
 		}
 		offset.y += size.y + e->mTileSpacing.y;
 	}
 
 }
-
 
 static void addStaticElementToIDList(StaticStageHandlerElement* e, int tID) {
 	StageElementIDList* elementList;
@@ -362,7 +355,7 @@ static void addStaticElementToIDList(StaticStageHandlerElement* e, int tID) {
 	elementList->mVector.push_back(e);
 }
 
-void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, double tStartScaleY, double tScaleDeltaY, Position tDrawScale, int tLayerNo, int tID, Vector3DI tCoordinates)
+void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, const Vector3D& tAlpha, GeoRectangle tConstraintRectangle, Vector3D tVelocity, double tStartScaleY, double tScaleDeltaY, Position tDrawScale, int tLayerNo, int tID, Vector3DI tCoordinates)
 {
 	gMugenStageHandlerData.mStaticElements.push_back(StaticStageHandlerElement());
 	StaticStageHandlerElement* e = &gMugenStageHandlerData.mStaticElements.back();
@@ -380,6 +373,7 @@ void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAn
 	e->mAnimation = tAnimation;
 	e->mOwnsAnimation = tOwnsAnimation;
 	e->mAnimationReferences.clear();
+	e->mTile = tTile;
 	e->mTileSize = getAnimationFirstElementSpriteSize(e->mAnimation, tSprites);
 	if (!e->mTileSize.x || !e->mTileSize.y) e->mTileSize = makeVector3DI(1, 1, 0);
 	e->mTileSpacing = tTileSpacing;
@@ -392,7 +386,7 @@ void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAn
 	e->mInvisibleFlag = 0;
 	e->mIsInvisible = 0;
 
-	addMugenStageHandlerBackgroundElementTiles(e, tSprites, tTile, tBlendType, tConstraintRectangle);
+	addMugenStageHandlerBackgroundElementTiles(e, tSprites, tTile, tBlendType, tAlpha, tConstraintRectangle);
 	updateSingleStaticStageElement(e);
 
 	addStaticElementToIDList(e, tID);
@@ -403,7 +397,7 @@ Position* getDreamMugenStageHandlerCameraPositionReference()
 	return &gMugenStageHandlerData.mCameraPosition;
 }
 
-Position* getDreamMugenStageHandlerCameraEffectPositionReference() // TODO: use in fight screen (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/205)
+Position* getDreamMugenStageHandlerCameraEffectPositionReference()
 {
 	return &gMugenStageHandlerData.mCameraEffectPosition;
 }
@@ -416,6 +410,11 @@ void setDreamMugenStageHandlerCameraEffectPositionX(double tX)
 void setDreamMugenStageHandlerCameraEffectPositionY(double tY)
 {
 	gMugenStageHandlerData.mCameraEffectPosition.y = tY;
+}
+
+Position* getDreamMugenStageHandlerCameraTargetPositionReference()
+{
+	return &gMugenStageHandlerData.mCameraTargetPosition;
 }
 
 Position* getDreamMugenStageHandlerCameraZoomReference()

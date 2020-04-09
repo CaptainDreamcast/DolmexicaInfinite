@@ -151,6 +151,7 @@ void changeDolmexicaStoryStateOutsideStateHandler(StoryInstance* tInstance, int 
 void endDolmexicaStoryboard(StoryInstance* tInstance, int tNextStoryState);
 
 int getDolmexicaStoryTimeInState(StoryInstance* tInstance);
+int getDolmexicaStoryStateNumber(StoryInstance* tInstance);
 
 int getDolmexicaStoryAnimationTimeLeft(StoryInstance* tInstance, int tID);
 double getDolmexicaStoryAnimationPositionX(StoryInstance* tInstance, int tID);

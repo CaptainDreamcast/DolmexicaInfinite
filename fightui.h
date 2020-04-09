@@ -8,7 +8,7 @@
 
 #include "playerdefinition.h"
 
-void playDreamHitSpark(Position tPosition, DreamPlayer* tPlayer, int tIsInPlayerFile, int tNumber, int tIsFacingRight, int tPositionCoordinateP, int tScaleCoordinateP);
+void playDreamHitSpark(Position tPosition, DreamPlayer* tPlayer, int tIsInPlayerFile, int tNumber, int tIsFacingRight, int tPositionCoordinateP);
 void addDreamDustCloud(Position tPosition, int tIsFacingRight, int tCoordinateP);
 void setDreamLifeBarPercentage(DreamPlayer* tPlayer, double tPercentage);
 void setDreamPowerBarPercentage(DreamPlayer* tPlayer, double tPercentage, int tValue);
@@ -20,6 +20,8 @@ void setTimerFinished();
 MugenAnimation* getDreamFightEffectAnimation(int tNumber);
 MugenSpriteFile* getDreamFightEffectSprites();
 MugenSounds* getDreamCommonSounds();
+int getDreamUICoordinateP();
+double getDreamUIFightFXScale();
 
 void playDreamRoundAnimation(int tRound, void(*tFunc)());
 void playDreamFightAnimation(void(*tFunc)());

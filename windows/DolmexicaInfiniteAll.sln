@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DolmexicaInfiniteWeb", "Dol
 		{10E9C155-833F-4A97-90C8-8072EE59B89E} = {10E9C155-833F-4A97-90C8-8072EE59B89E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DolmexicaInfiniteTest", "DolmexicaInfiniteTest.vcxproj", "{81AEEB7B-D614-44FB-A88A-B0CD53EAEF10}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -51,6 +53,10 @@ Global
 		{8CFB7282-D86E-4281-A8F8-86B463449870}.Debug|x86.Build.0 = Debug|Win32
 		{8CFB7282-D86E-4281-A8F8-86B463449870}.Release|x86.ActiveCfg = Release|Win32
 		{8CFB7282-D86E-4281-A8F8-86B463449870}.Release|x86.Build.0 = Release|Win32
+		{81AEEB7B-D614-44FB-A88A-B0CD53EAEF10}.Debug|x86.ActiveCfg = Debug|Win32
+		{81AEEB7B-D614-44FB-A88A-B0CD53EAEF10}.Debug|x86.Build.0 = Debug|Win32
+		{81AEEB7B-D614-44FB-A88A-B0CD53EAEF10}.Release|x86.ActiveCfg = Release|Win32
+		{81AEEB7B-D614-44FB-A88A-B0CD53EAEF10}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

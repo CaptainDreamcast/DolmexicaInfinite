@@ -18,6 +18,7 @@ static void versusScreenFinishedCB() {
 }
 
 static void characterSelectFinishedCB() {
+	setVersusScreenNoMatchNumber();
 	setVersusScreenFinishedCB(versusScreenFinishedCB);
 	setNewScreen(getVersusScreen());
 }

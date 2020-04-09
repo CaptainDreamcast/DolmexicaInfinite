@@ -22,6 +22,7 @@
 #include "osuhandler.h"
 #include "arcademode.h"
 #include "survivalmode.h"
+#include "victoryquotescreen.h"
 
 typedef enum {
 	ROUND_STATE_FADE_IN = 0,
@@ -51,6 +52,9 @@ static struct {
 	int mRoundsToWin;
 	int mHasCustomRoundsToWinAmount;
 	int mStartRound;
+
+	int mHasCustomTimerDuration;
+	int mTimerDuration;
 
 	int mIsDisplayingIntro;
 	int mIsDisplayingWinPose;
@@ -179,6 +183,11 @@ static void setMatchWinner() {
 	gGameLogicData.mMatchWinnerIndex = gGameLogicData.mRoundWinner->mRootID;
 }
 
+static void setWinVictoryQuote() {
+	if (gGameLogicData.mMode != GAME_MODE_ARCADE) return;
+	setVictoryQuoteScreenQuoteIndex(getPlayerVictoryQuoteIndex(gGameLogicData.mRoundWinner));
+}
+
 static void startWinPose();
 static void startTOPose();
 
@@ -274,6 +283,7 @@ static void gotoNextScreenWait() {
 
 static void winAnimationFinishedFinalCB() {
 	setMatchWinner();
+	setWinVictoryQuote();
 
 	int isShowingResultsSurvival = gGameLogicData.mMode == GAME_MODE_SURVIVAL && !isPlayerHuman(gGameLogicData.mRoundWinner);
 	if (gGameLogicData.mIsContinueActive && getPlayerAILevel(gGameLogicData.mRoundWinner)) {
@@ -569,6 +579,22 @@ void setRoundsToWin(int tRoundsToWin)
 	gGameLogicData.mHasCustomRoundsToWinAmount = 1;
 }
 
+int hasCustomTimerDuration()
+{
+	return gGameLogicData.mHasCustomTimerDuration;
+}
+
+int getCustomTimerDuration()
+{
+	return gGameLogicData.mTimerDuration;
+}
+
+void setTimerDuration(int tTimerDuration)
+{
+	gGameLogicData.mTimerDuration = tTimerDuration;
+	gGameLogicData.mHasCustomTimerDuration = 1;
+}
+
 int getDreamRoundStateNumber()
 {
 	return gGameLogicData.mRoundStateNumber;
@@ -613,7 +639,7 @@ void setDreamGameModeTwoPlayer()
 
 int getDreamTicksPerSecond()
 {
-	return 60;
+	return int(60 * (1.0 / getConfigGameSpeedTimeFactor()));
 }
 
 int getDreamMatchWinnerIndex()
@@ -647,6 +673,7 @@ void reloadFight()
 void skipFightIntroWithoutFading()
 {
 	skipFadeIn();
+	clearTimer();
 	skipIntroCB(NULL);
 	skipFadeIn();
 }
@@ -664,6 +691,7 @@ void setFightContinueInactive()
 void setGameModeArcade() {
 	gGameLogicData.mRoundsToWin = 2;
 	gGameLogicData.mHasCustomRoundsToWinAmount = 0;
+	gGameLogicData.mHasCustomTimerDuration = 0;
 	gGameLogicData.mStartRound = 1;
 
 	setFightContinueActive();
@@ -672,7 +700,12 @@ void setGameModeArcade() {
 	setPlayerHuman(0);
 	setPlayerArtificial(1, getDifficulty());
 	setPlayerPreferredPalette(0, 1);
-	setPlayerPreferredPalette(1, 2);
+	if (getArcadeAIRandomColor()) {
+		setPlayerPreferredPaletteRandom(1);
+	}
+	else {
+		setPlayerPreferredPalette(1, 1);
+	}
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
 
@@ -683,6 +716,7 @@ void setGameModeFreePlay()
 {
 	gGameLogicData.mRoundsToWin = 2;
 	gGameLogicData.mHasCustomRoundsToWinAmount = 0;
+	gGameLogicData.mHasCustomTimerDuration = 0;
 	gGameLogicData.mStartRound = 1;
 
 	setFightContinueActive();
@@ -701,6 +735,7 @@ void setGameModeFreePlay()
 void setGameModeVersus() {
 	gGameLogicData.mRoundsToWin = 2;
 	gGameLogicData.mHasCustomRoundsToWinAmount = 0;
+	gGameLogicData.mHasCustomTimerDuration = 0;
 	gGameLogicData.mStartRound = 1;
 
 	setFightResultActive(0);
@@ -720,6 +755,7 @@ void setGameModeVersus() {
 void setGameModeSurvival(double tLifePercentage, int tRound) {
 	gGameLogicData.mRoundsToWin = 1;
 	gGameLogicData.mHasCustomRoundsToWinAmount = 1;
+	gGameLogicData.mHasCustomTimerDuration = 0;
 	gGameLogicData.mStartRound = tRound;
 
 	setFightResultActive(0);
@@ -729,7 +765,12 @@ void setGameModeSurvival(double tLifePercentage, int tRound) {
 	setPlayerHuman(0);
 	setPlayerArtificial(1, getDifficulty());
 	setPlayerPreferredPalette(0, 1);
-	setPlayerPreferredPalette(1, 2);
+	if (getArcadeAIRandomColor()) {
+		setPlayerPreferredPaletteRandom(1);
+	}
+	else {
+		setPlayerPreferredPalette(1, 1);
+	}
 	setPlayerStartLifePercentage(0, tLifePercentage);
 	setPlayerStartLifePercentage(1, 1);
 
@@ -739,6 +780,7 @@ void setGameModeSurvival(double tLifePercentage, int tRound) {
 void setGameModeTraining() {
 	gGameLogicData.mRoundsToWin = 2;
 	gGameLogicData.mHasCustomRoundsToWinAmount = 0;
+	gGameLogicData.mHasCustomTimerDuration = 0;
 	gGameLogicData.mStartRound = 1;
 
 	setFightResultActive(0);
@@ -759,6 +801,7 @@ void setGameModeWatch()
 {
 	gGameLogicData.mRoundsToWin = 2;
 	gGameLogicData.mHasCustomRoundsToWinAmount = 0;
+	gGameLogicData.mHasCustomTimerDuration = 0;
 	gGameLogicData.mStartRound = 1;
 
 	setFightResultActive(0);
@@ -779,6 +822,7 @@ void setGameModeSuperWatch()
 {
 	gGameLogicData.mRoundsToWin = 2;
 	gGameLogicData.mHasCustomRoundsToWinAmount = 0;
+	gGameLogicData.mHasCustomTimerDuration = 0;
 	gGameLogicData.mStartRound = 1;
 
 	setFightResultActive(0);
@@ -799,6 +843,7 @@ void setGameModeExhibit(int tEndTime, int tIsDisplayingBars, int tIsDisplayingDe
 {
 	gGameLogicData.mRoundsToWin = 1;
 	gGameLogicData.mHasCustomRoundsToWinAmount = 1;
+	gGameLogicData.mHasCustomTimerDuration = 0;
 	gGameLogicData.mStartRound = 1;
 
 	setFightResultActive(0);
@@ -824,6 +869,7 @@ void setGameModeExhibit(int tEndTime, int tIsDisplayingBars, int tIsDisplayingDe
 void setGameModeStory() {
 	gGameLogicData.mRoundsToWin = 2;
 	gGameLogicData.mHasCustomRoundsToWinAmount = 0;
+	gGameLogicData.mHasCustomTimerDuration = 0;
 	gGameLogicData.mStartRound = 1;
 
 	setFightResultActive(0);
@@ -841,6 +887,7 @@ void setGameModeOsu()
 {
 	gGameLogicData.mRoundsToWin = 1;
 	gGameLogicData.mHasCustomRoundsToWinAmount = 1;
+	gGameLogicData.mHasCustomTimerDuration = 0;
 	gGameLogicData.mStartRound = 1;
 
 	setFightResultActive(0);

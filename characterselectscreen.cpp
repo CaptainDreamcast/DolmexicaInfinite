@@ -23,7 +23,7 @@
 #include "gamelogic.h"
 #include "stage.h"
 #include "storymode.h"
-
+#include "config.h"
 
 using namespace std;
 
@@ -313,8 +313,8 @@ static int isSelectStageLoadedAlready(char* tPath) {
 	return 0;
 }
 
-static void getStagePath(char* tDst, char* tPath) {
-	sprintf(tDst, "assets/%s", tPath);
+static void getStagePath(char* tDst, const char* tPath) {
+	sprintf(tDst, "%s%s", getDolmexicaAssetFolder().c_str(), tPath);
 }
 
 static int isInOsuModeAndNotOsuStage(MugenDefScript* tScript) {
@@ -592,7 +592,7 @@ static int loadSingleStoryFileAndReturnWhetherItExists(SelectCharacter* e, char*
 	char path[1024];
 	char scriptPath[1024];
 
-	sprintf(scriptPath, "assets/%s", tPath);
+	sprintf(scriptPath, "%s%s", getDolmexicaAssetFolder().c_str(), tPath);
 	if (!isFile(scriptPath)) {
 		return 0;
 	}
@@ -838,8 +838,8 @@ static void loadSelectMusic() {
 static int isValidSelectPath(const std::string& path, std::string& oFinalSelectPath) {
 	if (path.empty()) return 0;
 
-	if (isFile("assets/data/" + path)) {
-		oFinalSelectPath = "assets/data/" + path;
+	if (isFile(getDolmexicaAssetFolder() + "data/" + path)) {
+		oFinalSelectPath = getDolmexicaAssetFolder() + "data/" + path;
 		return 1;
 	}
 	if (isFile(path)) {
@@ -877,16 +877,16 @@ static void loadCharacterSelectScreen() {
 
 	string selectPath;
 	if (!isValidSelectPath(gCharacterSelectScreenData.mCustomSelectFilePath, selectPath)) {
-		selectPath = "assets/data/select.def";
+		selectPath = getDolmexicaAssetFolder() + "data/select.def";
 	}
 	else gCharacterSelectScreenData.mCustomSelectFilePath = "";
 
 	loadMugenDefScript(&gCharacterSelectScreenData.mCharacterScript, selectPath);
 
 	char folder[1024];
-	loadMugenDefScript(&gCharacterSelectScreenData.mScript, "assets/data/system.def");
-	gCharacterSelectScreenData.mAnimations = loadMugenAnimationFile("assets/data/system.def");
-	getPathToFile(folder, "assets/data/system.def");
+	loadMugenDefScript(&gCharacterSelectScreenData.mScript, getDolmexicaAssetFolder() + getMotifPath());
+	gCharacterSelectScreenData.mAnimations = loadMugenAnimationFile(getDolmexicaAssetFolder() + getMotifPath());
+	getPathToFile(folder, (getDolmexicaAssetFolder() + getMotifPath()).c_str());
 	setWorkingDirectory(folder);
 
 	char* text = getAllocatedMugenDefStringVariable(&gCharacterSelectScreenData.mScript, "Files", "spr");
@@ -1095,7 +1095,7 @@ static void moveSelectionToTarget(int i, Vector3DI tTarget, int tDoesPlaySound) 
 	setMugenAnimationPosition(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement, p);
 
 	if (tDoesPlaySound) {
-		tryPlayMugenSound(&gCharacterSelectScreenData.mSounds, owner->mCursorMoveSound.x, owner->mCursorMoveSound.y);
+		tryPlayMugenSoundAdvanced(&gCharacterSelectScreenData.mSounds, owner->mCursorMoveSound.x, owner->mCursorMoveSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 	}
 
 	SelectCharacter* character = getCellCharacter(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter);
@@ -1176,7 +1176,7 @@ static void updateSingleSelectionRandom(int i) {
 	gCharacterSelectScreenData.mSelectors[i].mRandom.mNow++;
 	if (gCharacterSelectScreenData.mSelectors[i].mRandom.mNow >= gCharacterSelectScreenData.mHeader.mRandomPortraitSwitchTime) {
 		showNewRandomSelectCharacter(i);
-		tryPlayMugenSound(&gCharacterSelectScreenData.mSounds, gCharacterSelectScreenData.mHeader.mPlayers[i].mRandomMoveSound.x, gCharacterSelectScreenData.mHeader.mPlayers[i].mRandomMoveSound.y);
+		tryPlayMugenSoundAdvanced(&gCharacterSelectScreenData.mSounds, gCharacterSelectScreenData.mHeader.mPlayers[i].mRandomMoveSound.x, gCharacterSelectScreenData.mHeader.mPlayers[i].mRandomMoveSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 	}
 
 }
@@ -1303,7 +1303,7 @@ static void updateStageSelection(int i, int tNewStage, int tDoesPlaySound) {
 	updateStageCredit(stage);
 
 	if (tDoesPlaySound) {
-		tryPlayMugenSound(&gCharacterSelectScreenData.mSounds, gCharacterSelectScreenData.mHeader.mPlayers[i].mCursorMoveSound.x, gCharacterSelectScreenData.mHeader.mPlayers[i].mCursorMoveSound.y);
+		tryPlayMugenSoundAdvanced(&gCharacterSelectScreenData.mSounds, gCharacterSelectScreenData.mHeader.mPlayers[i].mCursorMoveSound.x, gCharacterSelectScreenData.mHeader.mPlayers[i].mCursorMoveSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 	}
 
 	gCharacterSelectScreenData.mStageSelect.mSelectedStage = tNewStage;
@@ -1346,7 +1346,7 @@ static int checkSetStageSelectInactive(int i) {
 	}
 	else {
 		PlayerHeader* owner = &gCharacterSelectScreenData.mHeader.mPlayers[gCharacterSelectScreenData.mSelectors[i].mOwner];
-		tryPlayMugenSound(&gCharacterSelectScreenData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y);
+		tryPlayMugenSoundAdvanced(&gCharacterSelectScreenData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 		setStageSelectActive(i);
 	}
 
@@ -1374,7 +1374,7 @@ static void setCharacterSelectionFinished(int i) {
 
 	PlayerHeader* owner = &gCharacterSelectScreenData.mHeader.mPlayers[gCharacterSelectScreenData.mSelectors[i].mOwner];
 	changeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement, owner->mDoneCursorAnimation);
-	tryPlayMugenSound(&gCharacterSelectScreenData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y);
+	tryPlayMugenSoundAdvanced(&gCharacterSelectScreenData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 
 	if (character->mType == SELECT_CHARACTER_TYPE_RANDOM) {
 		character = (SelectCharacter*)vector_get(&gCharacterSelectScreenData.mRealSelectCharacters, gCharacterSelectScreenData.mSelectors[i].mRandom.mCurrentCharacter);
@@ -1402,7 +1402,7 @@ static void setCharacterSelectionFinished(int i) {
 static void setStageSelectionFinished(int i) {
 	if (!gCharacterSelectScreenData.mStageSelect.mIsUsing || !gCharacterSelectScreenData.mStageSelect.mIsActive || gCharacterSelectScreenData.mStageSelect.mIsDone) return;
 
-	tryPlayMugenSound(&gCharacterSelectScreenData.mSounds, gCharacterSelectScreenData.mHeader.mPlayers[i].mCursorDoneSound.x, gCharacterSelectScreenData.mHeader.mPlayers[i].mCursorDoneSound.y);
+	tryPlayMugenSoundAdvanced(&gCharacterSelectScreenData.mSounds, gCharacterSelectScreenData.mHeader.mPlayers[i].mCursorDoneSound.x, gCharacterSelectScreenData.mHeader.mPlayers[i].mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 
 	SelectStage* stage = (SelectStage*)vector_get(&gCharacterSelectScreenData.mSelectStages, gCharacterSelectScreenData.mStageSelect.mSelectedStage);
 	char dummyMusicPath[2];
@@ -1428,7 +1428,7 @@ static void deselectSelection(int i, int tDoesPlaySound) {
 
 	PlayerHeader* owner = &gCharacterSelectScreenData.mHeader.mPlayers[gCharacterSelectScreenData.mSelectors[i].mOwner];
 	changeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement, owner->mActiveCursorAnimation);
-	if(tDoesPlaySound) tryPlayMugenSound(&gCharacterSelectScreenData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y);
+	if(tDoesPlaySound) tryPlayMugenSoundAdvanced(&gCharacterSelectScreenData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 
 	checkSetSecondPlayerInactive(i);
 
@@ -1617,9 +1617,9 @@ void getCharacterSelectNamePath(const char* tName, char* oDst) {
 			logWarningFormat("No support for zipped characters. Error loading %s.", tName);
 			*oDst = '\0';
 		}
-		else sprintf(oDst, "assets/chars/%s", tName);
+		else sprintf(oDst, "%schars/%s", getDolmexicaAssetFolder().c_str(), tName);
 	}
-	else sprintf(oDst, "assets/chars/%s/%s.def", tName, tName);
+	else sprintf(oDst, "%schars/%s/%s.def", getDolmexicaAssetFolder().c_str(), tName, tName);
 }
 
 typedef struct {
@@ -1718,7 +1718,6 @@ static void loadSingleRandomStageStage(void* tCaller, void* tData) {
 
 void setStageRandom(MugenDefScript * tScript)
 {
-
 	RandomStageCaller caller;
 	caller.mElements = new_vector();
 	caller.mAllElements = new_string_map();
@@ -1729,6 +1728,11 @@ void setStageRandom(MugenDefScript * tScript)
 	e = &tScript->mGroups["ExtraStages"];
 	list_map(&e->mOrderedElementList, loadSingleRandomStageStage, &caller);
 
+	if (!vector_size(&caller.mElements)) {
+		PossibleRandomStageElement* defaultStageElement = (PossibleRandomStageElement*)allocMemory(sizeof(PossibleRandomStageElement));
+		getStagePath(defaultStageElement->mPath, getMugenConfigStartStage().c_str());
+		vector_push_back_owned(&caller.mElements, defaultStageElement);
+	}
 
 	int index = randfromInteger(0, vector_size(&caller.mElements) - 1);
 	PossibleRandomStageElement* newStage = (PossibleRandomStageElement*)vector_get(&caller.mElements, index);

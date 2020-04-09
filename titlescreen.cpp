@@ -37,6 +37,7 @@
 #include "exhibitmode.h"
 #include "freeplaymode.h"
 #include "intro.h"
+#include "config.h"
 
 typedef struct {
 	void(*mCB)();
@@ -320,9 +321,9 @@ static void loadCredits() {
 	setAnimationSize(gTitleScreenData.mCreditBGAnimationElement, makePosition(320, 20, 1), makePosition(0, 0, 0));
 	setAnimationColor(gTitleScreenData.mCreditBGAnimationElement, 0, 0, 0.5);
 
-	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 12", makePosition(0, 240, 51), 1);
+	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 13", makePosition(0, 240, 51), 1);
 	
-	gTitleScreenData.mRightCreditTextID = addMugenText("01/03/20 Presented by Dogma", makePosition(320, 240, 51), 1);
+	gTitleScreenData.mRightCreditTextID = addMugenText("03/06/20 Presented by Dogma", makePosition(320, 240, 51), 1);
 	setMugenTextAlignment(gTitleScreenData.mRightCreditTextID, MUGEN_TEXT_ALIGNMENT_RIGHT);
 }
 
@@ -354,13 +355,14 @@ static void loadTitleScreen() {
 	gTitleScreenData.mWhiteTexture = getEmptyWhiteTexture();
 
 	char folder[1024];
-	loadMugenDefScript(&gTitleScreenData.mScript, "assets/data/system.def");
-	getPathToFile(folder, "assets/data/system.def");
+	const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
+	loadMugenDefScript(&gTitleScreenData.mScript, motifPath);
+	getPathToFile(folder, motifPath.c_str());
 	setWorkingDirectory(folder);
 
 	char* text = getAllocatedMugenDefStringVariable(&gTitleScreenData.mScript, "Files", "spr");
 	gTitleScreenData.mSprites = loadMugenSpriteFileWithoutPalette(text);
-	gTitleScreenData.mAnimations = loadMugenAnimationFile("system.def");
+	gTitleScreenData.mAnimations = loadMugenAnimationFile(getPureFileName(motifPath.c_str()));
 	freeMemory(text);
 
 	text = getAllocatedMugenDefStringVariable(&gTitleScreenData.mScript, "Files", "snd");
@@ -425,14 +427,14 @@ static void updateItemSelection() {
 		setSelectedMenuElementInactive();
 		gTitleScreenData.mSelected = (gTitleScreenData.mSelected + 1) % vector_size(&gTitleScreenData.mMenus);
 		setSelectedMenuElementActive();
-		tryPlayMugenSound(&gTitleScreenData.mSounds, gTitleScreenData.mHeader.mCursorMoveSound.x, gTitleScreenData.mHeader.mCursorMoveSound.y);
+		tryPlayMugenSoundAdvanced(&gTitleScreenData.mSounds, gTitleScreenData.mHeader.mCursorMoveSound.x, gTitleScreenData.mHeader.mCursorMoveSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 	}
 	else if (hasPressedUpFlank()) {
 		setSelectedMenuElementInactive();
 		gTitleScreenData.mSelected--;
 		if (gTitleScreenData.mSelected < 0) gTitleScreenData.mSelected += vector_size(&gTitleScreenData.mMenus);
 		setSelectedMenuElementActive();
-		tryPlayMugenSound(&gTitleScreenData.mSounds, gTitleScreenData.mHeader.mCursorMoveSound.x, gTitleScreenData.mHeader.mCursorMoveSound.y);
+		tryPlayMugenSoundAdvanced(&gTitleScreenData.mSounds, gTitleScreenData.mHeader.mCursorMoveSound.x, gTitleScreenData.mHeader.mCursorMoveSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 	}
 
 }
@@ -453,7 +455,7 @@ static void updateMenuElementPositions() {
 static void updateItemSelectionConfirmation() {
 	if (hasPressedAFlank() || hasPressedStartFlank()) {
 		MenuText* e = (MenuText*)vector_get(&gTitleScreenData.mMenus, gTitleScreenData.mSelected);
-		tryPlayMugenSound(&gTitleScreenData.mSounds, gTitleScreenData.mHeader.mCursorDoneSound.x, gTitleScreenData.mHeader.mCursorDoneSound.y);
+		tryPlayMugenSoundAdvanced(&gTitleScreenData.mSounds, gTitleScreenData.mHeader.mCursorDoneSound.x, gTitleScreenData.mHeader.mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 		e->mCB();
 	}
 }

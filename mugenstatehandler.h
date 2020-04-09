@@ -32,9 +32,9 @@ void changeDreamHandledStateMachineState(int tID, int tNewState);
 void changeDreamHandledStateMachineStateToOtherPlayerStateMachine(int tID, int tTemporaryID, int tNewState);
 void changeDreamHandledStateMachineStateToOwnStateMachine(int tID, int tNewState);
 void changeDreamHandledStateMachineStateToOwnStateMachineWithoutChangingState(int tID);
+void setDreamHandledStateMachineSpeed(int tID, double tSpeed);
 
 void updateDreamSingleStateMachineByID(int tID);
 void setDreamSingleStateMachineToUpdateAgainByID(int tID);
 void setStateMachineHandlerToStory();
 void setStateMachineHandlerToFight();
-void setStateMachineHandlerSpeed(double tSpeed);

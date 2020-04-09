@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{81AEEB7B-D614-44FB-A88A-B0CD53EAEF10}</ProjectGuid>
+    <RootNamespace>DolmexicaInfiniteTest</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;..;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\DEV\PROJECTS\addons\prism\windows\vs17\LIB;$(LibraryPath)</LibraryPath>
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)..\</OutDir>
+    <IntDir>Test\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;..;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\DEV\PROJECTS\addons\prism\windows\vs17\LIB;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)..\</OutDir>
+    <IntDir>Test\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>false</ConformanceMode>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <CallingConvention>Cdecl</CallingConvention>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;winmm.lib;version.lib;imm32.lib;libjpeg.lib;libpng16.lib;zlib.lib;libwebp.lib;OpenGL32.lib;glew32s.lib;freetype.lib;libzstd_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <IgnoreSpecificDefaultLibraries>libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;winmm.lib;version.lib;imm32.lib;libjpeg.lib;libpng16.lib;zlib.lib;libwebp.lib;OpenGL32.lib;glew32s.lib;freetype.lib;libzstd_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\afterimage.cpp" />
+    <ClCompile Include="..\ai.cpp" />
+    <ClCompile Include="..\arcademode.cpp" />
+    <ClCompile Include="..\boxcursorhandler.cpp" />
+    <ClCompile Include="..\characterselectscreen.cpp" />
+    <ClCompile Include="..\collision.cpp" />
+    <ClCompile Include="..\config.cpp" />
+    <ClCompile Include="..\creditsmode.cpp" />
+    <ClCompile Include="..\dolmexicadebug.cpp" />
+    <ClCompile Include="..\dolmexicastoryscreen.cpp" />
+    <ClCompile Include="..\exhibitmode.cpp" />
+    <ClCompile Include="..\fightdebug.cpp" />
+    <ClCompile Include="..\fightresultdisplay.cpp" />
+    <ClCompile Include="..\fightscreen.cpp" />
+    <ClCompile Include="..\fightui.cpp" />
+    <ClCompile Include="..\freeplaymode.cpp" />
+    <ClCompile Include="..\gamelogic.cpp" />
+    <ClCompile Include="..\initscreen.cpp" />
+    <ClCompile Include="..\intro.cpp" />
+    <ClCompile Include="..\menubackground.cpp" />
+    <ClCompile Include="..\mugenanimationutilities.cpp" />
+    <ClCompile Include="..\mugenassignment.cpp" />
+    <ClCompile Include="..\mugenassignmentevaluator.cpp" />
+    <ClCompile Include="..\mugenbackgroundstatehandler.cpp" />
+    <ClCompile Include="..\mugencommandhandler.cpp" />
+    <ClCompile Include="..\mugencommandreader.cpp" />
+    <ClCompile Include="..\mugenexplod.cpp" />
+    <ClCompile Include="..\mugenlog.cpp" />
+    <ClCompile Include="..\mugensound.cpp" />
+    <ClCompile Include="..\mugenstagehandler.cpp" />
+    <ClCompile Include="..\mugenstatecontrollers.cpp" />
+    <ClCompile Include="..\mugenstatehandler.cpp" />
+    <ClCompile Include="..\mugenstatereader.cpp" />
+    <ClCompile Include="..\optionsscreen.cpp" />
+    <ClCompile Include="..\osufilereader.cpp" />
+    <ClCompile Include="..\osuhandler.cpp" />
+    <ClCompile Include="..\osumode.cpp" />
+    <ClCompile Include="..\pausecontrollers.cpp" />
+    <ClCompile Include="..\playerdefinition.cpp" />
+    <ClCompile Include="..\playerhitdata.cpp" />
+    <ClCompile Include="..\projectile.cpp" />
+    <ClCompile Include="..\randomwatchmode.cpp" />
+    <ClCompile Include="..\stage.cpp" />
+    <ClCompile Include="..\storymode.cpp" />
+    <ClCompile Include="..\storyscreen.cpp" />
+    <ClCompile Include="..\superwatchmode.cpp" />
+    <ClCompile Include="..\survivalmode.cpp" />
+    <ClCompile Include="..\test\assets_test.cpp" />
+    <ClCompile Include="..\test\commontestfunctionality.cpp" />
+    <ClCompile Include="..\test\crashtest.cpp" />
+    <ClCompile Include="..\test\mugenassignmentevaluatortest.cpp" />
+    <ClCompile Include="..\test\performancetest.cpp" />
+    <ClCompile Include="..\titlescreen.cpp" />
+    <ClCompile Include="..\trainingmode.cpp" />
+    <ClCompile Include="..\trainingmodemenu.cpp" />
+    <ClCompile Include="..\versusmode.cpp" />
+    <ClCompile Include="..\versusscreen.cpp" />
+    <ClCompile Include="..\victoryquotescreen.cpp" />
+    <ClCompile Include="..\watchmode.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\addons\prism\windows\vs17\prism.vcxproj">
+      <Project>{3572e463-893d-4815-8ecc-e65f3b8c6d90}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.DolmexicaInfiniteTest.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\afterimage.h" />
+    <ClInclude Include="..\ai.h" />
+    <ClInclude Include="..\arcademode.h" />
+    <ClInclude Include="..\boxcursorhandler.h" />
+    <ClInclude Include="..\characterselectscreen.h" />
+    <ClInclude Include="..\collision.h" />
+    <ClInclude Include="..\config.h" />
+    <ClInclude Include="..\creditsmode.h" />
+    <ClInclude Include="..\dolmexicadebug.h" />
+    <ClInclude Include="..\dolmexicastoryscreen.h" />
+    <ClInclude Include="..\exhibitmode.h" />
+    <ClInclude Include="..\fightdebug.h" />
+    <ClInclude Include="..\fightresultdisplay.h" />
+    <ClInclude Include="..\fightscreen.h" />
+    <ClInclude Include="..\fightui.h" />
+    <ClInclude Include="..\freeplaymode.h" />
+    <ClInclude Include="..\gamelogic.h" />
+    <ClInclude Include="..\initscreen.h" />
+    <ClInclude Include="..\intro.h" />
+    <ClInclude Include="..\menubackground.h" />
+    <ClInclude Include="..\mugenanimationutilities.h" />
+    <ClInclude Include="..\mugenassignment.h" />
+    <ClInclude Include="..\mugenassignmentevaluator.h" />
+    <ClInclude Include="..\mugenbackgroundstatehandler.h" />
+    <ClInclude Include="..\mugencommandhandler.h" />
+    <ClInclude Include="..\mugencommandreader.h" />
+    <ClInclude Include="..\mugenexplod.h" />
+    <ClInclude Include="..\mugenlog.h" />
+    <ClInclude Include="..\mugensound.h" />
+    <ClInclude Include="..\mugenstagehandler.h" />
+    <ClInclude Include="..\mugenstatecontrollers.h" />
+    <ClInclude Include="..\mugenstatehandler.h" />
+    <ClInclude Include="..\mugenstatereader.h" />
+    <ClInclude Include="..\optionsscreen.h" />
+    <ClInclude Include="..\osufilereader.h" />
+    <ClInclude Include="..\osuhandler.h" />
+    <ClInclude Include="..\osumode.h" />
+    <ClInclude Include="..\pausecontrollers.h" />
+    <ClInclude Include="..\playerdefinition.h" />
+    <ClInclude Include="..\playerhitdata.h" />
+    <ClInclude Include="..\projectile.h" />
+    <ClInclude Include="..\randomwatchmode.h" />
+    <ClInclude Include="..\stage.h" />
+    <ClInclude Include="..\storymode.h" />
+    <ClInclude Include="..\storyscreen.h" />
+    <ClInclude Include="..\superwatchmode.h" />
+    <ClInclude Include="..\survivalmode.h" />
+    <ClInclude Include="..\test\commontestfunctionality.h" />
+    <ClInclude Include="..\titlescreen.h" />
+    <ClInclude Include="..\trainingmode.h" />
+    <ClInclude Include="..\trainingmodemenu.h" />
+    <ClInclude Include="..\versusmode.h" />
+    <ClInclude Include="..\versusscreen.h" />
+    <ClInclude Include="..\victoryquotescreen.h" />
+    <ClInclude Include="..\watchmode.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\windows\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-static.1.8.1.3\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-static.targets" Condition="Exists('..\windows\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-static.1.8.1.3\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-static.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\windows\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-static.1.8.1.3\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\windows\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-static.1.8.1.3\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-static.targets'))" />
+  </Target>
+</Project>

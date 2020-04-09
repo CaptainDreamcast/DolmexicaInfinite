@@ -32,22 +32,20 @@ typedef struct {
 	int mWasUpdatedOutsideHandler;
 
 	int mCurrentJugglePoints;
+
+	double mTimeDilatationNow;
+	double mTimeDilatation;
 } RegisteredState;
 
 static struct {
 	map<int, RegisteredState> mRegisteredStates;
 	int mIsInStoryMode;
-
-	double mTimeDilatationNow;
-	double mTimeDilatation;
 } gMugenStateHandlerData;
 
 static void loadStateHandler(void* tData) {
 	(void)tData;
 	
 	gMugenStateHandlerData.mRegisteredStates.clear();
-	gMugenStateHandlerData.mTimeDilatationNow = 0.0;
-	gMugenStateHandlerData.mTimeDilatation = 1.0;
 }
 
 static void unloadStateHandler(void* tData) {
@@ -145,23 +143,26 @@ static int updateSingleStateMachineByReference(RegisteredState* tRegisteredState
 static int updateSingleStateMachine(void* tCaller, RegisteredState& tData) {
 	(void)tCaller;
 	RegisteredState* registeredState = &tData;
-	if (!registeredState->mWasUpdatedOutsideHandler) {
-		return updateSingleStateMachineByReference(registeredState);
+	registeredState->mTimeDilatationNow += registeredState->mTimeDilatation;
+	int updateAmount = (int)registeredState->mTimeDilatationNow;
+	registeredState->mTimeDilatationNow -= updateAmount;
+	while (updateAmount--) {
+		int ret;
+		if (!registeredState->mWasUpdatedOutsideHandler) {
+			ret = updateSingleStateMachineByReference(registeredState);
+		}
+		else {
+			registeredState->mWasUpdatedOutsideHandler = 0;
+			ret = 0;
+		}
+		if (ret) return 1;
 	}
-	else {
-		registeredState->mWasUpdatedOutsideHandler = 0;
-		return 0;
-	}
+	return 0;
 }
 
 static void updateStateHandler(void* tData) {
 	(void)tData;
-	gMugenStateHandlerData.mTimeDilatationNow += gMugenStateHandlerData.mTimeDilatation;
-	int updateAmount = (int)gMugenStateHandlerData.mTimeDilatationNow;
-	gMugenStateHandlerData.mTimeDilatationNow -= updateAmount;
-	while (updateAmount--) {
-		stl_int_map_remove_predicate(gMugenStateHandlerData.mRegisteredStates, updateSingleStateMachine);
-	}
+	stl_int_map_remove_predicate(gMugenStateHandlerData.mRegisteredStates, updateSingleStateMachine);
 }
 
 ActorBlueprint getDreamMugenStateHandler() {
@@ -183,7 +184,8 @@ int registerDreamMugenStateMachine(DreamMugenStates * tStates, DreamPlayer* tPla
 	e.mIsDisabled = 0;
 	e.mWasUpdatedOutsideHandler = 0;
 	e.mCurrentJugglePoints = 0;
-
+	e.mTimeDilatationNow = 0.0;
+	e.mTimeDilatation = 1.0;
 	return stl_int_map_push_back(gMugenStateHandlerData.mRegisteredStates, e);
 }
 
@@ -198,7 +200,11 @@ int registerDreamMugenStoryStateMachine(DreamMugenStates * tStates, StoryInstanc
 
 void removeDreamRegisteredStateMachine(int tID)
 {
-	assert(stl_map_contains(gMugenStateHandlerData.mRegisteredStates, tID));
+	if (!stl_map_contains(gMugenStateHandlerData.mRegisteredStates, tID))
+	{
+		logWarningFormat("Unable to remove state machine handler %d, does not exist.", tID);
+		return;
+	}
 	gMugenStateHandlerData.mRegisteredStates.erase(tID);
 }
 
@@ -357,53 +363,52 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 	setPlayerStateMoveType(e->mPlayer, newState->mMoveType);
 	setPlayerPhysics(e->mPlayer, newState->mPhysics);
 
-	int moveHitInfosPersist = newState->mDoesHaveMoveHitInfosPersist ? evaluateDreamAssignmentAndReturnAsInteger(&newState->mDoMoveHitInfosPersist, e->mPlayer) : 0;
+	int moveHitInfosPersist = hasPrismFlag(newState->mFlags, MUGEN_STATE_PROPERTY_MOVE_HIT_INFO_PERSISTENCE) ? evaluateDreamAssignmentAndReturnAsInteger(&newState->mDoMoveHitInfosPersist, e->mPlayer) : 0;
 	if (!moveHitInfosPersist) {
 		setPlayerMoveHitReset(e->mPlayer);
 	}
 
-	int hitCountPersists = newState->mDoesHaveHitCountPersist ? evaluateDreamAssignmentAndReturnAsInteger(&newState->mDoesHitCountPersist, e->mPlayer) : 0;
+	int hitCountPersists = hasPrismFlag(newState->mFlags, MUGEN_STATE_PROPERTY_HIT_COUNT_PERSISTENCE) ? evaluateDreamAssignmentAndReturnAsInteger(&newState->mDoesHitCountPersist, e->mPlayer) : 0;
 	if (!hitCountPersists) {
 		resetPlayerHitCount(e->mPlayer);
 	}
 
-	int hitDefinitionsPersist = newState->mDoesHaveHitDefinitionsPersist ? evaluateDreamAssignmentAndReturnAsInteger(&newState->mDoHitDefinitionsPersist, e->mPlayer) : 0;
+	int hitDefinitionsPersist = hasPrismFlag(newState->mFlags, MUGEN_STATE_PROPERTY_HIT_DEFINITION_PERSISTENCE) ? evaluateDreamAssignmentAndReturnAsInteger(&newState->mDoHitDefinitionsPersist, e->mPlayer) : 0;
 	if (!hitDefinitionsPersist) {
 		setHitDataInactive(e->mPlayer);
 	}
 
-	if (newState->mIsChangingAnimation) {
+	if (hasPrismFlag(newState->mFlags, MUGEN_STATE_PROPERTY_CHANGING_ANIMATION)) {
 		int anim = evaluateDreamAssignmentAndReturnAsInteger(&newState->mAnimation, e->mPlayer);
 		changePlayerAnimation(e->mPlayer, anim);
 	}
 
-	if (newState->mIsChangingControl) {
+	if (hasPrismFlag(newState->mFlags, MUGEN_STATE_PROPERTY_CHANGING_CONTROL)) {
 		int control = evaluateDreamAssignmentAndReturnAsInteger(&newState->mControl, e->mPlayer);
 		setPlayerControl(e->mPlayer, control);
 	}
 
-	if (newState->mIsSettingVelocity) {
+	if (hasPrismFlag(newState->mFlags, MUGEN_STATE_PROPERTY_SETTING_VELOCITY)) {
 		Vector3D vel = evaluateDreamAssignmentAndReturnAsVector3D(&newState->mVelocity, e->mPlayer);
 		setPlayerVelocityX(e->mPlayer, vel.x, getPlayerCoordinateP(e->mPlayer));
 		setPlayerVelocityY(e->mPlayer, vel.y, getPlayerCoordinateP(e->mPlayer));
 	}
 
-	if (newState->mIsAddingPower) {
+	if (hasPrismFlag(newState->mFlags, MUGEN_STATE_PROPERTY_ADDING_POWER)) {
 		int power = evaluateDreamAssignmentAndReturnAsInteger(&newState->mPowerAdd, e->mPlayer);
 		addPlayerPower(e->mPlayer, power);
 	}
 
-	if (newState->mDoesRequireJuggle) {
+	if (hasPrismFlag(newState->mFlags, MUGEN_STATE_PROPERTY_JUGGLE_REQUIREMENT)) {
 		e->mCurrentJugglePoints = evaluateDreamAssignmentAndReturnAsInteger(&newState->mJuggleRequired, e->mPlayer);
 	}
 
-	if (newState->mIsChangingSpritePriority) {
+	if (hasPrismFlag(newState->mFlags, MUGEN_STATE_PROPERTY_CHANGING_SPRITE_PRIORITY)) {
 		int spritePriority = evaluateDreamAssignmentAndReturnAsInteger(&newState->mSpritePriority, e->mPlayer);
 		setPlayerSpritePriority(e->mPlayer, spritePriority);
 	}
 	
 	setPlayerPositionUnfrozen(e->mPlayer);
-
 }
 
 void changeDreamHandledStateMachineStateToOtherPlayerStateMachine(int tID, int tTemporaryID, int tNewState)
@@ -435,6 +440,13 @@ void changeDreamHandledStateMachineStateToOwnStateMachineWithoutChangingState(in
 	e->mIsUsingTemporaryOtherStateMachine = 0;
 }
 
+void setDreamHandledStateMachineSpeed(int tID, double tSpeed)
+{
+	if (!stl_map_contains(gMugenStateHandlerData.mRegisteredStates, tID)) return;
+	RegisteredState* e = &gMugenStateHandlerData.mRegisteredStates[tID];
+	e->mTimeDilatation = tSpeed;
+}
+
 void updateDreamSingleStateMachineByID(int tID) {
 	assert(stl_map_contains(gMugenStateHandlerData.mRegisteredStates, tID));
 	RegisteredState* e = &gMugenStateHandlerData.mRegisteredStates[tID];
@@ -458,9 +470,4 @@ void setStateMachineHandlerToStory()
 void setStateMachineHandlerToFight()
 {
 	gMugenStateHandlerData.mIsInStoryMode = 0;
-}
-
-void setStateMachineHandlerSpeed(double tSpeed)
-{
-	gMugenStateHandlerData.mTimeDilatation = tSpeed;
 }

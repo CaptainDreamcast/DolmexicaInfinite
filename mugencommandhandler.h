@@ -21,3 +21,11 @@ void resetOsuPlayerCommandInputAllowed(int tRootIndex);
 int isOsuPlayerCommandInputAllowed(int tRootIndex);
 
 ActorBlueprint getDreamMugenCommandHandler();
+
+void setDreamButtonAActiveForPlayer(int tControllerIndex);
+void setDreamButtonBActiveForPlayer(int tControllerIndex);
+void setDreamButtonCActiveForPlayer(int tControllerIndex);
+void setDreamButtonXActiveForPlayer(int tControllerIndex);
+void setDreamButtonYActiveForPlayer(int tControllerIndex);
+void setDreamButtonZActiveForPlayer(int tControllerIndex);
+void setDreamButtonStartActiveForPlayer(int tControllerIndex);

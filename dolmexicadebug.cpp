@@ -5,6 +5,7 @@
 #include <prism/debug.h>
 #include <prism/log.h>
 #include <prism/input.h>
+#include <prism/math.h>
 
 #include "gamelogic.h"
 #include "playerdefinition.h"
@@ -17,6 +18,7 @@
 #include "titlescreen.h"
 #include "storymode.h"
 #include "randomwatchmode.h"
+#include "config.h"
 
 using namespace std;
 
@@ -79,6 +81,9 @@ static string fightCB(void* /*tCaller*/, string tCommand) {
 		else if (words[3] == "versus") {
 			setGameModeVersus();
 		}
+		else if (words[3] == "freeplay") {
+			setGameModeFreePlay();
+		}
 		else {
 			setGameModeTraining();
 		}
@@ -88,10 +93,10 @@ static string fightCB(void* /*tCaller*/, string tCommand) {
 	}
 
 	if (words.size() >= 5) {
-		setDreamStageMugenDefinition(("assets/stages/" + words[4]).data(), "");
+		setDreamStageMugenDefinition((getDolmexicaAssetFolder() + "stages/" + words[4]).c_str(), "");
 	}
 	else {
-		setDreamStageMugenDefinition("assets/stages/kfm.def", "");
+		setDreamStageMugenDefinition((getDolmexicaAssetFolder() + "stages/kfm.def").c_str(), "");
 	}
 
 	startFightScreen(mockFightFinishedCB);
@@ -104,9 +109,9 @@ static string stageCB(void* tCaller, string tCommand) {
 	vector<string> words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 
-	setPlayerDefinitionPath(0, "assets/chars/kfm/kfm.def");
-	setPlayerDefinitionPath(1, "assets/chars/kfm/kfm.def");
-	setDreamStageMugenDefinition(("assets/stages/" + words[1]).data(), "");
+	setPlayerDefinitionPath(0, (getDolmexicaAssetFolder() + "chars/kfm/kfm.def").c_str());
+	setPlayerDefinitionPath(1, (getDolmexicaAssetFolder() + "chars/kfm/kfm.def").c_str());
+	setDreamStageMugenDefinition((getDolmexicaAssetFolder() + "stages/" + words[1]).c_str(), "");
 	setGameModeTraining();
 	startFightScreen(mockFightFinishedCB);
 
@@ -360,6 +365,232 @@ static string writeStoryAnimsCB(void* /*tCaller*/, string /*tCommand*/) {
 	return "";
 }
 
+static string difficultyCB(void* /*tCaller*/, string tCommand) {
+	const auto words = splitCommandString(tCommand);
+	if (words.size() < 2) return "Too few arguments";
+	const auto difficulty = atoi(words[1].c_str());
+	setDifficulty(difficulty);
+	return "";
+}
+
+#if !defined(NDEBUG) && defined (_WIN32)
+#define Rectangle Rectangle2
+#include <Windows.h>
+#undef Rectangle
+
+static bool caseIndifferentManualTestNameSort (const std::string& lhs, const std::string& rhs) {
+	return std::lexicographical_compare(lhs.begin(), lhs.end(),
+		rhs.begin(), rhs.end(),
+		[](char a, char b) {
+		return tolower(a) < tolower(b);
+	});
+}
+static struct {
+	int mIsActive;
+	int mIsAutoMode;
+	std::set<std::string, bool(*)(const std::string& lhs, const std::string& rhs)> mCharacters = std::set<std::string, bool(*)(const std::string& lhs, const std::string& rhs)>(caseIndifferentManualTestNameSort);
+} gFullCharacterTestData;
+
+static void collectFullCharacterTestCharacters() {
+	const auto folderMask = "assets\\chars\\*";
+	WIN32_FIND_DATAA ffd;
+	HANDLE hFind = FindFirstFileA(folderMask, &ffd);
+	if (hFind != INVALID_HANDLE_VALUE) {
+		do {
+			if (strcmp(ffd.cFileName, ".") == 0 || strcmp(ffd.cFileName, "..") == 0) continue;
+			if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+				gFullCharacterTestData.mCharacters.insert(ffd.cFileName);
+			}
+		} while (FindNextFileA(hFind, &ffd) != 0);
+		FindClose(hFind);
+	}
+}
+
+static void pruneFullCharacterTestCharacters(const std::string& tStartCharacter) {
+	if (tStartCharacter.empty()) return;
+
+	auto it = gFullCharacterTestData.mCharacters.begin();
+	while (it != gFullCharacterTestData.mCharacters.end()) {
+		auto current = it;
+		it++;
+		if (*current == tStartCharacter) break;
+		gFullCharacterTestData.mCharacters.erase(current);
+	}
+}
+
+static void processFullCharacterTestCharacters(const std::string& tStartCharacter)
+{
+	gFullCharacterTestData.mCharacters.clear();
+	collectFullCharacterTestCharacters();
+	pruneFullCharacterTestCharacters(tStartCharacter);
+}
+
+static void fullManualTestFightFinishedCB() {}
+
+static void startNextFullCharacterTestFight() {
+	if (gFullCharacterTestData.mCharacters.empty()) {
+		abortScreenHandling();
+		return;
+	}
+	const auto characterName = *gFullCharacterTestData.mCharacters.begin();
+	gFullCharacterTestData.mCharacters.erase(gFullCharacterTestData.mCharacters.begin());
+
+	char path[1024];
+	getCharacterSelectNamePath(characterName.c_str(), path);
+	setPlayerDefinitionPath(0, path);
+	setPlayerDefinitionPath(1, path);
+	setDreamStageMugenDefinition((getDolmexicaAssetFolder() + "stages/kfm.def").c_str(), "");
+	setGameModeSuperWatch();
+	setRandomSeed(0);
+	startFightScreen(fullManualTestFightFinishedCB);
+}
+
+static string fullCharacterTestCB(void* /*tCaller*/, string tCommand) {
+	const auto words = splitCommandString(tCommand);
+	std::string startCharacter;
+	if (words.size() >= 2) {
+		if (words[1] == "auto") {
+			gFullCharacterTestData.mIsAutoMode = 1;
+		}
+		else {
+			startCharacter = words[1];
+		}
+	}
+	if (words.size() >= 3) {
+		if (words[2] == "auto") {
+			gFullCharacterTestData.mIsAutoMode = 1;
+		}
+	}
+	processFullCharacterTestCharacters(startCharacter);
+	gFullCharacterTestData.mIsActive = 1;
+	startNextFullCharacterTestFight();
+	return "";
+}
+
+static void updateFullCharacterTest() {
+	if (!gFullCharacterTestData.mIsActive) return;
+
+	static const auto TEST_SECONDS = 120;
+	const auto isAutomaticallyOver = gFullCharacterTestData.mIsAutoMode ? (getDreamGameTime() > TEST_SECONDS * 60) : 0;
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_F1_PRISM) || isAutomaticallyOver) {
+		startNextFullCharacterTestFight();
+	}
+}
+
+static struct {
+	int mIsActive;
+	std::set<std::string, bool(*)(const std::string& lhs, const std::string& rhs)> mStages = std::set<std::string, bool(*)(const std::string& lhs, const std::string& rhs)>(caseIndifferentManualTestNameSort);
+} gFullStageTestData;
+
+static void collectFullStageTestStagesRecursive(const std::string& tSearchPath) {
+	const auto folderMask = tSearchPath + "*";
+	WIN32_FIND_DATAA ffd;
+	HANDLE hFind = FindFirstFileA(folderMask.c_str(), &ffd);
+	if (hFind != INVALID_HANDLE_VALUE) {
+		do {
+			if (strcmp(ffd.cFileName, ".") == 0 || strcmp(ffd.cFileName, "..") == 0) continue;
+			if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+				collectFullStageTestStagesRecursive(tSearchPath + ffd.cFileName + "/");
+			}
+			else {
+				if (!hasFileExtension(ffd.cFileName)) continue;
+				const auto extension = getFileExtension(ffd.cFileName);
+				if (strcmp(extension, "def")) continue;
+				auto filePath = tSearchPath + ffd.cFileName;
+				cleanPathSlashes(filePath);
+				gFullStageTestData.mStages.insert(filePath);
+
+			}
+		} while (FindNextFileA(hFind, &ffd) != 0);
+		FindClose(hFind);
+	}
+}
+
+static void pruneFullStageTestStages(const std::string& tStartStage) {
+	if (tStartStage.empty()) return;
+
+	auto it = gFullStageTestData.mStages.begin();
+	while (it != gFullStageTestData.mStages.end()) {
+		auto current = it;
+		it++;
+		if (*current == tStartStage) break;
+		gFullStageTestData.mStages.erase(current);
+	}
+}
+
+static void processFullStageTestStages(const std::string& tStartStage)
+{
+	gFullStageTestData.mStages.clear();
+	collectFullStageTestStagesRecursive(getDolmexicaAssetFolder() + "stages/");
+	pruneFullStageTestStages(tStartStage);
+}
+
+static void startNextFullStageTestFight() {
+	if (gFullStageTestData.mStages.empty()) {
+		abortScreenHandling();
+		return;
+	}
+	const auto stageName = *gFullStageTestData.mStages.begin();
+	gFullStageTestData.mStages.erase(gFullStageTestData.mStages.begin());
+
+	setPlayerDefinitionPath(0, (getDolmexicaAssetFolder() + "chars/kfm/kfm.def").c_str());
+	setPlayerDefinitionPath(1, (getDolmexicaAssetFolder() + "chars/kfm/kfm.def").c_str());
+	setDreamStageMugenDefinition(stageName.c_str(), "");
+	setGameModeTraining();
+	setRandomSeed(0);
+	startFightScreen(fullManualTestFightFinishedCB);
+}
+
+static string fullStageTestCB(void* /*tCaller*/, string tCommand) {
+	const auto words = splitCommandString(tCommand);
+	std::string startStage;
+	if (words.size() >= 2) {
+		startStage = words[1];
+	}
+
+	processFullStageTestStages(startStage);
+	gFullStageTestData.mIsActive = 1;
+	startNextFullStageTestFight();
+	return "";
+}
+
+static void updateFullStageTest() {
+	if (!gFullStageTestData.mIsActive) return;
+
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_F1_PRISM)) {
+		startNextFullStageTestFight();
+	}
+}
+#else
+static std::string fullCharacterTestCB(void*, std::string) {
+	return "";
+}
+
+static void updateFullCharacterTest() {}
+
+static std::string fullStageTestCB(void*, std::string) {
+	return "";
+}
+
+static void updateFullStageTest() {}
+#endif
+
+static string randomSeedCB(void* /*tCaller*/, string tCommand) {
+	const auto words = splitCommandString(tCommand);
+	if (words.size() < 2) return "Too few arguments";
+	const auto seed = atoi(words[1].c_str());
+	setRandomSeed(unsigned(seed));
+	return "";
+}
+
+static string airJumpCB(void* /*tCaller*/, string tCommand) {
+	const auto words = splitCommandString(tCommand);
+	if (words.size() < 2) return "Too few arguments";
+	const auto airJumpAmount = atoi(words[1].c_str());
+	setPlayerMovementAirJumpNum(getRootPlayer(0), airJumpAmount);
+	return "";
+}
+
 void initDolmexicaDebug()
 {
 	gDolmexicaDebugData = new DolmexicaDebugData();
@@ -385,6 +616,11 @@ void initDolmexicaDebug()
 	addPrismDebugConsoleCommand("speed", speedCB);
 	addPrismDebugConsoleCommand("roundamount", roundamountCB);
 	addPrismDebugConsoleCommand("writestoryanims", writeStoryAnimsCB);
+	addPrismDebugConsoleCommand("difficulty", difficultyCB);
+	addPrismDebugConsoleCommand("fullcharactertest", fullCharacterTestCB);
+	addPrismDebugConsoleCommand("fullstagetest", fullStageTestCB);
+	addPrismDebugConsoleCommand("randomseed", randomSeedCB);
+	addPrismDebugConsoleCommand("airjump", airJumpCB);
 }
 
 static void loadDolmexicaDebugHandler(void* tData) {
@@ -417,6 +653,8 @@ static void updateSpeedOverrideToggle() {
 static void updateDolmexicaDebugHandler(void* tData) {
 	(void)tData;
 	updateSpeedOverrideToggle();
+	updateFullCharacterTest();
+	updateFullStageTest();
 	stl_string_map_map(gDolmexicaDebugData->mMap, updateSingleTrackedInteger);
 }
 

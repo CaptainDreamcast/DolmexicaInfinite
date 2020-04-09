@@ -22,7 +22,6 @@
 #include "stage.h"
 #include "config.h"
 #include "dolmexicadebug.h"
-#include "debugscreen.h"
 #include "initscreen.h"
 
 char romdisk_buffer[1];
@@ -72,7 +71,7 @@ int main(int argc, char** argv) {
 	}
 
 	initPrismWrapperWithMugenFlags();
-
+	loadMugenConfig();
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
 	loadMugenSystemFonts();
 	logg("Check framerate");
@@ -84,12 +83,11 @@ int main(int argc, char** argv) {
 	setMemoryHandlerCompressionActive();
 	initClipboardForGame();
 	setScreenEffectZ(99);
-	loadMugenConfig();
 	setScreenAfterWrapperLogoScreen(getInitScreen());
 	
 #ifdef DEVELOP	
-	setVolume(0);
-	setSoundEffectVolume(0);
+	setUnscaledGameWavVolume(0);
+	setUnscaledGameMidiVolume(0);
 	// setDisplayedScreenSize(320, 240);
 	disableWrapperErrorRecovery();
 	initDolmexicaDebug();

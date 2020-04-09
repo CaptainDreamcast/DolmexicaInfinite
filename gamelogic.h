@@ -24,6 +24,9 @@ int getDreamRoundNumber();
 int getRoundsToWin();
 int hasCustomRoundsToWinAmount();
 void setRoundsToWin(int tRoundsToWin);
+int hasCustomTimerDuration();
+int getCustomTimerDuration();
+void setTimerDuration(int tTimerDuration);
 int getDreamRoundStateNumber();
 int getDreamMatchNumber();
 

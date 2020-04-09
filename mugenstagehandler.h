@@ -36,6 +36,7 @@ typedef struct {
 	double mStartScaleY;
 	double mScaleDeltaY;
 
+	Vector3DI mTile;
 	Vector3DI mTileSize;
 	Vector3DI mTileSpacing;
 	int mLayerNo;
@@ -56,11 +57,12 @@ void setDreamMugenStageHandlerCameraPositionY(double tY);
 void setDreamMugenStageHandlerScreenShake(const Position& tScreenShake);
 void resetDreamMugenStageHandlerCameraPosition();
 
-void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, GeoRectangle tConstraintRectangle, Vector3D tVelocity, double tStartScaleY, double tScaleDeltaY, Position tDrawScale, int tLayerNo, int tID, Vector3DI tCoordinates);
+void addDreamMugenStageHandlerAnimatedBackgroundElement(Position tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile * tSprites, Position tDelta, Vector3DI tTile, Vector3DI tTileSpacing, BlendType tBlendType, const Vector3D& tAlpha, GeoRectangle tConstraintRectangle, Vector3D tVelocity, double tStartScaleY, double tScaleDeltaY, Position tDrawScale, int tLayerNo, int tID, Vector3DI tCoordinates);
 Position* getDreamMugenStageHandlerCameraPositionReference();
 Position* getDreamMugenStageHandlerCameraEffectPositionReference();
 void setDreamMugenStageHandlerCameraEffectPositionX(double tX);
 void setDreamMugenStageHandlerCameraEffectPositionY(double tY);
+Position* getDreamMugenStageHandlerCameraTargetPositionReference();
 Position* getDreamMugenStageHandlerCameraZoomReference();
 void setDreamMugenStageHandlerCameraZoom(double tZoom);
 

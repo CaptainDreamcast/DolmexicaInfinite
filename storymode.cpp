@@ -47,7 +47,7 @@ static void loadStoryboardGroup(MugenDefScriptGroup* tGroup) {
 	getPathToFile(folder, gStoryModeData.mStoryPath);
 	char* file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "file");
 
-	sprintf(path, "assets/%s%s", folder, file);
+	sprintf(path, "%s%s%s", getDolmexicaAssetFolder().c_str(), folder, file);
 	if (!isFile(path)) {
 		logWarningFormat("Unable to open storyboard %s. Returning to title.", path);
 		setNewScreen(getDreamTitleScreen());
@@ -77,15 +77,15 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "player1");
 	int isSelectingFirstCharacter = !strcmp("select", file);
 	if (!isSelectingFirstCharacter) {
-		sprintf(path, "assets/chars/%s/%s.def", file, file);
+		sprintf(path, "%schars/%s/%s.def", getDolmexicaAssetFolder().c_str(), file, file);
 		setPlayerDefinitionPath(0, path);
 	}
 	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "player2");
-	sprintf(path, "assets/chars/%s/%s.def", file, file);
+	sprintf(path, "%schars/%s/%s.def", getDolmexicaAssetFolder().c_str(), file, file);
 	setPlayerDefinitionPath(1, path);
 
 	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "stage");
-	sprintf(path, "assets/%s", file);
+	sprintf(path, "%s%s", getDolmexicaAssetFolder().c_str(), file);
 	string musicPath;
 	if (isMugenDefStringVariableAsGroup(tGroup, "bgm")) {
 		char* tempFile = getAllocatedMugenDefStringVariableAsGroup(tGroup, "bgm");
@@ -124,9 +124,14 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	int ailevel = getMugenDefIntegerOrDefaultAsGroup(tGroup, "ailevel", getDifficulty());
 	setPlayerArtificial(1, ailevel);
 
-	int rounds = getMugenDefIntegerOrDefaultAsGroup(tGroup, "rounds", 0);
+	const auto rounds = getMugenDefIntegerOrDefaultAsGroup(tGroup, "rounds", 0);
 	if (rounds > 0) {
 		setRoundsToWin(rounds);
+	}
+
+	const auto roundTime = getMugenDefIntegerOrDefaultAsGroup(tGroup, "round.time", 0);
+	if (roundTime > 0) {
+		setTimerDuration(roundTime);
 	}
 
 	if (isSelectingFirstCharacter) {
@@ -159,7 +164,7 @@ static void loadTitleGroup() {
 
 static void loadStoryModeScreen() {
 	char path[1024];
-	sprintf(path, "assets/%s", gStoryModeData.mStoryPath);
+	sprintf(path, "%s%s", getDolmexicaAssetFolder().c_str(), gStoryModeData.mStoryPath);
 	MugenDefScript script; 
 	loadMugenDefScript(&script, path);
 
@@ -195,7 +200,7 @@ static Screen* getStoryModeScreen() {
 static void loadStoryHeader() {
 
 	char path[1024];
-	sprintf(path, "assets/%s", gStoryModeData.mStoryPath);
+	sprintf(path, "%s%s", getDolmexicaAssetFolder().c_str(), gStoryModeData.mStoryPath);
 	MugenDefScript storyScript;
 	loadMugenDefScript(&storyScript, path);
 
@@ -224,7 +229,7 @@ static void characterSelectFinishedCB() {
 void startStoryMode()
 {
 	MugenDefScript selectScript; 
-	loadMugenDefScript(&selectScript, "assets/data/select.def");
+	loadMugenDefScript(&selectScript, getDolmexicaAssetFolder() + "data/select.def");
 	if (!stl_string_map_contains_array(selectScript.mGroups, "Stories")) {
 		setNewScreen(getDreamTitleScreen());
 		return;

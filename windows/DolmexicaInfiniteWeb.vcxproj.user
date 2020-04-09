@@ -7,9 +7,9 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>../web/index.html</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>$(ProjectDir) ..\web\index.html</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommand>C:\Windows\SystemApps\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\MicrosoftEdge.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommand>C:\DEV\PROJECTS\addons\prism\web\run\emrunscript.bat</LocalDebuggerCommand>
     <LocalDebuggerDebuggerType>Script</LocalDebuggerDebuggerType>
   </PropertyGroup>
 </Project>

@@ -15,6 +15,7 @@
 #include "osufilereader.h"
 #include "mugencommandhandler.h"
 #include "fightui.h"
+#include "config.h"
 
 typedef struct {
 	int mHasResponded;
@@ -166,9 +167,9 @@ void resetOsuHandler() {
 }
 
 static void loadOsuHandler(void* /*tData*/) {
-	gOsuHandlerData.mSprites = loadMugenSpriteFileWithoutPalette(std::string("assets/data/osu.sff"));
-	gOsuHandlerData.mAnimations = loadMugenAnimationFile("assets/data/osu.air");
-	gOsuHandlerData.mSounds = loadMugenSoundFile("assets/data/osu.snd");
+	gOsuHandlerData.mSprites = loadMugenSpriteFileWithoutPalette(getDolmexicaAssetFolder() + "data/osu.sff");
+	gOsuHandlerData.mAnimations = loadMugenAnimationFile(getDolmexicaAssetFolder() + "data/osu.air");
+	gOsuHandlerData.mSounds = loadMugenSoundFile((getDolmexicaAssetFolder() + "data/osu.snd").c_str());
 
 	gOsuHandlerData.mOsu = loadOsuFile(gOsuHandlerData.mPath);
 	gOsuHandlerData.mActiveHitObjects = new_list();
@@ -499,7 +500,7 @@ static void addResponse(int i, ActiveHitObject* e, int tLevel) {
 	e->mPlayerResponse[i].mResponseAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, 1500 + tLevel), &gOsuHandlerData.mSprites, pos);
 
 	if (tLevel) {
-		tryPlayMugenSound(&gOsuHandlerData.mSounds, 1, 0);
+		tryPlayMugenSoundAdvanced(&gOsuHandlerData.mSounds, 1, 0, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 	}
 
 	if (tLevel > 0) allowOsuPlayerCommandInputOneFrame(i);

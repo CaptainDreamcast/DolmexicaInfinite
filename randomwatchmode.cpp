@@ -9,6 +9,11 @@
 #include "playerdefinition.h"
 #include "fightui.h"
 #include "fightresultdisplay.h"
+#include "config.h"
+
+static struct {
+	int mCurrentMatch;
+} gRandomWatchModeData;
 
 static void fightFinishedCB();
 
@@ -19,17 +24,20 @@ static void versusScreenFinishedCB() {
 
 static void fightFinishedCB() {
 	MugenDefScript script; 
-	loadMugenDefScript(&script, "assets/data/select.def");
+	loadMugenDefScript(&script, getDolmexicaAssetFolder() + "data/select.def");
 
 	setCharacterRandom(&script, 0);
 	setCharacterRandom(&script, 1);
 	setStageRandom(&script);
 
+	gRandomWatchModeData.mCurrentMatch++;
+	setVersusScreenMatchNumber(gRandomWatchModeData.mCurrentMatch);
 	setVersusScreenFinishedCB(versusScreenFinishedCB);
 	setNewScreen(getVersusScreen());
 }
 
 void startRandomWatchMode()
 {
+	gRandomWatchModeData.mCurrentMatch = 0;
 	fightFinishedCB();
 }

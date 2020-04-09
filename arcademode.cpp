@@ -17,6 +17,8 @@
 #include "stage.h"
 #include "fightui.h"
 #include "fightresultdisplay.h"
+#include "config.h"
+#include "victoryquotescreen.h"
 
 using namespace std;
 
@@ -40,6 +42,8 @@ static struct {
 
 	int mHasCredits;
 	char mCreditsPath[300];
+
+	int mHasVictoryQuoteScreen;
 } gArcadeModeData;
 
 static void fightFinishedCB();
@@ -63,6 +67,7 @@ static void versusScreenFinishedCB() {
 
 	int isFinalFight = gArcadeModeData.mCurrentEnemy == gArcadeModeData.mEnemyAmount - 1;
 	setGameModeArcade();
+	setPlayerArtificial(1, calculateAIRampDifficulty(gArcadeModeData.mCurrentEnemy, getArcadeAIRampStart(), getArcadeAIRampEnd()));
 	setFightResultActive(isFinalFight && !gArcadeModeData.mHasEnding);
 	startFightScreen(fightFinishedCB, fightLoseCB);
 }
@@ -112,7 +117,7 @@ static void addSingleEnemyToSelection(void* tCaller, void* tData) {
 		strcpy(e->mStagePath, stringVector.mElement[1]);
 	}
 	else {
-		sprintf(e->mStagePath, "assets/%s", stringVector.mElement[1]);
+		sprintf(e->mStagePath, "%s%s", getDolmexicaAssetFolder().c_str(), stringVector.mElement[1]);
 	}
 	*e->mMusicPath = '\0';
 
@@ -167,8 +172,8 @@ static int unloadSingleOrder(void* tCaller, void* tData) {
 }
 
 static void generateEnemies() {
-	MugenDefScript script; 
-	loadMugenDefScript(&script, "assets/data/select.def");
+	MugenDefScript script;
+	loadMugenDefScript(&script, getDolmexicaAssetFolder() + "data/select.def");
 
 	MugenStringVector enemyTypeAmountVector = getMugenDefStringVectorVariable(&script, "Options", "arcade.maxmatches");
 
@@ -236,6 +241,22 @@ static void startEnding() {
 
 }
 
+static void victoryQuoteFinishedCB() {
+	setPlayerDefinitionPath(1, gArcadeModeData.mEnemies[gArcadeModeData.mCurrentEnemy].mDefinitionPath);
+
+	if (!strcmp("random", gArcadeModeData.mEnemies[gArcadeModeData.mCurrentEnemy].mStagePath)) {
+		MugenDefScript script;
+		loadMugenDefScript(&script, getDolmexicaAssetFolder() + "data/select.def");
+		setStageRandom(&script);
+	}
+	else {
+		setDreamStageMugenDefinition(gArcadeModeData.mEnemies[gArcadeModeData.mCurrentEnemy].mStagePath, gArcadeModeData.mEnemies[gArcadeModeData.mCurrentEnemy].mMusicPath);
+	}
+	setVersusScreenMatchNumber(gArcadeModeData.mCurrentEnemy + 1);
+	setVersusScreenFinishedCB(versusScreenFinishedCB);
+	setNewScreen(getVersusScreen());
+}
+
 static void fightFinishedCB() {
 	gArcadeModeData.mCurrentEnemy++;
 
@@ -243,19 +264,14 @@ static void fightFinishedCB() {
 		startEnding();
 		return;
 	}
-		
-	setPlayerDefinitionPath(1, gArcadeModeData.mEnemies[gArcadeModeData.mCurrentEnemy].mDefinitionPath);
 
-	if (!strcmp("random", gArcadeModeData.mEnemies[gArcadeModeData.mCurrentEnemy].mStagePath)) {
-		MugenDefScript script; 
-		loadMugenDefScript(&script, "assets/data/select.def");
-		setStageRandom(&script);
+	if (gArcadeModeData.mCurrentEnemy > 0 && gArcadeModeData.mHasVictoryQuoteScreen) {
+		setVictoryQuoteScreenFinishedCB(victoryQuoteFinishedCB);
+		setNewScreen(getVictoryQuoteScreen());
 	}
 	else {
-		setDreamStageMugenDefinition(gArcadeModeData.mEnemies[gArcadeModeData.mCurrentEnemy].mStagePath, gArcadeModeData.mEnemies[gArcadeModeData.mCurrentEnemy].mMusicPath);
+		victoryQuoteFinishedCB();
 	}
-	setVersusScreenFinishedCB(versusScreenFinishedCB);
-	setNewScreen(getVersusScreen());
 }
 
 static void introScreenFinishedCB() {
@@ -338,11 +354,15 @@ static void loadStoryboardsFromScript(MugenDefScript* tScript, const char* tFold
 	loadSingleStoryboard(tScript, tFolder, "End Credits", &gArcadeModeData.mHasCredits, gArcadeModeData.mCreditsPath);
 }
 
+static void loadVictoryQuoteScreenFromScript(MugenDefScript* tScript) {
+	gArcadeModeData.mHasVictoryQuoteScreen = getMugenDefIntegerOrDefault(tScript, "Victory Screen", "enabled", 0);
+}
+
 static void loadArcadeModeHeaderFromScript() {
 	char scriptPath[1000];
 	char folder[1000];
 
-	strcpy(scriptPath, "assets/data/system.def");
+	strcpy(scriptPath, (getDolmexicaAssetFolder() + getMotifPath()).c_str());
 	getPathToFile(folder, scriptPath);
 
 	MugenDefScript script;
@@ -350,6 +370,7 @@ static void loadArcadeModeHeaderFromScript() {
 
 	loadWinScreenFromScript(&script);
 	loadStoryboardsFromScript(&script, folder);
+	loadVictoryQuoteScreenFromScript(&script);
 
 	unloadMugenDefScript(script);
 }

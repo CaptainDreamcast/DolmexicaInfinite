@@ -3,12 +3,13 @@
 #include <prism/geometry.h>
 #include <prism/datastructures.h>
 #include <prism/actorhandler.h>
-
+#include <prism/drawing.h>
 #include <prism/mugenspritefilereader.h>
 #include <prism/mugenanimationhandler.h>
+#include <prism/mugendefreader.h>
+#include <prism/physicshandler.h>
 
 // documentation at http://www.elecbyte.com/mugendocs-11b1/bgs.html
-
 
 void setDreamStageMugenDefinition(const char* tPath, const char* tCustomMusicPath);
 ActorBlueprint getDreamStageBP();
@@ -19,12 +20,14 @@ void playDreamStageMusic();
 double parseDreamCoordinatesToLocalCoordinateSystem(double tCoordinate, int tOtherCoordinateSystemAsP);
 
 Position getDreamPlayerStartingPosition(int i, int tCoordinateP);
+Position getDreamCameraStartPosition(int tCoordinateP);
 Position getDreamStageCoordinateSystemOffset(int tCoordinateP);
 int doesDreamPlayerStartFacingLeft(int i);
 
 double getDreamCameraPositionX(int tCoordinateP);
 double getDreamCameraPositionY(int tCoordinateP);
-double getDreamCameraZoom(int tCoordinateP);
+double getDreamCameraZoom();
+void setDreamStageZoomOneFrame(double tScale, Position tStagePos);
 double getDreamScreenFactorFromCoordinateP(int tCoordinateP);
 int getDreamStageCoordinateP();
 
@@ -60,8 +63,12 @@ void setDreamStageCoordinates(Vector3DI tCoordinates);
 double getDreamStageShadowTransparency();
 Vector3D getDreamStageShadowColor();
 double getDreamStageShadowScaleY();
-Vector3D getDreamStageShadowFadeRange(int tCoordinateP);
 double getDreamStageReflectionTransparency();
+double getDreamStageShadowFadeRangeFactor(double tPosY, int tCoordinateP);
 
 void setDreamStageNoAutomaticCameraMovement();
 void setDreamStageAutomaticCameraMovement();
+
+BlendType getBackgroundBlendType(MugenDefScriptGroup* tGroup);
+BlendType handleBackgroundMask(MugenDefScriptGroup* tGroup, BlendType tBlendType);
+Vector3D getBackgroundAlphaVector(MugenDefScriptGroup* tGroup);

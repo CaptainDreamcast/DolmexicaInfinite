@@ -19,6 +19,7 @@
 #include "mugenstagehandler.h"
 #include "mugenbackgroundstatehandler.h"
 #include "mugensound.h"
+#include "config.h"
 
 using namespace std;
 
@@ -52,6 +53,7 @@ typedef struct {
 	double mStartZoom;
 	double mZoomOut;
 	double mZoomIn;
+	double mCurrentZoom;
 
 } StageCamera;
 
@@ -118,11 +120,11 @@ typedef struct {
 	int mLayerNo;
 	Position mStart;
 	Position mDelta;
-	int mMask;
 	Vector3DI mTile;
 	Vector3DI mTileSpacing;
 	int mListPosition;
 	BlendType mBlendType;
+	Vector3D mAlpha;
 
 	Velocity mVelocity;
 
@@ -184,6 +186,7 @@ static void loadStageCamera(MugenDefScript* s) {
 	gStageData.mCamera.mStartZoom = getMugenDefFloatOrDefault(s, "Camera", "startzoom", 1);
 	gStageData.mCamera.mZoomOut = getMugenDefFloatOrDefault(s, "Camera", "zoomout", 1);
 	gStageData.mCamera.mZoomIn = getMugenDefFloatOrDefault(s, "Camera", "zoomin", 1);
+	gStageData.mCamera.mCurrentZoom = gStageData.mCamera.mStartZoom;
 }
 
 static void loadStagePlayerInfo(MugenDefScript* s) {
@@ -269,33 +272,7 @@ static int isBackgroundElementGroup(MugenDefScriptGroup* tGroup) {
 
 static void addBackgroundElementToStageHandler(StageBackgroundElement* e, MugenAnimation* tAnimation, int tOwnsAnimation) {
 	e->mStart.z = e->mListPosition*0.01 + e->mLayerNo * BACKGROUND_UPPER_BASE_Z;
-	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, tOwnsAnimation, &gStageData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), e->mVelocity, e->mStartScaleY, e->mScaleDeltaY, gStageData.mStageInfo.mScale, e->mLayerNo, e->mID, gStageData.mStageInfo.mLocalCoordinates);
-}
-
-static BlendType getBackgroundBlendType(MugenDefScriptGroup* tGroup) {
-	if (!isMugenDefStringVariableAsGroup(tGroup, "trans")) return BLEND_TYPE_NORMAL;
-
-	BlendType ret;
-	char* text = getAllocatedMugenDefStringVariableAsGroup(tGroup, "trans");
-	turnStringLowercase(text);
-
-	if (!strcmp("add", text) || !strcmp("addalpha", text)) {
-		ret = BLEND_TYPE_ADDITION;
-	}
-	else if (!strcmp("sub", text)) {
-		ret = BLEND_TYPE_SUBTRACTION;
-	}
-	else if (!strcmp("none", text)) {
-		ret = BLEND_TYPE_NORMAL;
-	}
-	else {
-		ret = BLEND_TYPE_NORMAL;
-		logWarningFormat("Unknown transparency type %s. Defaulting to normal blending.", text);
-	}
-
-	freeMemory(text);
-
-	return ret;
+	addDreamMugenStageHandlerAnimatedBackgroundElement(e->mStart, tAnimation, tOwnsAnimation, &gStageData.mSprites, e->mDelta, e->mTile, e->mTileSpacing, e->mBlendType, e->mAlpha, makeGeoRectangle(-INF / 2, -INF / 2, INF, INF), e->mVelocity, e->mStartScaleY, e->mScaleDeltaY, gStageData.mStageInfo.mScale, e->mLayerNo, e->mID, gStageData.mStageInfo.mLocalCoordinates);
 }
 
 static void loadBackgroundElement(MugenDefScriptGroup* tGroup, int i) {
@@ -311,12 +288,12 @@ static void loadBackgroundElement(MugenDefScriptGroup* tGroup, int i) {
 	e->mLayerNo = getMugenDefIntegerOrDefaultAsGroup(tGroup, "layerno", 0);
 	e->mStart = getMugenDefVectorOrDefaultAsGroup(tGroup, "start", makePosition(0, 0, 0));
 	e->mDelta = getMugenDefVectorOrDefaultAsGroup(tGroup, "delta", makePosition(1, 1, 1));
-	e->mMask = getMugenDefIntegerOrDefaultAsGroup(tGroup, "mask", 0);
 	e->mTile = getMugenDefVectorIOrDefaultAsGroup(tGroup, "tile", makeVector3DI(0, 0, 0));
 	e->mTileSpacing = getMugenDefVectorIOrDefaultAsGroup(tGroup, "tilespacing", makeVector3DI(0, 0, 0));
 	e->mVelocity = getMugenDefVectorOrDefaultAsGroup(tGroup, "velocity", makePosition(0, 0, 0));
-	
 	e->mBlendType = getBackgroundBlendType(tGroup);
+	e->mAlpha = getBackgroundAlphaVector(tGroup);
+
 	e->mListPosition = i;
 
 	e->mStartScaleY = getMugenDefFloatOrDefaultAsGroup(tGroup, "yscalestart", 100) / 100.0;
@@ -325,6 +302,7 @@ static void loadBackgroundElement(MugenDefScriptGroup* tGroup, int i) {
 	e->mID = getMugenDefIntegerOrDefaultAsGroup(tGroup, "id", -1);
 
 	if (!strcmp("normal", type) || !strcmp("parallax", type)) { // TODO: parallax (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/373)
+		e->mBlendType = handleBackgroundMask(tGroup, e->mBlendType);
 		e->mType = STAGE_BACKGROUND_STATIC;
 		addBackgroundElementToStageHandler(e, createOneFrameMugenAnimationForSprite(e->mSpriteNo.x, e->mSpriteNo.y), 1);
 	}
@@ -356,7 +334,7 @@ static void loadStageTextures(char* tPath) {
 	char sffFile[1024];
 	sprintf(sffFile, "%s%s", path, gStageData.mBackgroundDefinition.mSpritePath);
 	if (!isFile(sffFile)) {
-		sprintf(sffFile, "assets/%s", gStageData.mBackgroundDefinition.mSpritePath);
+		sprintf(sffFile, "%s%s", getDolmexicaAssetFolder().c_str(), gStageData.mBackgroundDefinition.mSpritePath);
 	}
 
 	setMugenSpriteFileReaderToUsePalette(2);
@@ -417,6 +395,7 @@ static void loadStage(void* tData)
 	setBackgroundStatesFromScript(&s);
 
 	unloadMugenDefScript(s);
+	resetDreamMugenStageHandlerCameraPosition();
 }
 
 static void unloadStage(void* tData)
@@ -428,16 +407,34 @@ static void unloadStage(void* tData)
 	delete_list(&gStageData.mBackgroundElements);
 }
 
+static double getDreamCameraTargetPositionX(int tCoordinateP)
+{
+	Position p = *getDreamMugenStageHandlerCameraTargetPositionReference();
+	p = transformDreamCoordinatesVector(p, getDreamMugenStageHandlerCameraCoordinates().y, tCoordinateP);
+	return p.x;
+}
+
 static void updateCameraMovementX() {
-	double x1 = getPlayerPositionX(getRootPlayer(0), gStageData.mStageInfo.mLocalCoordinates.y);
-	double x2 = getPlayerPositionX(getRootPlayer(1), gStageData.mStageInfo.mLocalCoordinates.y);
-	double minX = min(x1, x2);
-	double maxX = max(x1, x2);
+	std::vector<double> xPositions;
+	if (getRootPlayer(0)->mIsCameraFollowing.x) {
+		xPositions.push_back(getPlayerPositionX(getRootPlayer(0), gStageData.mStageInfo.mLocalCoordinates.y));
+	}
+	if (getRootPlayer(1)->mIsCameraFollowing.x) {
+		xPositions.push_back(getPlayerPositionX(getRootPlayer(1), gStageData.mStageInfo.mLocalCoordinates.y));
+	}
+	if (xPositions.empty()) return;
+
+	double minX = xPositions[0];
+	double maxX = xPositions[0];
+	if (xPositions.size() > 1) {
+		minX = std::min(minX, xPositions[1]);
+		maxX = std::max(maxX, xPositions[1]);
+	}
 	minX -= gStageData.mStageInfo.mLocalCoordinates.x / 2;
 	maxX -= gStageData.mStageInfo.mLocalCoordinates.x / 2;
 
-	double right = getDreamCameraPositionX(gStageData.mStageInfo.mLocalCoordinates.y) + gStageData.mStageInfo.mLocalCoordinates.x / 2;
-	double left = getDreamCameraPositionX(gStageData.mStageInfo.mLocalCoordinates.y) - gStageData.mStageInfo.mLocalCoordinates.x / 2;
+	double right = getDreamCameraTargetPositionX(gStageData.mStageInfo.mLocalCoordinates.y) + gStageData.mStageInfo.mLocalCoordinates.x / 2;
+	double left = getDreamCameraTargetPositionX(gStageData.mStageInfo.mLocalCoordinates.y) - gStageData.mStageInfo.mLocalCoordinates.x / 2;
 
 	double lx = (left + gStageData.mCamera.mTension) - minX;
 	double rx = maxX - (right - gStageData.mCamera.mTension);
@@ -453,24 +450,40 @@ static void updateCameraMovementX() {
 }
 
 static void updateCameraMovementY() {
-	double y1 = getPlayerPositionY(getRootPlayer(0), getDreamMugenStageHandlerCameraCoordinates().y);
-	double y2 = getPlayerPositionY(getRootPlayer(1), getDreamMugenStageHandlerCameraCoordinates().y);
-	double mini = min(y1, y2);
+	std::vector<double> yPositions;
+	if (getRootPlayer(0)->mIsCameraFollowing.y) {
+		yPositions.push_back(getPlayerPositionY(getRootPlayer(0), getDreamMugenStageHandlerCameraCoordinates().y));
+	}
+	if (getRootPlayer(1)->mIsCameraFollowing.y) {
+		yPositions.push_back(getPlayerPositionY(getRootPlayer(1), getDreamMugenStageHandlerCameraCoordinates().y));
+	}
+	if (yPositions.empty()) return;
 
-	double cameraY = mini*gStageData.mCamera.mVerticalFollow;
+	double mini = yPositions[0];
+	if (yPositions.size() > 1) {
+		mini = std::min(mini, yPositions[1]);
+	}
+
+	const auto cameraY = mini * gStageData.mCamera.mVerticalFollow + gStageData.mCamera.mStartPosition.y;
 	setDreamMugenStageHandlerCameraPositionY(cameraY);
 }
 
-static void updateCameraMovement() {
+static void updateCameraZoom() {
+	setDreamMugenStageHandlerCameraZoom(gStageData.mCamera.mCurrentZoom);
+	gStageData.mCamera.mCurrentZoom = gStageData.mCamera.mStartZoom;
+}
+
+static void updateCameraActions() {
 	if (gStageData.mIsCameraManual) return;
 
 	updateCameraMovementX();
 	updateCameraMovementY();
+	updateCameraZoom();
 }
 
 static void updateStage(void* tData) {
 	(void)tData;
-	updateCameraMovement();
+	updateCameraActions();
 }
 
 ActorBlueprint getDreamStageBP() {
@@ -518,6 +531,11 @@ Position getDreamPlayerStartingPosition(int i, int tCoordinateP)
 	return vecScale(ret, tCoordinateP / (double)gStageData.mStageInfo.mLocalCoordinates.y);
 }
 
+Position getDreamCameraStartPosition(int tCoordinateP)
+{
+	return transformDreamCoordinatesVector(gStageData.mCamera.mStartPosition, getDreamStageCoordinateP(), tCoordinateP);
+}
+
 Position getDreamStageCoordinateSystemOffset(int tCoordinateP)
 {
 	Position ret = makePosition(0, gStageData.mStageInfo.mZOffset, 0);
@@ -546,10 +564,18 @@ double getDreamCameraPositionY(int tCoordinateP)
 	return p.y;
 }
 
-double getDreamCameraZoom(int tCoordinateP)
+double getDreamCameraZoom()
 {
-	(void)tCoordinateP;
-	return 1.0; // TODO: implement zoom (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/205)
+	return gStageData.mCamera.mCurrentZoom;
+}
+
+void setDreamStageZoomOneFrame(double tScale, Position tStagePos)
+{
+	// gStageData.mCamera.mCurrentZoom = std::min(std::max(tScale, gStageData.mCamera.mZoomOut), gStageData.mCamera.mZoomIn); // Mugen 1.1b doesn't respect the zoom limits, so Dolmexica doesn't either
+	gStageData.mCamera.mCurrentZoom = std::max(tScale, 1.0); // Mugen 1.1b only supports zooming in, so Dolmexica does too
+	setDreamMugenStageHandlerCameraEffectPositionX(tStagePos.x + gStageData.mStageInfo.mLocalCoordinates.x / 2.0); // Mugen 1.1b does not care about camera position, so Dolmexica doesn't either
+	setDreamMugenStageHandlerCameraEffectPositionY(tStagePos.y + getDreamStageCoordinateSystemOffset(getDreamStageCoordinateP()).y);
+	setDreamMugenStageHandlerCameraZoom(gStageData.mCamera.mCurrentZoom);
 }
 
 double getDreamScreenFactorFromCoordinateP(int tCoordinateP)
@@ -632,22 +658,22 @@ Position getDreamStageCenterOfScreenBasedOnPlayer(int tCoordinateP)
 
 int getDreamGameWidth(int tCoordinateP)
 {
-	return (int)transformDreamCoordinates(640, 480, tCoordinateP); // TODO: zoom (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/205)
+	return (int)transformDreamCoordinates(640, 480, tCoordinateP);
 }
 
 int getDreamGameHeight(int tCoordinateP)
 {
-	return (int)transformDreamCoordinates(480, 480, tCoordinateP); // TODO: zoom (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/205)
+	return (int)transformDreamCoordinates(480, 480, tCoordinateP);
 }
 
 int getDreamScreenWidth(int tCoordinateP)
 {
-	return (int)transformDreamCoordinates(640, 480, tCoordinateP);
+	return int(getDreamGameWidth(tCoordinateP) * getDreamCameraZoom());
 }
 
 int getDreamScreenHeight(int tCoordinateP)
 {
-	return (int)transformDreamCoordinates(480, 480, tCoordinateP);
+	return int(getDreamGameHeight(tCoordinateP) * getDreamCameraZoom());
 }
 
 char * getDreamStageAuthor()
@@ -696,7 +722,7 @@ double getDreamStageShadowScaleY()
 	return gStageData.mShadow.mScaleY;
 }
 
-Vector3D getDreamStageShadowFadeRange(int tCoordinateP)
+static Vector3D getDreamStageShadowFadeRange(int tCoordinateP)
 {
 	return transformDreamCoordinatesVector(gStageData.mShadow.mFadeRange, getDreamStageCoordinateP(), tCoordinateP);
 }
@@ -704,6 +730,21 @@ Vector3D getDreamStageShadowFadeRange(int tCoordinateP)
 double getDreamStageReflectionTransparency()
 {
 	return gStageData.mReflection.mIntensity / 256.0;
+}
+
+double getDreamStageShadowFadeRangeFactor(double tPosY, int tCoordinateP)
+{
+	auto fadeRange = getDreamStageShadowFadeRange(tCoordinateP);
+	fadeRange = vecScale(fadeRange, 0.5);
+	if (tPosY <= fadeRange.x) {
+		return 0;
+	}
+	else if (tPosY <= fadeRange.y) {
+		return 1 - (((-tPosY) - (-fadeRange.y)) / ((-fadeRange.x) - (-fadeRange.y)));
+	}
+	else {
+		return 1;
+	}
 }
 
 void setDreamStageNoAutomaticCameraMovement()
@@ -714,4 +755,55 @@ void setDreamStageNoAutomaticCameraMovement()
 void setDreamStageAutomaticCameraMovement()
 {
 	gStageData.mIsCameraManual = 0;
+}
+
+BlendType getBackgroundBlendType(MugenDefScriptGroup* tGroup) {
+	if (!isMugenDefStringVariableAsGroup(tGroup, "trans")) return BLEND_TYPE_NORMAL;
+
+	BlendType ret;
+	char* text = getAllocatedMugenDefStringVariableAsGroup(tGroup, "trans");
+	turnStringLowercase(text);
+
+	if (!strcmp("add", text) || !strcmp("addalpha", text)) {
+		ret = BLEND_TYPE_ADDITION;
+	}
+	else if (!strcmp("sub", text)) {
+		ret = BLEND_TYPE_SUBTRACTION;
+	}
+	else if (!strcmp("none", text)) {
+		ret = BLEND_TYPE_NORMAL;
+	}
+	else {
+		ret = BLEND_TYPE_NORMAL;
+		logWarningFormat("Unknown transparency type %s. Default to normal.", text);
+	}
+
+	freeMemory(text);
+
+	return ret;
+}
+
+BlendType handleBackgroundMask(MugenDefScriptGroup* tGroup, BlendType tBlendType) {
+	const auto mask = getMugenDefIntegerOrDefaultAsGroup(tGroup, "mask", (tBlendType == BLEND_TYPE_NORMAL) ? 0 : 1);
+	return (mask || tBlendType != BLEND_TYPE_NORMAL) ? tBlendType : BLEND_TYPE_ONE;
+}
+
+Vector3D getBackgroundAlphaVector(MugenDefScriptGroup* tGroup)
+{
+	const auto text = getSTLMugenDefStringOrDefaultAsGroup(tGroup, "alpha", "256 , 256");
+
+	const auto commaPos = text.find(',');
+	std::string t1 = text.substr(0, commaPos);
+	std::string t2;
+	if (commaPos != text.npos) {
+		t2 = text.substr(commaPos + 1, text.npos);
+	}
+
+	Vector3D ret;
+	if (t1 == "") ret.x = 1.0;
+	else ret.x = atof(t1.c_str()) / 256.0;
+	if (t2 == "") ret.y = 1.0;
+	else ret.y = atof(t2.c_str()) / 256.0;
+	ret.z = 0;
+	return ret;
 }

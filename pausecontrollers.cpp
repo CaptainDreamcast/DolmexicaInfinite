@@ -11,6 +11,8 @@
 #include "fightui.h"
 #include "mugenstagehandler.h"
 #include "stage.h"
+#include "mugenexplod.h"
+#include "config.h"
 
 #define SUPERPAUSE_DARKENING_Z 30
 #define SUPERPAUSE_Z 52
@@ -21,6 +23,7 @@ typedef struct {
 
 	int mNow;
 	int mDuration;
+	int mWasFinishedThisFrame;
 
 	int mBufferTimeForCommandsDuringPauseEnd;
 	int mMoveTime;
@@ -45,6 +48,7 @@ typedef struct {
 
 	int mNow;
 	int mDuration;
+	int mWasFinishedThisFrame;
 
 	int mBufferTimeForCommandsDuringPauseEnd;
 	int mMoveTime;
@@ -58,29 +62,35 @@ static struct {
 
 static void loadPauseControllerHandler(void*) {
 	gPauseControllerData.mSuperPause.mIsActive = 0;
+	gPauseControllerData.mSuperPause.mWasFinishedThisFrame = 0;
 	gPauseControllerData.mPause.mIsActive = 0;
+	gPauseControllerData.mPause.mWasFinishedThisFrame = 0;
 }
 
 static void setSuperPauseInactive();
 static void setPauseInactive();
 
 static void updateSuperPause() {
+	gPauseControllerData.mSuperPause.mWasFinishedThisFrame = 0;
 	if (!gPauseControllerData.mSuperPause.mIsActive) return;
 
 	if (gPauseControllerData.mSuperPause.mNow >= gPauseControllerData.mSuperPause.mDuration)
 	{
 		setSuperPauseInactive();
+		gPauseControllerData.mSuperPause.mWasFinishedThisFrame = 1;
 	}
 	gPauseControllerData.mSuperPause.mNow++;
 }
 
 static void updatePause() {
+	gPauseControllerData.mPause.mWasFinishedThisFrame = 0;
 	if (!gPauseControllerData.mPause.mIsActive) return;
 	if (gPauseControllerData.mSuperPause.mIsActive) return;
 
 	if (gPauseControllerData.mPause.mNow >= gPauseControllerData.mPause.mDuration)
 	{
 		setPauseInactive();
+		gPauseControllerData.mPause.mWasFinishedThisFrame = 1;
 	}
 	gPauseControllerData.mPause.mNow++;
 }
@@ -94,15 +104,18 @@ ActorBlueprint getPauseControllerHandler() {
 	return makeActorBlueprint(loadPauseControllerHandler, NULL, updatePauseControllerHandler);
 }
 
-void setDreamSuperPauseActive(DreamPlayer * tPlayer)
+int setDreamSuperPauseActiveAndReturnIfWorked(DreamPlayer * tPlayer)
 {
-	if (gPauseControllerData.mSuperPause.mIsActive)
+	if (gPauseControllerData.mSuperPause.mIsActive || gPauseControllerData.mSuperPause.mWasFinishedThisFrame)
 	{
 		setSuperPauseInactive();
+		gPauseControllerData.mSuperPause.mWasFinishedThisFrame = 0;
+		return 0;
 	}
 	gPauseControllerData.mSuperPause.mIsActive = 1;
 	gPauseControllerData.mSuperPause.mPlayer = tPlayer;
-	setPlayersSpeed(0);
+	setPlayerTargetsSuperDefenseMultiplier(tPlayer);
+	return 1;
 }
 
 int isDreamSuperPauseActive()
@@ -110,7 +123,19 @@ int isDreamSuperPauseActive()
 	return gPauseControllerData.mSuperPause.mIsActive;
 }
 
+int getDreamSuperPauseTimeSinceStart()
+{
+	return gPauseControllerData.mSuperPause.mNow;
+}
+
+DreamPlayer* getDreamSuperPauseOwner()
+{
+	return gPauseControllerData.mSuperPause.mPlayer;
+}
+
 static void setSuperPauseInactive() {
+	if (!gPauseControllerData.mSuperPause.mIsActive) return;
+
 	if (gPauseControllerData.mSuperPause.mHasAnimation) {
 		removeMugenAnimation(gPauseControllerData.mSuperPause.mMugenAnimationElement);
 	}
@@ -121,19 +146,25 @@ static void setSuperPauseInactive() {
 
 	if (!isDreamAnyPauseActive()) {
 		setPlayersSpeed(1);
+		setExplodsSpeed(1);
 		setDreamMugenStageHandlerSpeed(1);
 	}
 }
 
 void setDreamSuperPauseTime(DreamPlayer* /*tPlayer*/, int tTime)
 {
-	gPauseControllerData.mSuperPause.mNow = 0;
+	gPauseControllerData.mSuperPause.mNow = 1;
 	gPauseControllerData.mSuperPause.mDuration = tTime;
 }
 
 void setDreamSuperPauseBufferTimeForCommandsDuringPauseEnd(DreamPlayer* /*tPlayer*/, int tBufferTime)
 {
 	gPauseControllerData.mSuperPause.mBufferTimeForCommandsDuringPauseEnd = tBufferTime;
+}
+
+int getDreamSuperPauseMoveTime()
+{
+	return gPauseControllerData.mSuperPause.mMoveTime;
 }
 
 void setDreamSuperPauseMoveTime(DreamPlayer* /*tPlayer*/, int tMoveTime)
@@ -158,6 +189,7 @@ void setDreamSuperPauseAnimation(DreamPlayer* tPlayer, int tIsInPlayerFile, int 
 
 	MugenAnimation* animation;
 	MugenSpriteFile* sprites;
+	double baseScale;
 	if (tIsInPlayerFile) {
 		if (!doesPlayerHaveAnimationHimself(tPlayer, tAnimationNumber)) {
 			gPauseControllerData.mSuperPause.mHasAnimation = 0;
@@ -165,16 +197,21 @@ void setDreamSuperPauseAnimation(DreamPlayer* tPlayer, int tIsInPlayerFile, int 
 		}
 		animation = getPlayerAnimation(tPlayer, tAnimationNumber);
 		sprites = getPlayerSprites(tPlayer);
+		baseScale = 1.0; // TODO: player 480p (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/179)
 	}
 	else {
 		animation = getDreamFightEffectAnimation(tAnimationNumber);
 		sprites = getDreamFightEffectSprites();
+		baseScale = (getScreenSize().y / double(getDreamUICoordinateP())) * getDreamUIFightFXScale();
 	}
 
 	gPauseControllerData.mSuperPause.mHasAnimation = 1;
 	gPauseControllerData.mSuperPause.mMugenAnimationElement = addMugenAnimation(animation, sprites, makePosition(0, 0, 0));
 	setMugenAnimationBasePosition(gPauseControllerData.mSuperPause.mMugenAnimationElement, &gPauseControllerData.mSuperPause.mAnimationReferencePosition);
 	setMugenAnimationCameraPositionReference(gPauseControllerData.mSuperPause.mMugenAnimationElement, getDreamMugenStageHandlerCameraPositionReference());
+	setMugenAnimationBaseDrawScale(gPauseControllerData.mSuperPause.mMugenAnimationElement, baseScale);
+	setMugenAnimationCameraEffectPositionReference(gPauseControllerData.mSuperPause.mMugenAnimationElement, getDreamMugenStageHandlerCameraEffectPositionReference());
+	setMugenAnimationCameraScaleReference(gPauseControllerData.mSuperPause.mMugenAnimationElement, getDreamMugenStageHandlerCameraZoomReference());
 }
 
 void setDreamSuperPauseSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tSoundGroup, int tSoundItem)
@@ -187,7 +224,7 @@ void setDreamSuperPauseSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tSou
 		soundFile = getDreamCommonSounds();
 	}
 
-	tryPlayMugenSound(soundFile, tSoundGroup, tSoundItem);
+	tryPlayMugenSoundAdvanced(soundFile, tSoundGroup, tSoundItem, getPlayerMidiVolumeForPrism(tPlayer));
 }
 
 void setDreamSuperPausePosition(DreamPlayer* tPlayer, double tX, double tY)
@@ -214,7 +251,12 @@ void setDreamSuperPauseDarkening(DreamPlayer* /*tPlayer*/, int tIsDarkening)
 
 void setDreamSuperPausePlayer2DefenseMultiplier(DreamPlayer* /*tPlayer*/, double tMultiplier)
 {
-	gPauseControllerData.mSuperPause.mPlayer2DefenseMultiplier = tMultiplier;
+	if (!tMultiplier) {
+		gPauseControllerData.mSuperPause.mPlayer2DefenseMultiplier = getDreamSuperTargetDefenseMultiplier(); // TODO: use (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/859)
+	}
+	else {
+		gPauseControllerData.mSuperPause.mPlayer2DefenseMultiplier = tMultiplier;
+	}
 }
 
 void setDreamSuperPausePowerToAdd(DreamPlayer* tPlayer, int tPowerToAdd)
@@ -229,7 +271,7 @@ void setDreamSuperPausePlayerUnhittability(DreamPlayer* /*tPlayer*/, int tIsUnhi
 
 void setDreamPauseTime(DreamPlayer* /*tPlayer*/, int tTime)
 {
-	gPauseControllerData.mPause.mNow = 0;
+	gPauseControllerData.mPause.mNow = 1;
 	gPauseControllerData.mPause.mDuration = tTime;
 }
 
@@ -237,6 +279,11 @@ void setDreamPauseBufferTimeForCommandsDuringPauseEnd(DreamPlayer * /*tPlayer*/,
 {
 	gPauseControllerData.mPause.mBufferTimeForCommandsDuringPauseEnd = tBufferTime;
 
+}
+
+int getDreamPauseMoveTime()
+{
+	return gPauseControllerData.mPause.mMoveTime;
 }
 
 void setDreamPauseMoveTime(DreamPlayer* /*tPlayer*/, int tMoveTime)
@@ -252,22 +299,27 @@ void setDreamPauseIsPausingBG(DreamPlayer* /*tPlayer*/, int tIsPausingBG)
 	gPauseControllerData.mPause.mIsPausingBG = tIsPausingBG;
 }
 
-void setDreamPauseActive(DreamPlayer * tPlayer)
+int setDreamPauseActiveAndReturnIfWorked(DreamPlayer * tPlayer)
 {
-	if (gPauseControllerData.mPause.mIsActive)
+	if (gPauseControllerData.mPause.mIsActive || gPauseControllerData.mPause.mWasFinishedThisFrame)
 	{
 		setPauseInactive();
+		gPauseControllerData.mPause.mWasFinishedThisFrame = 0;
+		return 0;
 	}
 	gPauseControllerData.mPause.mIsActive = 1;
 	gPauseControllerData.mPause.mPlayer = tPlayer;
-	setPlayersSpeed(0);
+	return 1;
 }
 
 static void setPauseInactive() {
+	if (!gPauseControllerData.mPause.mIsActive) return;
+
 	gPauseControllerData.mPause.mIsActive = 0;
 
 	if (!isDreamAnyPauseActive()) {
 		setPlayersSpeed(1);
+		setExplodsSpeed(1);
 		setDreamMugenStageHandlerSpeed(1);
 	}
 }
@@ -275,6 +327,16 @@ static void setPauseInactive() {
 int isDreamPauseActive()
 {
 	return gPauseControllerData.mPause.mIsActive;
+}
+
+int getDreamPauseTimeSinceStart()
+{
+	return gPauseControllerData.mPause.mNow;
+}
+
+DreamPlayer* getDreamPauseOwner()
+{
+	return gPauseControllerData.mPause.mPlayer;
 }
 
 int isDreamAnyPauseActive()

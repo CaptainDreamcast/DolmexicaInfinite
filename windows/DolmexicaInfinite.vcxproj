@@ -84,7 +84,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -92,6 +92,7 @@
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;winmm.lib;version.lib;imm32.lib;libjpeg.lib;libpng16.lib;zlib.lib;libwebp.lib;OpenGL32.lib;glew32s.lib;freetype.lib;libzstd_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -107,6 +108,7 @@
     <ResourceCompile Include="DolmexicaInfinite.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\afterimage.cpp" />
     <ClCompile Include="..\ai.cpp" />
     <ClCompile Include="..\arcademode.cpp" />
     <ClCompile Include="..\boxcursorhandler.cpp" />
@@ -114,7 +116,6 @@
     <ClCompile Include="..\collision.cpp" />
     <ClCompile Include="..\config.cpp" />
     <ClCompile Include="..\creditsmode.cpp" />
-    <ClCompile Include="..\debugscreen.cpp" />
     <ClCompile Include="..\dolmexicadebug.cpp" />
     <ClCompile Include="..\dolmexicastoryscreen.cpp" />
     <ClCompile Include="..\exhibitmode.cpp" />
@@ -157,11 +158,14 @@
     <ClCompile Include="..\survivalmode.cpp" />
     <ClCompile Include="..\titlescreen.cpp" />
     <ClCompile Include="..\trainingmode.cpp" />
+    <ClCompile Include="..\trainingmodemenu.cpp" />
     <ClCompile Include="..\versusmode.cpp" />
     <ClCompile Include="..\versusscreen.cpp" />
+    <ClCompile Include="..\victoryquotescreen.cpp" />
     <ClCompile Include="..\watchmode.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\afterimage.h" />
     <ClInclude Include="..\ai.h" />
     <ClInclude Include="..\arcademode.h" />
     <ClInclude Include="..\boxcursorhandler.h" />
@@ -169,7 +173,6 @@
     <ClInclude Include="..\collision.h" />
     <ClInclude Include="..\config.h" />
     <ClInclude Include="..\creditsmode.h" />
-    <ClInclude Include="..\debugscreen.h" />
     <ClInclude Include="..\dolmexicadebug.h" />
     <ClInclude Include="..\dolmexicastoryscreen.h" />
     <ClInclude Include="..\exhibitmode.h" />
@@ -211,8 +214,10 @@
     <ClInclude Include="..\survivalmode.h" />
     <ClInclude Include="..\titlescreen.h" />
     <ClInclude Include="..\trainingmode.h" />
+    <ClInclude Include="..\trainingmodemenu.h" />
     <ClInclude Include="..\versusmode.h" />
     <ClInclude Include="..\versusscreen.h" />
+    <ClInclude Include="..\victoryquotescreen.h" />
     <ClInclude Include="..\watchmode.h" />
   </ItemGroup>
   <ItemGroup>

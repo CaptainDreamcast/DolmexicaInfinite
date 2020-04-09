@@ -12,6 +12,7 @@
 #include "fightui.h"
 #include "dolmexicadebug.h"
 #include "config.h"
+#include "trainingmodemenu.h"
 
 #define DEBUG_Z 79
 
@@ -70,7 +71,7 @@ static void loadFightDebug(void* tData) {
 static void unloadFightDebug(void* tData) {
 	(void)tData;
 	if (!isDebugOverridingTimeDilatation()) {
-		setWrapperTimeDilatation(1);
+		setWrapperTimeDilatation(getConfigGameSpeedTimeFactor());
 	}
 }
 
@@ -163,8 +164,11 @@ static void switchDebugTimeDilatation() {
 	setSpeedLevel();
 }
 
-static void switchDebugTimeOff() {
+void switchDebugTimeOff() {
 	gFightDebugData.mIsTimeFrozen ^= 1;
+	if (getGameMode() == GAME_MODE_TRAINING) {
+		setTrainingModeMenuVisibility(gFightDebugData.mIsTimeFrozen);
+	}
 	setSpeedLevel();
 }
 
@@ -216,18 +220,21 @@ static void saveDolmexicaScreenshot() {
 }
 
 static void updateDebugInputWindows() {
-	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_D_PRISM)) {
+	if (isMugenDebugAllowingDebugModeSwitch() && hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_D_PRISM)) {
 		switchFightDebugTextActivity();
-	} 
-	else if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_D_PRISM)) {
+	}
+
+	if (!gFightDebugData.mPlayer.mActive && !isMugenDebugAllowingDebugKeysOutsideDebugMode()) {
+		return;
+	}
+
+	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_D_PRISM)) {
 		switchDebugTextColor();
 	}
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_C_PRISM)) {
 		switchFightCollisionDebugActivity();
-	} 
-	
-
+	}
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_F1_PRISM)) {
 		setPlayerLife(getRootPlayer(0), getRootPlayer(0), 0);
@@ -236,7 +243,6 @@ static void updateDebugInputWindows() {
 		setPlayerLife(getRootPlayer(1), getRootPlayer(1), 0);
 	}
 
-
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_CTRL_LEFT_PRISM, KEYBOARD_F2_PRISM)) {
 		setPlayerLife(getRootPlayer(0), getRootPlayer(0), 1);
 	}
@@ -244,7 +250,6 @@ static void updateDebugInputWindows() {
 		setPlayerLife(getRootPlayer(0), getRootPlayer(0), 1);
 		setPlayerLife(getRootPlayer(1), getRootPlayer(1), 1);
 	}
-
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_F2_PRISM)) {
 		setPlayerLife(getRootPlayer(0), getRootPlayer(0), 1);
@@ -283,9 +288,13 @@ static void updateDebugInputWindows() {
 static void updateDebugInputDreamcast() {
 	int wasStartPressed = hasPressedStartFlank();
 
-	if (wasStartPressed && hasPressedR()) {
+	if (isMugenDebugAllowingDebugModeSwitch() && wasStartPressed && hasPressedR()) {
 		switchFightDebugTextActivity();
 	} 
+
+	if (!gFightDebugData.mPlayer.mActive && !isMugenDebugAllowingDebugKeysOutsideDebugMode()) {
+		return;
+	}
 
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_D_PRISM)) {
 		switchDebugTextColor();
@@ -340,8 +349,6 @@ static void updateDebugInputDreamcast() {
 	if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_PAUSE_PRISM)) {
 		switchDebugTimeOff();
 	}
-
-
 }
 
 static void updateDebugInput() {

@@ -42,7 +42,15 @@ void initPlayerHitData(DreamPlayer* tPlayer)
 	tPlayer->mActiveHitData.mPlayer = tPlayer;
 
 	int i;
-	for (i = 0; i < 8; i++) tPlayer->mHitOverrides.mHitOverrides[i].mIsActive = 0;
+	for (i = 0; i < 8; i++) {
+		tPlayer->mHitOverrides.mHitOverrides[i].mAttackClassTypePairs.clear();
+		tPlayer->mHitOverrides.mHitOverrides[i].mIsActive = 0;
+	}
+}
+
+void clearPlayerHitData(DreamPlayer* tPlayer)
+{
+	initPlayerHitData(tPlayer);
 }
 
 void copyHitDataToActive(DreamPlayer* tPlayer, void * tHitData)
@@ -81,8 +89,6 @@ void setHitDataActive(DreamPlayer* tPlayer)
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mIsActive = 1;
-
-	e->mReversalDef.mIsActive = 0;
 }
 
 void setReceivedHitDataInactive(void * tHitData)
@@ -96,6 +102,7 @@ void setHitDataInactive(DreamPlayer* tPlayer)
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mIsActive = 0;
+	e->mReversalDef.mIsActive = 0;
 }
 
 void setActiveHitDataInactive(DreamPlayer * tPlayer)
@@ -1564,68 +1571,178 @@ void setHitDataIsFacingRight(DreamPlayer * tPlayer, int tIsFacingRight)
 	e->mIsFacingRight = tIsFacingRight;
 }
 
-void resetHitDataReversalDef(DreamPlayer * tPlayer)
+int isHitDataReversalDefActive(DreamPlayer * tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	return e->mReversalDef.mIsActive;
+}
+
+void setHitDataReversalDefActive(DreamPlayer* tPlayer)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	e->mReversalDef.mReversalAttribute.mFlag2.clear();
+	e->mReversalDef.mReversalAttribute.mIsActive = 1;
+	e->mReversalDef.mReversalAttribute.mIsHitBy = 1;
 	e->mReversalDef.mIsActive = 1;
-	e->mReversalDef.mFlag2Amount = 0;
 }
 
-void setHitDataReversalDefFlag1(DreamPlayer * tPlayer, char * tFlag)
+DreamHitDefAttributeSlot * getHitDataReversalDefReversalAttribute(DreamPlayer * tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
-	strcpy(e->mReversalDef.mFlag1, tFlag);
+	return &e->mReversalDef.mReversalAttribute;
 }
 
-static void copyOverCleanFlag2(char* tDst, char* tSrc) {
-	int n = strlen(tSrc);
-
-	int o = 0;
-	int i;
-	for (i = 0; i < n; i++) {
-		if (tSrc[i] == ' ') continue;
-		tDst[o++] = tSrc[i];
-	}
-	tDst[o] = '\0';
+void setHitDataReversalDefFlag1(DreamPlayer * tPlayer, const char* tFlag)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	e->mReversalDef.mReversalAttribute.mFlag1 = copyOverCleanHitDefAttributeFlag(tFlag);
 }
 
-void addHitDataReversalDefFlag2(DreamPlayer * tPlayer, char * tFlag)
+void addHitDataReversalDefFlag2(DreamPlayer * tPlayer, const char* tFlag)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 
-	char* nFlag = (char*)allocMemory(strlen(tFlag) + 5);
-	copyOverCleanFlag2(nFlag, tFlag);
-	if (strlen(nFlag) != 2) {
-		logWarningFormat("Unparseable reversal definition flag: %s. Ignore.", nFlag);
-		freeMemory(nFlag);
+	std::string nFlag = copyOverCleanHitDefAttributeFlag(tFlag);
+	if (nFlag.size() != 2) {
+		logWarningFormat("Unparseable reversal definition flag: %s. Ignore.", nFlag.c_str());
 		return;
 	}
 	turnStringLowercase(nFlag);
 
-	if (e->mReversalDef.mFlag2Amount >= MAXIMUM_HITSLOT_FLAG_2_AMOUNT) {
-		logWarningFormat("Too many reversal definition flags. Ignoring current flag %s.", nFlag);
-		freeMemory(nFlag);
-		return;
-	}
-
-	strcpy(e->mReversalDef.mFlag2[e->mReversalDef.mFlag2Amount], nFlag);
-	e->mReversalDef.mFlag2Amount++;
-
-	freeMemory(nFlag);
+	e->mReversalDef.mReversalAttribute.mFlag2.push_back(nFlag);
 }
 
-void setPlayerHitOverride(DreamPlayer * tPlayer, DreamMugenStateType tStateType, MugenAttackClass tAttackClass, MugenAttackType tAttackType, int tStateNo, int tSlot, int tDuration, int tDoesForceAir)
+int getReversalDefPlayer1PauseTime(DreamPlayer * tPlayer)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	return e->mReversalDef.mPlayer1PauseTime;
+}
+
+int getReversalDefPlayer2PauseTime(DreamPlayer * tPlayer)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	return e->mReversalDef.mPlayer2PauseTime;
+}
+
+void setReversalDefPauseTime(DreamPlayer * tPlayer, int tPlayer1PauseTime, int tPlayer2PauseTime)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	e->mReversalDef.mPlayer1PauseTime = tPlayer1PauseTime;
+	e->mReversalDef.mPlayer2PauseTime = tPlayer2PauseTime;
+}
+
+int isReversalDefSparkInPlayerFile(DreamPlayer * tPlayer)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	return e->mReversalDef.mIsSparkInPlayerFile;
+}
+
+int getReversalDefSparkNumber(DreamPlayer * tPlayer)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	return e->mReversalDef.mSparkNumber;
+}
+
+void setReversalDefSparkNumber(DreamPlayer * tPlayer, int tIsInPlayerFile, int tNumber)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	e->mReversalDef.mIsSparkInPlayerFile = tIsInPlayerFile;
+	e->mReversalDef.mSparkNumber = tNumber;
+}
+
+Vector3DI getReversalDefSparkXY(DreamPlayer * tPlayer)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	return e->mReversalDef.mSparkXY;
+}
+
+void setReversalDefSparkXY(DreamPlayer * tPlayer, int tX, int tY)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	e->mReversalDef.mSparkXY = makeVector3DI(tX, tY, 0);
+}
+
+void getReversalDefHitSound(DreamPlayer * tPlayer, int* oIsInPlayerFile, Vector3DI* oHitSound)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	*oIsInPlayerFile = e->mReversalDef.mIsHitSoundInPlayerFile;
+	*oHitSound = makeVector3DI(e->mReversalDef.mHitSound.mGroup, e->mReversalDef.mHitSound.mItem, 0);
+}
+
+void setReversalDefHitSound(DreamPlayer * tPlayer, int tIsInPlayerFile, int tGroup, int tItem)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	e->mReversalDef.mIsHitSoundInPlayerFile = tIsInPlayerFile;
+	e->mReversalDef.mHitSound.mGroup = tGroup;
+	e->mReversalDef.mHitSound.mItem = tItem;
+}
+
+int hasReversalDefP1StateNo(DreamPlayer * tPlayer)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	return e->mReversalDef.mHasPlayer1StateNumber;
+}
+
+int getReversalDefP1StateNo(DreamPlayer * tPlayer)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	return e->mReversalDef.mPlayer1StateNumber;
+}
+
+void setReversalDefP1StateNo(DreamPlayer * tPlayer, int hasP1StateNo, int p1StateNo)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	e->mReversalDef.mHasPlayer1StateNumber = hasP1StateNo;
+	e->mReversalDef.mPlayer1StateNumber = p1StateNo;
+}
+
+int hasReversalDefP2StateNo(DreamPlayer * tPlayer)
+{
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	return e->mReversalDef.mHasPlayer2StateNumber;
+}
+
+int getReversalDefP2StateNo(DreamPlayer * tPlayer)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	return e->mReversalDef.mPlayer2StateNumber;
+}
+
+void setReversalDefP2StateNo(DreamPlayer * tPlayer, int hasP2StateNo, int p2StateNo)
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mPassiveHitData;
+	e->mReversalDef.mHasPlayer2StateNumber = hasP2StateNo;
+	e->mReversalDef.mPlayer2StateNumber = p2StateNo;
+}
+
+void setPlayerHitOverride(DreamPlayer* tPlayer, DreamMugenStateTypeFlags tStateTypeFlags, const std::vector<std::pair<MugenAttackClassFlags, MugenAttackType>>& tAttackClassTypePairs, int tStateNo, int tSlot, int tDuration, int tDoesForceAir)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitOverrides* overrides = &tPlayer->mHitOverrides;
 
 	HitOverride* e = &overrides->mHitOverrides[tSlot];
-	e->mStateType = tStateType;
-	e->mAttackClass = tAttackClass;
-	e->mAttackType = tAttackType;
+	e->mStateTypeFlags = tStateTypeFlags;
+	e->mAttackClassTypePairs = tAttackClassTypePairs;
 	e->mStateNo = tStateNo;
 	e->mSlot = tSlot;
 	e->mDoesForceAir = tDoesForceAir;
@@ -1636,6 +1753,13 @@ void setPlayerHitOverride(DreamPlayer * tPlayer, DreamMugenStateType tStateType,
 	e->mIsActive = 1;
 }
 
+static int hasMatchingHitOverrideAttackClassTypePair(const std::vector<std::pair<MugenAttackClassFlags, MugenAttackType>>& tAttackClassTypePairs, MugenAttackClass tAttackClass, MugenAttackType tAttackType) {
+	for (const auto& attackClassTypePair : tAttackClassTypePairs) {
+		if (hasPrismFlag(attackClassTypePair.first, convertMugenAttackClassToFlag(tAttackClass)) && attackClassTypePair.second == tAttackType) return 1;
+	}
+	return 0;
+}
+
 int overrideEqualsPlayerHitDef(HitOverride* e, DreamPlayer* tPlayer) {
 	if (!e->mIsActive) return 0;
 
@@ -1643,9 +1767,8 @@ int overrideEqualsPlayerHitDef(HitOverride* e, DreamPlayer* tPlayer) {
 	MugenAttackClass attackClass = getHitDataAttackClass(tPlayer);
 	MugenAttackType attackType = getHitDataAttackType(tPlayer);
 
-	if (e->mStateType != stateType) return 0;
-	if (e->mAttackClass != attackClass) return 0;
-	if (e->mAttackType != attackType) return 0;
+	if (!hasPrismFlag(e->mStateTypeFlags, convertDreamMugenStateTypeToFlag(stateType))) return 0;
+	if (!hasMatchingHitOverrideAttackClassTypePair(e->mAttackClassTypePairs, attackClass, attackType)) return 0;
 
 	return 1;
 }
@@ -1691,4 +1814,29 @@ void getMatchingHitOverrideStateNoAndForceAir(DreamPlayer * tPlayer, DreamPlayer
 	*oDoesForceAir = 0;
 }
 
+std::string copyOverCleanHitDefAttributeFlag(const char* tSrc) {
+	int n = strlen(tSrc);
 
+	std::string ret;
+	int i;
+	for (i = 0; i < n; i++) {
+		if (tSrc[i] == ' ') continue;
+		ret.push_back(tSrc[i]);
+	}
+	return ret;
+}
+
+MugenAttackClassFlags convertMugenAttackClassToFlag(MugenAttackClass tAttackClass)
+{
+	switch (tAttackClass) {
+	case MUGEN_ATTACK_CLASS_NORMAL:
+		return MUGEN_ATTACK_CLASS_NORMAL_FLAG;
+	case MUGEN_ATTACK_CLASS_SPECIAL:
+		return MUGEN_ATTACK_CLASS_SPECIAL_FLAG;
+	case MUGEN_ATTACK_CLASS_HYPER:
+		return MUGEN_ATTACK_CLASS_HYPER_FLAG;
+	default:
+		logWarningFormat("Unrecognized attack class %d. Defaulting to normal attack flag.", int(tAttackClass));
+		return MUGEN_ATTACK_CLASS_NORMAL_FLAG;
+	}
+}

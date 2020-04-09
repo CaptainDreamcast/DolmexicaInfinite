@@ -71,9 +71,8 @@ static void loadScriptAndSprites() {
 static int isSceneGroup(MugenDefScriptGroup* tGroup) {
 	char firstW[100];
 	int items = sscanf(tGroup->mName.data(), "%s", firstW);
-	if (items != 1) return 0;
 
-	return !strcmp("Scene", firstW);
+	return items == 1 && !strcmp("Scene", firstW);
 }
 
 static void loadSingleLayer(MugenDefScriptGroup* tGroup, Scene* tScene, int i) {

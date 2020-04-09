@@ -99,6 +99,7 @@ enum DreamMugenStateControllerType : uint8_t{
 	MUGEN_STATE_CONTROLLER_TYPE_DROP_TARGET,
 	MUGEN_STATE_CONTROLLER_TYPE_GLOBAL_VAR_SET,
 	MUGEN_STATE_CONTROLLER_TYPE_GLOBAL_VAR_ADD,
+	MUGEN_STATE_CONTROLLER_TYPE_ZOOM,
 };
 
 enum DreamMugenStoryStateControllerType : uint8_t {
@@ -156,7 +157,6 @@ enum DreamMugenStoryStateControllerType : uint8_t {
 	MUGEN_STORY_STATE_CONTROLLER_TYPE_CAMERA_ZOOM,
 };
 
-
 typedef struct {
 	DreamMugenAssignment* mAssignment;
 
@@ -183,7 +183,7 @@ typedef struct {
 	int mSparkNo;
 	int mIsGuardSparkNoInPlayerFile;
 	int mGuardSparkNo;
-	int mKOEcho;
+	int mKOEcho; // unused due to technical limitations
 	int mVolume;
 
 	int mIntPersistIndex;
@@ -264,7 +264,7 @@ typedef struct {
 } DreamMugenConstantsMovementData;
 
 typedef struct {
-	char mVictory[101][1024];
+	int mVictoryQuoteIndex; // -1 for random
 } DreamMugenConstantsQuoteData;
 
 typedef enum {
@@ -273,8 +273,15 @@ typedef enum {
 	MUGEN_STATE_TYPE_CROUCHING,
 	MUGEN_STATE_TYPE_AIR,
 	MUGEN_STATE_TYPE_LYING,
-
 } DreamMugenStateType;
+
+enum DreamMugenStateTypeFlags : uint32_t {
+	MUGEN_STATE_TYPE_NO_FLAG = 0,
+	MUGEN_STATE_TYPE_STANDING_FLAG = (1 << 0),
+	MUGEN_STATE_TYPE_CROUCHING_FLAG = (1 << 1),
+	MUGEN_STATE_TYPE_AIR_FLAG = (1 << 2),
+	MUGEN_STATE_TYPE_ALL_FLAG = MUGEN_STATE_TYPE_STANDING_FLAG | MUGEN_STATE_TYPE_CROUCHING_FLAG | MUGEN_STATE_TYPE_AIR_FLAG,
+};
 
 typedef enum {
 	MUGEN_STATE_MOVE_TYPE_IDLE,
@@ -292,44 +299,40 @@ typedef enum {
 
 } DreamMugenStatePhysics;
 
+enum DreamMugenStatePropertyFlags : uint16_t {
+	MUGEN_STATE_PROPERTY_OVERWRITABLE =					(1 << 0),
+	MUGEN_STATE_PROPERTY_CHANGING_ANIMATION =			(1 << 1),
+	MUGEN_STATE_PROPERTY_SETTING_VELOCITY =				(1 << 2),
+	MUGEN_STATE_PROPERTY_CHANGING_CONTROL =				(1 << 3),
+	MUGEN_STATE_PROPERTY_CHANGING_SPRITE_PRIORITY =		(1 << 4),
+	MUGEN_STATE_PROPERTY_ADDING_POWER =					(1 << 5),
+	MUGEN_STATE_PROPERTY_JUGGLE_REQUIREMENT =			(1 << 6),
+	MUGEN_STATE_PROPERTY_HIT_DEFINITION_PERSISTENCE =	(1 << 7),
+	MUGEN_STATE_PROPERTY_MOVE_HIT_INFO_PERSISTENCE =	(1 << 8),
+	MUGEN_STATE_PROPERTY_HIT_COUNT_PERSISTENCE =		(1 << 9),
+	MUGEN_STATE_PROPERTY_FACE_PLAYER_2_INFO =			(1 << 10),
+	MUGEN_STATE_PROPERTY_PRIORITY =						(1 << 11),
+};
+
 typedef struct {
 	Vector mControllers;
 	int mID;
+
 	DreamMugenStateType mType;
 	DreamMugenStateMoveType mMoveType;
 	DreamMugenStatePhysics mPhysics;
-
-	int mIsChangingAnimation;
+	
+	uint32_t mFlags;
 	DreamMugenAssignment* mAnimation;
-
-	int mIsSettingVelocity;
 	DreamMugenAssignment* mVelocity;
-
-	int mIsChangingControl;
 	DreamMugenAssignment* mControl;
-
-	int mIsChangingSpritePriority;
 	DreamMugenAssignment* mSpritePriority;
-
-	int mIsAddingPower;
 	DreamMugenAssignment* mPowerAdd;
-
-	int mDoesRequireJuggle;
 	DreamMugenAssignment* mJuggleRequired;
-
-	int mDoesHaveHitDefinitionsPersist;
 	DreamMugenAssignment* mDoHitDefinitionsPersist;
-
-	int mDoesHaveMoveHitInfosPersist;
 	DreamMugenAssignment* mDoMoveHitInfosPersist;
-
-	int mDoesHaveHitCountPersist;
 	DreamMugenAssignment* mDoesHitCountPersist;
-
-	int mHasFacePlayer2Info;
 	DreamMugenAssignment* mDoesFacePlayer2;
-
-	int mHasPriority;
 	DreamMugenAssignment* mPriority;
 } DreamMugenState;
 
@@ -342,11 +345,14 @@ typedef struct {
 	DreamMugenConstantsSizeData mSizeData;
 	DreamMugenConstantsVelocityData mVelocityData;
 	DreamMugenConstantsMovementData mMovementData;
+	DreamMugenConstantsQuoteData mQuoteData;
 
 	DreamMugenStates mStates;
 } DreamMugenConstants;
 
 DreamMugenConstants loadDreamMugenConstantsFile(char* tPath);
 void unloadDreamMugenConstantsFile(DreamMugenConstants* tConstants);
-void loadDreamMugenStateDefinitionsFromFile(DreamMugenStates* tStates, char* tPath);
+void loadDreamMugenStateDefinitionsFromFile(DreamMugenStates* tStates, char* tPath, int tIsOverwritable = 0);
 DreamMugenStates createEmptyMugenStates();
+
+DreamMugenStateTypeFlags convertDreamMugenStateTypeToFlag(DreamMugenStateType tType);

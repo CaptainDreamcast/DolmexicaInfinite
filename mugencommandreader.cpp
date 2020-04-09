@@ -24,10 +24,9 @@ static int isCommand(char* tLowercaseName) {
 
 static int isStateDef(char* tLowercaseName) {
 	char name[100];
-	sscanf(tLowercaseName, "%s", name);
-	
+	int items = sscanf(tLowercaseName, "%s", name);
 
-	return !strcmp("statedef", name);
+	return items == 1 && !strcmp("statedef", name);
 }
 
 static int isRemap(char* tLowercaseName) {

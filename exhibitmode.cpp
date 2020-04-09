@@ -9,7 +9,7 @@
 #include "playerdefinition.h"
 #include "fightui.h"
 #include "fightresultdisplay.h"
-
+#include "config.h"
 
 static struct {
 	int mCurrentCycle;
@@ -49,7 +49,7 @@ static void loadExhibitHeader(MugenDefScript* tScript) {
 
 static void loadRandomCharacters() {
 	MugenDefScript script;
-	loadMugenDefScript(&script, "assets/data/select.def");
+	loadMugenDefScript(&script, getDolmexicaAssetFolder() + "data/select.def");
 	setCharacterRandom(&script, 0);
 	setCharacterRandom(&script, 1);
 	setStageRandom(&script);
@@ -58,7 +58,7 @@ static void loadRandomCharacters() {
 void startExhibitMode()
 {
 	char scriptPath[1000];
-	strcpy(scriptPath, "assets/data/system.def");
+	strcpy(scriptPath, (getDolmexicaAssetFolder() + getMotifPath()).c_str());
 
 	MugenDefScript script; 
 	loadMugenDefScript(&script, scriptPath);
@@ -67,6 +67,7 @@ void startExhibitMode()
 
 	loadRandomCharacters();
 	if (gExhibitModeData.mIsVersusEnabled) {
+		setVersusScreenNoMatchNumber();
 		setVersusScreenFinishedCB(versusScreenFinishedCB);
 		setNewScreen(getVersusScreen());
 	}

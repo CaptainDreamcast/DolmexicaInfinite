@@ -11,6 +11,7 @@
 #include <prism/stlutil.h>
 #include <prism/sound.h>
 #include <prism/debug.h>
+#include <prism/system.h>
 
 #include "mugenassignmentevaluator.h"
 #include "mugenstatecontrollers.h"
@@ -23,6 +24,7 @@
 #include "mugencommandhandler.h"
 #include "mugensound.h"
 #include "dolmexicadebug.h"
+#include "config.h"
 
 using namespace std;
 
@@ -72,7 +74,7 @@ static void loadStoryFilesFromScript(MugenDefScript* tScript) {
 	}
 
 	getMugenDefStringOrDefault(path, tScript, "Info", "stage", "");
-	sprintf(fullPath, "assets/%s", path);
+	sprintf(fullPath, "%s%s", getDolmexicaAssetFolder().c_str(), path);
 	const auto musicPath = getSTLMugenDefStringOrDefault(tScript, "Info", "bgm", "");
 	setDreamStageMugenDefinition(fullPath, musicPath.c_str());
 	gDolmexicaStoryScreenData.mHasStage = isFile(fullPath);
@@ -326,6 +328,7 @@ static void setDolmexicaStoryAnimationPositionYInternal(StoryAnimation& e, doubl
 
 
 static void setDolmexicaStoryAnimationShadowInternal(StoryAnimation& e, double tBasePositionY, MugenSpriteFile* tSprites, MugenAnimations* tAnimations) {
+	if (!isDrawingShadowsConfig()) return;
 	e.mHasShadow = 1;
 	e.mShadowBasePositionY = tBasePositionY;
 	Position pos = getMugenAnimationPosition(e.mAnimationElement);
@@ -333,8 +336,12 @@ static void setDolmexicaStoryAnimationShadowInternal(StoryAnimation& e, double t
 	e.mShadowAnimationElement = addMugenAnimation(getMugenAnimation(tAnimations, getMugenAnimationAnimationNumber(e.mAnimationElement)), tSprites, pos);
 	setMugenAnimationDrawScale(e.mShadowAnimationElement, makePosition(1, -getDreamStageShadowScaleY(), 1));
 	Vector3D color = getDreamStageShadowColor();
-	(void)color; // TODO: proper shadow color (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/383)
-	setMugenAnimationColor(e.mShadowAnimationElement, 0, 0, 0); // TODO: proper shadow color (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/383)
+	if (isOnDreamcast()) {
+		setMugenAnimationColor(e.mShadowAnimationElement, 0, 0, 0);
+	}
+	else {
+		setMugenAnimationColorSolid(e.mShadowAnimationElement, color.x, color.y, color.z);
+	}
 	setMugenAnimationTransparency(e.mShadowAnimationElement, getDreamStageShadowTransparency());
 	setMugenAnimationFaceDirection(e.mShadowAnimationElement, getMugenAnimationIsFacingRight(e.mShadowAnimationElement));
 
@@ -492,9 +499,10 @@ void setDolmexicaStoryAnimationIsFacingRight(StoryInstance* tInstance, int tID, 
 
 static void setDolmexicaStoryAnimationAngleInternal(StoryAnimation& e, double tAngle)
 {
-	setMugenAnimationDrawAngle(e.mAnimationElement, tAngle);
+	const auto newAngle = degreesToRadians(tAngle);
+	setMugenAnimationDrawAngle(e.mAnimationElement, newAngle);
 	if (e.mHasShadow) {
-		setMugenAnimationDrawAngle(e.mShadowAnimationElement, tAngle);
+		setMugenAnimationDrawAngle(e.mShadowAnimationElement, newAngle);
 	}
 }
 
@@ -506,7 +514,7 @@ void setDolmexicaStoryAnimationAngle(StoryInstance * tInstance, int tID, double 
 
 static void addDolmexicaStoryAnimationAngleInternal(StoryAnimation& e, double tAngle)
 {
-	double newAngle = getMugenAnimationDrawAngle(e.mAnimationElement) + tAngle;
+	const auto newAngle = degreesToRadians(radiansToDegrees(getMugenAnimationDrawAngle(e.mAnimationElement)) + tAngle);
 	setMugenAnimationDrawAngle(e.mAnimationElement, newAngle);
 	if (e.mHasShadow) {
 		setMugenAnimationDrawAngle(e.mShadowAnimationElement, newAngle);
@@ -919,6 +927,11 @@ void endDolmexicaStoryboard(StoryInstance* /*tInstance*/, int tNextStoryState)
 int getDolmexicaStoryTimeInState(StoryInstance* tInstance)
 {
 	return getDreamRegisteredStateTimeInState(tInstance->mStateMachineID);
+}
+
+int getDolmexicaStoryStateNumber(StoryInstance* tInstance)
+{
+	return getDreamRegisteredStateState(tInstance->mStateMachineID);
 }
 
 static int getDolmexicaStoryAnimationTimeLeftInternal(StoryAnimation& e)

@@ -3,14 +3,29 @@
 #include <string>
 
 #include <prism/actorhandler.h>
+#include <prism/geometry.h>
 
 void loadMugenConfig();
+void loadMugenSystemFonts();
+void loadMugenFightFonts();
 
 std::string getGameTitle();
+const std::string& getDolmexicaAssetFolder();
+
+const std::string& getMotifPath();
+
 double getDreamDefaultAttackDamageDoneToPowerMultiplier();
 double getDreamDefaultAttackDamageReceivedToPowerMultiplier();
+double getDreamSuperTargetDefenseMultiplier();
 
 int isMugenDebugActive();
+int isMugenDebugAllowingDebugModeSwitch();
+int isMugenDebugAllowingDebugKeysOutsideDebugMode();
+const std::string& getMugenConfigStartStage();
+
+int isUsingStaticAssignments();
+double getConfigGameSpeedTimeFactor();
+int isDrawingShadowsConfig();
 
 void setDefaultOptionVariables();
 int getDifficulty();
@@ -24,10 +39,21 @@ int getGlobalTimerDuration();
 void setGlobalTimerDuration(int tDuration);
 int getGlobalGameSpeed();
 void setGlobalGameSpeed(int tGameSpeed);
+double parseGameWavVolumeToPrism(int tWavVolume);
 int getGameWavVolume();
-void setGameWavVolume(int tWavVolume);
+int getUnscaledGameWavVolume();
+void setUnscaledGameWavVolume(int tWavVolume);
+double parseGameMidiVolumeToPrism(int tMidiVolume);
 int getGameMidiVolume();
-void setGameMidiVolume(int tMidiVolume);
+int getUnscaledGameMidiVolume();
+void setUnscaledGameMidiVolume(int tMidiVolume);
+int getSoundAreStereoEffectsActive();
+int getArcadeAIRandomColor();
+Vector3DI getArcadeAIRampStart();
+Vector3DI getArcadeAIRampEnd();
+Vector3DI getSurvivalAIRampStart();
+Vector3DI getSurvivalAIRampEnd();
+int calculateAIRampDifficulty(int tCurrentFightZeroIndexed, const Vector3DI& tAIRampStart, const Vector3DI& tAIRampEnd);
 
 void setGlobalVariable(int tIndex, int tValue);
 void addGlobalVariable(int tIndex, int tValue);

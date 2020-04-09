@@ -10,6 +10,7 @@
 
 #include "osuhandler.h"
 #include "gamelogic.h"
+#include "config.h"
 
 using namespace std;
 
@@ -71,7 +72,7 @@ int isMugenBGMMusicPath(const char* tPath, const char* tStagePath) {
 	if (getGameMode() == GAME_MODE_OSU && !strcmp("osu", fileExtension)) return 1;
 
 	char inFolderPath[1024];
-	sprintf(inFolderPath, "assets/music/%s", tPath);
+	sprintf(inFolderPath, "%smusic/%s", getDolmexicaAssetFolder().c_str(), tPath);
 	if (isFile(inFolderPath)) return 1;
 
 	if (*tStagePath) {
@@ -130,7 +131,7 @@ void playMugenBGMMusicPath(const char* tPath, const char* tStagePath, int tIsLoo
 	}
 
 	char inFolderPath[1024];
-	sprintf(inFolderPath, "assets/music/%s", tPath); 
+	sprintf(inFolderPath, "%smusic/%s", getDolmexicaAssetFolder().c_str(), tPath); 
 	if (isFile(inFolderPath)) {
 		playMugenBGMMusicCompletePath(inFolderPath, tIsLooping);
 		return;

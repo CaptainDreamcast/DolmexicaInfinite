@@ -19,6 +19,7 @@ void setupDreamGameCollisions()
 	for (i = 0; i < 2; i++) {
 		int other = i ^ 1;
 		addCollisionHandlerCheck(gDolmexicaCollisionData.mPlayerAttackCollisionList[i], gDolmexicaCollisionData.mPlayerPassiveCollisionList[other]);
+		addCollisionHandlerCheck(gDolmexicaCollisionData.mPlayerAttackCollisionList[i], gDolmexicaCollisionData.mPlayerAttackCollisionList[other]);
 	}
 }
 

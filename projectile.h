@@ -44,6 +44,3 @@ void setProjectilePauseMoveTime(DreamPlayer* p, int tPauseMoveTime);
 
 void setProjectileHasOwnPalette(DreamPlayer* p, int tValue);
 void setProjectileRemapPalette(DreamPlayer* p, int tGroup, int tItem);
-void setProjectileAfterImageTime(DreamPlayer* p, int tAfterImageTime);
-void setProjectileAfterImageLength(DreamPlayer* p, int tAfterImageLength);
-void setProjectileAfterImage(DreamPlayer* p, int tAfterImage);

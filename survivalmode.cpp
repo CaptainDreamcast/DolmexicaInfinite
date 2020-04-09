@@ -16,6 +16,7 @@
 #include "stage.h"
 #include "fightui.h"
 #include "fightresultdisplay.h"
+#include "config.h"
 
 static struct {
 	int mCurrentEnemy;
@@ -56,7 +57,7 @@ static void updateSurvivalResultIsShowingWinPose() {
 
 static void updateSurvivalEnemy() {
 	MugenDefScript script;
-	loadMugenDefScript(&script, "assets/data/select.def");
+	loadMugenDefScript(&script, getDolmexicaAssetFolder() + "data/select.def");
 	setCharacterRandom(&script, 1);
 }
 
@@ -71,6 +72,7 @@ static void fightFinishedCB() {
 	updateSurvivalResultMessage();
 	updateSurvivalResultIsShowingWinPose();
 	setGameModeSurvival(gSurvivalModeData.mLifePercentage, gSurvivalModeData.mCurrentEnemy+1);
+	setPlayerArtificial(1, calculateAIRampDifficulty(gSurvivalModeData.mCurrentEnemy, getSurvivalAIRampStart(), getSurvivalAIRampEnd()));
 	startFightScreen(fightFinishedCB);
 }
 
@@ -95,7 +97,7 @@ static void loadResultScreenFromScript(MugenDefScript* tScript) {
 static void loadSurvivalModeHeaderFromScript() {
 	char scriptPath[1000];
 
-	strcpy(scriptPath, "assets/data/system.def");
+	strcpy(scriptPath, (getDolmexicaAssetFolder() + getMotifPath()).c_str());
 
 	MugenDefScript script; 
 	loadMugenDefScript(&script, scriptPath);

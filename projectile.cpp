@@ -36,8 +36,6 @@ typedef struct {
 	int mLowerBound;
 	int mUpperBound;
 	int mShadow;
-	int mSuperMoveTime;
-	int mPauseMoveTime;
 	int mHasOwnPalette;
 	
 	int mRemapPaletteGroup;
@@ -103,10 +101,13 @@ static void updateProjectilePhysics(Projectile* e) {
 static void updateSingleProjectile(void* tCaller, void* tData) {
 	(void)tCaller;
 	Projectile* e = (Projectile*)tData;
-
-	updateProjectilePhysics(e);
-	if (updateProjectileDurationAndReturnIfOver(e)) return;
-	if (updateProjectileScreenBoundAndReturnIfOver(e)) return;
+	const auto timeDilationUpdates = getPlayerTimeDilationUpdates(e->mPlayer);
+	for (int currentUpdate = 0; currentUpdate < timeDilationUpdates; currentUpdate++) {
+		updateProjectilePhysics(e);
+		setPlayerTempScaleActive(e->mPlayer, e->mScale);
+		if (updateProjectileDurationAndReturnIfOver(e)) return;
+		if (updateProjectileScreenBoundAndReturnIfOver(e)) return;
+	}
 }
 
 static void updateProjectileHandler(void* tData) {
@@ -331,14 +332,14 @@ void setProjectileSuperMoveTime(DreamPlayer * p, int tSuperMoveTime)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
-	e->mSuperMoveTime = tSuperMoveTime;
+	setPlayerSuperMoveTime(e->mPlayer, tSuperMoveTime);
 }
 
 void setProjectilePauseMoveTime(DreamPlayer * p, int tPauseMoveTime)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
-	e->mPauseMoveTime = tPauseMoveTime;
+	setPlayerPauseMoveTime(e->mPlayer, tPauseMoveTime);
 }
 
 void setProjectileHasOwnPalette(DreamPlayer * p, int tValue)
@@ -354,25 +355,4 @@ void setProjectileRemapPalette(DreamPlayer * p, int tGroup, int tItem)
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	e->mRemapPaletteGroup = tGroup;
 	e->mRemapPaletteItem = tItem;
-}
-
-void setProjectileAfterImageTime(DreamPlayer * p, int tAfterImageTime)
-{
-	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
-	e->mAfterImageTime = tAfterImageTime;
-}
-
-void setProjectileAfterImageLength(DreamPlayer * p, int tAfterImageLength)
-{
-	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
-	e->mAfterImageLength = tAfterImageLength;
-}
-
-void setProjectileAfterImage(DreamPlayer * p, int tAfterImage)
-{
-	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
-	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
-	e->mAfterImage = tAfterImage;
 }

@@ -58,12 +58,12 @@ static struct {
 
 	uint32_t mHeldMask[2];
 	uint32_t mPreviousHeldMask[2];
+	uint32_t mOverrideMask[2];
 
 	int mOsuInputAllowedFlag[2];
 } gMugenCommandHandler;
 
 #define MAXIMUM_REGISTERED_COMMAND_AMOUNT 2
-
 
 static void loadMugenCommandHandler(void* tData) {
 	(void)tData;
@@ -363,7 +363,7 @@ static int isTargetReleased(DreamMugenCommandInputStepTarget tTarget, int tContr
 
 static int handleHoldingCommandInputStep(DreamMugenCommandInputStep* tStep, int* oIsStepOver, int tControllerID, int tIsFacingRight) {
 	int ret = isTargetHeld(tStep->mTarget, tControllerID, tIsFacingRight);
-	*oIsStepOver = 1; // TODO add to active steps for command and always check (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/387)
+	*oIsStepOver = 1;
 
 	return ret;
 }
@@ -436,6 +436,16 @@ static int isSameStepAsBefore(ActiveMugenCommand* tCommand) {
 	return haveSameTarget;
 }
 
+static int isPreviousCommandInputStepNoHoldingOrActive(RegisteredMugenCommand* tRegisteredCommand, ActiveMugenCommand* tActiveCommand) {
+	if (tActiveCommand->mStep == 0) return 1;
+	const auto previousStep = (DreamMugenCommandInputStep*)vector_get(&tActiveCommand->mInput->mInputSteps, tActiveCommand->mStep - 1);
+	if (previousStep->mType != MUGEN_COMMAND_INPUT_STEP_TYPE_HOLDING) return 1;
+
+	int isStepOver;
+	const auto ret = handleSingleCommandInputStepAndReturnIfActive(previousStep, &isStepOver, tRegisteredCommand->mControllerID, tRegisteredCommand->mIsFacingRight);
+	return ret;
+}
+
 static int updateSingleActiveMugenCommand(RegisteredMugenCommand* tCaller, ActiveMugenCommand& tData) {
 	RegisteredMugenCommand* registeredCommand = (RegisteredMugenCommand*)tCaller;
 	ActiveMugenCommand* command = &tData;
@@ -452,6 +462,7 @@ static int updateSingleActiveMugenCommand(RegisteredMugenCommand* tCaller, Activ
 
 		int isStepOver = 0;
 		int isActive = handleSingleCommandInputStepAndReturnIfActive(step, &isStepOver, registeredCommand->mControllerID, registeredCommand->mIsFacingRight);
+		isActive = isActive && isPreviousCommandInputStepNoHoldingOrActive(registeredCommand, command);
 		if (!isActive) return 0;
 
 		if (isStepOver) {
@@ -566,7 +577,10 @@ static void updateInputMaskGeneral(int i, int tButtonPrecondition) {
 	updateSingleInputMaskEntry(i, MASK_LEFT, hasPressedLeftSingle(i));
 	updateSingleInputMaskEntry(i, MASK_RIGHT, hasPressedRightSingle(i));
 	updateSingleInputMaskEntry(i, MASK_UP, hasPressedUpSingle(i));
-	updateSingleInputMaskEntry(i, MASK_DOWN, hasPressedDownSingle(i));	
+	updateSingleInputMaskEntry(i, MASK_DOWN, hasPressedDownSingle(i));
+
+	gMugenCommandHandler.mHeldMask[i] |= gMugenCommandHandler.mOverrideMask[i];
+	gMugenCommandHandler.mOverrideMask[i] = 0;
 }
 
 static void updateInputMask(int i) {
@@ -604,4 +618,32 @@ static void updateMugenCommandHandler(void* tData) {
 
 ActorBlueprint getDreamMugenCommandHandler() {
 	return makeActorBlueprint(loadMugenCommandHandler, unloadMugenCommandHandler, updateMugenCommandHandler);
-};
+}
+void setDreamButtonAActiveForPlayer(int tControllerIndex)
+{
+	gMugenCommandHandler.mOverrideMask[tControllerIndex] |= MASK_A;
+}
+void setDreamButtonBActiveForPlayer(int tControllerIndex)
+{
+	gMugenCommandHandler.mOverrideMask[tControllerIndex] |= MASK_B;
+}
+void setDreamButtonCActiveForPlayer(int tControllerIndex)
+{
+	gMugenCommandHandler.mOverrideMask[tControllerIndex] |= MASK_C;
+}
+void setDreamButtonXActiveForPlayer(int tControllerIndex)
+{
+	gMugenCommandHandler.mOverrideMask[tControllerIndex] |= MASK_X;
+}
+void setDreamButtonYActiveForPlayer(int tControllerIndex)
+{
+	gMugenCommandHandler.mOverrideMask[tControllerIndex] |= MASK_Y;
+}
+void setDreamButtonZActiveForPlayer(int tControllerIndex)
+{
+	gMugenCommandHandler.mOverrideMask[tControllerIndex] |= MASK_Z;
+}
+void setDreamButtonStartActiveForPlayer(int tControllerIndex)
+{
+	gMugenCommandHandler.mOverrideMask[tControllerIndex] |= MASK_START;
+}

@@ -13,6 +13,13 @@ typedef enum {
 	MUGEN_ATTACK_CLASS_HYPER,
 } MugenAttackClass;
 
+enum MugenAttackClassFlags : uint32_t {
+	MUGEN_ATTACK_CLASS_NORMAL_FLAG = (1 << 0),
+	MUGEN_ATTACK_CLASS_SPECIAL_FLAG = (1 << 1),
+	MUGEN_ATTACK_CLASS_HYPER_FLAG = (1 << 2),
+	MUGEN_ATTACK_CLASS_ALL_FLAG = (MUGEN_ATTACK_CLASS_NORMAL_FLAG | MUGEN_ATTACK_CLASS_SPECIAL_FLAG | MUGEN_ATTACK_CLASS_HYPER_FLAG),
+};
+
 typedef enum {
 	MUGEN_ATTACK_TYPE_ATTACK,
 	MUGEN_ATTACK_TYPE_THROW,
@@ -51,19 +58,37 @@ typedef enum {
 	MUGEN_HIT_PRIORITY_MISS,
 } MugenHitPriorityType;
 
-#define MAXIMUM_HITSLOT_FLAG_2_AMOUNT 10
-
 typedef struct {
 	int mIsActive;
 
-	char mFlag1[10];
-	char mFlag2[MAXIMUM_HITSLOT_FLAG_2_AMOUNT][10];
-	int mFlag2Amount;
+	std::string mFlag1;
+	std::vector<std::string> mFlag2;
 
 	int mNow;
 	int mTime;
 	int mIsHitBy;
 } DreamHitDefAttributeSlot;
+
+typedef struct {
+	int mIsActive;
+
+	DreamHitDefAttributeSlot mReversalAttribute;
+
+	int mPlayer1PauseTime;
+	int mPlayer2PauseTime;
+	
+	int mIsSparkInPlayerFile;
+	int mSparkNumber;
+	Vector3DI mSparkXY;
+
+	int mIsHitSoundInPlayerFile;
+	DreamMugenSound mHitSound;
+
+	int mHasPlayer1StateNumber;
+	int mPlayer1StateNumber;
+	int mHasPlayer2StateNumber;
+	int mPlayer2StateNumber;
+} ReversalDef;
 
 typedef struct {
 	int mIsActive;
@@ -204,15 +229,14 @@ typedef struct {
 
 	int mIsFacingRight;
 
-	DreamHitDefAttributeSlot mReversalDef;
+	ReversalDef mReversalDef;
 } PlayerHitData;
 
 typedef struct {
 	int mIsActive;
 
-	DreamMugenStateType mStateType;
-	MugenAttackClass mAttackClass;
-	MugenAttackType mAttackType;
+	DreamMugenStateTypeFlags mStateTypeFlags;
+	std::vector<std::pair<MugenAttackClassFlags, MugenAttackType>> mAttackClassTypePairs;
 	int mStateNo;
 	int mSlot;
 
@@ -229,6 +253,7 @@ typedef struct {
 void updatePlayerHitData(DreamPlayer* tPlayer);
 
 void initPlayerHitData(DreamPlayer* tPlayer);
+void clearPlayerHitData(DreamPlayer* tPlayer);
 
 void copyHitDataToActive(DreamPlayer* tPlayer, void* tHitData);
 
@@ -478,12 +503,33 @@ void setHitDataVelocityY(DreamPlayer* tPlayer, double y);
 int getActiveHitDataIsFacingRight(DreamPlayer* tPlayer);
 void setHitDataIsFacingRight(DreamPlayer* tPlayer, int tIsFacingRight);
 
-void resetHitDataReversalDef(DreamPlayer* tPlayer);
-void setHitDataReversalDefFlag1(DreamPlayer* tPlayer, char* tFlag);
-void addHitDataReversalDefFlag2(DreamPlayer* tPlayer, char* tFlag);
+int isHitDataReversalDefActive(DreamPlayer* tPlayer);
+void setHitDataReversalDefActive(DreamPlayer* tPlayer);
+DreamHitDefAttributeSlot* getHitDataReversalDefReversalAttribute(DreamPlayer* tPlayer);
+void setHitDataReversalDefFlag1(DreamPlayer* tPlayer, const char* tFlag);
+void addHitDataReversalDefFlag2(DreamPlayer* tPlayer, const char* tFlag);
+int getReversalDefPlayer1PauseTime(DreamPlayer* tPlayer);
+int getReversalDefPlayer2PauseTime(DreamPlayer* tPlayer);
+void setReversalDefPauseTime(DreamPlayer* tPlayer, int tPlayer1PauseTime, int tPlayer2PauseTime);
+int isReversalDefSparkInPlayerFile(DreamPlayer* tPlayer);
+int getReversalDefSparkNumber(DreamPlayer* tPlayer);
+void setReversalDefSparkNumber(DreamPlayer* tPlayer, int tIsInPlayerFile, int tNumber);
+Vector3DI getReversalDefSparkXY(DreamPlayer* tPlayer);
+void setReversalDefSparkXY(DreamPlayer* tPlayer, int tX, int tY);
+void getReversalDefHitSound(DreamPlayer* tPlayer, int* oIsInPlayerFile, Vector3DI* oHitSound);
+void setReversalDefHitSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tGroup, int tItem);
+int hasReversalDefP1StateNo(DreamPlayer* tPlayer);
+int getReversalDefP1StateNo(DreamPlayer* tPlayer);
+void setReversalDefP1StateNo(DreamPlayer* tPlayer, int hasP1StateNo, int p1StateNo = 0);
+int hasReversalDefP2StateNo(DreamPlayer* tPlayer);
+int getReversalDefP2StateNo(DreamPlayer* tPlayer);
+void setReversalDefP2StateNo(DreamPlayer* tPlayer, int hasP2StateNo, int p2StateNo = 0);
 
-void setPlayerHitOverride(DreamPlayer* tPlayer, DreamMugenStateType tStateType, MugenAttackClass tAttackClass, MugenAttackType tAttackType, int tStateNo, int tSlot, int tDuration, int tDoesForceAir);
+void setPlayerHitOverride(DreamPlayer* tPlayer, DreamMugenStateTypeFlags tStateTypeFlags, const std::vector<std::pair<MugenAttackClassFlags, MugenAttackType>>& tAttackClassTypePairs, int tStateNo, int tSlot, int tDuration, int tDoesForceAir);
 
 int hasMatchingHitOverride(DreamPlayer* tPlayer, DreamPlayer * tOtherPlayer);
 int isIgnoredBecauseOfHitOverride(DreamPlayer* tPlayer, DreamPlayer* tOtherPlayer);
 void getMatchingHitOverrideStateNoAndForceAir(DreamPlayer* tPlayer, DreamPlayer * tOtherPlayer, int* oStateNo, int* oDoesForceAir);
+
+std::string copyOverCleanHitDefAttributeFlag(const char* tSrc);
+MugenAttackClassFlags convertMugenAttackClassToFlag(MugenAttackClass tAttackClass);

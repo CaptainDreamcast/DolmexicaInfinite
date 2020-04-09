@@ -168,9 +168,6 @@
     <ClCompile Include="..\dolmexicadebug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\debugscreen.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\osufilereader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -181,6 +178,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\initscreen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\afterimage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\trainingmodemenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\victoryquotescreen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -326,9 +332,6 @@
     <ClInclude Include="..\dolmexicadebug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\debugscreen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\osufilereader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -339,6 +342,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\initscreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\afterimage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\trainingmodemenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\victoryquotescreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

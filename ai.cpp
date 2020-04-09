@@ -19,6 +19,8 @@ typedef struct {
 	int mRandomInputDuration;
 
 	int mIsMoving;
+	int mIsCrouching;
+	int mIsJumping;
 
 	int mIsGuardingLogicActive;
 	int mWasGuardingSuccessful;
@@ -58,17 +60,35 @@ static void setRandomPlayerCommandActive(PlayerAI* e) {
 }
 
 static void updateAIMovement(PlayerAI* e) {
-	double dist = getPlayerDistanceToFrontOfOtherPlayerX(e->mPlayer);
-
-	if (e->mIsMoving) {
-		setDreamPlayerCommandActiveForAI(e->mPlayer->mCommandID, "holdfwd", 2);
-	}
+	const auto otherPlayer = getPlayerOtherPlayer(e->mPlayer);
+	const auto dist = getPlayerDistanceToFrontOfOtherPlayerX(e->mPlayer);
+	const auto playerStateType = getPlayerStateType(e->mPlayer);
+	const auto otherPlayerStateType = getPlayerStateType(otherPlayer);
+	const auto otherPlayerStateMoveType = getPlayerStateMoveType(otherPlayer);
 
 	if (dist > 50) {
 		e->mIsMoving = 1;
 	}
 	else if (dist < 30) {
 		e->mIsMoving = 0;
+	}
+
+	const auto isOtherPlayerCloseAndCrouching = (dist < 30) && (otherPlayerStateType == MUGEN_STATE_TYPE_CROUCHING);
+	const auto isOtherPlayerCrouchAttacking = (otherPlayerStateType == MUGEN_STATE_TYPE_CROUCHING) && (otherPlayerStateMoveType == MUGEN_STATE_MOVE_TYPE_ATTACK);
+	e->mIsCrouching = isOtherPlayerCloseAndCrouching || isOtherPlayerCrouchAttacking;
+	
+	const auto isOtherPlayerJumpingClose = (dist < 30) && (playerStateType != MUGEN_STATE_TYPE_AIR) && (otherPlayerStateType == MUGEN_STATE_TYPE_AIR);
+	const auto isOtherPlayerJumpingAttack = (dist < 30) && (playerStateType != MUGEN_STATE_TYPE_AIR) && (otherPlayerStateType == MUGEN_STATE_TYPE_AIR) && (otherPlayerStateMoveType == MUGEN_STATE_MOVE_TYPE_ATTACK);
+	e->mIsJumping = isOtherPlayerJumpingClose || isOtherPlayerJumpingAttack;
+
+	if (e->mIsMoving) {
+		setDreamPlayerCommandActiveForAI(e->mPlayer->mCommandID, "holdfwd", 2);
+	}
+	if (e->mIsCrouching) {
+		setDreamPlayerCommandActiveForAI(e->mPlayer->mCommandID, "holddown", 2);
+	}
+	if (e->mIsJumping) {
+		setDreamPlayerCommandActiveForAI(e->mPlayer->mCommandID, "holdup", 2);
 	}
 }
 
@@ -82,7 +102,6 @@ static void updateAIGuarding(PlayerAI* e) {
 			e->mWasGuardingSuccessful = (rand < guardPossibility);
 			e->mIsGuardingLogicActive = 1;
 		}
-	
 	}
 	else {
 		e->mIsGuardingLogicActive = 0;
@@ -117,6 +136,7 @@ static void updateAICommands(PlayerAI* e) {
 static void updateSingleAI(void* /*tCaller*/, PlayerAI& tData) {
 	if (getDreamRoundStateNumber() != 2) return;
 	PlayerAI* e = &tData;
+	if (!getPlayerAILevel(e->mPlayer)) return;
 
 	updateAIMovement(e);
 	updateAIGuarding(e);
@@ -136,13 +156,13 @@ static void insertSingleCommandName(vector<string>* tCaller, const string& tKey,
 
 void setDreamAIActive(DreamPlayer * p)
 {
-	assert(getPlayerAILevel(p));
-
 	PlayerAI e;
 	e.mPlayer = p;
 	e.mRandomInputNow = 0;
 	e.mRandomInputDuration = 20;
 	e.mIsMoving = 0;
+	e.mIsCrouching = 0;
+	e.mIsJumping = 0;
 	e.mIsGuardingLogicActive = 0;
 	e.mCommandNames.clear();
 	e.mDifficultyFactor = (getPlayerAILevel(p) - 1) / 7.0;

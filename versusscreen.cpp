@@ -14,6 +14,12 @@
 #include "menubackground.h"
 #include "titlescreen.h"
 #include "playerdefinition.h"
+#include "config.h"
+
+#define VERSUS_SCREEN_PLAYER_IMAGE_Z 50
+#define VERSUS_SCREEN_PLAYER_TEXT_Z 51
+
+#define VERSUS_SCREEN_MATCH_TEXT_Z 80
 
 typedef struct {
 	Position mPosition;
@@ -45,6 +51,10 @@ static struct {
 	MugenDefScript mScript;
 	MugenSpriteFile mSprites;
 	MugenAnimations mAnimations;
+
+	int mHasMatchNumber;
+	int mMatchNumber;
+	int mMatchTextID;
 
 	void(*mCB)();
 } gVersusScreenData;
@@ -79,13 +89,13 @@ static void loadPlayerAnimationsAndName(int i) {
 	unloadMugenDefScript(script);
 
 	Position pos = player->mPosition;
-	pos.z = 50;
+	pos.z = VERSUS_SCREEN_PLAYER_IMAGE_Z;
 	player->mAnimation = createOneFrameMugenAnimationForSprite(9000, 1);
 	player->mAnimationElement = addMugenAnimation(player->mAnimation, &player->mSprites, pos);
 	setMugenAnimationFaceDirection(player->mAnimationElement, player->mIsFacingRight);
 
 	pos = player->mNamePosition;
-	pos.z = 51;
+	pos.z = VERSUS_SCREEN_PLAYER_TEXT_Z;
 	player->mTextID = addMugenText(player->mDisplayCharacterName, pos, player->mNameFont.x);
 	setMugenTextColor(player->mTextID, getMugenTextColorFromMugenTextColorIndex(player->mNameFont.y));
 	setMugenTextAlignment(player->mTextID, getMugenTextAlignmentFromMugenAlignmentIndex(player->mNameFont.z));
@@ -131,6 +141,32 @@ static void loadVersusHeader() {
 	}
 }
 
+static std::string parseMatchTextString(const std::string& tText) {
+	std::stringstream ss;
+	for (size_t i = 0; i < tText.size(); i++) {
+		if (tText[i] == '%' && i != tText.size() - 1 && tText[i + 1] == 'i') {
+			ss << gVersusScreenData.mMatchNumber;
+			i++;
+		}
+		else {
+			ss << tText[i];
+		}
+	}
+	return ss.str();
+}
+
+static void loadMatchText() {
+	if (!gVersusScreenData.mHasMatchNumber) return;
+
+	const auto text = getSTLMugenDefStringOrDefault(&gVersusScreenData.mScript, "VS Screen", "match.text", "");
+	auto offset = getMugenDefVectorOrDefault(&gVersusScreenData.mScript, "VS Screen", "match.offset", makePosition(0, 0, 0));
+	offset.z = VERSUS_SCREEN_MATCH_TEXT_Z;
+	const auto font = getMugenDefVectorIOrDefault(&gVersusScreenData.mScript, "VS Screen", "match.font", makeVector3DI(-1, 0, 0));
+	const auto parsedText = parseMatchTextString(text);
+
+	gVersusScreenData.mMatchTextID = addMugenTextMugenStyle(parsedText.c_str(), offset, font);
+}
+
 static void loadVersusMusic() {
 	char* path = getAllocatedMugenDefStringOrDefault(&gVersusScreenData.mScript, "Music", "vs.bgm", " ");
 	int isLooping = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "Music", "vs.bgm.loop", 1);
@@ -146,9 +182,9 @@ static void screenTimeFinishedCB(void* tCaller);
 
 static void loadVersusScreen() {
 	char folder[1024];
-	loadMugenDefScript(&gVersusScreenData.mScript, "assets/data/system.def");
-	gVersusScreenData.mAnimations = loadMugenAnimationFile("assets/data/system.def");
-	getPathToFile(folder, "assets/data/system.def");
+	loadMugenDefScript(&gVersusScreenData.mScript, getDolmexicaAssetFolder() + getMotifPath());
+	gVersusScreenData.mAnimations = loadMugenAnimationFile(getDolmexicaAssetFolder() + getMotifPath());
+	getPathToFile(folder, (getDolmexicaAssetFolder() + getMotifPath()).c_str());
 	setWorkingDirectory(folder);
 
 	char* text = getAllocatedMugenDefStringVariable(&gVersusScreenData.mScript, "Files", "spr");
@@ -159,6 +195,7 @@ static void loadVersusScreen() {
 
 	loadVersusHeader();
 	loadMenuBackground(&gVersusScreenData.mScript, &gVersusScreenData.mSprites, &gVersusScreenData.mAnimations, "VersusBGdef", "VersusBG");
+	loadMatchText();
 	loadVersusMusic();
 
 	addFadeIn(gVersusScreenData.mHeader.mFadeInTime, NULL, NULL);
@@ -175,6 +212,10 @@ static void unloadVersusScreen() {
 		destroyMugenAnimation(gVersusScreenData.mHeader.mPlayers[i].mAnimation);
 		unloadMugenSpriteFile(&gVersusScreenData.mHeader.mPlayers[i].mSprites);
 		freeMemory(gVersusScreenData.mHeader.mPlayers[i].mDisplayCharacterName);
+	}
+
+	if (gVersusScreenData.mHasMatchNumber) {
+		removeMugenText(gVersusScreenData.mMatchTextID);
 	}
 }
 
@@ -202,4 +243,15 @@ Screen* getVersusScreen() {
 void setVersusScreenFinishedCB(void(*tCB)())
 {
 	gVersusScreenData.mCB = tCB;
+}
+
+void setVersusScreenMatchNumber(int tRound)
+{
+	gVersusScreenData.mMatchNumber = tRound;
+	gVersusScreenData.mHasMatchNumber = 1;
+}
+
+void setVersusScreenNoMatchNumber()
+{
+	gVersusScreenData.mHasMatchNumber = 0;
 }

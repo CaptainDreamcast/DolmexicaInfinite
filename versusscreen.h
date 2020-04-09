@@ -5,3 +5,5 @@
 Screen* getVersusScreen();
 
 void setVersusScreenFinishedCB(void(*tCB)());
+void setVersusScreenMatchNumber(int tRound);
+void setVersusScreenNoMatchNumber();

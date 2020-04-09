@@ -127,6 +127,7 @@ static void movePlayersOutOfScreen() {
 	int i;
 	for (i = 0; i < amount; i++) {
 		DreamPlayer* player = getPlayerByIndex(i);
+		if (!player) continue;
 		setPlayerPositionX(player, 161, getPlayerCoordinateP(player));
 		setPlayerPositionY(player, -10000, getPlayerCoordinateP(player));
 	}

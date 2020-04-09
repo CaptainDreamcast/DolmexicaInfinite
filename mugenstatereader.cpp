@@ -15,9 +15,9 @@ using namespace std;
 
 static int isMugenStateDef(const char* tName) {
 	char firstW[100];
-	sscanf(tName, "%s", firstW);
+	int items = sscanf(tName, "%s", firstW);
 	turnStringLowercase(firstW);
-	return !strcmp("statedef", firstW);
+	return items == 1 && !strcmp("statedef", firstW);
 }
 
 static MugenDefScriptGroup* getFirstStateDefGroup(MugenDefScript* tScript) {
@@ -35,7 +35,7 @@ static MugenDefScriptGroup* getFirstStateDefGroup(MugenDefScript* tScript) {
 
 static struct {
 	int mCurrentGroup;
-
+	int mHasValidGroup;
 } gMugenStateDefParseState;
 
 static void handleMugenStateDefType(DreamMugenState* tState, MugenDefScriptGroupElement* tElement) {
@@ -113,57 +113,57 @@ static void handleMugenStateDefPhysics(DreamMugenState* tState, MugenDefScriptGr
 
 
 static void handleMugenStateDefAnimation(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
-	tState->mIsChangingAnimation = 1;
+	setPrismFlag(tState->mFlags, MUGEN_STATE_PROPERTY_CHANGING_ANIMATION);
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mAnimation);
 } 
 
 static void handleMugenStateDefVelocitySetting(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
-	tState->mIsSettingVelocity = 1;
+	setPrismFlag(tState->mFlags, MUGEN_STATE_PROPERTY_SETTING_VELOCITY);
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mVelocity);
 }
 
 static void handleMugenStateDefControl(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
-	tState->mIsChangingControl = 1;
+	setPrismFlag(tState->mFlags, MUGEN_STATE_PROPERTY_CHANGING_CONTROL);
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mControl);
 }
 
 static void handleMugenStateSpritePriority(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
-	tState->mIsChangingSpritePriority = 1;
+	setPrismFlag(tState->mFlags, MUGEN_STATE_PROPERTY_CHANGING_SPRITE_PRIORITY);
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mSpritePriority);
 }
 
 static void handleMugenStatePowerAdd(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
-	tState->mIsAddingPower = 1;
+	setPrismFlag(tState->mFlags, MUGEN_STATE_PROPERTY_ADDING_POWER);
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mPowerAdd);
 }
 
 static void handleMugenStateJuggle(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
-	tState->mDoesRequireJuggle = 1;
+	setPrismFlag(tState->mFlags, MUGEN_STATE_PROPERTY_JUGGLE_REQUIREMENT);
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mJuggleRequired);
 }
 
 static void handleMugenStateHitDefPersistence(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
-	tState->mDoesHaveHitDefinitionsPersist = 1;
+	setPrismFlag(tState->mFlags, MUGEN_STATE_PROPERTY_HIT_DEFINITION_PERSISTENCE);
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mDoHitDefinitionsPersist);
 }
 
 static void handleMugenStateMoveHitPersistence(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
-	tState->mDoesHaveMoveHitInfosPersist = 1;
+	setPrismFlag(tState->mFlags, MUGEN_STATE_PROPERTY_MOVE_HIT_INFO_PERSISTENCE);
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mDoMoveHitInfosPersist);
 }
 
 static void handleMugenStateHitCountPersistence(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
-	tState->mDoesHaveHitCountPersist = 1;
+	setPrismFlag(tState->mFlags, MUGEN_STATE_PROPERTY_HIT_COUNT_PERSISTENCE);
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mDoesHitCountPersist);
 }
 
 static void handleMugenStateFacePlayer2(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
-	tState->mHasFacePlayer2Info = 1;
+	setPrismFlag(tState->mFlags, MUGEN_STATE_PROPERTY_FACE_PLAYER_2_INFO);
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mDoesFacePlayer2);
 }
 
 static void handleMugenStatePriority(DreamMugenState* tState, MugenDefScriptGroupElement* tElement, MugenDefScriptGroup* tGroup) {
-	tState->mHasPriority = 1;
+	setPrismFlag(tState->mFlags, MUGEN_STATE_PROPERTY_PRIORITY);
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tElement->mName.data(), tGroup, &tState->mPriority);
 }
 
@@ -229,33 +229,36 @@ static void handleSingleMugenStateDefElement(MugenStateDefCaller* tCaller, const
 }
 
 static void removeState(DreamMugenStates* tStates, int tState) {
-	// DreamMugenState* e = &tStates->mStates[tState];
-	// unloadSingleState(e); // TODO: reinsert (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/132)
 	tStates->mStates.erase(tState);
 }
 
-static void handleMugenStateDef(DreamMugenStates* tStates, MugenDefScriptGroup* tGroup) {
+static void handleMugenStateDef(DreamMugenStates* tStates, MugenDefScriptGroup* tGroup, int tIsOverwritable) {
 
 	DreamMugenState state;
 
 	char dummy[100];
-	sscanf(tGroup->mName.data(), "%s %d", dummy, &state.mID);
-	gMugenStateDefParseState.mCurrentGroup = state.mID;
+	int items = sscanf(tGroup->mName.data(), "%s %d", dummy, &state.mID);
+	if (items != 2) {
+		logWarningFormat("Unable to parse statedef id: %s", tGroup->mName.data());
+		state.mID = -5;
+	}
 
+	gMugenStateDefParseState.mCurrentGroup = state.mID;
+	if (stl_map_contains(tStates->mStates, state.mID)) {
+		const auto& previousState = tStates->mStates[state.mID];
+		if (!hasPrismFlag(previousState.mFlags, MUGEN_STATE_PROPERTY_OVERWRITABLE)) {
+			gMugenStateDefParseState.mHasValidGroup = 0;
+			return;
+		}
+		removeState(tStates, state.mID);
+	}
+	gMugenStateDefParseState.mHasValidGroup = 1;
+	
 	state.mType = MUGEN_STATE_TYPE_STANDING;
 	state.mMoveType = MUGEN_STATE_MOVE_TYPE_IDLE;
 	state.mPhysics = MUGEN_STATE_PHYSICS_NONE;
-	state.mIsChangingAnimation = 0;
-	state.mIsSettingVelocity = 0;
-	state.mIsChangingControl = 0;
-	state.mIsChangingSpritePriority = 0;
-	state.mIsAddingPower = 0;
-	state.mDoesRequireJuggle = 0;
-	state.mDoesHaveHitDefinitionsPersist = 0;
-	state.mDoesHaveMoveHitInfosPersist = 0;
-	state.mDoesHaveHitCountPersist = 0;
-	state.mHasFacePlayer2Info = 0;
-	state.mHasPriority = 0;
+	state.mFlags = 0;
+	setPrismFlag(state.mFlags, MUGEN_STATE_PROPERTY_OVERWRITABLE * tIsOverwritable);
 
 	state.mControllers = new_vector();
 
@@ -263,21 +266,19 @@ static void handleMugenStateDef(DreamMugenStates* tStates, MugenDefScriptGroup* 
 	caller.mState = &state;
 	caller.mGroup = tGroup;
 	stl_string_map_map(tGroup->mElements, handleSingleMugenStateDefElement, &caller);
-
-	if (stl_map_contains(tStates->mStates, state.mID)) {
-		removeState(tStates, state.mID); // TODO (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/132)
-	}
 	tStates->mStates[state.mID] = state;
 }
 
 static int isMugenStateController(const char* tName) {
 	char firstW[100];
-	sscanf(tName, "%s", firstW);
+	int items = sscanf(tName, "%s", firstW);
 	turnStringLowercase(firstW);
-	return !strcmp("state", firstW);
+	return items == 1 && !strcmp("state", firstW);
 }
 
 static void handleMugenStateControllerInDefGroup(DreamMugenStates* tStates, MugenDefScriptGroup* tGroup) {
+	if (!gMugenStateDefParseState.mHasValidGroup) return;
+
 	DreamMugenState* state = &tStates->mStates[gMugenStateDefParseState.mCurrentGroup];
 
 	DreamMugenStateController* controller = parseDreamMugenStateControllerFromGroup(tGroup);
@@ -285,10 +286,10 @@ static void handleMugenStateControllerInDefGroup(DreamMugenStates* tStates, Muge
 	vector_push_back_owned(&state->mControllers, controller);
 }
 
-static void handleSingleMugenStateDefGroup(DreamMugenStates* tStates, MugenDefScriptGroup* tGroup) {
+static void handleSingleMugenStateDefGroup(DreamMugenStates* tStates, MugenDefScriptGroup* tGroup, int tIsOverwritable) {
 
 	if (isMugenStateDef(tGroup->mName.data())) {
-		handleMugenStateDef(tStates, tGroup);
+		handleMugenStateDef(tStates, tGroup, tIsOverwritable);
 	} else if (isMugenStateController(tGroup->mName.data())) {
 		handleMugenStateControllerInDefGroup(tStates, tGroup);
 	}
@@ -298,20 +299,20 @@ static void handleSingleMugenStateDefGroup(DreamMugenStates* tStates, MugenDefSc
 
 }
 
-static void loadMugenStateDefinitionsFromScript(DreamMugenStates* tStates, MugenDefScript* tScript) {
+static void loadMugenStateDefinitionsFromScript(DreamMugenStates* tStates, MugenDefScript* tScript, int tIsOverwritable) {
 	MugenDefScriptGroup* current = getFirstStateDefGroup(tScript);
 
 	while (current != NULL) {
-		handleSingleMugenStateDefGroup(tStates, current);
+		handleSingleMugenStateDefGroup(tStates, current, tIsOverwritable);
 		
 		current = current->mNext;
 	}
 }
 
-void loadDreamMugenStateDefinitionsFromFile(DreamMugenStates* tStates, char* tPath) {
+void loadDreamMugenStateDefinitionsFromFile(DreamMugenStates* tStates, char* tPath, int tIsOverwritable) {
 	MugenDefScript script; 
 	loadMugenDefScript(&script, tPath);
-	loadMugenStateDefinitionsFromScript(tStates, &script);
+	loadMugenStateDefinitionsFromScript(tStates, &script, tIsOverwritable);
 	unloadMugenDefScript(script);
 }
 
@@ -448,11 +449,16 @@ static void loadMugenConstantsMovementData(DreamMugenConstantsMovementData* tMov
 	tMovementData->mLyingDownFrictionThreshold = getMugenDefFloatOrDefault(tScript, "Movement", "down.friction.threshold", 0.05);
 }
 
+static void loadMugenConstantsPlayerVictoryQuote(DreamMugenConstantsQuoteData* tQuote) {
+	tQuote->mVictoryQuoteIndex = -1;
+}
+
 static void loadMugenConstantsFromScript(DreamMugenConstants* tConstants, MugenDefScript* tScript) {
 	loadMugenConstantsHeader(&tConstants->mHeader, tScript);
 	loadMugenConstantsSizeData(&tConstants->mSizeData, tScript);
 	loadMugenConstantsVelocityData(&tConstants->mVelocityData, tScript);
 	loadMugenConstantsMovementData(&tConstants->mMovementData, tScript);
+	loadMugenConstantsPlayerVictoryQuote(&tConstants->mQuoteData);
 }
 
 DreamMugenConstants loadDreamMugenConstantsFile(char * tPath)
@@ -472,28 +478,28 @@ static void unloadSingleController(void* tCaller, void* tData) {
 }
 
 static void unloadSingleState(DreamMugenState& e) {
-	if (e.mIsChangingAnimation) {
+	if (hasPrismFlag(e.mFlags, MUGEN_STATE_PROPERTY_CHANGING_ANIMATION)) {
 		destroyDreamMugenAssignment(e.mAnimation);
 	}
-	if (e.mIsSettingVelocity) {
+	if (hasPrismFlag(e.mFlags, MUGEN_STATE_PROPERTY_SETTING_VELOCITY)) {
 		destroyDreamMugenAssignment(e.mVelocity);
 	}
-	if (e.mIsChangingControl) {
+	if (hasPrismFlag(e.mFlags, MUGEN_STATE_PROPERTY_CHANGING_CONTROL)) {
 		destroyDreamMugenAssignment(e.mControl);
 	}
-	if (e.mIsChangingSpritePriority) {
+	if (hasPrismFlag(e.mFlags, MUGEN_STATE_PROPERTY_CHANGING_SPRITE_PRIORITY)) {
 		destroyDreamMugenAssignment(e.mSpritePriority);
 	}
-	if (e.mIsAddingPower) {
+	if (hasPrismFlag(e.mFlags, MUGEN_STATE_PROPERTY_ADDING_POWER)) {
 		destroyDreamMugenAssignment(e.mPowerAdd);
 	}
-	if (e.mDoesRequireJuggle) {
+	if (hasPrismFlag(e.mFlags, MUGEN_STATE_PROPERTY_JUGGLE_REQUIREMENT)) {
 		destroyDreamMugenAssignment(e.mJuggleRequired);
 	}
-	if (e.mHasFacePlayer2Info) {
+	if (hasPrismFlag(e.mFlags, MUGEN_STATE_PROPERTY_FACE_PLAYER_2_INFO)) {
 		destroyDreamMugenAssignment(e.mDoesFacePlayer2);
 	}
-	if (e.mHasPriority) {
+	if (hasPrismFlag(e.mFlags, MUGEN_STATE_PROPERTY_PRIORITY)) {
 		destroyDreamMugenAssignment(e.mPriority);
 	}
 
@@ -517,4 +523,18 @@ static void unloadMugenStates(DreamMugenStates* tStates) {
 void unloadDreamMugenConstantsFile(DreamMugenConstants * tConstants)
 {
 	unloadMugenStates(&tConstants->mStates);
+}
+
+DreamMugenStateTypeFlags convertDreamMugenStateTypeToFlag(DreamMugenStateType tType)
+{
+	switch (tType) {
+	case MUGEN_STATE_TYPE_STANDING:
+		return MUGEN_STATE_TYPE_STANDING_FLAG;
+	case MUGEN_STATE_TYPE_CROUCHING:
+		return MUGEN_STATE_TYPE_CROUCHING_FLAG;
+	case MUGEN_STATE_TYPE_AIR:
+		return MUGEN_STATE_TYPE_AIR_FLAG;
+	default:
+		return MUGEN_STATE_TYPE_NO_FLAG;
+	}
 }

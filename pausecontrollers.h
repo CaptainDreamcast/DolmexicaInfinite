@@ -9,6 +9,7 @@ ActorBlueprint getPauseControllerHandler();
 
 void setDreamSuperPauseTime(DreamPlayer* tPlayer, int tTime);
 void setDreamSuperPauseBufferTimeForCommandsDuringPauseEnd(DreamPlayer* tPlayer, int tBufferTime);
+int getDreamSuperPauseMoveTime();
 void setDreamSuperPauseMoveTime(DreamPlayer* tPlayer, int tMoveTime);
 void setDreamSuperPauseIsPausingBG(DreamPlayer* tPlayer, int tIsPausingBG);
 void setDreamSuperPauseAnimation(DreamPlayer* tPlayer, int tIsInPlayerFile, int tAnimationNumber);
@@ -18,14 +19,19 @@ void setDreamSuperPauseDarkening(DreamPlayer* tPlayer, int tIsDarkening);
 void setDreamSuperPausePlayer2DefenseMultiplier(DreamPlayer* tPlayer, double tMultiplier);
 void setDreamSuperPausePowerToAdd(DreamPlayer* tPlayer, int tPowerToAdd);
 void setDreamSuperPausePlayerUnhittability(DreamPlayer* tPlayer, int tIsUnhittable);
-void setDreamSuperPauseActive(DreamPlayer* tPlayer);
+int setDreamSuperPauseActiveAndReturnIfWorked(DreamPlayer* tPlayer);
 int isDreamSuperPauseActive();
+int getDreamSuperPauseTimeSinceStart();
+DreamPlayer* getDreamSuperPauseOwner();
 
 void setDreamPauseTime(DreamPlayer* tPlayer, int tTime);
 void setDreamPauseBufferTimeForCommandsDuringPauseEnd(DreamPlayer* tPlayer, int tBufferTime);
+int getDreamPauseMoveTime();
 void setDreamPauseMoveTime(DreamPlayer* tPlayer, int tMoveTime);
 void setDreamPauseIsPausingBG(DreamPlayer* tPlayer, int tIsPausingBG);
-void setDreamPauseActive(DreamPlayer* tPlayer);
+int setDreamPauseActiveAndReturnIfWorked(DreamPlayer* tPlayer);
 int isDreamPauseActive();
+int getDreamPauseTimeSinceStart();
+DreamPlayer* getDreamPauseOwner();
 
 int isDreamAnyPauseActive();

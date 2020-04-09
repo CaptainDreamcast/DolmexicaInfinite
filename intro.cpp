@@ -6,6 +6,7 @@
 #include "storyscreen.h"
 #include "titlescreen.h"
 #include "dolmexicastoryscreen.h"
+#include "config.h"
 
 static struct {
 	int mHasLogoStoryboard;
@@ -17,7 +18,7 @@ static struct {
 
 static void loadLogoAndIntroStoryboards() {
 	MugenDefScript script; 
-	loadMugenDefScript(&script, "assets/data/system.def");
+	loadMugenDefScript(&script, getDolmexicaAssetFolder() + getMotifPath());
 
 	char* logoStoryboard = getAllocatedMugenDefStringOrDefault(&script, "Files", "logo.storyboard", " ");
 	gIntroData.mHasLogoStoryboard = isFile(logoStoryboard);
@@ -43,7 +44,7 @@ static void logoStoryboardFinishedCB() {
 
 static Screen* loadLogoStoryboardAndReturnScreen() {
 	MugenDefScript script;
-	loadMugenDefScript(&script, "assets/data/system.def");
+	loadMugenDefScript(&script, getDolmexicaAssetFolder() + getMotifPath());
 	char* logoStoryboard = getAllocatedMugenDefStringOrDefault(&script, "Files", "logo.storyboard", " ");
 
 	MugenDefScript storyboardScript;
@@ -68,7 +69,7 @@ static void introStoryboardFinishedCB() {
 
 static Screen* loadIntroStoryboardAndReturnScreen() {
 	MugenDefScript script;
-	loadMugenDefScript(&script, "assets/data/system.def");
+	loadMugenDefScript(&script, getDolmexicaAssetFolder() + getMotifPath());
 	char* introStoryboard = getAllocatedMugenDefStringOrDefault(&script, "Files", "intro.storyboard", " ");
 
 	MugenDefScript storyboardScript;

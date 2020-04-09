@@ -1,5 +1,7 @@
 #include "optionsscreen.h"
 
+#include <algorithm>
+
 #include <prism/wrapper.h>
 #include <prism/input.h>
 #include <prism/mugentexthandler.h>
@@ -160,7 +162,7 @@ static void updateSelectedGeneralOption(int tDelta) {
 	setSelectedGeneralOptionInactive();
 	gOptionsScreenData.mGeneral.mSelected += tDelta;
 	gOptionsScreenData.mGeneral.mSelected = (gOptionsScreenData.mGeneral.mSelected + GENERAL_SETTING_AMOUNT) % GENERAL_SETTING_AMOUNT;
-	tryPlayMugenSound(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCursorMoveSound.x, gOptionsScreenData.mHeader.mCursorMoveSound.y);
+	tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCursorMoveSound.x, gOptionsScreenData.mHeader.mCursorMoveSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 	setSelectedGeneralOptionActive();
 }
 
@@ -199,11 +201,11 @@ static void loadGeneralOptionsScreen() {
 
 	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_WAV_VOLUME] = addMugenTextMugenStyle("Wav Volume", makePosition(offsetX, startY + offsetY * 4, 60), makeVector3DI(2, 8, 1));
 	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_WAV_VOLUME] = addMugenTextMugenStyle("50", makePosition(320 - offsetX, startY + offsetY * 4, 60), makeVector3DI(2, 8, -1));
-	setVolumeOptionText(GENERAL_SETTING_WAV_VOLUME, getGameWavVolume);
+	setVolumeOptionText(GENERAL_SETTING_WAV_VOLUME, getUnscaledGameWavVolume);
 
 	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_MIDI_VOLUME] = addMugenTextMugenStyle("Midi Volume", makePosition(offsetX, startY + offsetY * 5, 60), makeVector3DI(2, 8, 1));
 	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_MIDI_VOLUME] = addMugenTextMugenStyle("50", makePosition(320 - offsetX, startY + offsetY * 5, 60), makeVector3DI(2, 8, -1));
-	setVolumeOptionText(GENERAL_SETTING_MIDI_VOLUME, getGameMidiVolume);
+	setVolumeOptionText(GENERAL_SETTING_MIDI_VOLUME, getUnscaledGameMidiVolume);
 
 	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_INPUT_CONFIG] = addMugenTextMugenStyle("Input Config", makePosition(offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 8, 1));
 	if (!isUsingController()) {
@@ -611,20 +613,25 @@ static void unloadKeyConfigOptionsScreen() {
 	removeBoxCursor(gOptionsScreenData.mKeyConfig.mBoxCursorID);
 }
 
+static void sanitizeOptionsValues() {
+	setGlobalGameSpeed(std::min(getGlobalGameSpeed(), 9));
+}
 
 static void loadOptionsScreen() {
-	instantiateActor(getBoxCursorHandler());
+	sanitizeOptionsValues();
 
+	instantiateActor(getBoxCursorHandler());
 	gOptionsScreenData.mWhiteTexture = getEmptyWhiteTexture();
 
 	char folder[1024];
-	loadMugenDefScript(&gOptionsScreenData.mScript, "assets/data/system.def");
-	getPathToFile(folder, "assets/data/system.def");
+	const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
+	loadMugenDefScript(&gOptionsScreenData.mScript, motifPath);
+	getPathToFile(folder, motifPath.c_str());
 	setWorkingDirectory(folder);
 
 	char* text = getAllocatedMugenDefStringVariable(&gOptionsScreenData.mScript, "Files", "spr");
 	gOptionsScreenData.mSprites = loadMugenSpriteFileWithoutPalette(text);
-	gOptionsScreenData.mAnimations = loadMugenAnimationFile("system.def");
+	gOptionsScreenData.mAnimations = loadMugenAnimationFile(getPureFileName(motifPath.c_str()));
 	freeMemory(text);
 
 	text = getAllocatedMugenDefStringVariable(&gOptionsScreenData.mScript, "Files", "snd");
@@ -677,7 +684,7 @@ static void updateOptionScreenGeneralSelect() {
 		generalToInputConfigOptions();
 	}
 	else if (gOptionsScreenData.mGeneral.mSelected == GENERAL_SETTING_RETURN) {
-		tryPlayMugenSound(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCancelSound.x, gOptionsScreenData.mHeader.mCancelSound.y);
+		tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCancelSound.x, gOptionsScreenData.mHeader.mCancelSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 		setNewScreen(getDreamTitleScreen());
 	} 
 	else if (gOptionsScreenData.mGeneral.mSelected == GENERAL_SETTING_DEFAULT_VALUES) {
@@ -828,10 +835,10 @@ static void changeSelectedGeneralOption(int tDelta) {
 		changeGameSpeedOption(tDelta);
 	}
 	else if (gOptionsScreenData.mGeneral.mSelected == GENERAL_SETTING_WAV_VOLUME) {
-		changeVolumeOption(tDelta, GENERAL_SETTING_WAV_VOLUME, getGameWavVolume, setGameWavVolume);
+		changeVolumeOption(tDelta, GENERAL_SETTING_WAV_VOLUME, getUnscaledGameWavVolume, setUnscaledGameWavVolume);
 	}
 	else if (gOptionsScreenData.mGeneral.mSelected == GENERAL_SETTING_MIDI_VOLUME) {
-		changeVolumeOption(tDelta, GENERAL_SETTING_MIDI_VOLUME, getGameMidiVolume, setGameMidiVolume);
+		changeVolumeOption(tDelta, GENERAL_SETTING_MIDI_VOLUME, getUnscaledGameMidiVolume, setUnscaledGameMidiVolume);
 	}
 }
 
@@ -866,7 +873,7 @@ static void updateSelectedInputConfigOption(int tPlayerIndex, int tDelta) {
 	setSelectedInputConfigOptionInactive(tPlayerIndex);
 	gOptionsScreenData.mInputConfig.mSelected[tPlayerIndex] += tDelta;
 	gOptionsScreenData.mInputConfig.mSelected[tPlayerIndex] = (gOptionsScreenData.mInputConfig.mSelected[tPlayerIndex] + INPUT_CONFIG_SETTING_AMOUNT) % INPUT_CONFIG_SETTING_AMOUNT;
-	tryPlayMugenSound(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCursorMoveSound.x, gOptionsScreenData.mHeader.mCursorMoveSound.y);
+	tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCursorMoveSound.x, gOptionsScreenData.mHeader.mCursorMoveSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 	setSelectedInputConfigOptionActive(tPlayerIndex);
 }
 
@@ -922,7 +929,7 @@ static void updateSelectedKeyConfigOption(int tDeltaX, int tDeltaY) {
 		else gOptionsScreenData.mKeyConfig.mSelected.y += tDeltaY;
 	}
 	gOptionsScreenData.mKeyConfig.mSelected.y = (gOptionsScreenData.mKeyConfig.mSelected.y + KEY_CONFIG_SETTING_AMOUNT) % KEY_CONFIG_SETTING_AMOUNT;
-	tryPlayMugenSound(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCursorMoveSound.x, gOptionsScreenData.mHeader.mCursorMoveSound.y);
+	tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCursorMoveSound.x, gOptionsScreenData.mHeader.mCursorMoveSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 	setSelectedKeyConfigOptionActive();
 }
 
@@ -1064,15 +1071,8 @@ static void updateOptionScreenKeyConfigSelect() {
 static void updateOptionScreenKeyConfig() {
 	if (gOptionsScreenData.mKeyConfig.mIsSettingInput) return;
 
-	if (!gOptionsScreenData.mKeyConfig.mSettingFlankDone) { // TODO: remove when flank issue is fixed (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/384)
+	if (!gOptionsScreenData.mKeyConfig.mSettingFlankDone) {
 		gOptionsScreenData.mKeyConfig.mSettingFlankDone = 1;
-		hasPressedAFlank();
-		hasPressedBFlank();
-		hasPressedXFlank();
-		hasPressedYFlank();
-		hasPressedLFlank();
-		hasPressedRFlank();
-		hasPressedStartFlank();
 		return;
 	}
 

@@ -8,3 +8,5 @@ void reloadFightScreen();
 void stopFightScreenWin();
 void stopFightScreenLose();
 void stopFightScreenToFixedScreen(Screen* tNextScreen);
+
+Screen* getDreamFightScreenForTesting();
