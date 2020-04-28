@@ -491,7 +491,7 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 	return 1;
 }
 
-static Position getCellScreenPosition(Vector3DI tCellPosition) {
+static Position getCellScreenPosition(const Vector3DI& tCellPosition) {
 	double dx = tCellPosition.x * (gCharacterSelectScreenData.mHeader.mCellSpacing + gCharacterSelectScreenData.mHeader.mCellSize.x);
 	double dy = tCellPosition.y * (gCharacterSelectScreenData.mHeader.mCellSpacing + gCharacterSelectScreenData.mHeader.mCellSize.y);
 	Position pos = makePosition(dx, dy, 0);
@@ -573,8 +573,6 @@ static void loadSingleMenuCharacter(void* tCaller, void* tData) {
 		MugenDefScriptStringElement* stringElement = (MugenDefScriptStringElement*)element->mData;
 		loadSingleSpecialMenuCharacter(caller, stringElement);
 	}
-	
-	
 }
 
 static void loadMenuCharacters() {
@@ -668,7 +666,7 @@ static void loadMenuSelectables() {
 	}
 }
 
-static void loadSingleMenuCell(Vector3DI tCellPosition) {
+static void loadSingleMenuCell(const Vector3DI& tCellPosition) {
 	SelectCharacter* e = (SelectCharacter*)allocMemory(sizeof(SelectCharacter));
 	e->mType = SELECT_CHARACTER_TYPE_EMPTY;
 	e->mCellPosition = tCellPosition;
@@ -703,7 +701,7 @@ static SelectCharacter* getCellCharacter(Vector3DI tCellPosition) {
 	return ret;
 }
 
-static void moveSelectionToTarget(int i, Vector3DI tTarget, int tDoesPlaySound);
+static void moveSelectionToTarget(int i, const Vector3DI& tTarget, int tDoesPlaySound);
 
 static Vector3DI increaseCellPositionWithDirection(const Vector3DI& pos, int tDelta) {
 	Vector3DI ret = pos;
@@ -730,7 +728,7 @@ static Vector3DI increaseCellPositionWithDirection(const Vector3DI& pos, int tDe
 	return ret;
 }
 
-static Vector3DI findStartCellPosition(const Vector3DI startPos, int delta, int forceValid = 0) {
+static Vector3DI findStartCellPosition(const Vector3DI& startPos, int delta, int forceValid = 0) {
 	Vector3DI pos = startPos;
 
 	int maxLength = gCharacterSelectScreenData.mHeader.mRows * gCharacterSelectScreenData.mHeader.mColumns;
@@ -1026,12 +1024,11 @@ static void handleSingleWrapping(int* tPosition, int tSize) {
 	}
 }
 
-static Vector3DI findTargetCellPosition(int i, Vector3DI tDelta) {
+static Vector3DI findTargetCellPosition(int i, const Vector3DI& tDelta) {
 	
 	Vector3DI startPos = gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter;
 	Vector3DI pos = vecAddI(startPos, tDelta);
 	Vector3DI prevPos = startPos;
-
 
 	int maxLength = max(gCharacterSelectScreenData.mHeader.mRows, gCharacterSelectScreenData.mHeader.mColumns);
 	for (int j = 0; j < maxLength; j++) {
@@ -1086,7 +1083,7 @@ static void showSelectCharacterForSelector(int i, SelectCharacter* tCharacter) {
 
 static void showNewRandomSelectCharacter(int i);
 
-static void moveSelectionToTarget(int i, Vector3DI tTarget, int tDoesPlaySound) {
+static void moveSelectionToTarget(int i, const Vector3DI& tTarget, int tDoesPlaySound) {
 	PlayerHeader* owner = &gCharacterSelectScreenData.mHeader.mPlayers[gCharacterSelectScreenData.mSelectors[i].mOwner];
 
 	gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter = tTarget;
@@ -1107,7 +1104,7 @@ static void moveSelectionToTarget(int i, Vector3DI tTarget, int tDoesPlaySound) 
 	}
 }
 
-static int hasCreditSelectionMovedToStage(int i, Vector3DI tDelta) {
+static int hasCreditSelectionMovedToStage(int i, const Vector3DI& tDelta) {
 	if (gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return 0;
 
 	Vector3DI target = vecAddI(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter, tDelta);
@@ -1143,8 +1140,6 @@ static void updateSingleSelectionInput(int i) {
 	}
 
 	Vector3DI target = findTargetCellPosition(i, delta);
-	
-
 	
 	if (vecEqualsI(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter, target)) return;
 
@@ -1276,7 +1271,7 @@ static void flashSelection(int i) {
 	setAnimationSize(element, makePosition(25, 25, 1), makePosition(0, 0, 0));
 }
 
-static void updateMugenTextBasedOnVector3DI(int tID, Vector3DI tFontData) {
+static void updateMugenTextBasedOnVector3DI(int tID, const Vector3DI& tFontData) {
 	setMugenTextFont(tID, tFontData.x);
 	setMugenTextColor(tID, getMugenTextColorFromMugenTextColorIndex(tFontData.y));
 	setMugenTextAlignment(tID, getMugenTextAlignmentFromMugenAlignmentIndex(tFontData.z));
@@ -1604,7 +1599,7 @@ static void parseSingleOptionalCharacterParameter(char* tParameter, int* oOrder,
 	}
 }
 
-void parseOptionalCharacterSelectParameters(MugenStringVector tVector, int* oOrder, int* oDoesIncludeStage, char* oMusicPath) {
+void parseOptionalCharacterSelectParameters(MugenStringVector& tVector, int* oOrder, int* oDoesIncludeStage, char* oMusicPath) {
 	int i;
 	for (i = 2; i < tVector.mSize; i++) {
 		parseSingleOptionalCharacterParameter(tVector.mElement[i], oOrder, oDoesIncludeStage, oMusicPath);

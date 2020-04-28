@@ -12,6 +12,7 @@
 #include "playerdefinition.h"
 #include "fightui.h"
 #include "dolmexicastoryscreen.h"
+#include "storyscreen.h"
 #include "storymode.h"
 #include "stage.h"
 #include "fightresultdisplay.h"
@@ -40,6 +41,18 @@ static MugenDefScriptGroup* getMugenDefStoryScriptGroupByIndex(MugenDefScript* t
 	return current;
 }
 
+static int isMugenStoryboard(const char* tPath) {
+	MugenDefScript script;
+	loadMugenDefScript(&script, tPath);
+	const auto ret = hasMugenDefScriptGroup(&script, "SceneDef");
+	unloadMugenDefScript(script);
+	return ret;
+}
+
+static void mugenStoryScreenFinishedCB() {
+	storyModeOverCB(gStoryModeData.mCurrentState + 1);
+}
+
 static void loadStoryboardGroup(MugenDefScriptGroup* tGroup) {
 	char path[1024];
 	char folder[1024];
@@ -54,8 +67,15 @@ static void loadStoryboardGroup(MugenDefScriptGroup* tGroup) {
 		return;
 	}
 
-	setDolmexicaStoryScreenFile(path);
-	setNewScreen(getDolmexicaStoryScreen());
+	if (isMugenStoryboard(path)) {
+		setStoryDefinitionFile(path);
+		setStoryScreenFinishedCB(mugenStoryScreenFinishedCB);
+		setNewScreen(getStoryScreen());
+	}
+	else {
+		setDolmexicaStoryScreenFileAndPrepareScreen(path);
+		setNewScreen(getDolmexicaStoryScreen());
+	}
 }
 
 static void fightFinishedCB() {

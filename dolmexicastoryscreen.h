@@ -5,6 +5,7 @@
 #include <prism/wrapper.h>
 #include <prism/geometry.h>
 #include <prism/mugenanimationhandler.h>
+#include <prism/mugensoundfilereader.h>
 
 typedef struct {
 	int mID;
@@ -88,15 +89,20 @@ typedef struct StoryInstance_t {
 
 Screen* getDolmexicaStoryScreen();
 
-void setDolmexicaStoryScreenFile(char* tPath);
+void setDolmexicaStoryScreenFileAndPrepareScreen(char* tPath);
 
+MugenSounds* getDolmexicaStorySounds();
 int isStoryCommandActive(const char* tCommand);
 
-void addDolmexicaStoryAnimation(StoryInstance* tInstance, int tID, int tAnimation, Position tPosition);
+void addDolmexicaStoryAnimation(StoryInstance* tInstance, int tID, int tAnimation, const Position& tPosition);
 void removeDolmexicaStoryAnimation(StoryInstance* tInstance, int tID);
+int getDolmexicaStoryAnimationIsLooping(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryAnimationLooping(StoryInstance* tInstance, int tID, int tIsLooping);
+int getDolmexicaStoryAnimationIsBoundToStage(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryAnimationBoundToStage(StoryInstance* tInstance, int tID, int tIsBoundToStage);
+int getDolmexicaStoryAnimationHasShadow(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryAnimationShadow(StoryInstance* tInstance, int tID, double tBasePositionY);
+int getDolmexicaStoryAnimationAnimation(StoryInstance* tInstance, int tID);
 void changeDolmexicaStoryAnimation(StoryInstance* tInstance, int tID, int tAnimation);
 void setDolmexicaStoryAnimationPositionX(StoryInstance* tInstance, int tID, double tX);
 void setDolmexicaStoryAnimationPositionY(StoryInstance* tInstance, int tID, double tY);
@@ -107,44 +113,51 @@ void setDolmexicaStoryAnimationScaleY(StoryInstance* tInstance, int tID, double 
 void setDolmexicaStoryAnimationIsFacingRight(StoryInstance* tInstance, int tID, int tIsFacingRight);
 void setDolmexicaStoryAnimationAngle(StoryInstance* tInstance, int tID, double tAngle);
 void addDolmexicaStoryAnimationAngle(StoryInstance* tInstance, int tID, double tAngle);
-void setDolmexicaStoryAnimationColor(StoryInstance* tInstance, int tID, Vector3D tColor);
+void setDolmexicaStoryAnimationColor(StoryInstance* tInstance, int tID, const Vector3D& tColor);
 void setDolmexicaStoryAnimationOpacity(StoryInstance* tInstance, int tID, double tOpacity);
 
-void addDolmexicaStoryText(StoryInstance* tInstance, int tID, const char* tText, Vector3DI tFont, Position tBasePosition, Position tTextOffset, double tTextBoxWidth);
+void addDolmexicaStoryText(StoryInstance* tInstance, int tID, const char* tText, const Vector3DI& tFont, const Position& tBasePosition, const Position& tTextOffset, double tTextBoxWidth);
 void removeDolmexicaStoryText(StoryInstance* tInstance, int tID);
+const char* getDolmexicaStoryTextText(StoryInstance* tInstance, int tID);
+const char* getDolmexicaStoryTextDisplayedText(StoryInstance* tInstance, int tID);
+const char* getDolmexicaStoryTextNameText(StoryInstance* tInstance, int tID);
 int isDolmexicaStoryTextVisible(StoryInstance* tInstance, int tID);
-void setDolmexicaStoryTextBackground(StoryInstance* tInstance, int tID, Vector3DI tSprite, Position tOffset);
-void setDolmexicaStoryTextBackground(StoryInstance* tInstance, int tID, int tAnimation, Position tOffset);
-void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, Vector3DI tSprite, Position tOffset);
-void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, int tAnimation, Position tOffset);
-void setDolmexicaStoryTextName(StoryInstance* tInstance, int tID, const char* tText, Vector3DI tFont, Position tOffset);
-void setDolmexicaStoryTextContinue(StoryInstance* tInstance, int tID, Vector3DI tSprite, Position tOffset);
-void setDolmexicaStoryTextContinue(StoryInstance* tInstance, int tID, int tAnimation, Position tOffset);
+void setDolmexicaStoryTextBackground(StoryInstance* tInstance, int tID, const Vector3DI& tSprite, const Position& tOffset);
+void setDolmexicaStoryTextBackground(StoryInstance* tInstance, int tID, int tAnimation, const Position& tOffset);
+void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, const Vector3DI& tSprite, const Position& tOffset);
+void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, int tAnimation, const Position& tOffset);
+void setDolmexicaStoryTextName(StoryInstance* tInstance, int tID, const char* tText, const Vector3DI& tFont, const Position& tOffset);
+void setDolmexicaStoryTextContinue(StoryInstance* tInstance, int tID, const Vector3DI& tSprite, const Position& tOffset);
+void setDolmexicaStoryTextContinue(StoryInstance* tInstance, int tID, int tAnimation, const Position& tOffset);
 double getDolmexicaStoryTextBasePositionX(StoryInstance* tInstance, int tID);
 double getDolmexicaStoryTextBasePositionY(StoryInstance* tInstance, int tID);
-void setDolmexicaStoryTextBasePosition(StoryInstance* tInstance, int tID, Position tPosition);
+void setDolmexicaStoryTextBasePosition(StoryInstance* tInstance, int tID, const Position& tPosition);
 void setDolmexicaStoryTextText(StoryInstance* tInstance, int tID, const char* tText);
-void setDolmexicaStoryTextTextOffset(StoryInstance* tInstance, int tID, Position tOffset);
-void setDolmexicaStoryTextBackgroundSprite(StoryInstance* tInstance, int tID, Vector3DI tSprite);
-void setDolmexicaStoryTextBackgroundOffset(StoryInstance* tInstance, int tID, Position tOffset);
-void setDolmexicaStoryTextFaceSprite(StoryInstance* tInstance, int tID, Vector3DI tSprite);
-void setDolmexicaStoryTextFaceOffset(StoryInstance* tInstance, int tID, Position tOffset);
+void setDolmexicaStoryTextTextOffset(StoryInstance* tInstance, int tID, const Position& tOffset);
+void setDolmexicaStoryTextBackgroundSprite(StoryInstance* tInstance, int tID, const Vector3DI& tSprite);
+void setDolmexicaStoryTextBackgroundOffset(StoryInstance* tInstance, int tID, const Position& tOffset);
+void setDolmexicaStoryTextFaceSprite(StoryInstance* tInstance, int tID, const Vector3DI& tSprite);
+void setDolmexicaStoryTextFaceOffset(StoryInstance* tInstance, int tID, const Position& tOffset);
 void setDolmexicaStoryTextContinueAnimation(StoryInstance* tInstance, int tID, int tAnimation);
-void setDolmexicaStoryTextContinueOffset(StoryInstance* tInstance, int tID, Position tOffset);
+void setDolmexicaStoryTextContinueOffset(StoryInstance* tInstance, int tID, const Position& tOffset);
 void setDolmexicaStoryTextNameText(StoryInstance* tInstance, int tID, const char* tText);
-void setDolmexicaStoryTextNameFont(StoryInstance* tInstance, int tID, Vector3DI tFont);
-void setDolmexicaStoryTextNameOffset(StoryInstance* tInstance, int tID, Position tOffset);
+void setDolmexicaStoryTextNameFont(StoryInstance* tInstance, int tID, const Vector3DI& tFont);
+void setDolmexicaStoryTextNameOffset(StoryInstance* tInstance, int tID, const Position& tOffset);
 
+int getDolmexicaStoryTextNextState(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryTextNextState(StoryInstance* tInstance, int tID, int tNextState);
-void setDolmexicaStoryTextLockToCharacter(StoryInstance* tInstance, int tID, int tCharacterID, Position tOffset);
-void setDolmexicaStoryTextLockToCharacter(StoryInstance* tInstance, int tID, int tCharacterID, Position tOffset, int tHelperID);
+void setDolmexicaStoryTextLockToCharacter(StoryInstance* tInstance, int tID, int tCharacterID, const Position& tOffset);
+void setDolmexicaStoryTextLockToCharacter(StoryInstance* tInstance, int tID, int tCharacterID, const Position& tOffset, int tHelperID);
 void setDolmexicaStoryTextInactive(StoryInstance* tInstance, int tID);
+int isDolmexicaStoryTextBuiltUp(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryTextBuiltUp(StoryInstance* tInstance, int tID);
+void setDolmexicaStoryTextPositionX(StoryInstance* tInstance, int tID, double tX);
+void setDolmexicaStoryTextPositionY(StoryInstance* tInstance, int tID, double tY);
 void addDolmexicaStoryTextPositionX(StoryInstance* tInstance, int tID, double tX);
 void addDolmexicaStoryTextPositionY(StoryInstance* tInstance, int tID, double tY);
 
-void setDolmexicaStoryIDName(StoryInstance* tInstance, int tID, std::string tName);
-int getDolmexicaStoryTextIDFromName(StoryInstance* tInstance, std::string tName);
+void setDolmexicaStoryIDName(StoryInstance* tInstance, int tID, const std::string& tName);
+int getDolmexicaStoryTextIDFromName(StoryInstance* tInstance, const std::string& tName);
 
 void changeDolmexicaStoryState(StoryInstance* tInstance, int tNextState);
 void changeDolmexicaStoryStateOutsideStateHandler(StoryInstance* tInstance, int tNextState);
@@ -155,14 +168,18 @@ int getDolmexicaStoryStateNumber(StoryInstance* tInstance);
 
 int getDolmexicaStoryAnimationTimeLeft(StoryInstance* tInstance, int tID);
 double getDolmexicaStoryAnimationPositionX(StoryInstance* tInstance, int tID);
+double getDolmexicaStoryAnimationPositionY(StoryInstance* tInstance, int tID);
 
-void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* tName, int tPreferredPalette, int tAnimation, Position tPosition);
+void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* tName, int tPreferredPalette, int tAnimation, const Position& tPosition);
 void removeDolmexicaStoryCharacter(StoryInstance* tInstance, int tID);
+int getDolmexicaStoryCharacterIsBoundToStage(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryCharacterBoundToStage(StoryInstance* tInstance, int tID, int tIsBoundToStage);
+int getDolmexicaStoryCharacterHasShadow(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryCharacterShadow(StoryInstance* tInstance, int tID, double tBasePositionY);
 int getDolmexicaStoryCharacterAnimation(StoryInstance* tInstance, int tID);
 void changeDolmexicaStoryCharacterAnimation(StoryInstance* tInstance, int tID, int tAnimation);
 double getDolmexicaStoryCharacterPositionX(StoryInstance* tInstance, int tID);
+double getDolmexicaStoryCharacterPositionY(StoryInstance* tInstance, int tID);
 void setDolmexicaStoryCharacterPositionX(StoryInstance* tInstance, int tID, double tX);
 void setDolmexicaStoryCharacterPositionY(StoryInstance* tInstance, int tID, double tY);
 void addDolmexicaStoryCharacterPositionX(StoryInstance* tInstance, int tID, double tX);
@@ -170,7 +187,7 @@ void addDolmexicaStoryCharacterPositionY(StoryInstance* tInstance, int tID, doub
 void setDolmexicaStoryCharacterScaleX(StoryInstance* tInstance, int tID, double tX);
 void setDolmexicaStoryCharacterScaleY(StoryInstance* tInstance, int tID, double tY);
 void setDolmexicaStoryCharacterIsFacingRight(StoryInstance* tInstance, int tID, int tIsFacingRight);
-void setDolmexicaStoryCharacterColor(StoryInstance* tInstance, int tID, Vector3D tColor);
+void setDolmexicaStoryCharacterColor(StoryInstance* tInstance, int tID, const Vector3D& tColor);
 void setDolmexicaStoryCharacterOpacity(StoryInstance* tInstance, int tID, double tOpacity);
 void setDolmexicaStoryCharacterAngle(StoryInstance* tInstance, int tID, double tAngle);
 void addDolmexicaStoryCharacterAngle(StoryInstance* tInstance, int tID, double tAngle);
@@ -186,10 +203,9 @@ void setDolmexicaStoryFloatVariable(StoryInstance* tInstance, int tID, double tV
 void addDolmexicaStoryFloatVariable(StoryInstance* tInstance, int tID, double tValue);
 
 std::string getDolmexicaStoryStringVariable(StoryInstance* tInstance, int tID);
-void setDolmexicaStoryStringVariable(StoryInstance* tInstance, int tID, std::string tValue);
-void addDolmexicaStoryStringVariable(StoryInstance* tInstance, int tID, std::string tValue);
+void setDolmexicaStoryStringVariable(StoryInstance* tInstance, int tID, const std::string& tValue);
+void addDolmexicaStoryStringVariable(StoryInstance* tInstance, int tID, const std::string& tValue);
 void addDolmexicaStoryStringVariable(StoryInstance* tInstance, int tID, int tValue);
-
 
 StoryInstance* getDolmexicaStoryRootInstance();
 StoryInstance* getDolmexicaStoryInstanceParent(StoryInstance* tInstance);
@@ -208,3 +224,5 @@ void resumeDolmexicaStoryMusic();
 void setDolmexicaStoryCameraFocusX(double x);
 void setDolmexicaStoryCameraFocusY(double y);
 void setDolmexicaStoryCameraZoom(double tScale);
+
+int getDolmexicaStoryCoordinateP();

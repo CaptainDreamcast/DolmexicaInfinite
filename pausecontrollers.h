@@ -14,7 +14,7 @@ void setDreamSuperPauseMoveTime(DreamPlayer* tPlayer, int tMoveTime);
 void setDreamSuperPauseIsPausingBG(DreamPlayer* tPlayer, int tIsPausingBG);
 void setDreamSuperPauseAnimation(DreamPlayer* tPlayer, int tIsInPlayerFile, int tAnimationNumber);
 void setDreamSuperPauseSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tSoundGroup, int tSoundItem);
-void setDreamSuperPausePosition(DreamPlayer* tPlayer, double tX, double tY);
+void setDreamSuperPausePosition(DreamPlayer* tPlayer, double tX, double tY, int tCoordinateP);
 void setDreamSuperPauseDarkening(DreamPlayer* tPlayer, int tIsDarkening);
 void setDreamSuperPausePlayer2DefenseMultiplier(DreamPlayer* tPlayer, double tMultiplier);
 void setDreamSuperPausePowerToAdd(DreamPlayer* tPlayer, int tPowerToAdd);

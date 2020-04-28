@@ -1,6 +1,7 @@
 #include "mugenbackgroundstatehandler.h"
 
 #include <prism/log.h>
+#include <prism/math.h>
 
 #include "mugenstagehandler.h"
 #include "mugenassignmentevaluator.h"
@@ -71,6 +72,7 @@ static struct {
 } gMugenBackgroundStateHandlerData;
 
 static void loadBackgroundStateHandler(void* /*tData*/) {
+	setProfilingSectionMarkerCurrentFunction();
 	gMugenBackgroundStateHandlerData.mStates.mBackgroundStateGroups = new_vector();
 }
 
@@ -137,15 +139,25 @@ static void handleAnimController(BackgroundState* e, StaticStageHandlerElement* 
 	int anim = evaluateDreamAssignmentAndReturnAsInteger(&controller->mValue, NULL);
 	setStageElementAnimation(tElement, anim);
 }
+
 static void handleSinXController(BackgroundState* e, StaticStageHandlerElement* tElement) {
-	(void)e;
-	(void)tElement;
+	BackgroundSingleValueController* controller = (BackgroundSingleValueController*)(&e->mController);
+
+	if (controller->mHasAssignmentValue) {
+		const auto amplitudePeriodPhase = evaluateDreamAssignmentAndReturnAsVector3D(&controller->mValue, NULL);
+		const auto val = calculateStageElementSinOffset(e->mTime, amplitudePeriodPhase.x, amplitudePeriodPhase.y, amplitudePeriodPhase.z);
+		setStageElementSinOffsetX(tElement, val);
+	}
 }
 static void handleSinYController(BackgroundState* e, StaticStageHandlerElement* tElement) {
-	(void)e;
-	(void)tElement;
-}
+	BackgroundSingleValueController* controller = (BackgroundSingleValueController*)(&e->mController);
 
+	if (controller->mHasAssignmentValue) {
+		const auto amplitudePeriodPhase = evaluateDreamAssignmentAndReturnAsVector3D(&controller->mValue, NULL);
+		const auto val = calculateStageElementSinOffset(e->mTime, amplitudePeriodPhase.x, amplitudePeriodPhase.y, amplitudePeriodPhase.z);
+		setStageElementSinOffsetY(tElement, val);
+	}
+}
 
 static void handleSingleBackgroundControllerForOneElement(void* tCaller, void* tData) {
 	BackgroundState* e = (BackgroundState*)tCaller;
@@ -220,6 +232,7 @@ static void updateSingleBackgroundGroup(void* tCaller, void* tData) {
 
 static void updateBackgroundStateHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	vector_map(&gMugenBackgroundStateHandlerData.mStates.mBackgroundStateGroups, updateSingleBackgroundGroup, NULL);
 }
 
@@ -294,15 +307,12 @@ static void loadControllerType(BackgroundState* e, MugenDefScriptGroup* tGroup) 
 	}
 	else if (!strcmp("posset", text)) {
 		loadPhysicsController(e, BACKGROUND_STATE_CONTROLLER_POS_SET, tGroup);
-
 	}
 	else if (!strcmp("posadd", text)) {
 		loadPhysicsController(e, BACKGROUND_STATE_CONTROLLER_POS_ADD, tGroup);
-
 	}
 	else if (!strcmp("anim", text)) {
 		loadSingleValueController(e, BACKGROUND_STATE_CONTROLLER_ANIM, tGroup);
-
 	}
 	else if (!strcmp("sinx", text)) {
 		loadSingleValueController(e, BACKGROUND_STATE_CONTROLLER_SIN_X, tGroup);
@@ -322,15 +332,18 @@ static void loadControllerType(BackgroundState* e, MugenDefScriptGroup* tGroup) 
 static Vector3DI getTimeFromControllerGroup(MugenDefScriptGroup* tGroup) {
 	if (isMugenDefStringVectorVariableAsGroup(tGroup, "time")) {
 		MugenStringVector vector = getMugenDefStringVectorVariableAsGroup(tGroup, "time");
-		if (vector.mSize == 2) {
+		if (vector.mSize == 1) {
+			return makeVector3DI(atoi(vector.mElement[0]), atoi(vector.mElement[0]), -1);
+		}
+		else if (vector.mSize == 2) {
 			return makeVector3DI(atoi(vector.mElement[0]), atoi(vector.mElement[1]), -1);
 		}
 		else if (vector.mSize >= 3) {
 			return makeVector3DI(atoi(vector.mElement[0]), atoi(vector.mElement[1]), atoi(vector.mElement[2]));
 		}
 		else {
-			logErrorFormat("Unable to read time vector with size %d. Default to -1, -1, -1.", vector.mSize);
-			return makeVector3DI(-1, -1, -1);
+			logWarningFormat("Unable to read time vector with size %d. Default to 0, INF, -1.", vector.mSize);
+			return makeVector3DI(0, INF, -1);
 		}
 	}
 	else if (isMugenDefNumberVariableAsGroup(tGroup, "time")) {
@@ -338,8 +351,8 @@ static Vector3DI getTimeFromControllerGroup(MugenDefScriptGroup* tGroup) {
 		return makeVector3DI(time, time, -1);
 	}
 	else {
-		logError("Unable to read time variable. Default to -1, -1, -1.");
-		return makeVector3DI(-1, -1, -1);
+		logWarning("Unable to read time variable. Default to 0, INF, -1.");
+		return makeVector3DI(0, INF, -1);
 	}
 }
 
@@ -394,6 +407,22 @@ void setBackgroundStatesFromScript(MugenDefScript * tScript)
 		loadBackgroundStatesFromGroup(current);
 		current = current->mNext;
 	}
+}
+
+static void resetSingleBackgroundController(void* /*tCaller*/, void* tData) {
+	BackgroundState* e = (BackgroundState*)tData;
+	e->mTime = 0;
+}
+
+static void resetSingleBackgroundGroup(void* /*tCaller*/, void* tData) {
+	BackgroundStateGroup* group = (BackgroundStateGroup*)tData;
+	vector_map(&group->mStates, resetSingleBackgroundController, NULL);
+	group->mTime = 0;
+}
+
+void resetBackgroundStateHandler()
+{
+	vector_map(&gMugenBackgroundStateHandlerData.mStates.mBackgroundStateGroups, resetSingleBackgroundGroup, NULL);
 }
 
 

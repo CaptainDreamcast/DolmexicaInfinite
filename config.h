@@ -4,10 +4,12 @@
 
 #include <prism/actorhandler.h>
 #include <prism/geometry.h>
+#include <prism/saveload.h>
 
 void loadMugenConfig();
 void loadMugenSystemFonts();
 void loadMugenFightFonts();
+void loadMugenStoryFonts(const char* tPath);
 
 std::string getGameTitle();
 const std::string& getDolmexicaAssetFolder();
@@ -48,7 +50,9 @@ int getGameMidiVolume();
 int getUnscaledGameMidiVolume();
 void setUnscaledGameMidiVolume(int tMidiVolume);
 int getSoundAreStereoEffectsActive();
+double getSoundPanningWidthFactor();
 int getArcadeAIRandomColor();
+int getArcadeAICheat();
 Vector3DI getArcadeAIRampStart();
 Vector3DI getArcadeAIRampEnd();
 Vector3DI getSurvivalAIRampStart();
@@ -61,7 +65,19 @@ int getGlobalVariable(int tIndex);
 void setGlobalFloatVariable(int tIndex, double tValue);
 void addGlobalFloatVariable(int tIndex, double tValue);
 double getGlobalFloatVariable(int tIndex);
-void setGlobalStringVariable(int tID, std::string tValue);
-void addGlobalStringVariable(int tID, std::string tValue);
+void setGlobalStringVariable(int tID, const std::string& tValue);
+void addGlobalStringVariable(int tID, const std::string& tValue);
 void addGlobalStringVariable(int tID, int tValue);
-std::string getGlobalStringVariable(int tID);
+const std::string& getGlobalStringVariable(int tID);
+
+void loadMugenConfigSave(PrismSaveSlot tSaveSlot);
+void saveMugenConfigSave(PrismSaveSlot tSaveSlot);
+void deleteMugenConfigSave(PrismSaveSlot tSaveSlot);
+int hasMugenConfigSave(PrismSaveSlot tSaveSlot);
+size_t getMugenConfigSaveSize();
+
+void loadGlobalVariables(PrismSaveSlot tSaveSlot);
+void saveGlobalVariables(PrismSaveSlot tSaveSlot);
+void deleteGlobalVariables(PrismSaveSlot tSaveSlot);
+int hasGlobalVariablesSave(PrismSaveSlot tSaveSlot);
+size_t getGlobalVariablesSaveSize();

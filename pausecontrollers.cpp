@@ -61,6 +61,8 @@ static struct {
 } gPauseControllerData;
 
 static void loadPauseControllerHandler(void*) {
+	setProfilingSectionMarkerCurrentFunction();
+
 	gPauseControllerData.mSuperPause.mIsActive = 0;
 	gPauseControllerData.mSuperPause.mWasFinishedThisFrame = 0;
 	gPauseControllerData.mPause.mIsActive = 0;
@@ -96,6 +98,7 @@ static void updatePause() {
 }
 
 static void updatePauseControllerHandler(void*) {
+	setProfilingSectionMarkerCurrentFunction();
 	updateSuperPause();
 	updatePause();
 }
@@ -114,7 +117,6 @@ int setDreamSuperPauseActiveAndReturnIfWorked(DreamPlayer * tPlayer)
 	}
 	gPauseControllerData.mSuperPause.mIsActive = 1;
 	gPauseControllerData.mSuperPause.mPlayer = tPlayer;
-	setPlayerTargetsSuperDefenseMultiplier(tPlayer);
 	return 1;
 }
 
@@ -197,7 +199,7 @@ void setDreamSuperPauseAnimation(DreamPlayer* tPlayer, int tIsInPlayerFile, int 
 		}
 		animation = getPlayerAnimation(tPlayer, tAnimationNumber);
 		sprites = getPlayerSprites(tPlayer);
-		baseScale = 1.0; // TODO: player 480p (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/179)
+		baseScale = getPlayerToCameraScale(tPlayer);
 	}
 	else {
 		animation = getDreamFightEffectAnimation(tAnimationNumber);
@@ -227,13 +229,14 @@ void setDreamSuperPauseSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tSou
 	tryPlayMugenSoundAdvanced(soundFile, tSoundGroup, tSoundItem, getPlayerMidiVolumeForPrism(tPlayer));
 }
 
-void setDreamSuperPausePosition(DreamPlayer* tPlayer, double tX, double tY)
+void setDreamSuperPausePosition(DreamPlayer* tPlayer, double tX, double tY, int tCoordinateP)
 {
 	int isPlayerFacingRight = getPlayerIsFacingRight(tPlayer);
 	if (!isPlayerFacingRight) tX *= -1;
 
-	Position mPlayerPosition = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(tPlayer)) + getPlayerPosition(tPlayer, getPlayerCoordinateP(tPlayer));
-	gPauseControllerData.mSuperPause.mAnimationReferencePosition = vecAdd(makePosition(tX, tY, 0), mPlayerPosition);
+	const auto superPauseOffset = transformDreamCoordinatesVector(makePosition(tX, tY, 0), tCoordinateP, getDreamMugenStageHandlerCameraCoordinateP());
+	Position mPlayerPosition = getDreamStageCoordinateSystemOffset(getDreamMugenStageHandlerCameraCoordinateP()) + getPlayerPosition(tPlayer, getDreamMugenStageHandlerCameraCoordinateP());
+	gPauseControllerData.mSuperPause.mAnimationReferencePosition = vecAdd(superPauseOffset, mPlayerPosition);
 	gPauseControllerData.mSuperPause.mAnimationReferencePosition.z = SUPERPAUSE_Z;
 }
 
@@ -249,14 +252,15 @@ void setDreamSuperPauseDarkening(DreamPlayer* /*tPlayer*/, int tIsDarkening)
 	}
 }
 
-void setDreamSuperPausePlayer2DefenseMultiplier(DreamPlayer* /*tPlayer*/, double tMultiplier)
+void setDreamSuperPausePlayer2DefenseMultiplier(DreamPlayer* tPlayer, double tMultiplier)
 {
 	if (!tMultiplier) {
-		gPauseControllerData.mSuperPause.mPlayer2DefenseMultiplier = getDreamSuperTargetDefenseMultiplier(); // TODO: use (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/859)
+		gPauseControllerData.mSuperPause.mPlayer2DefenseMultiplier = getDreamSuperTargetDefenseMultiplier();
 	}
 	else {
 		gPauseControllerData.mSuperPause.mPlayer2DefenseMultiplier = tMultiplier;
 	}
+	setPlayerTargetsSuperDefenseMultiplier(tPlayer, gPauseControllerData.mSuperPause.mPlayer2DefenseMultiplier);
 }
 
 void setDreamSuperPausePowerToAdd(DreamPlayer* tPlayer, int tPowerToAdd)

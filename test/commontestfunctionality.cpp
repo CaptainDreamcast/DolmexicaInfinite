@@ -20,6 +20,7 @@ void setupTestForScreenTestInAssetsFolder()
 	setMinimumLogType(LOG_TYPE_NONE);
 	initPrismWrapperWithMugenFlags();
 	loadMugenConfig();
+	loadGlobalVariables(PrismSaveSlot::AMOUNT);
 	disableWrapperErrorRecovery();
 	initDolmexicaDebug();
 	loadMugenSystemFonts();

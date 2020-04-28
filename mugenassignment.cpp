@@ -256,7 +256,7 @@ DreamMugenAssignment * makeDreamStringMugenAssignment(const char * tVal)
 	return (DreamMugenAssignment*)s;
 }
 
-DreamMugenAssignment * makeDream2DVectorMugenAssignment(Vector3D tVal)
+DreamMugenAssignment * makeDream2DVectorMugenAssignment(const Vector3D& tVal)
 {
 	DreamMugenDependOnTwoAssignment* data = (DreamMugenDependOnTwoAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenDependOnTwoAssignment));
 	gDebugAssignmentAmount++;
@@ -530,8 +530,6 @@ static DreamMugenAssignment* parseMugenNullFromString() {
 	data->mType = MUGEN_ASSIGNMENT_TYPE_NULL;
 	return (DreamMugenAssignment*)data;
 }
-
-
 
 static int isInBraces(char* tText) {
 	int n = strlen(tText);

@@ -38,3 +38,6 @@ void updateDreamSingleStateMachineByID(int tID);
 void setDreamSingleStateMachineToUpdateAgainByID(int tID);
 void setStateMachineHandlerToStory();
 void setStateMachineHandlerToFight();
+
+int getActiveStateMachineCoordinateP();
+void setActiveStateMachineCoordinateP(int tCoordinateP);

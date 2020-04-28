@@ -23,6 +23,7 @@
 #include "arcademode.h"
 #include "survivalmode.h"
 #include "victoryquotescreen.h"
+#include "stage.h"
 
 typedef enum {
 	ROUND_STATE_FADE_IN = 0,
@@ -206,6 +207,8 @@ static void stopSlowdown();
 
 static void loadGameLogic(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
+
 	setDreamTimeDisplayFinishedCB(timerFinishedCB);
 
 	gGameLogicData.mGameTime = 0;
@@ -252,6 +255,7 @@ static void resetGameLogic(void* tCaller) {
 	gotoNextRound(NULL);
 	removeAllWinIcons();
 	resetPlayersEntirely();
+	resetStageIfNotResetForRound();
 	if (getGameMode() == GAME_MODE_OSU) {
 		resetOsuHandler();
 	}
@@ -366,8 +370,6 @@ static void startTOPose() {
 		
 		startWinPose();
 	}
-
-	
 }
 
 static void koAnimationFinishedCB() {
@@ -449,6 +451,7 @@ static void resetRoundData(void* /*tCaller*/) {
 	enableDrawing();
 	resetPlayers();
 	resetDreamMugenStageHandlerCameraPosition();
+	resetStageForRound();
 	resetDreamTimer();
 	changePlayerState(getRootPlayer(0), 0);
 	changePlayerState(getRootPlayer(1), 0);
@@ -536,6 +539,8 @@ static void updateTimeSinceKO() {
 
 static void updateGameLogic(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
+
 	gGameLogicData.mGameTime++;
 
 	updateIntro();
@@ -551,7 +556,6 @@ static void updateGameLogic(void* tData) {
 ActorBlueprint getDreamGameLogic() {
 	return makeActorBlueprint(loadGameLogic, NULL, updateGameLogic);
 }
-
 
 int getDreamGameTime()
 {

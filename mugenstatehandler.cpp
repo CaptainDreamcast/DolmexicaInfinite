@@ -40,16 +40,20 @@ typedef struct {
 static struct {
 	map<int, RegisteredState> mRegisteredStates;
 	int mIsInStoryMode;
+	int mActiveCoordinateP;
 } gMugenStateHandlerData;
 
 static void loadStateHandler(void* tData) {
 	(void)tData;
-	
+	setProfilingSectionMarkerCurrentFunction();
 	gMugenStateHandlerData.mRegisteredStates.clear();
+
+	setActiveStateMachineCoordinateP(320);
 }
 
 static void unloadStateHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gMugenStateHandlerData.mRegisteredStates.clear();
 }
 
@@ -61,10 +65,12 @@ typedef struct {
 } MugenStateControllerCaller;
 
 static int evaluateTrigger(DreamMugenStateControllerTrigger* tTrigger, DreamPlayer* tPlayer) {
+	setProfilingSectionMarkerCurrentFunction();
 	return evaluateDreamAssignment(&tTrigger->mAssignment, tPlayer);
 }
 
 static void updateSingleController(void* tCaller, void* tData) {
+	setProfilingSectionMarkerCurrentFunction();
 	MugenStateControllerCaller* caller = (MugenStateControllerCaller*)tCaller;
 	DreamMugenStateController* controller = (DreamMugenStateController*)tData;
 	
@@ -94,12 +100,21 @@ static DreamMugenStates* getCurrentStateMachineStates(RegisteredState* tRegister
 }
 
 static void updateSingleState(RegisteredState* tRegisteredState, int tState, int tForceOwnStates) {
+	setProfilingSectionMarkerCurrentFunction();
 	if (!gMugenStateHandlerData.mIsInStoryMode && tRegisteredState->mPlayer && (!isPlayer(tRegisteredState->mPlayer) || isPlayerDestroyed(tRegisteredState->mPlayer))) return;
 
 	set<int> visitedStates;
 	
 	int isEvaluating = 1;
 	while (isEvaluating) {
+		if (!gMugenStateHandlerData.mIsInStoryMode) {
+			if (tRegisteredState->mIsUsingTemporaryOtherStateMachine && !tForceOwnStates) {
+				setActiveStateMachineCoordinateP(getPlayerCoordinateP(getPlayerOtherPlayer(tRegisteredState->mPlayer)));
+			}
+			else {
+				setActiveStateMachineCoordinateP(getPlayerCoordinateP(tRegisteredState->mPlayer));
+			}
+		}
 		DreamMugenStates* states = tForceOwnStates ? tRegisteredState->mStates : getCurrentStateMachineStates(tRegisteredState);
 		if (!stl_map_contains(states->mStates, tState)) break;
 		visitedStates.insert(tState);
@@ -123,6 +138,7 @@ static void updateSingleState(RegisteredState* tRegisteredState, int tState, int
 }
 
 static int updateSingleStateMachineByReference(RegisteredState* tRegisteredState) {
+	setProfilingSectionMarkerCurrentFunction();
 	if (tRegisteredState->mIsPaused) return 0;
 
 	tRegisteredState->mTimeInState++;
@@ -142,6 +158,7 @@ static int updateSingleStateMachineByReference(RegisteredState* tRegisteredState
 
 static int updateSingleStateMachine(void* tCaller, RegisteredState& tData) {
 	(void)tCaller;
+	setProfilingSectionMarkerCurrentFunction();
 	RegisteredState* registeredState = &tData;
 	registeredState->mTimeDilatationNow += registeredState->mTimeDilatation;
 	int updateAmount = (int)registeredState->mTimeDilatationNow;
@@ -162,6 +179,7 @@ static int updateSingleStateMachine(void* tCaller, RegisteredState& tData) {
 
 static void updateStateHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	stl_int_map_remove_predicate(gMugenStateHandlerData.mRegisteredStates, updateSingleStateMachine);
 }
 
@@ -210,6 +228,7 @@ void removeDreamRegisteredStateMachine(int tID)
 
 int getDreamRegisteredStateState(int tID)
 {
+	setProfilingSectionMarkerCurrentFunction();
 	assert(stl_map_contains(gMugenStateHandlerData.mRegisteredStates, tID));
 	RegisteredState* e = &gMugenStateHandlerData.mRegisteredStates[tID];
 
@@ -333,6 +352,7 @@ static void resetStateControllers(DreamMugenState* e) {
 
 void changeDreamHandledStateMachineState(int tID, int tNewState)
 {
+	setProfilingSectionMarkerCurrentFunction();
 	assert(stl_map_contains(gMugenStateHandlerData.mRegisteredStates, tID));
 	RegisteredState* e = &gMugenStateHandlerData.mRegisteredStates[tID];
 	DreamMugenStates* states = getCurrentStateMachineStates(e);
@@ -390,8 +410,8 @@ void changeDreamHandledStateMachineState(int tID, int tNewState)
 
 	if (hasPrismFlag(newState->mFlags, MUGEN_STATE_PROPERTY_SETTING_VELOCITY)) {
 		Vector3D vel = evaluateDreamAssignmentAndReturnAsVector3D(&newState->mVelocity, e->mPlayer);
-		setPlayerVelocityX(e->mPlayer, vel.x, getPlayerCoordinateP(e->mPlayer));
-		setPlayerVelocityY(e->mPlayer, vel.y, getPlayerCoordinateP(e->mPlayer));
+		setPlayerVelocityX(e->mPlayer, vel.x, getActiveStateMachineCoordinateP());
+		setPlayerVelocityY(e->mPlayer, vel.y, getActiveStateMachineCoordinateP());
 	}
 
 	if (hasPrismFlag(newState->mFlags, MUGEN_STATE_PROPERTY_ADDING_POWER)) {
@@ -470,4 +490,14 @@ void setStateMachineHandlerToStory()
 void setStateMachineHandlerToFight()
 {
 	gMugenStateHandlerData.mIsInStoryMode = 0;
+}
+
+int getActiveStateMachineCoordinateP()
+{
+	return gMugenStateHandlerData.mActiveCoordinateP;
+}
+
+void setActiveStateMachineCoordinateP(int tCoordinateP)
+{
+	gMugenStateHandlerData.mActiveCoordinateP = tCoordinateP;
 }

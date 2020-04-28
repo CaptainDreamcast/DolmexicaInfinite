@@ -8,8 +8,8 @@
 
 #include "playerdefinition.h"
 
-void playDreamHitSpark(Position tPosition, DreamPlayer* tPlayer, int tIsInPlayerFile, int tNumber, int tIsFacingRight, int tPositionCoordinateP);
-void addDreamDustCloud(Position tPosition, int tIsFacingRight, int tCoordinateP);
+void playDreamHitSpark(const Position& tPosition, DreamPlayer* tPlayer, int tIsInPlayerFile, int tNumber, int tIsFacingRight, int tPositionCoordinateP);
+void addDreamDustCloud(const Position& tPositionCameraSpace, int tIsFacingRight);
 void setDreamLifeBarPercentage(DreamPlayer* tPlayer, double tPercentage);
 void setDreamPowerBarPercentage(DreamPlayer* tPlayer, double tPercentage, int tValue);
 void enableDreamTimer();
@@ -34,14 +34,15 @@ void playDreamContinueAnimation(void(*tAnimationFinishedFunc)(), void(*tContinue
 void setDreamTimeDisplayFinishedCB(void(*tTimeDisplayFinishedFunc)());
 
 void setDreamBarInvisibleForOneFrame();
+void setDreamBarPaletteEffects(int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, double tColorFactor);
 
 void setTimerFreezeFlag();
 void setTimerInfinite();
 void setTimerFinite();
 int isTimerFinished();
 
-void setEnvironmentColor(Vector3DI tColors, int tTime, int tIsUnderCharacters);
-void setEnvironmentShake(int tDuration, double tFrequency, int tAmplitude, double tPhaseOffset);
+void setEnvironmentColor(const Vector3DI& tColors, int tTime, int tIsUnderCharacters);
+void setEnvironmentShake(int tDuration, double tFrequency, int tAmplitude, double tPhaseOffset, int tCoordinateP);
 
 void addNormalWinIcon(int tPlayer, int tIsPerfect);
 void addSpecialWinIcon(int tPlayer, int tIsPerfect);

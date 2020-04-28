@@ -72,6 +72,7 @@ int main(int argc, char** argv) {
 
 	initPrismWrapperWithMugenFlags();
 	loadMugenConfig();
+	loadGlobalVariables(PrismSaveSlot::AMOUNT);
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
 	loadMugenSystemFonts();
 	logg("Check framerate");

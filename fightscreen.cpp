@@ -101,8 +101,8 @@ static void loadFightScreen() {
 	instantiateActor(getProjectileHandler());
 	instantiateActor(getDolmexicaSoundHandler());
 
-	instantiateActor(getPreStateMachinePlayersBlueprint());
 	instantiateActor(getDreamMugenCommandHandler());
+	instantiateActor(getPreStateMachinePlayersBlueprint());
 	instantiateActor(getDreamMugenStateHandler());
 	if (isMugenDebugActive()) {
 		int actorID = instantiateActor(getFightDebug());

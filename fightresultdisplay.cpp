@@ -51,6 +51,7 @@ static struct {
 
 static void loadFightResultDisplay(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gFightResultDisplayData.mWhiteTexture = getEmptyWhiteTexture();
 	gFightResultDisplayData.mStage = FIGHT_RESULT_STAGE_INACTIVE;
 }
@@ -78,6 +79,7 @@ static void updateDisplayTime() {
 
 static void updateFightResultDisplay(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	if (!gFightResultDisplayData.mStage) return;
 
 	updateTextDisplay();
@@ -93,7 +95,7 @@ void setFightResultActive(int tIsActive) {
 	gFightResultDisplayData.mIsDisplayUsed = tIsActive;
 }
 
-void setFightResultData(int tIsEnabled, char* tMessage, Vector3DI tFont, Position tOffset, int tTextDisplayTime, int tLayerNo, int tFadeInTime, int tShowTime, int tFadeOutTime, int tIsShowingWinPose) {
+void setFightResultData(int tIsEnabled, char* tMessage, const Vector3DI& tFont, const Position& tOffset, int tTextDisplayTime, int tLayerNo, int tFadeInTime, int tShowTime, int tFadeOutTime, int tIsShowingWinPose) {
 	gFightResultDisplayData.mIsEnabled = tIsEnabled;
 	sprintf(gFightResultDisplayData.mMessage, "%.99s", tMessage);
 	gFightResultDisplayData.mFont = tFont;

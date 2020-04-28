@@ -80,9 +80,12 @@ void removeExplodsForPlayerAfterHit(DreamPlayer* tPlayer);
 void removeAllExplods();
 int getExplodIndexFromExplodID(DreamPlayer* tPlayer, int tExplodID);
 
+void setPlayerExplodPaletteEffects(DreamPlayer* tPlayer, int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, double tColorFactor, int tIgnoreOwnPal);
+
 int getExplodAmount(DreamPlayer* tPlayer);
 int getExplodAmountWithID(DreamPlayer* tPlayer, int tID);
 
 void setExplodsSpeed(double tSpeed);
+void setAllExplodsNoShadow();
 
 ActorBlueprint getDreamExplodHandler();

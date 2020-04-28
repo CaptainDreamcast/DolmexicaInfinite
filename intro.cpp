@@ -53,7 +53,7 @@ static Screen* loadLogoStoryboardAndReturnScreen() {
 	turnStringLowercase(versionString);
 
 	if (versionString == "dolmexica") {
-		setDolmexicaStoryScreenFile(logoStoryboard);
+		setDolmexicaStoryScreenFileAndPrepareScreen(logoStoryboard);
 		return getDolmexicaStoryScreen();
 	}
 	else {
@@ -79,7 +79,7 @@ static Screen* loadIntroStoryboardAndReturnScreen() {
 
 	gIntroData.mWaitCycleNow = 0;
 	if (versionString == "dolmexica") {
-		setDolmexicaStoryScreenFile(introStoryboard);
+		setDolmexicaStoryScreenFileAndPrepareScreen(introStoryboard);
 		return getDolmexicaStoryScreen();
 	}
 	else {

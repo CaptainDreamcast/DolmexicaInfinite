@@ -133,7 +133,7 @@ void destroyDreamMugenAssignment(DreamMugenAssignment* tAssignment);
 DreamMugenAssignment* makeDreamNumberMugenAssignment(int tVal);
 DreamMugenAssignment * makeDreamFloatMugenAssignment(double tVal);
 DreamMugenAssignment * makeDreamStringMugenAssignment(const char* tVal);
-DreamMugenAssignment* makeDream2DVectorMugenAssignment(Vector3D tVal);
+DreamMugenAssignment* makeDream2DVectorMugenAssignment(const Vector3D& tVal);
 DreamMugenAssignment* makeDreamAndMugenAssignment(DreamMugenAssignment* a, DreamMugenAssignment* b);
 DreamMugenAssignment* makeDreamOrMugenAssignment(DreamMugenAssignment* a, DreamMugenAssignment* b);
 

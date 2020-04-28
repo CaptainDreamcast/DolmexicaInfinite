@@ -59,7 +59,7 @@ typedef struct {
 	GeoRectangle mMenuRectangle;
 
 	int mIsBoxCursorVisible;
-	GeoRectangle mBoxCursorCoordinates;
+	GeoRectangle2D mBoxCursorCoordinates;
 
 	int mVisibleItemAmount;
 
@@ -321,9 +321,9 @@ static void loadCredits() {
 	setAnimationSize(gTitleScreenData.mCreditBGAnimationElement, makePosition(320, 20, 1), makePosition(0, 0, 0));
 	setAnimationColor(gTitleScreenData.mCreditBGAnimationElement, 0, 0, 0.5);
 
-	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 13", makePosition(0, 240, 51), 1);
+	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 14", makePosition(0, 240, 51), 1);
 	
-	gTitleScreenData.mRightCreditTextID = addMugenText("03/06/20 Presented by Dogma", makePosition(320, 240, 51), 1);
+	gTitleScreenData.mRightCreditTextID = addMugenText("05/01/20 Presented by Dogma", makePosition(320, 240, 51), 1);
 	setMugenTextAlignment(gTitleScreenData.mRightCreditTextID, MUGEN_TEXT_ALIGNMENT_RIGHT);
 }
 

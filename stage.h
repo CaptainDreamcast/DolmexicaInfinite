@@ -19,7 +19,7 @@ void playDreamStageMusic();
 
 double parseDreamCoordinatesToLocalCoordinateSystem(double tCoordinate, int tOtherCoordinateSystemAsP);
 
-Position getDreamPlayerStartingPosition(int i, int tCoordinateP);
+Position getDreamPlayerStartingPositionInCameraCoordinates(int i);
 Position getDreamCameraStartPosition(int tCoordinateP);
 Position getDreamStageCoordinateSystemOffset(int tCoordinateP);
 int doesDreamPlayerStartFacingLeft(int i);
@@ -27,7 +27,7 @@ int doesDreamPlayerStartFacingLeft(int i);
 double getDreamCameraPositionX(int tCoordinateP);
 double getDreamCameraPositionY(int tCoordinateP);
 double getDreamCameraZoom();
-void setDreamStageZoomOneFrame(double tScale, Position tStagePos);
+void setDreamStageZoomOneFrame(double tScale, const Position& tStagePos);
 double getDreamScreenFactorFromCoordinateP(int tCoordinateP);
 int getDreamStageCoordinateP();
 
@@ -36,9 +36,13 @@ double getDreamStageRightEdgeX(int tCoordinateP);
 double getDreamStageTopEdgeY(int tCoordinateP);
 double getDreamStageBottomEdgeY(int tCoordinateP);
 
+double getDreamStageBoundLeft(int tCoordinateP);
+double getDreamStageBoundRight(int tCoordinateP);
 
 double transformDreamCoordinates(double tVal, int tSrcP, int tDstP);
-Vector3D transformDreamCoordinatesVector(Vector3D tVal, int tSrcP, int tDstP);
+int transformDreamCoordinatesI(int tVal, int tSrcP, int tDstP);
+Vector3D transformDreamCoordinatesVector(const Vector3D& tVal, int tSrcP, int tDstP);
+Vector3DI transformDreamCoordinatesVectorI(const Vector3DI& tVal, int tSrcP, int tDstP);
 
 double getDreamStageTopOfScreenBasedOnPlayer(int tCoordinateP);
 double getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(int tCoordinateP);
@@ -58,7 +62,7 @@ char* getDreamStageName();
 int getDreamStageLeftEdgeMinimumPlayerDistance(int tCoordinateP);
 int getDreamStageRightEdgeMinimumPlayerDistance(int tCoordinateP);
 
-void setDreamStageCoordinates(Vector3DI tCoordinates);
+void setDreamStageCoordinates(const Vector3DI& tCoordinates);
 
 double getDreamStageShadowTransparency();
 Vector3D getDreamStageShadowColor();
@@ -72,3 +76,6 @@ void setDreamStageAutomaticCameraMovement();
 BlendType getBackgroundBlendType(MugenDefScriptGroup* tGroup);
 BlendType handleBackgroundMask(MugenDefScriptGroup* tGroup, BlendType tBlendType);
 Vector3D getBackgroundAlphaVector(MugenDefScriptGroup* tGroup);
+
+void resetStageIfNotResetForRound();
+void resetStageForRound();

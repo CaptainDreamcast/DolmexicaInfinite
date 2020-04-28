@@ -17,9 +17,7 @@ static int isLinebreak(char p) {
 	return p == '\n' || p == 0xD || p == 0xA;
 }
 
-
-
-static Buffer removeOsuComments(Buffer b) {
+static Buffer removeOsuComments(Buffer& b) {
 	Buffer dstBuffer = makeBuffer(allocMemory(b.mLength), b.mLength);
 	char* src = (char*)b.mData;
 	char* dst = (char*)dstBuffer.mData;

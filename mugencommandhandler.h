@@ -11,6 +11,7 @@ int registerDreamMugenCommands(int tControllerID, DreamMugenCommands* tCommands)
 int isDreamCommandActive(int tID, const char* tCommandName);
 int isDreamCommandActiveByLookupIndex(int tID, int tLookupIndex);
 int isDreamCommandForLookup(int tID, const char* tCommandName, int* oLookupIndex);
+int getDreamCommandMinimumDuration(int tID, const char* tCommandName);
 void setDreamPlayerCommandActiveForAI(int tID, const char* tCommandName, int tBufferTime);
 int setDreamPlayerCommandNumberActiveForDebug(int tID, int tCommandNumber);
 int getDreamPlayerCommandAmount(int tID);

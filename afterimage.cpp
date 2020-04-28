@@ -21,10 +21,10 @@ static void addHistoryBufferElement(DreamPlayer* tPlayer) {
 	AfterImageHistoryBufferEntry e;
 	const auto sprite = getMugenAnimationSprite(tPlayer->mAnimationElement);
 	e.mAnimation = createOneFrameMugenAnimationForSprite(sprite.x, sprite.y);
-	auto p = getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(tPlayer)) + getHandledPhysicsPosition(tPlayer->mPhysicsElement);
+	auto p = getDreamStageCoordinateSystemOffset(getDreamMugenStageHandlerCameraCoordinateP()) + getHandledPhysicsPosition(tPlayer->mPhysicsElement);
 	p.z = PLAYER_Z;
 	e.mAnimationElement = addMugenAnimation(e.mAnimation, &tPlayer->mHeader->mFiles.mSprites, p);
-	setMugenAnimationDrawScale(e.mAnimationElement, makePosition(getPlayerScaleX(tPlayer), getPlayerScaleY(tPlayer), 1) * tPlayer->mTempScale);
+	setMugenAnimationDrawScale(e.mAnimationElement, makePosition(getPlayerScaleX(tPlayer), getPlayerScaleY(tPlayer), 1) * tPlayer->mTempScale * getPlayerToCameraScale(tPlayer));
 	setMugenAnimationCameraPositionReference(e.mAnimationElement, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationCameraEffectPositionReference(e.mAnimationElement, getDreamMugenStageHandlerCameraEffectPositionReference());
 	setMugenAnimationCameraScaleReference(e.mAnimationElement, getDreamMugenStageHandlerCameraZoomReference());
@@ -43,10 +43,11 @@ static void addHistoryBufferElement(DreamPlayer* tPlayer) {
 	e.mWasVisible = getMugenAnimationVisibility(tPlayer->mAnimationElement);
 	setMugenAnimationVisibility(e.mAnimationElement, 0);
 	setMugenAnimationColor(e.mAnimationElement, afterImage.mStartColor.x, afterImage.mStartColor.y, afterImage.mStartColor.z);
+	setMugenAnimationColorInverted(e.mAnimationElement, afterImage.mIsColorInverted);
 	afterImage.mHistoryBuffer.push_front(e);
 }
 
-static void unloadHistoryBufferElement(AfterImageHistoryBufferEntry& tEntry) {
+static void unloadHistoryBufferElement(const AfterImageHistoryBufferEntry& tEntry) {
 	removeMugenAnimation(tEntry.mAnimationElement);
 	destroyMugenAnimation(tEntry.mAnimation);
 }
@@ -60,7 +61,7 @@ void removePlayerAfterImage(DreamPlayer* p)
 	}
 }
 
-void addAfterImage(DreamPlayer* tPlayer, int tHistoryBufferLength, int tDuration, int tTimeGap, int tFrameGap, Vector3D tStartColor, Vector3D tColorAdd, Vector3D tColorMultiply, BlendType tBlendType)
+void addAfterImage(DreamPlayer* tPlayer, int tHistoryBufferLength, int tDuration, int tTimeGap, int tFrameGap, const Vector3D& tStartColor, const Vector3D& tColorAdd, const Vector3D& tColorMultiply, int tIsColorInverted, BlendType tBlendType)
 {
 	DreamPlayerAfterImage& afterImage = tPlayer->mAfterImage;
 	afterImage.mHistoryBufferLength = tHistoryBufferLength;
@@ -71,6 +72,7 @@ void addAfterImage(DreamPlayer* tPlayer, int tHistoryBufferLength, int tDuration
 	afterImage.mStartColor = tStartColor;
 	afterImage.mColorAdd = tColorAdd;
 	afterImage.mColorMultiply = tColorMultiply;
+	afterImage.mIsColorInverted = tIsColorInverted;
 	afterImage.mBlendType = tBlendType;
 	afterImage.mIsActive = 1;
 }

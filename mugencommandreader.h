@@ -65,6 +65,7 @@ typedef struct {
 
 typedef struct {
 	Vector mInputs;
+	int mMinimumDuration;
 } DreamMugenCommand;
 
 typedef struct {

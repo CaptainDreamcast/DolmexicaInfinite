@@ -33,6 +33,7 @@
 #include "intro.h"
 #include "mugensound.h"
 #include "afterimage.h"
+#include "mugenstatehandler.h"
 
 #define GAME_MAKE_ANIM_UNDER_Z 31
 #define GAME_MAKE_ANIM_OVER_Z 51
@@ -548,7 +549,7 @@ typedef struct {
 } PlaySoundController;
 
 
-static void parsePlaySoundController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
+static void parsePlaySoundController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	PlaySoundController* e = (PlaySoundController*)allocMemoryOnMemoryStackOrMemory(sizeof(PlaySoundController));
 
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mValue);
@@ -567,7 +568,7 @@ static void parsePlaySoundController(DreamMugenStateController* tController, Mug
 		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pan", tGroup, &e->mPan);
 	}
 
-	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PLAY_SOUND;
+	tController->mType = tType;
 	tController->mData = e;
 }
 
@@ -870,7 +871,7 @@ static void parseSingleVarSetControllerEntry(VarSetControllerCaller* tCaller, co
 
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tName.data(), caller->mGroup, &e->mAssignment);
 
-	vector_push_back_owned(&caller->mController->mVarSets, e);
+	vector_push_back(&caller->mController->mVarSets, e);
 }
 
 static void loadSingleOriginalVarSetController(Vector* tDst, MugenDefScriptGroup* tGroup, MugenDefScriptGroupElement* tIDElement, VarSetType tType) {
@@ -879,7 +880,7 @@ static void loadSingleOriginalVarSetController(Vector* tDst, MugenDefScriptGroup
 	fetchDreamAssignmentFromGroupAsElement(tIDElement, &e->mID);
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mAssignment);
 
-	vector_push_back_owned(tDst, e);
+	vector_push_back(tDst, e);
 }
 
 static void unloadSingleVarSetEntry(void* tCaller, void* tData) {
@@ -911,7 +912,7 @@ static void parseVarSetController(DreamMugenStateController* tController, MugenD
 
 	if (vector_size(&e->mVarSets) != 1) {
 		logWarning("Unable to parse VarSetController. Missing elements. Defaulting to Null controller.");
-		vector_map(&e->mVarSets, unloadSingleVarSetEntry, NULL);
+		// unable to delete mugen assignments if on memory stack
 		delete_vector(&e->mVarSets);
 		parseNullController(tController, MUGEN_STATE_CONTROLLER_TYPE_NULL);
 		return;
@@ -1376,7 +1377,7 @@ static void parseNotHitByController(DreamMugenStateController* tController, Muge
 	tController->mData = e;
 }
 
-static void unloadMugenDefStringVector(MugenStringVector tVector) {
+static void unloadMugenDefStringVector(MugenStringVector& tVector) {
 	int i;
 	for (i = 0; i < tVector.mSize; i++) {
 		freeMemory(tVector.mElement[i]);
@@ -2372,7 +2373,7 @@ typedef struct {
 	DreamMugenAssignment* mPan;
 } SoundPanController;
 
-static void parseSoundPanController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
+static void parseSoundPanController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	SoundPanController* e = (SoundPanController*)allocMemoryOnMemoryStackOrMemory(sizeof(SoundPanController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("channel", tGroup, &e->mChannel);
@@ -2382,7 +2383,7 @@ static void parseSoundPanController(DreamMugenStateController* tController, Muge
 		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("pan", tGroup, &e->mPan);
 	}
 
-	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_PAN_SOUND;
+	tController->mType = tType;
 	tController->mData = e;
 }
 
@@ -2399,12 +2400,12 @@ typedef struct {
 	DreamMugenAssignment* mChannel;
 } SoundStopController;
 
-static void parseStopSoundController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
+static void parseStopSoundController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStateControllerType tType) {
 	SoundStopController* e = (SoundStopController*)allocMemoryOnMemoryStackOrMemory(sizeof(SoundStopController));
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("channel", tGroup, &e->mChannel);
 
-	tController->mType = MUGEN_STATE_CONTROLLER_TYPE_STOP_SOUND;
+	tController->mType = tType;
 	tController->mData = e;
 }
 
@@ -2677,6 +2678,40 @@ static void getThreeIntegerValuesWithDefaultValues(DreamMugenAssignment** tAssig
 	*v3 = vals[2];
 }
 
+static void getFourIntegerValuesWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* v1, int* v2, int* v3, int* v4, int tDefault1, int tDefault2, int tDefault3, int tDefault4) {
+	int vals[4];
+	if (!(*tAssignment)) {
+		vals[0] = tDefault1;
+		vals[1] = tDefault2;
+		vals[2] = tDefault3;
+		vals[3] = tDefault4;
+	}
+	else {
+		string flag;
+		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
+
+		char string[4][20], comma[3][10];
+		int items = sscanf(flag.data(), "%s %s %s %s %s %s %s", string[0], comma[0], string[1], comma[1], string[2], comma[2], string[3]);
+
+		int defaults[4];
+		defaults[0] = tDefault1;
+		defaults[1] = tDefault2;
+		defaults[2] = tDefault3;
+		defaults[3] = tDefault4;
+
+		int j;
+		for (j = 0; j < 4; j++) {
+			if (items < (1 + j * 2) || !strcmp("", string[j])) vals[j] = defaults[j];
+			else vals[j] = atoi(string[j]);
+		}
+	}
+
+	*v1 = vals[0];
+	*v2 = vals[1];
+	*v3 = vals[2];
+	*v4 = vals[3];
+}
+
 static void getSingleFloatValueOrDefault(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, double* tDst, double tDefault) {
 	if (!(*tAssignment)) *tDst = tDefault;
 	else *tDst = evaluateDreamAssignmentAndReturnAsFloat(tAssignment, tPlayer);
@@ -2738,10 +2773,22 @@ static void handleHelperSetOneIntegerElement(DreamMugenAssignment** tAssignment,
 	tFunc(tHelper, val);
 }
 
+static void handleHelperSetOneIntegerElementWithCoordinateP(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, int, int), int tDefault) {
+	int val;
+	getSingleIntegerValueOrDefault(tAssignment, tPlayer, &val, tDefault);
+	tFunc(tHelper, val, getActiveStateMachineCoordinateP());
+}
+
 static void handleHelperSetTwoIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, int, int), int tDefault1, int tDefault2) {
 	int val1, val2;
 	getTwoIntegerValuesWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
 	tFunc(tHelper, val1, val2);
+}
+
+static void handleHelperSetTwoIntegerElementsWithCoordinateP(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, int, int, int), int tDefault1, int tDefault2) {
+	int val1, val2;
+	getTwoIntegerValuesWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
+	tFunc(tHelper, val1, val2, getActiveStateMachineCoordinateP());
 }
 
 static void handleHelperSetTwoOptionalIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, int, int), void(tFuncDisable)(DreamPlayer*)) {
@@ -2774,6 +2821,12 @@ static void handleHelperSetTwoFloatElements(DreamMugenAssignment** tAssignment, 
 	tFunc(tHelper, val1, val2);
 }
 
+static void handleHelperSetTwoFloatElementsWithCoordinateP(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, double, double, int), double tDefault1, double tDefault2) {
+	double val1, val2;
+	getTwoFloatValuesWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
+	tFunc(tHelper, val1, val2, getActiveStateMachineCoordinateP());
+}
+
 static void handlePlayerSetOneIntegerElement(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, int), int tDefault) {
 	handleHelperSetOneIntegerElement(tAssignment, tPlayer, tPlayer, tFunc, tDefault);
 }
@@ -2783,8 +2836,8 @@ static void handlePlayerSetOneFloatElement(DreamMugenAssignment** tAssignment, D
 
 }
 
-static void handlePlayerSetTwoFloatElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, double, double), double tDefault1, double tDefault2) {
-	handleHelperSetTwoFloatElements(tAssignment, tPlayer, tPlayer, tFunc, tDefault1, tDefault2);
+static void handlePlayerSetTwoFloatElementsWithCoordinateP(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, void(tFunc)(DreamPlayer*, double, double, int), double tDefault1, double tDefault2) {
+	handleHelperSetTwoFloatElementsWithCoordinateP(tAssignment, tPlayer, tPlayer, tFunc, tDefault1, tDefault2);
 }
 
 static void handleIDSetOneIntegerElement(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(int, int), int tDefault) {
@@ -2840,12 +2893,12 @@ static int handleVelocitySetting(DreamMugenStateController* tController, DreamPl
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
-		setPlayerVelocityX(tPlayer, x, getPlayerCoordinateP(tPlayer));
+		setPlayerVelocityX(tPlayer, x, getActiveStateMachineCoordinateP());
 	}
 
 	if (e->mIsSettingY) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, tPlayer);
-		setPlayerVelocityY(tPlayer, y, getPlayerCoordinateP(tPlayer));
+		setPlayerVelocityY(tPlayer, y, getActiveStateMachineCoordinateP());
 	}
 
 	return 0;
@@ -2856,12 +2909,12 @@ static int handleVelocityMultiplication(DreamMugenStateController* tController, 
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
-		multiplyPlayerVelocityX(tPlayer, x, getPlayerCoordinateP(tPlayer));
+		multiplyPlayerVelocityX(tPlayer, x);
 	}
 
 	if (e->mIsSettingY) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, tPlayer);
-		multiplyPlayerVelocityY(tPlayer, y, getPlayerCoordinateP(tPlayer));
+		multiplyPlayerVelocityY(tPlayer, y);
 	}
 
 	return 0;
@@ -2872,12 +2925,12 @@ static int handleVelocityAddition(DreamMugenStateController* tController, DreamP
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
-		addPlayerVelocityX(tPlayer, x, getPlayerCoordinateP(tPlayer));
+		addPlayerVelocityX(tPlayer, x, getActiveStateMachineCoordinateP());
 	}
 
 	if (e->mIsSettingY) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, tPlayer);
-		addPlayerVelocityY(tPlayer, y, getPlayerCoordinateP(tPlayer));
+		addPlayerVelocityY(tPlayer, y, getActiveStateMachineCoordinateP());
 	}
 
 	return 0;
@@ -2888,12 +2941,12 @@ static int handlePositionSetting(DreamMugenStateController* tController, DreamPl
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
-		setPlayerPositionBasedOnScreenCenterX(tPlayer, x, getPlayerCoordinateP(tPlayer));
+		setPlayerPositionBasedOnScreenCenterX(tPlayer, x, getActiveStateMachineCoordinateP());
 	}
 
 	if (e->mIsSettingY) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, tPlayer);
-		setPlayerPositionY(tPlayer, y, getPlayerCoordinateP(tPlayer));
+		setPlayerPositionY(tPlayer, y, getActiveStateMachineCoordinateP());
 	}
 
 	return 0;
@@ -2904,12 +2957,12 @@ static int handlePositionAdding(DreamMugenStateController* tController, DreamPla
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
-		addPlayerPositionX(tPlayer, x, getPlayerCoordinateP(tPlayer));
+		addPlayerPositionX(tPlayer, x, getActiveStateMachineCoordinateP());
 	}
 
 	if (e->mIsSettingY) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, tPlayer);
-		addPlayerPositionY(tPlayer, y, getPlayerCoordinateP(tPlayer));
+		addPlayerPositionY(tPlayer, y, getActiveStateMachineCoordinateP());
 	}
 
 	return 0;
@@ -3021,16 +3074,16 @@ static double handlePanningValue(DreamMugenAssignment** tAssignment, DreamPlayer
 	if (!getSoundAreStereoEffectsActive()) return 0.0;
 
 	double pos;
-	const auto screenWidth = getDreamScreenWidth(getPlayerCoordinateP(tPlayer));
+	const auto screenWidth = getDreamScreenWidth(getActiveStateMachineCoordinateP());
 	if (tIsAbspan) {
 		pos = (screenWidth / 2.f) + pan;
 	}
 	else {
-		const auto playerPos = getPlayerScreenPositionX(tPlayer, getPlayerCoordinateP(tPlayer));
+		const auto playerPos = getPlayerScreenPositionX(tPlayer, getActiveStateMachineCoordinateP());
 		pos = playerPos + pan;
 	}
 
-	return clamp((pos / screenWidth) * 2.0 - 1.0, -1.0, 1.0);
+	return clamp((pos / screenWidth) * 2.0 - 1.0, -1.0, 1.0) * getSoundPanningWidthFactor();
 }
 
 static int handlePlaySound(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -3397,8 +3450,8 @@ static void handleHitDefinitionWithController(HitDefinitionController* e, DreamP
 	handleHelperSetOneIntegerElement(&e->mGuardSlideTime, tPlayer, tHelper, setHitDataGuardSlideTime, getHitDataGuardHitTime(tHelper));
 	handleHelperSetOneIntegerElement(&e->mAirHitTime, tPlayer, tHelper, setHitDataAirHitTime, 20);
 	handleHelperSetOneIntegerElement(&e->mGuardControlTime, tPlayer, tHelper, setHitDataGuardControlTime, getHitDataGuardSlideTime(tHelper));
-	handleHelperSetOneIntegerElement(&e->mGuardDistance, tPlayer, tHelper, setHitDataGuardDistance, getDefaultPlayerAttackDistance(tHelper));
-	handleHelperSetOneFloatElement(&e->mYAccel, tPlayer, tHelper, setHitDataYAccel, transformDreamCoordinates(0.7, 480, getPlayerCoordinateP(tHelper)));
+	handleHelperSetOneIntegerElement(&e->mGuardDistance, tPlayer, tHelper, setHitDataGuardDistance, getDefaultPlayerAttackDistance(tHelper, getActiveStateMachineCoordinateP()));
+	handleHelperSetOneFloatElement(&e->mYAccel, tPlayer, tHelper, setHitDataYAccel, transformDreamCoordinates(0.7, 640, getActiveStateMachineCoordinateP()));
 	handleHelperSetTwoFloatElements(&e->mGroundVelocity, tPlayer, tHelper, setHitDataGroundVelocity, 0, 0);
 	handleHelperSetOneFloatElement(&e->mGuardVelocity, tPlayer, tHelper, setHitDataGuardVelocity, getHitDataGroundVelocityX(tHelper));
 	handleHelperSetTwoFloatElements(&e->mAirVelocity, tPlayer, tHelper, setHitDataAirVelocity, 0, 0);
@@ -3431,7 +3484,7 @@ static void handleHitDefinitionWithController(HitDefinitionController* e, DreamP
 
 	handleHelperSetOneIntegerElement(&e->mFall, tPlayer, tHelper, setHitDataFall, 0);
 	handleHelperSetOneFloatElement(&e->mFallXVelocity, tPlayer, tHelper, setHitDataFallXVelocity, 0);
-	handleHelperSetOneFloatElement(&e->mFallYVelocity, tPlayer, tHelper, setHitDataFallYVelocity, transformDreamCoordinates(-9, 480, getPlayerCoordinateP(tHelper)));
+	handleHelperSetOneFloatElement(&e->mFallYVelocity, tPlayer, tHelper, setHitDataFallYVelocity, transformDreamCoordinates(-9, 640, getActiveStateMachineCoordinateP()));
 	handleHelperSetOneIntegerElement(&e->mFallCanBeRecovered, tPlayer, tHelper, setHitDataFallRecovery, 1);
 	handleHelperSetOneIntegerElement(&e->mFallRecoveryTime, tPlayer, tHelper, setHitDataFallRecoveryTime, 4);
 	handleHelperSetOneIntegerElement(&e->mFallDamage, tPlayer, tHelper, setHitDataFallDamage, 0);
@@ -3455,17 +3508,17 @@ static void handleHitDefinitionWithController(HitDefinitionController* e, DreamP
 	handleHitDefinitionSinglePowerAddition(&e->mGivePower, tPlayer, tHelper, setHitDataGivePower, getDreamDefaultAttackDamageReceivedToPowerMultiplier(), getHitDataDamage(tHelper));
 
 	handleHelperSetOneIntegerElement(&e->mPaletteEffectTime, tPlayer, tHelper, setHitDataPaletteEffectTime, 0);
-	handleHelperSetThreeIntegerElements(&e->mPaletteEffectMultiplication, tPlayer, tHelper, setHitDataPaletteEffectMultiplication, 1, 1, 1);
+	handleHelperSetThreeIntegerElements(&e->mPaletteEffectMultiplication, tPlayer, tHelper, setHitDataPaletteEffectMultiplication, 256, 256, 256);
 	handleHelperSetThreeIntegerElements(&e->mPaletteEffectAddition, tPlayer, tHelper, setHitDataPaletteEffectAddition, 0, 0, 0);
 
 	handleHelperSetOneIntegerElement(&e->mEnvironmentShakeTime, tPlayer, tHelper, setHitDataEnvironmentShakeTime, 0);
 	handleHelperSetOneFloatElement(&e->mEnvironmentShakeFrequency, tPlayer, tHelper, setHitDataEnvironmentShakeFrequency, 60.0);
-	handleHelperSetOneIntegerElement(&e->mEnvironmentShakeAmplitude, tPlayer, tHelper, setHitDataEnvironmentShakeAmplitude, (int)transformDreamCoordinates(-4.0, 240, getDreamStageCoordinateP()));
+	handleHelperSetOneIntegerElement(&e->mEnvironmentShakeAmplitude, tPlayer, tHelper, setHitDataEnvironmentShakeAmplitude, (int)transformDreamCoordinates(-4.0, 320, getDreamStageCoordinateP()));
 	handleHelperSetOneFloatElement(&e->mEnvironmentShakePhase, tPlayer, tHelper, setHitDataEnvironmentShakePhase, (getHitDataEnvironmentShakeFrequency(tHelper) >= 90.0) ? 90.0 : 0.0);
 
 	handleHelperSetOneIntegerElement(&e->mFallEnvironmentShakeTime, tPlayer, tHelper, setHitDataFallEnvironmentShakeTime, 0);
 	handleHelperSetOneFloatElement(&e->mFallEnvironmentShakeFrequency, tPlayer, tHelper, setHitDataFallEnvironmentShakeFrequency, 60.0);
-	handleHelperSetOneIntegerElement(&e->mFallEnvironmentShakeAmplitude, tPlayer, tHelper, setHitDataFallEnvironmentShakeAmplitude, (int)transformDreamCoordinates(-4.0, 240, getDreamStageCoordinateP()));
+	handleHelperSetOneIntegerElement(&e->mFallEnvironmentShakeAmplitude, tPlayer, tHelper, setHitDataFallEnvironmentShakeAmplitude, (int)transformDreamCoordinates(-4.0, 320, getDreamStageCoordinateP()));
 	handleHelperSetOneFloatElement(&e->mFallEnvironmentShakePhase, tPlayer, tHelper, setHitDataFallEnvironmentShakePhase, getHitDataFallEnvironmentShakeFrequency(tHelper) >= 90.0 ? 90.0 : 0);
 
 	setHitDataIsFacingRight(tHelper, getPlayerIsFacingRight(tHelper));
@@ -3525,7 +3578,7 @@ static int handleWidth(DreamMugenStateController* tController, DreamPlayer* tPla
 		getTwoIntegerValuesWithDefaultValues(&e->mPlayer, tPlayer, &player.x, &player.y, 0, 0);
 	}
 
-	setPlayerWidthOneFrame(tPlayer, stage, player);
+	setPlayerWidthOneFrame(tPlayer, stage, player, getActiveStateMachineCoordinateP());
 
 	return 0;
 }
@@ -3600,6 +3653,7 @@ static void handleSingleSpecialAssert(DreamMugenAssignment** tAssignment, DreamP
 	}
 	else if ("globalnoshadow" == flag) {
 		setAllPlayersNoShadow();
+		setAllExplodsNoShadow();
 	}
 	else if ("nomusic" == flag) {
 		setNoMusicFlag();
@@ -3639,11 +3693,11 @@ static int handleMakeDust(DreamMugenStateController* tController, DreamPlayer* t
 	Vector3D pos = evaluateDreamAssignmentAndReturnAsVector3D(&e->mPositionOffset, tPlayer);
 	int spacing = evaluateDreamAssignmentAndReturnAsInteger(&e->mSpacing, tPlayer);
 
-	addPlayerDust(tPlayer, 0, pos, spacing);
+	addPlayerDust(tPlayer, 0, pos, spacing, getActiveStateMachineCoordinateP());
 
 	if (e->mHasSecondDustCloud) {
 		pos = evaluateDreamAssignmentAndReturnAsVector3D(&e->mPositionOffset2, tPlayer);
-		addPlayerDust(tPlayer, 1, pos, spacing);
+		addPlayerDust(tPlayer, 1, pos, spacing, getActiveStateMachineCoordinateP());
 	}
 
 	return 0;
@@ -3898,12 +3952,12 @@ static int handleHitVelocitySetting(DreamMugenStateController* tController, Drea
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
-		setActiveHitDataVelocityX(tPlayer, x);
+		setActiveHitDataVelocityX(tPlayer, x, getActiveStateMachineCoordinateP());
 	}
 
 	if (e->mIsSettingY) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, tPlayer);
-		setActiveHitDataVelocityY(tPlayer, y);
+		setActiveHitDataVelocityY(tPlayer, y, getActiveStateMachineCoordinateP());
 	}
 
 	return 0;
@@ -3928,7 +3982,7 @@ static int handleFallEnvironmentShake(DreamPlayer* tPlayer) {
 	int ampl = getActiveHitDataFallEnvironmentShakeAmplitude(tPlayer);
 	double phase = getActiveHitDataFallEnvironmentShakePhase(tPlayer);
 
-	setEnvironmentShake(time, freq, ampl, phase);
+	setEnvironmentShake(time, freq, ampl, phase, getPlayerCoordinateP(tPlayer));
 
 	return 0;
 }
@@ -4203,7 +4257,7 @@ static int handleHitFallVelocity(DreamPlayer* tPlayer) {
 	return 0;
 }
 
-static void handleSingleNotHitBy(int tSlot, int tHasValue, MugenStringVector tValue, int tTime, DreamPlayer* tPlayer, void(*tResetFunc)(DreamPlayer*, int)) {
+static void handleSingleNotHitBy(int tSlot, int tHasValue, MugenStringVector& tValue, int tTime, DreamPlayer* tPlayer, void(*tResetFunc)(DreamPlayer*, int)) {
 	if (!tHasValue) return;
 	tResetFunc(tPlayer, tSlot);
 
@@ -4251,12 +4305,12 @@ static int handleHitFallSet(DreamMugenStateController* tController, DreamPlayer*
 
 	if (e->mHasXVelocity) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->mXVelocity, tPlayer);
-		setActiveHitDataFallXVelocity(otherPlayer, x);
+		setActiveHitDataFallXVelocity(otherPlayer, x, getActiveStateMachineCoordinateP());
 	}
 
 	if (e->mHasYVelocity) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->mYVelocity, tPlayer);
-		setActiveHitDataFallYVelocity(otherPlayer, y);
+		setActiveHitDataFallYVelocity(otherPlayer, y, getActiveStateMachineCoordinateP());
 	}
 
 	return 0;
@@ -4392,7 +4446,7 @@ static int handleSuperPause(DreamMugenStateController* tController, DreamPlayer*
 	handleSuperPauseAnimation(&e->mAnim, tPlayer);
 	handleSuperPauseSound(&e->mSound, tPlayer);
 
-	handlePlayerSetTwoFloatElements(&e->mPosition, tPlayer, setDreamSuperPausePosition, 0, 0);
+	handlePlayerSetTwoFloatElementsWithCoordinateP(&e->mPosition, tPlayer, setDreamSuperPausePosition, 0, 0);
 	handlePlayerSetOneIntegerElement(&e->mIsDarkening, tPlayer, setDreamSuperPauseDarkening, 1);
 	handlePlayerSetOneFloatElement(&e->mPlayer2DefenseMultiplier, tPlayer, setDreamSuperPausePlayer2DefenseMultiplier, 0);
 	handlePlayerSetOneIntegerElement(&e->mPowerToAdd, tPlayer, setDreamSuperPausePowerToAdd, 0);
@@ -4430,7 +4484,7 @@ static void handleHelperFacing(DreamMugenAssignment** tAssignment, DreamPlayer* 
 }
 
 static Position getFinalHelperPositionFromPositionType(DreamExplodPositionType tPositionType, Position mOffset, DreamPlayer* tPlayer) {
-	Position p1 = getPlayerPosition(tPlayer, getPlayerCoordinateP(tPlayer));
+	Position p1 = getPlayerPosition(tPlayer, getActiveStateMachineCoordinateP());
 
 
 	if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P1) {
@@ -4441,32 +4495,32 @@ static Position getFinalHelperPositionFromPositionType(DreamExplodPositionType t
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P2) {
 		DreamPlayer* target = getPlayerOtherPlayer(tPlayer);
-		Position p2 = getPlayerPosition(target, getPlayerCoordinateP(tPlayer));
+		Position p2 = getPlayerPosition(target, getActiveStateMachineCoordinateP());
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
 		return vecAdd(p2, mOffset);
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_FRONT) {
 		DreamPlayer* target = tPlayer;
-		Position p = makePosition(getPlayerScreenEdgeInFrontX(target), p1.y, 0);
+		Position p = makePosition(getPlayerScreenEdgeInFrontX(target, getActiveStateMachineCoordinateP()), p1.y, 0);
 		int isReversed = getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
 		return vecAdd(p, mOffset);
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_BACK) {
 		DreamPlayer* target = tPlayer;
-		Position p = makePosition(getPlayerScreenEdgeInBackX(target), p1.y, 0);
+		Position p = makePosition(getPlayerScreenEdgeInBackX(target, getActiveStateMachineCoordinateP()), p1.y, 0);
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
 		return vecAdd(p, mOffset);
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT) {
 		if (getPlayerIsFacingRight(tPlayer)) {
-			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
 			return vecAdd(p, mOffset);
 		}
 		else {
-			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
 			p.x -= mOffset.x;
 			p.y += mOffset.y;
 			return p;
@@ -4474,18 +4528,18 @@ static Position getFinalHelperPositionFromPositionType(DreamExplodPositionType t
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT) {
 		if (getPlayerIsFacingRight(tPlayer)) {
-			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
 			return vecAdd(p, mOffset);
 		}
 		else {
-			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
 			p.x -= mOffset.x;
 			p.y += mOffset.y;
 			return p;
 		}
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_NONE) {
-		Position p = makePosition(getDreamGameWidth(getPlayerCoordinateP(tPlayer)) / 2, p1.y, 0);
+		Position p = makePosition(getDreamGameWidth(getActiveStateMachineCoordinateP()) / 2, p1.y, 0);
 		return vecAdd(p, mOffset);
 	}
 	else {
@@ -4519,21 +4573,21 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 
 
 	handleHelperSetOneIntegerElement(&e->mCanControl, tPlayer, helper, setPlayerHelperControl, 0);
-	// TODO: own palette (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/208)
+	handleHelperSetOneIntegerElement(&e->mHasOwnPalette, tPlayer, helper, setPlayerHasOwnPalette, 0);
 	handleHelperSetOneIntegerElement(&e->mSuperMoveTime, tPlayer, helper, setPlayerSuperMoveTime, 0);
 	handleHelperSetOneIntegerElement(&e->mPauseMoveTime, tPlayer, helper, setPlayerPauseMoveTime, 0);
 
 	handleHelperScale(&e->mSizeScaleX, tPlayer, helper, setPlayerScaleX, getPlayerScaleX(tPlayer));
 	handleHelperScale(&e->mSizeScaleY, tPlayer, helper, setPlayerScaleY, getPlayerScaleY(tPlayer));
-	handleHelperSetOneIntegerElement(&e->mSizeGroundBack, tPlayer, helper, setPlayerGroundSizeBack, getPlayerGroundSizeBack(tPlayer));
-	handleHelperSetOneIntegerElement(&e->mSizeGroundFront, tPlayer, helper, setPlayerGroundSizeFront, getPlayerGroundSizeFront(tPlayer));
-	handleHelperSetOneIntegerElement(&e->mSizeAirBack, tPlayer, helper, setPlayerAirSizeBack, getPlayerAirSizeBack(tPlayer));
-	handleHelperSetOneIntegerElement(&e->mSizeAirFront, tPlayer, helper, setPlayerAirSizeFront, getPlayerAirSizeFront(tPlayer));
-	handleHelperSetOneIntegerElement(&e->mSizeHeight, tPlayer, helper, setPlayerHeight, getPlayerHeight(tPlayer));
+	handleHelperSetOneIntegerElementWithCoordinateP(&e->mSizeGroundBack, tPlayer, helper, setPlayerGroundSizeBack, getPlayerGroundSizeBack(tPlayer, getActiveStateMachineCoordinateP()));
+	handleHelperSetOneIntegerElementWithCoordinateP(&e->mSizeGroundFront, tPlayer, helper, setPlayerGroundSizeFront, getPlayerGroundSizeFront(tPlayer, getActiveStateMachineCoordinateP()));
+	handleHelperSetOneIntegerElementWithCoordinateP(&e->mSizeAirBack, tPlayer, helper, setPlayerAirSizeBack, getPlayerAirSizeBack(tPlayer, getActiveStateMachineCoordinateP()));
+	handleHelperSetOneIntegerElementWithCoordinateP(&e->mSizeAirFront, tPlayer, helper, setPlayerAirSizeFront, getPlayerAirSizeFront(tPlayer, getActiveStateMachineCoordinateP()));
+	handleHelperSetOneIntegerElementWithCoordinateP(&e->mSizeHeight, tPlayer, helper, setPlayerHeight, getPlayerHeight(tPlayer, getActiveStateMachineCoordinateP()));
 	handleHelperSetOneIntegerElement(&e->mSizeProjectilesDoScale, tPlayer, helper, setPlayerDoesScaleProjectiles, getPlayerDoesScaleProjectiles(tPlayer));
-	handleHelperSetTwoFloatElements(&e->mSizeHeadPosition, tPlayer, helper, setPlayerHeadPosition, getPlayerHeadPositionX(tPlayer), getPlayerHeadPositionY(tPlayer));
-	handleHelperSetTwoFloatElements(&e->mSizeMiddlePosition, tPlayer, helper, setPlayerMiddlePosition, getPlayerMiddlePositionX(tPlayer), getPlayerMiddlePositionY(tPlayer));
-	handleHelperSetOneIntegerElement(&e->mSizeShadowOffset, tPlayer, helper, setPlayerShadowOffset, getPlayerShadowOffset(tPlayer));
+	handleHelperSetTwoFloatElementsWithCoordinateP(&e->mSizeHeadPosition, tPlayer, helper, setPlayerHeadPosition, getPlayerHeadPositionX(tPlayer, getActiveStateMachineCoordinateP()), getPlayerHeadPositionY(tPlayer, getActiveStateMachineCoordinateP()));
+	handleHelperSetTwoFloatElementsWithCoordinateP(&e->mSizeMiddlePosition, tPlayer, helper, setPlayerMiddlePosition, getPlayerMiddlePositionX(tPlayer, getActiveStateMachineCoordinateP()), getPlayerMiddlePositionY(tPlayer, getActiveStateMachineCoordinateP()));
+	handleHelperSetOneIntegerElementWithCoordinateP(&e->mSizeShadowOffset, tPlayer, helper, setPlayerShadowOffset, getPlayerShadowOffset(tPlayer, getActiveStateMachineCoordinateP()));
 
 	string type;
 	evaluateDreamAssignmentAndReturnAsString(type, &e->mType, tPlayer);
@@ -4544,7 +4598,7 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 		setPlayerScreenBoundForever(helper, 0);
 	}
 
-	setPlayerPosition(helper, position, getPlayerCoordinateP(helper));
+	setPlayerPosition(helper, position, getActiveStateMachineCoordinateP());
 	handleHelperSetOneIntegerElement(&e->mStateNumber, tPlayer, helper, changePlayerState, 0);
 
 
@@ -4554,10 +4608,7 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 
 static int handleDestroySelf(DreamPlayer* tPlayer) {
 	logFormat("%d %d destroying self\n", tPlayer->mRootID, tPlayer->mID);
-
-	destroyPlayer(tPlayer);
-
-	return 1;
+	return destroyPlayer(tPlayer);
 }
 
 static int handleAddingLife(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -4569,7 +4620,7 @@ static int handleAddingLife(DreamMugenStateController* tController, DreamPlayer*
 	getSingleIntegerValueOrDefault(&e->mIsAbsolute, tPlayer, &isAbsolute, 0);
 
 	if (!isAbsolute) {
-		const auto defenseMultiplier = (1.0 / getPlayerDefenseMultiplier(tPlayer));
+		const auto defenseMultiplier = getInvertedPlayerDefenseMultiplier(tPlayer);
 		if (defenseMultiplier != 1.0) val = int(val * defenseMultiplier);
 	}
 
@@ -4617,12 +4668,12 @@ static int handleTargetVelocityAddController(DreamMugenStateController* tControl
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
-		addPlayerTargetVelocityX(tPlayer, id, x, getPlayerCoordinateP(tPlayer));
+		addPlayerTargetVelocityX(tPlayer, id, x, getActiveStateMachineCoordinateP());
 	}
 
 	if (e->mIsSettingY) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, tPlayer);
-		addPlayerTargetVelocityY(tPlayer, id, y, getPlayerCoordinateP(tPlayer));
+		addPlayerTargetVelocityY(tPlayer, id, y, getActiveStateMachineCoordinateP());
 	}
 
 	return 0;
@@ -4636,12 +4687,12 @@ static int handleTargetVelocitySetController(DreamMugenStateController* tControl
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
-		setPlayerTargetVelocityX(tPlayer, id, x, getPlayerCoordinateP(tPlayer));
+		setPlayerTargetVelocityX(tPlayer, id, x, getActiveStateMachineCoordinateP());
 	}
 
 	if (e->mIsSettingY) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, tPlayer);
-		setPlayerTargetVelocityY(tPlayer, id, y, getPlayerCoordinateP(tPlayer));
+		setPlayerTargetVelocityY(tPlayer, id, y, getActiveStateMachineCoordinateP());
 	}
 
 	return 0;
@@ -4715,7 +4766,7 @@ static int handleBindToRootController(DreamMugenStateController* tController, Dr
 	getSingleIntegerValueOrDefault(&e->mFacing, tPlayer, &facing, 0);
 	getTwoFloatValuesWithDefaultValues(&e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
 
-	bindPlayerToRoot(tPlayer, time, facing, offset);
+	bindPlayerToRoot(tPlayer, time, facing, offset, getActiveStateMachineCoordinateP());
 
 	return 0;
 }
@@ -4729,7 +4780,7 @@ static int handleBindToParentController(DreamMugenStateController* tController, 
 	getSingleIntegerValueOrDefault(&e->mFacing, tPlayer, &facing, 0);
 	getTwoFloatValuesWithDefaultValues(&e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
 
-	bindPlayerToParent(tPlayer, time, facing, offset);
+	bindPlayerToParent(tPlayer, time, facing, offset, getActiveStateMachineCoordinateP());
 
 	return 0;
 }
@@ -4774,7 +4825,7 @@ static int handleBindToTargetController(DreamMugenStateController* tController, 
 	getTwoFloatValuesWithDefaultValues(&e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
 	DreamPlayerBindPositionType bindType = handleBindToTargetPositionType(&e->mPosition, tPlayer);
 
-	bindPlayerToTarget(tPlayer, time, offset, bindType, id);
+	bindPlayerToTarget(tPlayer, time, offset, bindType, id, getActiveStateMachineCoordinateP());
 
 	return 0;
 }
@@ -4846,8 +4897,8 @@ static int handleMoveHitReset(DreamPlayer* tPlayer) {
 }
 
 static int handleGravity(DreamPlayer* tPlayer) {
-	double accel = getPlayerVerticalAcceleration(tPlayer);
-	addPlayerVelocityY(tPlayer, accel, getPlayerCoordinateP(tPlayer));
+	double accel = getPlayerVerticalAcceleration(tPlayer, getActiveStateMachineCoordinateP());
+	addPlayerVelocityY(tPlayer, accel, getActiveStateMachineCoordinateP());
 
 	return 0;
 }
@@ -4870,7 +4921,7 @@ static int handleTargetBindController(DreamMugenStateController* tController, Dr
 	getSingleIntegerValueOrDefault(&e->mID, tPlayer, &id, -1);
 	getTwoFloatValuesWithDefaultValues(&e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
 
-	bindPlayerTargetToPlayer(tPlayer, time, offset, id);
+	bindPlayerTargetToPlayer(tPlayer, time, offset, id, getActiveStateMachineCoordinateP());
 
 	return 0;
 }
@@ -4933,7 +4984,7 @@ static int handleReversalDefinition(DreamMugenStateController* tController, Drea
 }
 
 static Position getFinalProjectilePositionFromPositionType(DreamExplodPositionType tPositionType, Position mOffset, DreamPlayer* tPlayer) {
-	Position p1 = getPlayerPosition(tPlayer, getPlayerCoordinateP(tPlayer));
+	Position p1 = getPlayerPosition(tPlayer, getActiveStateMachineCoordinateP());
 
 
 	if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P1) {
@@ -4944,32 +4995,32 @@ static Position getFinalProjectilePositionFromPositionType(DreamExplodPositionTy
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P2) {
 		DreamPlayer* target = getPlayerOtherPlayer(tPlayer);
-		Position p2 = getPlayerPosition(target, getPlayerCoordinateP(tPlayer));
+		Position p2 = getPlayerPosition(target, getActiveStateMachineCoordinateP());
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
 		return vecAdd(p2, mOffset);
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_FRONT) {
 		DreamPlayer* target = tPlayer;
-		Position p = makePosition(getPlayerScreenEdgeInFrontX(target), p1.y, 0);
+		Position p = makePosition(getPlayerScreenEdgeInFrontX(target, getActiveStateMachineCoordinateP()), p1.y, 0);
 		int isReversed = getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
 		return vecAdd(p, mOffset);
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_BACK) {
 		DreamPlayer* target = tPlayer;
-		Position p = makePosition(getPlayerScreenEdgeInBackX(target), p1.y, 0);
+		Position p = makePosition(getPlayerScreenEdgeInBackX(target, getActiveStateMachineCoordinateP()), p1.y, 0);
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
 		return vecAdd(p, mOffset);
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT) {
 		if (getPlayerIsFacingRight(tPlayer)) {
-			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
 			return vecAdd(p, mOffset);
 		}
 		else {
-			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
 			p.x -= mOffset.x;
 			p.y += mOffset.y;
 			return p;
@@ -4977,18 +5028,18 @@ static Position getFinalProjectilePositionFromPositionType(DreamExplodPositionTy
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT) {
 		if (getPlayerIsFacingRight(tPlayer)) {
-			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
 			return vecAdd(p, mOffset);
 		}
 		else {
-			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getPlayerCoordinateP(tPlayer)), p1.y, 0);
+			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
 			p.x -= mOffset.x;
 			p.y += mOffset.y;
 			return p;
 		}
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_NONE) {
-		Position p = makePosition(getDreamGameWidth(getPlayerCoordinateP(tPlayer)) / 2, p1.y, 0);
+		Position p = makePosition(getDreamGameWidth(getActiveStateMachineCoordinateP()) / 2, p1.y, 0);
 		return vecAdd(p, mOffset);
 	}
 	else {
@@ -5016,7 +5067,7 @@ static int handleAfterImageGeneral(AfterImageController* e, DreamPlayer* tPlayer
 	if (!historyBufferLength) return 0;
 	historyBufferLength = std::min(60, historyBufferLength);
 	getSingleIntegerValueOrDefault(&e->mPalColor, tPlayer, &palColor, 256);
-	getSingleIntegerValueOrDefault(&e->mPalInvertAll, tPlayer, &palInvertAll, 0); // TODO: use (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/208)
+	getSingleIntegerValueOrDefault(&e->mPalInvertAll, tPlayer, &palInvertAll, 0);
 	getThreeIntegerValuesWithDefaultValues(&e->mPalBright, tPlayer, &palBright.x, &palBright.y, &palBright.z, 30, 30, 30);
 	getThreeIntegerValuesWithDefaultValues(&e->mPalContrast, tPlayer, &palContrast.x, &palContrast.y, &palContrast.z, 120, 120, 220);
 	getThreeIntegerValuesWithDefaultValues(&e->mPalPostBright, tPlayer, &palPostBright.x, &palPostBright.y, &palPostBright.z, 0, 0, 0);
@@ -5038,7 +5089,7 @@ static int handleAfterImageGeneral(AfterImageController* e, DreamPlayer* tPlayer
 		blendType = BLEND_TYPE_SUBTRACTION;
 	}
 
-	addAfterImage(tHelper, historyBufferLength, duration, timeGap, frameGap, startColor, colorAdd, colorMul, blendType);
+	addAfterImage(tHelper, historyBufferLength, duration, timeGap, frameGap, startColor, colorAdd, colorMul, palInvertAll, blendType);
 	return 0;
 }
 
@@ -5059,9 +5110,9 @@ static int handleProjectile(DreamMugenStateController* tController, DreamPlayer*
 	handleHelperSetTwoFloatElements(&e->mScale, tPlayer, p, setProjectileScale, 1, 1);
 	handleHelperSetOneIntegerElement(&e->mIsRemovingProjectileAfterHit, tPlayer, p, setProjectileRemoveAfterHit, 1);
 	handleHelperSetOneIntegerElement(&e->mRemoveTime, tPlayer, p, setProjectileRemoveTime, -1);
-	handleHelperSetTwoFloatElements(&e->mVelocity, tPlayer, p, setProjectileVelocity, 0, 0);
-	handleHelperSetTwoFloatElements(&e->mRemoveVelocity, tPlayer, p, setProjectileRemoveVelocity, 0, 0);
-	handleHelperSetTwoFloatElements(&e->mAcceleration, tPlayer, p, setProjectileAcceleration, 0, 0);
+	handleHelperSetTwoFloatElementsWithCoordinateP(&e->mVelocity, tPlayer, p, setProjectileVelocity, 0, 0);
+	handleHelperSetTwoFloatElementsWithCoordinateP(&e->mRemoveVelocity, tPlayer, p, setProjectileRemoveVelocity, 0, 0);
+	handleHelperSetTwoFloatElementsWithCoordinateP(&e->mAcceleration, tPlayer, p, setProjectileAcceleration, 0, 0);
 	handleHelperSetTwoFloatElements(&e->mVelocityMultipliers, tPlayer, p, setProjectileVelocityMultipliers, 1, 1);
 
 	handleHelperSetOneIntegerElement(&e->mHitAmountBeforeVanishing, tPlayer, p, setProjectileHitAmountBeforeVanishing, 1);
@@ -5069,9 +5120,9 @@ static int handleProjectile(DreamMugenStateController* tController, DreamPlayer*
 	handleHelperSetOneIntegerElement(&e->mPriority, tPlayer, p, setProjectilePriority, 1);
 	handleHelperSetOneIntegerElement(&e->mSpriteSpriority, tPlayer, p, setProjectileSpritePriority, 3);
 
-	handleHelperSetOneIntegerElement(&e->mEdgeBound, tPlayer, p, setProjectileEdgeBound, (int)transformDreamCoordinates(40, 240, getPlayerCoordinateP(p)));
-	handleHelperSetOneIntegerElement(&e->mStageBound, tPlayer, p, setProjectileStageBound, (int)transformDreamCoordinates(40, 240, getPlayerCoordinateP(p)));
-	handleHelperSetTwoIntegerElements(&e->mHeightBoundValues, tPlayer, p, setProjectileHeightBoundValues, (int)transformDreamCoordinates(-240, 240, getPlayerCoordinateP(p)), (int)transformDreamCoordinates(1, 240, getPlayerCoordinateP(p)));
+	handleHelperSetOneIntegerElementWithCoordinateP(&e->mEdgeBound, tPlayer, p, setProjectileEdgeBound, (int)transformDreamCoordinates(40, 320, getActiveStateMachineCoordinateP()));
+	handleHelperSetOneIntegerElementWithCoordinateP(&e->mStageBound, tPlayer, p, setProjectileStageBound, (int)transformDreamCoordinates(40, 320, getActiveStateMachineCoordinateP()));
+	handleHelperSetTwoIntegerElementsWithCoordinateP(&e->mHeightBoundValues, tPlayer, p, setProjectileHeightBoundValues, (int)transformDreamCoordinates(-240, 320, getActiveStateMachineCoordinateP()), (int)transformDreamCoordinates(1, 320, getActiveStateMachineCoordinateP()));
 
 	Position offset;
 	getTwoFloatValuesWithDefaultValues(&e->mOffset, p, &offset.x, &offset.y, 0, 0);
@@ -5079,7 +5130,7 @@ static int handleProjectile(DreamMugenStateController* tController, DreamPlayer*
 	int positionType;
 	getSingleIntegerValueOrDefault(&e->mPositionType, p, &positionType, EXPLOD_POSITION_TYPE_RELATIVE_TO_P1);
 	Position pos = getFinalProjectilePositionFromPositionType((DreamExplodPositionType)positionType, offset, tPlayer);
-	setProjectilePosition(p, pos);
+	setProjectilePosition(p, pos, getActiveStateMachineCoordinateP());
 
 	handleHelperSetOneIntegerElement(&e->mShadow, tPlayer, p, setProjectileShadow, 0);
 	handleHelperSetOneIntegerElement(&e->mSuperMoveTime, tPlayer, p, setProjectileSuperMoveTime, 0);
@@ -5131,18 +5182,45 @@ static int handleAppendToClipboardController(DreamMugenStateController* tControl
 	return 0;
 }
 
-static int handleAllPalFXController(DreamMugenStateController* /*tController*/, DreamPlayer* /*tPlayer*/) {
-	// TODO: Palettes (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/208)
+static void parsePalFXControllerGeneral(PalFXController* e, DreamPlayer* tPlayer, int& tTime, Vector3DI& tAddition, Vector3DI& tMultiplierInteger, Vector3DI& tSineAmplitude, int& tSinePeriod, int& tInvertAll, int& tColorInteger) {
+	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &tTime, 1);
+	getThreeIntegerValuesWithDefaultValues(&e->mAdd, tPlayer, &tAddition.x, &tAddition.y, &tAddition.z, 0, 0, 0);
+	getThreeIntegerValuesWithDefaultValues(&e->mMul, tPlayer, &tMultiplierInteger.x, &tMultiplierInteger.y, &tMultiplierInteger.z, 256, 256, 256);
+	getFourIntegerValuesWithDefaultValues(&e->mSinAdd, tPlayer, &tSineAmplitude.x, &tSineAmplitude.y, &tSineAmplitude.z, &tSinePeriod, 0, 0, 0, 1);
+	getSingleIntegerValueOrDefault(&e->mInvertAll, tPlayer, &tInvertAll, 0);
+	getSingleIntegerValueOrDefault(&e->mColor, tPlayer, &tColorInteger, 256);
+}
+
+static int handleAllPalFXController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	PalFXController* e = (PalFXController*)tController->mData;
+	int time;
+	Vector3DI addition, multiplierInteger, sineAmplitude;
+	int sinePeriod, invertAll, colorInteger;
+	parsePalFXControllerGeneral(e, tPlayer, time, addition, multiplierInteger, sineAmplitude, sinePeriod, invertAll, colorInteger);
+	setPlayerPaletteEffect(getRootPlayer(0), time, addition / 256.0, multiplierInteger / 256.0, sineAmplitude / 256.0, sinePeriod, invertAll, colorInteger / 256.0, 1);
+	setPlayerPaletteEffect(getRootPlayer(1), time, addition / 256.0, multiplierInteger / 256.0, sineAmplitude / 256.0, sinePeriod, invertAll, colorInteger / 256.0, 1);
+	setDreamStagePaletteEffects(time, addition / 256.0, multiplierInteger / 256.0, sineAmplitude / 256.0, sinePeriod, invertAll, colorInteger / 256.0);
+	setDreamBarPaletteEffects(time, addition / 256.0, multiplierInteger / 256.0, sineAmplitude / 256.0, sinePeriod, invertAll, colorInteger / 256.0);
 	return 0;
 }
 
-static int handlePalFXController(DreamMugenStateController* /*tController*/, DreamPlayer* /*tPlayer*/) {
-	// TODO: Palettes (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/208)
+static int handlePalFXController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	PalFXController* e = (PalFXController*)tController->mData;
+	int time;
+	Vector3DI addition, multiplierInteger, sineAmplitude;
+	int sinePeriod, invertAll, colorInteger;
+	parsePalFXControllerGeneral(e, tPlayer, time, addition, multiplierInteger, sineAmplitude, sinePeriod, invertAll, colorInteger);
+	setPlayerPaletteEffect(tPlayer, time, addition / 256.0, multiplierInteger / 256.0, sineAmplitude / 256.0, sinePeriod, invertAll, colorInteger / 256.0, 0);
 	return 0;
 }
 
-static int handleBGPalFXController(DreamMugenStateController* /*tController*/, DreamPlayer* /*tPlayer*/) {
-	// TODO: Palettes (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/208)
+static int handleBGPalFXController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
+	PalFXController* e = (PalFXController*)tController->mData;
+	int time;
+	Vector3DI addition, multiplierInteger, sineAmplitude;
+	int sinePeriod, invertAll, colorInteger;
+	parsePalFXControllerGeneral(e, tPlayer, time, addition, multiplierInteger, sineAmplitude, sinePeriod, invertAll, colorInteger);
+	setDreamStagePaletteEffects(time, addition / 256.0, multiplierInteger / 256.0, sineAmplitude / 256.0, sinePeriod, invertAll, colorInteger / 256.0);
 	return 0;
 }
 
@@ -5168,7 +5246,6 @@ static int handleEnvironmentColorController(DreamMugenStateController* tControll
 	getSingleIntegerValueOrDefault(&e->mUnder, tPlayer, &isUnderCharacters, 1);
 	
 	setEnvironmentColor(colors, time, isUnderCharacters);
-
 	return 0;
 }
 
@@ -5179,11 +5256,10 @@ static int handleEnvironmentShakeController(DreamMugenStateController* tControll
 	double freq, phase;
 	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &time, 1);
 	getSingleFloatValueOrDefault(&e->mFrequency, tPlayer, &freq, 60);
-	getSingleIntegerValueOrDefault(&e->mAmplitude, tPlayer, &ampl, (int)transformDreamCoordinates(-4.0, 240, getDreamStageCoordinateP()));
+	getSingleIntegerValueOrDefault(&e->mAmplitude, tPlayer, &ampl, (int)transformDreamCoordinates(-4.0, 320, getDreamStageCoordinateP()));
 	getSingleFloatValueOrDefault(&e->mPhaseOffset, tPlayer, &phase, freq >= 90.0 ? 90.0 : 0.0);
 
-	setEnvironmentShake(time, freq, ampl, phase);
-
+	setEnvironmentShake(time, freq, ampl, phase, getActiveStateMachineCoordinateP());
 	return 0;
 }
 
@@ -5232,16 +5308,17 @@ static int handleGameMakeAnimController(DreamMugenStateController* tController, 
 	getSingleIntegerValueOrDefault(&e->mRandomOffset, tPlayer, &random, 0);
 
 	pos = vecAdd(pos, makePosition(randfrom(-random / 2.0, random / 2.0), randfrom(-random / 2.0, random / 2.0), 0));
-	pos = vecAdd(pos, getPlayerPosition(tPlayer, getPlayerCoordinateP(tPlayer)));
-	pos = vecAdd(pos, getDreamStageCoordinateSystemOffset(getPlayerCoordinateP(tPlayer)));
+	pos = vecAdd(pos, getPlayerPosition(tPlayer, getDreamMugenStageHandlerCameraCoordinateP()));
+	pos = vecAdd(pos, getDreamStageCoordinateSystemOffset(getDreamMugenStageHandlerCameraCoordinateP()));
 
 	if (isUnderPlayer) pos.z = GAME_MAKE_ANIM_UNDER_Z;
 	else pos.z = GAME_MAKE_ANIM_OVER_Z;
 
+	const auto coordinateDrawScale = getDreamMugenStageHandlerCameraCoordinateP() / double(getActiveStateMachineCoordinateP());
 	auto element = addMugenAnimation(getDreamFightEffectAnimation(animationNumber), getDreamFightEffectSprites(), pos);
 	setMugenAnimationCameraPositionReference(element, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationNoLoop(element);
-	setMugenAnimationBaseDrawScale(element, (getScreenSize().y / double(getDreamUICoordinateP())) * getDreamUIFightFXScale());
+	setMugenAnimationBaseDrawScale(element, (getScreenSize().y / double(getDreamUICoordinateP())) * getDreamUIFightFXScale() * coordinateDrawScale);
 	setMugenAnimationCameraEffectPositionReference(element, getDreamMugenStageHandlerCameraEffectPositionReference());
 	setMugenAnimationCameraScaleReference(element, getDreamMugenStageHandlerCameraZoomReference());
 
@@ -5342,22 +5419,24 @@ static int handleDrawOffsetController(DreamMugenStateController* tController, Dr
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
-		setPlayerDrawOffsetX(tPlayer, x, getPlayerCoordinateP(tPlayer));
+		setPlayerDrawOffsetX(tPlayer, x, getActiveStateMachineCoordinateP());
 	}
 
 	if (e->mIsSettingY) {
 		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, tPlayer);
-		setPlayerDrawOffsetY(tPlayer, y, getPlayerCoordinateP(tPlayer));
+		setPlayerDrawOffsetY(tPlayer, y, getActiveStateMachineCoordinateP());
 	}
 
 	return 0;
 }
 
 static int handleRemapPaletteController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
-	(void)tController;
-	(void)tPlayer;
-	// TODO: palettes (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/208)
-
+	RemapPaletteController* e = (RemapPaletteController*)tController->mData;
+	Vector3DI source, destination;
+	source.z = destination.z = 0;
+	getTwoIntegerValuesWithDefaultValues(&e->mSource, tPlayer, &source.x, &source.y, 1, 1);
+	getTwoIntegerValuesWithDefaultValues(&e->mDestination, tPlayer, &destination.x, &destination.y, 1, 1);
+	remapPlayerPalette(tPlayer, source, destination);
 	return 0;
 }
 
@@ -5733,7 +5812,7 @@ void parentVarAddParseFunction(DreamMugenStateController* tController, MugenDefS
 void parentVarSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseVarSetController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_SET_PARENT_VARIABLE); }
 void pauseParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parsePauseController(tController, tGroup); }
 void playerPushParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseSingleRequiredValueController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_PLAYER_PUSH); }
-void playSndParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parsePlaySoundController(tController, tGroup); }
+void playSndParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parsePlaySoundController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_PLAY_SOUND); }
 void posAddParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parse2DPhysicsController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_ADD_POSITION); }
 void posFreezeParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parsePositionFreezeController(tController, tGroup); }
 void posSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parse2DPhysicsController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_SET_POSITION); }
@@ -5747,8 +5826,8 @@ void screenBoundParseFunction(DreamMugenStateController* tController, MugenDefSc
 void selfStateParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseChangeStateController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_SET_SELF_STATE); }
 void sprPriorityParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseSpritePriorityController(tController, tGroup); }
 void stateTypeSetParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStateTypeSetController(tController, tGroup); }
-void sndPanParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseSoundPanController(tController, tGroup); }
-void stopSndParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStopSoundController(tController, tGroup); }
+void sndPanParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseSoundPanController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_PAN_SOUND); }
+void stopSndParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStopSoundController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_STOP_SOUND); }
 void superPauseParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseSuperPauseController(tController, tGroup); }
 void targetBindParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseBindController(tController, tGroup, MUGEN_STATE_CONTROLLER_TYPE_BIND_TARGET); }
 void targetDropParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseTargetDropController(tController, tGroup); }
@@ -6488,7 +6567,7 @@ static void parseSingleStoryVarSetControllerEntry(StoryVarSetControllerCaller* t
 	e->mID = parseDreamMugenAssignmentFromString(value);
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tName.data(), caller->mGroup, &e->mAssignment);
 
-	vector_push_back_owned(&caller->mController->mStoryVarSets, e);
+	vector_push_back(&caller->mController->mStoryVarSets, e);
 }
 
 static void loadSingleOriginalStoryVarSetController(Vector* tDst, MugenDefScriptGroup* tGroup, MugenDefScriptGroupElement* tIDElement, StoryVarSetType tType) {
@@ -6497,13 +6576,7 @@ static void loadSingleOriginalStoryVarSetController(Vector* tDst, MugenDefScript
 	fetchDreamAssignmentFromGroupAsElement(tIDElement, &e->mID);
 	fetchDreamAssignmentFromGroupAndReturnWhetherItExists("value", tGroup, &e->mAssignment);
 
-	vector_push_back_owned(tDst, e);
-}
-
-static void unloadSingleStoryVarSetEntry(void* tCaller, void* tData) {
-	(void)tCaller;
-	StoryVarSetControllerEntry* e = (StoryVarSetControllerEntry*)tData;
-	destroyDreamMugenAssignment(e->mAssignment);
+	vector_push_back(tDst, e);
 }
 
 static void parseStoryVarSetController(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup, DreamMugenStoryStateControllerType tType) {
@@ -6533,7 +6606,7 @@ static void parseStoryVarSetController(DreamMugenStateController* tController, M
 
 	if (vector_size(&e->mStoryVarSets) != 1) {
 		logWarning("Unable to parse StoryVarSetController. Missing elements. Defaulting to Null controller.");
-		vector_map(&e->mStoryVarSets, unloadSingleStoryVarSetEntry, NULL);
+		// unable to delete mugen assignments if on memory stack
 		delete_vector(&e->mStoryVarSets);
 		parseNullController(tController, MUGEN_STATE_CONTROLLER_TYPE_NULL);
 		return;
@@ -6580,7 +6653,6 @@ static void parseStoryPlayMusicController(DreamMugenStateController* tController
 	tController->mData = e;
 }
 
-
 void nullStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* /*tGroup*/) { parseNullController(tController, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_NULL); }
 void createAnimationStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseCreateAnimationStoryController(tController, tGroup); }
 void removeAnimationStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseRemoveElementStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_ANIMATION); }
@@ -6589,9 +6661,11 @@ void createTextStoryParseFunction(DreamMugenStateController* tController, MugenD
 void removeTextStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseRemoveElementStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_TEXT); }
 void changeTextStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseChangeTextStoryController(tController, tGroup); }
 void lockTextToCharacterStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseLockTextToCharacterStoryController(tController, tGroup); }
+void textPositionSetStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_TEXT_SET_POSITION); }
 void textPositionAddStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseTarget2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_TEXT_ADD_POSITION); }
 void nameIDStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseNameIDStoryController(tController, tGroup); }
 void changeStateStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseSingleRequiredValueController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_STATE); }
+void changeStateParentStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseSingleRequiredValueController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_STATE_PARENT); }
 void changeStateRootStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseSingleRequiredValueController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_STATE_ROOT); }
 void fadeInStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseFadeStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_FADE_IN); }
 void fadeOutStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseFadeStoryController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_FADE_OUT); }
@@ -6632,6 +6706,9 @@ void resumeMusicStoryParseFunction(DreamMugenStateController* tController, Mugen
 void destroySelfStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* /*tGroup*/) { parseNullController(tController, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_DESTROY_SELF); }
 void cameraFocusStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parse2DPhysicsController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CAMERA_FOCUS); }
 void cameraZoomStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseSingleRequiredValueController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_CAMERA_ZOOM); }
+void playSoundStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parsePlaySoundController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_PLAY_SOUND); }
+void panSoundStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseSoundPanController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_PAN_SOUND); }
+void stopSoundStoryParseFunction(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) { parseStopSoundController(tController, tGroup, (DreamMugenStateControllerType)MUGEN_STORY_STATE_CONTROLLER_TYPE_STOP_SOUND); }
 
 static void setupStoryStateControllerParsers() {
 	gMugenStateControllerVariableHandler.mStateControllerParsers.clear();
@@ -6644,9 +6721,11 @@ static void setupStoryStateControllerParsers() {
 	gMugenStateControllerVariableHandler.mStateControllerParsers["removetext"] = removeTextStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["changetext"] = changeTextStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["locktext"] = lockTextToCharacterStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["textposset"] = textPositionSetStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["textposadd"] = textPositionAddStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["nameid"] = nameIDStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["changestate"] = changeStateStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["changestateparent"] = changeStateParentStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["changestateroot"] = changeStateRootStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["fadein"] = fadeInStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["fadeout"] = fadeOutStoryParseFunction;
@@ -6687,6 +6766,9 @@ static void setupStoryStateControllerParsers() {
 	gMugenStateControllerVariableHandler.mStateControllerParsers["destroyself"] = destroySelfStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["camerafocus"] = cameraFocusStoryParseFunction;
 	gMugenStateControllerVariableHandler.mStateControllerParsers["camerazoom"] = cameraZoomStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["playsnd"] = playSoundStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["sndpan"] = panSoundStoryParseFunction;
+	gMugenStateControllerVariableHandler.mStateControllerParsers["stopsnd"] = stopSoundStoryParseFunction;
 }
 
 static int getDolmexicaStoryIDFromAssignment(DreamMugenAssignment** tAssignment, StoryInstance* tInstance) {
@@ -6743,7 +6825,7 @@ static int handleChangeAnimationStoryController(DreamMugenStateController* tCont
 	return 0;
 }
 
-static void handleSingleStoryTextSpriteOrAnimation(int id, int tHasSprite, DreamMugenAssignment** tSprite, void(*tSpriteFunc)(StoryInstance*, int, Vector3DI, Position), int tHasAnimation, DreamMugenAssignment** tAnimation, void(*tAnimationFunc)(StoryInstance*, int, int, Position), DreamMugenAssignment** tOffset, StoryInstance* tInstance) {
+static void handleSingleStoryTextSpriteOrAnimation(int id, int tHasSprite, DreamMugenAssignment** tSprite, void(*tSpriteFunc)(StoryInstance*, int, const Vector3DI&, const Position&), int tHasAnimation, DreamMugenAssignment** tAnimation, void(*tAnimationFunc)(StoryInstance*, int, int, const Position&), DreamMugenAssignment** tOffset, StoryInstance* tInstance) {
 	if (tHasAnimation) {
 		int animation;
 		Position offset = makePosition(0, 0, 0);
@@ -6927,6 +7009,14 @@ static int handleChangeStateStoryController(DreamMugenStateController* tControll
 	changeDolmexicaStoryState(tInstance, val);
 
 	return 1;
+}
+
+static int handleChangeStateParentStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
+	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
+
+	int val = evaluateDreamAssignmentAndReturnAsInteger(&e->mValue, (DreamPlayer*)tInstance);
+	changeDolmexicaStoryStateOutsideStateHandler(getDolmexicaStoryInstanceParent(tInstance), val);
+	return 0;
 }
 
 static int handleChangeStateRootStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
@@ -7406,6 +7496,24 @@ static int handleLockTextToCharacterStoryController(DreamMugenStateController* t
 	return 0;
 }
 
+static int handleTextSetPositionStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
+	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
+
+	int id;
+	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
+
+	if (e->mIsSettingX) {
+		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, (DreamPlayer*)tInstance);
+		setDolmexicaStoryTextPositionX(tInstance, id, x);
+	}
+
+	if (e->mIsSettingY) {
+		double y = evaluateDreamAssignmentAndReturnAsFloat(&e->y, (DreamPlayer*)tInstance);
+		setDolmexicaStoryTextPositionY(tInstance, id, y);
+	}
+	return 0;
+}
+
 static int handleTextAddPositionStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
 	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
@@ -7663,6 +7771,98 @@ static int handleCameraZoomStoryController(DreamMugenStateController* tControlle
 	return 0;
 }
 
+static double handleStoryPanningValue(DreamMugenAssignment** tAssignment, StoryInstance* tPlayer, int tIsAbspan) {
+	int pan;
+	getSingleIntegerValueOrDefault(tAssignment, (DreamPlayer*)tPlayer, &pan, 0);
+	if (!getSoundAreStereoEffectsActive()) return 0.0;
+
+	double pos;
+	const auto screenWidth = getDreamScreenWidth(getDolmexicaStoryCoordinateP());
+	if (tIsAbspan) {
+		pos = (screenWidth / 2.f) + pan;
+	}
+	else {
+		return 0.0;
+	}
+
+	return clamp((pos / screenWidth) * 2.0 - 1.0, -1.0, 1.0) * getSoundPanningWidthFactor();
+}
+
+static void handleStorySoundEffectValue(DreamMugenAssignment** tAssignment, StoryInstance* tPlayer, double tPrismVolume, int tChannel, double tFrequencyMultiplier, int tIsLooping, double tPanning) {
+	std::string flag;
+	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, (DreamPlayer*)tPlayer);
+	int group, item;
+	char comma[20];
+
+	const auto soundFile = getDolmexicaStorySounds();
+	const auto items = sscanf(flag.data(), "%d %19s %d", &group, comma, &item);
+	if (items != 3) {
+		logWarningFormat("Unable to parse story sound value: %s. Abort.");
+		return;
+	}
+
+	tryPlayMugenSoundAdvanced(soundFile, group, item, tPrismVolume, tChannel, tFrequencyMultiplier, tIsLooping, tPanning);
+}
+
+static int handlePlaySoundStoryController(DreamMugenStateController* tController, StoryInstance* tPlayer) {
+	if (!tPlayer) return 0;
+	PlaySoundController* e = (PlaySoundController*)tController->mData;
+
+	int channel, isLowPriority, loop;
+	double frequencyMultiplier;
+	getSingleIntegerValueOrDefault(&e->mChannel, (DreamPlayer*)tPlayer, &channel, -1);
+	getSingleIntegerValueOrDefault(&e->mLowPriority, (DreamPlayer*)tPlayer, &isLowPriority, 0);
+
+	if (channel != -1 && isSoundEffectPlayingOnChannel(channel) && isLowPriority) {
+		return 0;
+	}
+
+	auto prismVolume = parseGameMidiVolumeToPrism(getGameMidiVolume());
+	if (e->mIsVolumeScale) {
+		double volumeScale;
+		getSingleFloatValueOrDefault(&e->mVolume, (DreamPlayer*)tPlayer, &volumeScale, 100.0);
+		prismVolume *= (volumeScale / 100.0);
+	}
+	else {
+		int volume;
+		getSingleIntegerValueOrDefault(&e->mVolume, (DreamPlayer*)tPlayer, &volume, 0);
+		prismVolume *= ((volume + 100) / double(100));
+	}
+
+	getSingleFloatValueOrDefault(&e->mFrequencyMultiplier, (DreamPlayer*)tPlayer, &frequencyMultiplier, 1.0);
+	getSingleIntegerValueOrDefault(&e->mLoop, (DreamPlayer*)tPlayer, &loop, 0);
+	const auto panning = handleStoryPanningValue(&e->mPan, tPlayer, e->mIsAbspan);
+
+	handleStorySoundEffectValue(&e->mValue, tPlayer, prismVolume, channel, frequencyMultiplier, loop, panning);
+	return 0;
+}
+
+static int handleSoundPanStoryController(DreamMugenStateController* tController, StoryInstance* tPlayer) {
+	SoundPanController* e = (SoundPanController*)tController->mData;
+
+	int channel;
+	getSingleIntegerValueOrDefault(&e->mChannel, (DreamPlayer*)tPlayer, &channel, -1);
+	const auto panning = handleStoryPanningValue(&e->mPan, tPlayer, e->mIsAbspan);
+	panSoundEffect(channel, panning);
+
+	return 0;
+}
+
+static int handleStopSoundStoryController(DreamMugenStateController* tController, StoryInstance* tPlayer) {
+	SoundStopController* e = (SoundStopController*)tController->mData;
+
+	int channel;
+	getSingleIntegerValueOrDefault(&e->mChannel, (DreamPlayer*)tPlayer, &channel, -1);
+	if (channel == -1) {
+		stopAllSoundEffects();
+	}
+	else {
+		stopSoundEffect(channel);
+	}
+
+	return 0;
+}
+
 int nullStoryHandleFunction(DreamMugenStateController* /*tController*/, DreamPlayer* /*tPlayer*/) { return handleNull(); }
 int createAnimationStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleCreateAnimationStoryController(tController, (StoryInstance*)tPlayer); }
 int removeAnimationStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleRemoveAnimationStoryController(tController, (StoryInstance*)tPlayer); }
@@ -7671,9 +7871,11 @@ int createTextStoryHandleFunction(DreamMugenStateController* tController, DreamP
 int removeTextStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleRemoveTextStoryController(tController, (StoryInstance*)tPlayer); }
 int changeTextStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleChangeTextStoryController(tController, (StoryInstance*)tPlayer); }
 int lockTextToCharacterStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleLockTextToCharacterStoryController(tController, (StoryInstance*)tPlayer); }
+int textSetPositionStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleTextSetPositionStoryController(tController, (StoryInstance*)tPlayer); }
 int textAddPositionStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleTextAddPositionStoryController(tController, (StoryInstance*)tPlayer); }
 int nameIDStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleNameIDStoryController(tController, (StoryInstance*)tPlayer); }
 int changeStateStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleChangeStateStoryController(tController, (StoryInstance*)tPlayer); }
+int changeStateParentStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleChangeStateParentStoryController(tController, (StoryInstance*)tPlayer); }
 int changeStateRootStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleChangeStateRootStoryController(tController, (StoryInstance*)tPlayer); }
 int fadeInStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleFadeInStoryController(tController, (StoryInstance*)tPlayer); }
 int fadeOutStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleFadeOutStoryController(tController, (StoryInstance*)tPlayer); }
@@ -7714,6 +7916,9 @@ int resumeMusicStoryHandleFunction(DreamMugenStateController* /*tController*/, D
 int destroySelfStoryHandleFunction(DreamMugenStateController* /*tController*/, DreamPlayer* tPlayer) { return handleDestroySelfStoryController((StoryInstance*)tPlayer); }
 int cameraFocusStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleCameraFocusStoryController(tController, (StoryInstance*)tPlayer); }
 int cameraZoomStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleCameraZoomStoryController(tController, (StoryInstance*)tPlayer); }
+int playSoundStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handlePlaySoundStoryController(tController, (StoryInstance*)tPlayer); }
+int panSoundStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleSoundPanStoryController(tController, (StoryInstance*)tPlayer); }
+int stopSoundStoryHandleFunction(DreamMugenStateController* tController, DreamPlayer* tPlayer) { return handleStopSoundStoryController(tController, (StoryInstance*)tPlayer); }
 
 static void setupStoryStateControllerHandlers() {
 	gMugenStateControllerVariableHandler.mStateControllerHandlers.clear();
@@ -7726,9 +7931,11 @@ static void setupStoryStateControllerHandlers() {
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_REMOVE_TEXT] = removeTextStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_TEXT] = changeTextStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_LOCK_TEXT_TO_CHARACTER] = lockTextToCharacterStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_TEXT_SET_POSITION] = textSetPositionStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_TEXT_ADD_POSITION] = textAddPositionStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_NAME_ID] = nameIDStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_STATE] = changeStateStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_STATE_PARENT] = changeStateParentStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_STATE_ROOT] = changeStateRootStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_FADE_IN] = fadeInStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_FADE_OUT] = fadeOutStoryHandleFunction;
@@ -7769,8 +7976,9 @@ static void setupStoryStateControllerHandlers() {
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_DESTROY_SELF] = destroySelfStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CAMERA_FOCUS] = cameraFocusStoryHandleFunction;
 	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_CAMERA_ZOOM] = cameraZoomStoryHandleFunction;
-
-	
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_PLAY_SOUND] = playSoundStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_PAN_SOUND] = panSoundStoryHandleFunction;
+	gMugenStateControllerVariableHandler.mStateControllerHandlers[MUGEN_STORY_STATE_CONTROLLER_TYPE_STOP_SOUND] = stopSoundStoryHandleFunction;
 }
 
 void setupDreamMugenStoryStateControllerHandler()

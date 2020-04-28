@@ -36,7 +36,7 @@ static struct {
 	int mIsTimeFrozen;
 } gFightDebugData;
 
-static void loadPlayerDebugData(Position tBasePosition, MugenTextAlignment tAlignment) {
+static void loadPlayerDebugData(const Position& tBasePosition, MugenTextAlignment tAlignment) {
 	PlayerDebugData* e = &gFightDebugData.mPlayer;
 	e->mBasePosition = tBasePosition;
 
@@ -61,6 +61,7 @@ static void setDebugTextColor();
 
 static void loadFightDebug(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 
 	loadPlayerDebugData(makePosition(5, 235, DEBUG_Z), MUGEN_TEXT_ALIGNMENT_LEFT);
 
@@ -70,6 +71,8 @@ static void loadFightDebug(void* tData) {
 
 static void unloadFightDebug(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
+
 	if (!isDebugOverridingTimeDilatation()) {
 		setWrapperTimeDilatation(getConfigGameSpeedTimeFactor());
 	}
@@ -395,6 +398,7 @@ static void updateDebugText() {
 }
 
 static void updateFightDebug(void* /*tData*/) {
+	setProfilingSectionMarkerCurrentFunction();
 	updateDebugInput();
 	updateDebugText();
 }

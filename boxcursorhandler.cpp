@@ -21,14 +21,15 @@ static struct {
 
 static void loadBoxCursorHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gBoxCursorHandlerData.mWhiteTexture = getEmptyWhiteTexture();
 	gBoxCursorHandlerData.mBoxCursors = new_int_map();
 }
 
 static void updateBoxCursorHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 }
-
 
 ActorBlueprint getBoxCursorHandler() {
 	return makeActorBlueprint(loadBoxCursorHandler, NULL, updateBoxCursorHandler);
@@ -47,12 +48,10 @@ static void boxCursorCB1(void* tCaller) {
 	e->mTweenID = tweenDouble(getAnimationTransparencyReference(e->mAnimationElement), 0.1, 0.2, linearTweeningFunction, 20, boxCursorCB2, e);
 }
 
-int addBoxCursor(Position tStartPosition, Position tOffset, GeoRectangle tRectangle)
+int addBoxCursor(const Position& tStartPosition, const Position& tOffset, const GeoRectangle2D& tRectangle)
 {
 	BoxCursor* e = (BoxCursor*)allocMemory(sizeof(BoxCursor));
-	tRectangle.mTopLeft.z = 0;
-	tOffset = vecAdd(tOffset, tRectangle.mTopLeft);
-	e->mAnimationElement = playOneFrameAnimationLoop(tOffset, &gBoxCursorHandlerData.mWhiteTexture); 
+	e->mAnimationElement = playOneFrameAnimationLoop(tOffset + tRectangle.mTopLeft, &gBoxCursorHandlerData.mWhiteTexture);
 	e->mBasePosition = tStartPosition;
 	double w = tRectangle.mBottomRight.x - tRectangle.mTopLeft.x;
 	double h = tRectangle.mBottomRight.y - tRectangle.mTopLeft.y;
@@ -79,7 +78,7 @@ void removeBoxCursor(int tID)
 	int_map_remove(&gBoxCursorHandlerData.mBoxCursors, tID);
 }
 
-void setBoxCursorPosition(int tID, Position tPosition)
+void setBoxCursorPosition(int tID, const Position& tPosition)
 {
 	if (!int_map_contains(&gBoxCursorHandlerData.mBoxCursors, tID)) {
 		logWarningFormat("Attempting to use non-existant box cursor %d. Abort.", tID);

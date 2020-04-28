@@ -10,4 +10,4 @@ ActorBlueprint getBackgroundStateHandler();
 
 void setBackgroundStatesFromScript(MugenDefScript* tScript);
 
-
+void resetBackgroundStateHandler();

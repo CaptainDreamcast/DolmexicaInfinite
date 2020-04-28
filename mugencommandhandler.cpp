@@ -67,6 +67,8 @@ static struct {
 
 static void loadMugenCommandHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
+
 	gMugenCommandHandler.mRegisteredCommands = vector<RegisteredMugenCommand>(MAXIMUM_REGISTERED_COMMAND_AMOUNT);
 	gMugenCommandHandler.mRegisteredCommandAmount = 0;
 
@@ -91,6 +93,8 @@ static void unloadSingleRegisteredCommand(void* tCaller, RegisteredMugenCommand&
 
 static void unloadMugenCommandHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
+
 	stl_vector_map(gMugenCommandHandler.mRegisteredCommands, unloadSingleRegisteredCommand);
 	stl_delete_vector(gMugenCommandHandler.mRegisteredCommands);
 }
@@ -178,6 +182,17 @@ int isDreamCommandForLookup(int tID, const char * tCommandName, int * oLookupInd
 	MugenCommandState* state = &e->tStates.mStates[key];
 	*oLookupIndex = state->mLookupID;
 	return 1;
+}
+
+int getDreamCommandMinimumDuration(int tID, const char * tCommandName)
+{
+	RegisteredMugenCommand* e = &gMugenCommandHandler.mRegisteredCommands[tID];
+	string key(tCommandName);
+	if (!stl_map_contains(e->tCommands->mCommands, key)) {
+		logWarningFormat("Querying nonexistant command name %s.", tCommandName);
+		return INF;
+	}	
+	return e->tCommands->mCommands[key].mMinimumDuration;
 }
 
 void setDreamPlayerCommandActiveForAI(int tID, const char * tCommandName, int tBufferTime)
@@ -450,11 +465,11 @@ static int updateSingleActiveMugenCommand(RegisteredMugenCommand* tCaller, Activ
 	RegisteredMugenCommand* registeredCommand = (RegisteredMugenCommand*)tCaller;
 	ActiveMugenCommand* command = &tData;
 
+	command->mNow++;
 	if (command->mNow >= command->mInput->mTime) {
 		removeActiveCommand(command, registeredCommand);
 		return 1;
 	}
-	command->mNow++;
 
 	int isRunning = 1;
 	while (isRunning) {
@@ -547,10 +562,10 @@ static void updateSingleCommandState(void* tCaller, const string& tKey, MugenCom
 	MugenCommandState* state = &tData;
 	if (!state->mIsActive) return;
 
+	state->mNow++;
 	if (state->mNow >= state->mBufferTime) {
 		setCommandStateInactive(state);
 	}
-	state->mNow++;
 }
 
 static void updateCommandStates(RegisteredMugenCommand* tCommand) {
@@ -609,6 +624,7 @@ static void updateSingleRegisteredCommand(RegisteredMugenCommand& tData) {
 
 static void updateMugenCommandHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	updateInputMasks();
 
 	for (int i = 0; i < gMugenCommandHandler.mRegisteredCommandAmount; i++) {

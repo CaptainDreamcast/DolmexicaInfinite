@@ -9,6 +9,7 @@
 #include <prism/log.h>
 #include <prism/memoryhandler.h>
 #include <prism/mugendefreader.h>
+#include <prism/math.h>
 
 using namespace std;
 
@@ -105,8 +106,6 @@ static void handleInputStepWithMultipleSubsteps(Vector* tVector, char* tInputSte
 static int isHoldingInputStep(char* tInputStep) {
 	return tInputStep[0] == '/';
 }
-
-
 
 static DreamMugenCommandInputStepTarget extractTargetFromInputStep(char* tInputStep) {
 	int isDown = strchr(tInputStep, 'D') != NULL;
@@ -312,16 +311,21 @@ static void handleSingleCommandEntry(void* tCaller, void* tData) {
 	}
 }
 
+static int calculateCommandInputDuration(DreamMugenCommandInput& tCommandInput) {
+	return vector_size(&tCommandInput.mInputSteps) * 2;
+}
+
 static void addCallerToExistingCommand(DreamMugenCommand* tCommand, CommandCaller* tCaller) {
 	DreamMugenCommandInput* input = (DreamMugenCommandInput*)allocMemory(sizeof(DreamMugenCommandInput));
 	*input = tCaller->mInput;
-
+	tCommand->mMinimumDuration = min(tCommand->mMinimumDuration, calculateCommandInputDuration(*input));
 	vector_push_back_owned(&tCommand->mInputs, input);
 }
 
 static void addEmptyCommandToCommands(DreamMugenCommands* tCommands, string tKey) {
 	DreamMugenCommand e;
 	e.mInputs = new_vector();
+	e.mMinimumDuration = INF;
 	assert(!stl_map_contains(tCommands->mCommands, tKey));
 	tCommands->mCommands[tKey] = e;
 }

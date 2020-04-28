@@ -93,6 +93,7 @@ typedef struct {
 typedef struct {
 	int mIsActive;
 	DreamPlayer* mPlayer;
+	int mCoordinateP;
 
 	DreamMugenStateType mType;
 	MugenAttackClass mAttackClass;
@@ -212,8 +213,8 @@ typedef struct {
 	int mGivePlayer2GuardPower;
 
 	int mPaletteEffectTime;
-	Vector3DI mPaletteEffectMultiplication;
-	Vector3DI mPaletteEffectAddition;
+	Vector3D mPaletteEffectMultiplication;
+	Vector3D mPaletteEffectAddition;
 
 	int mEnvironmentShakeTime;
 	double mEnvironmentShakeFrequency;
@@ -253,6 +254,7 @@ typedef struct {
 void updatePlayerHitData(DreamPlayer* tPlayer);
 
 void initPlayerHitData(DreamPlayer* tPlayer);
+void setPlayerHitDataCoordinateP(DreamPlayer* tPlayer);
 void clearPlayerHitData(DreamPlayer* tPlayer);
 
 void copyHitDataToActive(DreamPlayer* tPlayer, void* tHitData);
@@ -264,7 +266,7 @@ void setHitDataActive(DreamPlayer* tPlayer);
 void setReceivedHitDataInactive(void* tHitData);
 void setHitDataInactive(DreamPlayer* tPlayer);
 void setActiveHitDataInactive(DreamPlayer* tPlayer);
-
+int getActiveHitDataCoordinateP(DreamPlayer* tPlayer);
 
 void* getPlayerHitDataReference(DreamPlayer* tPlayer);
 DreamPlayer* getReceivedHitDataPlayer(void* tHitData);
@@ -282,6 +284,7 @@ void setHitDataAttackType(DreamPlayer* tPlayer, MugenAttackType tType);
 void setHitDataHitFlag(DreamPlayer* tPlayer, const char* tFlag);
 char* getActiveHitDataGuardFlag(DreamPlayer* tPlayer);
 void setHitDataGuardFlag(DreamPlayer* tPlayer, const char* tFlag);
+MugenAffectTeam getHitDataAffectTeam(DreamPlayer* tPlayer);
 void setHitDataAffectTeam(DreamPlayer* tPlayer, MugenAffectTeam tAffectTeam);
 
 MugenHitAnimationType getActiveHitDataAnimationType(DreamPlayer* tPlayer);
@@ -390,12 +393,18 @@ int getActiveHitDataAirGuardControlTime(DreamPlayer* tPlayer);
 void setHitDataAirGuardControlTime(DreamPlayer* tPlayer, int tControlTime);
 void setHitDataAirJuggle(DreamPlayer* tPlayer, int tJuggle);
 
+int getActiveHitDataHasMinimumDistance(DreamPlayer* tPlayer);
+Vector3DI getActiveHitDataMinimumDistance(DreamPlayer* tPlayer);
 void setHitDataMinimumDistanceInactive(DreamPlayer* tPlayer);
 void setHitDataMinimumDistance(DreamPlayer* tPlayer, int x, int y);
 
+int getActiveHitDataHasMaximumDistance(DreamPlayer* tPlayer);
+Vector3DI getActiveHitDataMaximumDistance(DreamPlayer* tPlayer);
 void setHitDataMaximumDistanceInactive(DreamPlayer* tPlayer);
 void setHitDataMaximumDistance(DreamPlayer* tPlayer, int x, int y);
 
+int getActiveHitDataHasSnap(DreamPlayer* tPlayer);
+Vector3DI getActiveHitDataSnap(DreamPlayer* tPlayer);
 void setHitDataSnapInactive(DreamPlayer* tPlayer);
 void setHitDataSnap(DreamPlayer* tPlayer, int x, int y);
 
@@ -414,6 +423,7 @@ void setPlayer2StateNumber(DreamPlayer* tPlayer, int tStateNumber);
 int getHitDataPlayer2CapableOfGettingPlayer1State(DreamPlayer* tPlayer);
 int getActiveHitDataPlayer2CapableOfGettingPlayer1State(DreamPlayer* tPlayer);
 void setHitDataPlayer2CapableOfGettingPlayer1State(DreamPlayer* tPlayer, int tVal);
+int getActiveHitDataForceStanding(DreamPlayer* tPlayer);
 void setHitDataForceStanding(DreamPlayer* tPlayer, int tIsForcedToStand);
 
 int getActiveHitDataFall(DreamPlayer* tPlayer);
@@ -422,11 +432,11 @@ void setActiveHitDataFall(DreamPlayer* tPlayer, int tIsCausingPlayer2ToFall);
 void setHitDataFall(DreamPlayer* tPlayer, int tIsCausingPlayer2ToFall);
 double getActiveHitDataFallXVelocity(DreamPlayer* tPlayer);
 double getHitDataFallXVelocity(DreamPlayer* tPlayer);
-void setActiveHitDataFallXVelocity(DreamPlayer* tPlayer, double tX);
+void setActiveHitDataFallXVelocity(DreamPlayer* tPlayer, double tX, int tCoordinateP);
 void setHitDataFallXVelocity(DreamPlayer* tPlayer, double tX);
 double getActiveHitDataFallYVelocity(DreamPlayer* tPlayer);
 double getHitDataFallYVelocity(DreamPlayer* tPlayer);
-void setActiveHitDataFallYVelocity(DreamPlayer* tPlayer, double tY);
+void setActiveHitDataFallYVelocity(DreamPlayer* tPlayer, double tY, int tCoordinateP);
 void setHitDataFallYVelocity(DreamPlayer* tPlayer, double tY);
 int getActiveHitDataFallRecovery(DreamPlayer* tPlayer);
 int getHitDataFallRecovery(DreamPlayer* tPlayer);
@@ -438,6 +448,7 @@ void setHitDataFallDamage(DreamPlayer* tPlayer, int tDamage);
 int getActiveHitDataAirFall(DreamPlayer* tPlayer);
 void setActiveHitDataAirFall(DreamPlayer* tPlayer, int tIsCausingPlayer2ToFall);
 void setHitDataAirFall(DreamPlayer* tPlayer, int tIsCausingPlayer2ToFall);
+int getActiveHitDataForceNoFall(DreamPlayer* tPlayer);
 void setHitDataForceNoFall(DreamPlayer* tPlayer, int tForcePlayer2NotToFall);
 
 void setHitDataDownVelocity(DreamPlayer* tPlayer, double tX, double tY);
@@ -465,8 +476,11 @@ int getActiveHitDataPlayer2GuardPowerAdded(DreamPlayer* tPlayer);
 int getHitDataPlayer2PowerAdded(DreamPlayer* tPlayer);
 void setHitDataGivePower(DreamPlayer* tPlayer, int tPlayer2PowerAdded, int tPlayer2PowerAddedWhenGuarded);
 
+int getActiveHitDataPaletteEffectTime(DreamPlayer* tPlayer);
 void setHitDataPaletteEffectTime(DreamPlayer* tPlayer, int tEffectTime);
+Vector3D getActiveHitDataPaletteEffectMultiplication(DreamPlayer* tPlayer);
 void setHitDataPaletteEffectMultiplication(DreamPlayer* tPlayer, int tR, int tG, int tB);
+Vector3D getActiveHitDataPaletteEffectAddition(DreamPlayer* tPlayer);
 void setHitDataPaletteEffectAddition(DreamPlayer* tPlayer, int tR, int tG, int tB);
 
 int getActiveHitDataEnvironmentShakeTime(DreamPlayer* tPlayer);
@@ -493,11 +507,11 @@ void setHitDataFallEnvironmentShakePhase(DreamPlayer* tPlayer, double tPhase);
 
 double getActiveHitDataVelocityX(DreamPlayer* tPlayer);
 double getHitDataVelocityX(DreamPlayer* tPlayer);
-void setActiveHitDataVelocityX(DreamPlayer* tPlayer, double x);
+void setActiveHitDataVelocityX(DreamPlayer* tPlayer, double x, int tCoordinateP);
 void setHitDataVelocityX(DreamPlayer* tPlayer, double x);
 double getActiveHitDataVelocityY(DreamPlayer* tPlayer);
 double getHitDataVelocityY(DreamPlayer* tPlayer);
-void setActiveHitDataVelocityY(DreamPlayer* tPlayer, double y);
+void setActiveHitDataVelocityY(DreamPlayer* tPlayer, double y, int tCoordinateP);
 void setHitDataVelocityY(DreamPlayer* tPlayer, double y);
 
 int getActiveHitDataIsFacingRight(DreamPlayer* tPlayer);

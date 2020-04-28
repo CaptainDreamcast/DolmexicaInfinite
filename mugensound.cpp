@@ -20,6 +20,8 @@ static struct {
 } gDolmexicaMugenSoundData;
 
 static void loadDolmexicaSoundHandler(void*) {
+	setProfilingSectionMarkerCurrentFunction();
+
 	gDolmexicaMugenSoundData.mIsPlayingMusic = 0;
 	gDolmexicaMugenSoundData.mIsPausedFlag = 0;
 }
@@ -37,6 +39,7 @@ static void updatePauseFlag() {
 }
 
 static void updateDolmexicaSoundHandler(void*) {
+	setProfilingSectionMarkerCurrentFunction();
 	if (!gDolmexicaMugenSoundData.mIsPlayingMusic) return;
 	updatePauseFlag();
 }

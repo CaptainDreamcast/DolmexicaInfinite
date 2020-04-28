@@ -167,6 +167,7 @@ void resetOsuHandler() {
 }
 
 static void loadOsuHandler(void* /*tData*/) {
+	setProfilingSectionMarkerCurrentFunction();
 	gOsuHandlerData.mSprites = loadMugenSpriteFileWithoutPalette(getDolmexicaAssetFolder() + "data/osu.sff");
 	gOsuHandlerData.mAnimations = loadMugenAnimationFile(getDolmexicaAssetFolder() + "data/osu.air");
 	gOsuHandlerData.mSounds = loadMugenSoundFile((getDolmexicaAssetFolder() + "data/osu.snd").c_str());
@@ -854,6 +855,8 @@ static void resetOsuHandlerInputAllowed() {
 
 static void updateOsuHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
+
 	resetOsuHandlerInputAllowed();
 	if (gOsuHandlerData.mIsActive) {
 		updateTimingPoint();

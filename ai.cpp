@@ -8,6 +8,8 @@
 
 #include "mugencommandhandler.h"
 #include "gamelogic.h"
+#include "config.h"
+#include "mugenstagehandler.h"
 
 using  namespace std;
 
@@ -35,6 +37,7 @@ static struct {
 
 static void loadAIHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	stl_new_list(gAI.mHandledPlayers);
 }
 
@@ -47,6 +50,7 @@ static int unloadSingleHandledPlayer(void* tCaller, PlayerAI& tData) {
 
 static void unloadAIHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	stl_list_remove_predicate(gAI.mHandledPlayers, unloadSingleHandledPlayer);
 	stl_delete_list(gAI.mHandledPlayers);
 }
@@ -59,9 +63,20 @@ static void setRandomPlayerCommandActive(PlayerAI* e) {
 	setDreamPlayerCommandActiveForAI(e->mPlayer->mCommandID, name.data(), 2);
 }
 
+static int setRandomPlayerCommandActiveIfTimePossible(PlayerAI* e) {
+	int i = randfromInteger(0, e->mCommandNames.size() - 1);
+	const string& name = e->mCommandNames[i];
+	const auto duration = getDreamCommandMinimumDuration(e->mPlayer->mCommandID, name.data());
+	if (duration < e->mRandomInputNow) {
+		setDreamPlayerCommandActiveForAI(e->mPlayer->mCommandID, name.data(), 2);
+		return 1;
+	}
+	return 0;
+}
+
 static void updateAIMovement(PlayerAI* e) {
 	const auto otherPlayer = getPlayerOtherPlayer(e->mPlayer);
-	const auto dist = getPlayerDistanceToFrontOfOtherPlayerX(e->mPlayer);
+	const auto dist = getPlayerDistanceToFrontOfOtherPlayerX(e->mPlayer, getDreamMugenStageHandlerCameraCoordinateP());
 	const auto playerStateType = getPlayerStateType(e->mPlayer);
 	const auto otherPlayerStateType = getPlayerStateType(otherPlayer);
 	const auto otherPlayerStateMoveType = getPlayerStateMoveType(otherPlayer);
@@ -119,6 +134,16 @@ static void updateAICommands(PlayerAI* e) {
 
 	e->mRandomInputNow++;
 	if (e->mRandomInputNow >= e->mRandomInputDuration) {
+		int isSettingInput;
+		if (getArcadeAICheat()) {
+			setRandomPlayerCommandActive(e);
+			isSettingInput = 1;
+		}
+		else {
+			isSettingInput = setRandomPlayerCommandActiveIfTimePossible(e);
+		}
+		if (!isSettingInput) return;
+
 		e->mRandomInputNow = 0;
 
 		int lowerDurationMin = 30;
@@ -128,8 +153,6 @@ static void updateAICommands(PlayerAI* e) {
 		int lowerDuration = (int)(lowerDurationMin + (lowerDurationMax - lowerDurationMin) * e->mDifficultyFactor);
 		int upperDuration = (int)(upperDurationMin + (upperDurationMax - upperDurationMin) * e->mDifficultyFactor);
 		e->mRandomInputDuration = randfromInteger(lowerDuration, upperDuration);
-
-		setRandomPlayerCommandActive(e);
 	}
 }
 
@@ -145,7 +168,7 @@ static void updateSingleAI(void* /*tCaller*/, PlayerAI& tData) {
 
 static void updateAIHandler(void* tData) {
 	(void)tData;
-
+	setProfilingSectionMarkerCurrentFunction();
 	stl_list_map(gAI.mHandledPlayers, updateSingleAI);
 }
 

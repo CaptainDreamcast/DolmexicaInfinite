@@ -14,6 +14,7 @@
 #include <prism/animation.h>
 #include <prism/stlutil.h>
 #include <prism/system.h>
+#include <prism/saveload.h>
 
 #include "titlescreen.h"
 #include "menubackground.h"
@@ -37,12 +38,12 @@ typedef enum {
 	GENERAL_SETTING_MIDI_VOLUME,
 	GENERAL_SETTING_INPUT_CONFIG,
 	GENERAL_SETTING_TEAM_MODE_CONFIG,
-	GENERAL_SETTING_LOAD_SAVE,
+	GENERAL_SETTING_LOAD_SAVE_OPTIONS,
+	GENERAL_SETTING_LOAD_SAVE_VARS,
 	GENERAL_SETTING_DEFAULT_VALUES,
 	GENERAL_SETTING_RETURN,
 	GENERAL_SETTING_AMOUNT
 } GeneralSettingType;
-
 
 typedef struct {
 	int mBoxCursorID;
@@ -106,9 +107,57 @@ typedef struct {
 } KeyConfigOptionsScreen;
 
 typedef enum {
+	DREAMCAST_SAVE_SETTING_SELECT_VMU,
+	DREAMCAST_SAVE_SETTING_SAVE,
+	DREAMCAST_SAVE_SETTING_LOAD,
+	DREAMCAST_SAVE_SETTING_DELETE,
+	DREAMCAST_SAVE_SETTING_RETURN,
+	DREAMCAST_SAVE_SETTING_AMOUNT,
+} DreamcastSaveSettingType;
+
+static const std::string gVMUNames[uint32_t(PrismSaveSlot::AMOUNT)] = {
+	"A1",
+	"A2",
+	"B1",
+	"B2",
+	"C1",
+	"C2",
+	"D1",
+	"D2",
+};
+
+typedef struct {
+	int mBoxCursorID;
+	int mSelected;
+
+	int mHasSave;
+	int mFreeBlocksTextID;
+	int mSaveSizeBlocksTextID;
+
+	int mSelectableTextID[DREAMCAST_SAVE_SETTING_AMOUNT];
+	int mSettingTextID[DREAMCAST_SAVE_SETTING_AMOUNT];
+
+	GeneralSettingType mSaveLoadType;
+
+	PrismSaveSlot mSelectedVMU;
+} DreamcastSaveOptionsScreen;
+
+typedef struct {
+	int mIsActive;
+
+	AnimationHandlerElement* mBackgroundAnimationElement;
+	int mQuestionTextID;
+	int mBoxCursorID;
+	int mSelectionTextID[2];
+	int mSelectedOption;
+	std::function<void()> mFunc;
+} OptionScreenConfirmationDialog;
+
+typedef enum {
 	OPTION_SCREEN_GENERAL,
 	OPTION_SCREEN_INPUT_CONFIG,
 	OPTION_SCREEN_KEY_CONFIG,
+	OPTION_SCREEN_DREAMCAST_SAVE,
 } OptionScreenType;
 
 static struct {
@@ -123,6 +172,8 @@ static struct {
 	GeneralOptionsScreen mGeneral;
 	InputConfigOptionsScreen mInputConfig;
 	KeyConfigOptionsScreen mKeyConfig;
+	DreamcastSaveOptionsScreen mDreamcastSave;
+	OptionScreenConfirmationDialog mConfirmationDialog;
 	int mHeaderTextID;
 	AnimationHandlerElement* mBackgroundAnimationElement;
 
@@ -174,7 +225,7 @@ static void setVolumeOptionText(GeneralSettingType tType, int(*tGet)());
 
 static void loadGeneralOptionsScreen() {
 	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationElement, makePosition(52, 35, 40));
-	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, makePosition(216, 185, 1), makePosition(0, 0, 0));
+	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, makePosition(216, 198, 1), makePosition(0, 0, 0));
 	
 	changeMugenText(gOptionsScreenData.mHeaderTextID, "OPTIONS");
 	setMugenTextPosition(gOptionsScreenData.mHeaderTextID, makePosition(160, 20, 60));
@@ -221,20 +272,33 @@ static void loadGeneralOptionsScreen() {
 	else {
 		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_TEAM_MODE_CONFIG] = addMugenTextMugenStyle("(Y)", makePosition(320 - offsetX, startY + offsetY * 7, 60), makeVector3DI(2, 2, -1));
 	}
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_LOAD_SAVE] = addMugenTextMugenStyle("Load/Save", makePosition(offsetX, startY + offsetY * 9, 60), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LOAD_SAVE] = addMugenTextMugenStyle("Load", makePosition(320 - offsetX, startY + offsetY * 9, 60), makeVector3DI(2, 8, -1));
-
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_DEFAULT_VALUES] = addMugenTextMugenStyle("Default Values", makePosition(offsetX, startY + offsetY * 10, 60), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_DEFAULT_VALUES] = addMugenTextMugenStyle("", makePosition(320 - offsetX, startY + offsetY * 10, 60), makeVector3DI(2, 8, -1));
-
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_RETURN] = addMugenTextMugenStyle("Return to Main Menu", makePosition(offsetX, startY + offsetY * 12, 60), makeVector3DI(2, 8, 1));
-	if (!isUsingController()) {
-		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_RETURN] = addMugenTextMugenStyle("(Esc)", makePosition(320 - offsetX, startY + offsetY * 12, 60), makeVector3DI(2, 5, -1));
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_LOAD_SAVE_OPTIONS] = addMugenTextMugenStyle("Load/Save Options", makePosition(offsetX, startY + offsetY * 9, 60), makeVector3DI(2, 8, 1));
+	if (isOnDreamcast()) {
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LOAD_SAVE_OPTIONS] = addMugenTextMugenStyle("", makePosition(320 - offsetX, startY + offsetY * 9, 60), makeVector3DI(2, 8, -1));
 	}
 	else {
-		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_RETURN] = addMugenTextMugenStyle("(B)", makePosition(320 - offsetX, startY + offsetY * 12, 60), makeVector3DI(2, 3, -1));
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LOAD_SAVE_OPTIONS] = addMugenTextMugenStyle("Load", makePosition(320 - offsetX, startY + offsetY * 9, 60), makeVector3DI(2, 8, -1));
 	}
-	gOptionsScreenData.mGeneral.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 50), makeGeoRectangle(-6, -11, 320 - 2 * offsetX + 10, 14));
+
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_LOAD_SAVE_VARS] = addMugenTextMugenStyle("Load/Save Global Vars", makePosition(offsetX, startY + offsetY * 10, 60), makeVector3DI(2, 8, 1));
+	if (isOnDreamcast()) {
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LOAD_SAVE_VARS] = addMugenTextMugenStyle("", makePosition(320 - offsetX, startY + offsetY * 10, 60), makeVector3DI(2, 8, -1));
+	}
+	else {
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LOAD_SAVE_VARS] = addMugenTextMugenStyle("Load", makePosition(320 - offsetX, startY + offsetY * 10, 60), makeVector3DI(2, 8, -1));
+	}
+
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_DEFAULT_VALUES] = addMugenTextMugenStyle("Default Values", makePosition(offsetX, startY + offsetY * 11, 60), makeVector3DI(2, 8, 1));
+	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_DEFAULT_VALUES] = addMugenTextMugenStyle("", makePosition(320 - offsetX, startY + offsetY * 11, 60), makeVector3DI(2, 8, -1));
+
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_RETURN] = addMugenTextMugenStyle("Return to Main Menu", makePosition(offsetX, startY + offsetY * 13, 60), makeVector3DI(2, 8, 1));
+	if (!isUsingController()) {
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_RETURN] = addMugenTextMugenStyle("(Esc)", makePosition(320 - offsetX, startY + offsetY * 13, 60), makeVector3DI(2, 5, -1));
+	}
+	else {
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_RETURN] = addMugenTextMugenStyle("(B)", makePosition(320 - offsetX, startY + offsetY * 13, 60), makeVector3DI(2, 3, -1));
+	}
+	gOptionsScreenData.mGeneral.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 50), GeoRectangle2D(-6, -11, 320 - 2 * offsetX + 10, 14));
 
 	setSelectedGeneralOptionActive();
 }
@@ -280,7 +344,6 @@ static void setSelectedInputConfigOptionInactive(int i) {
 static void loadInputConfigOptionsScreen() {
 	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationElement, makePosition(13, 35, 40));
 	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, makePosition(292, 121, 1), makePosition(0, 0, 0));
-
 
 	changeMugenText(gOptionsScreenData.mHeaderTextID, "INPUT CONFIG");
 	setMugenTextPosition(gOptionsScreenData.mHeaderTextID, makePosition(160, 20, 60));
@@ -340,7 +403,7 @@ static void loadInputConfigOptionsScreen() {
 				gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_RETURN] = addMugenTextMugenStyle("(B)", makePosition(right - offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 3, -1));
 			}
 		}
-		gOptionsScreenData.mInputConfig.mBoxCursorID[i] = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 50), makeGeoRectangle(-6, -11, 160 - 2 * offsetX + 10, 14));
+		gOptionsScreenData.mInputConfig.mBoxCursorID[i] = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 50), GeoRectangle2D(-6, -11, 160 - 2 * offsetX + 10, 14));
 
 		left = 160;
 		right = 320;
@@ -359,7 +422,6 @@ static void unloadInputConfigOptionsScreen() {
 			removeMugenText(gOptionsScreenData.mInputConfig.mSettingTextID[i][j]);
 		}
 		removeBoxCursor(gOptionsScreenData.mInputConfig.mBoxCursorID[i]);
-
 	}
 
 }
@@ -453,6 +515,7 @@ static string gKeyNames[KEYBOARD_AMOUNT_PRISM] = {
 	"Pause",
 	"Caret",
 	"LeftCtrl",
+	"LeftAlt",
 	"LeftShift",
 	"Enter",
 	"Backspace",
@@ -495,7 +558,6 @@ static void loadKeyConfigOptionsScreen() {
 	for (int i = 0; i < 2; i++) {
 
 		int usingController = isUsingController();
-
 
 		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_CONFIG_ALL] = addMugenTextMugenStyle("Config all", makePosition(left + offsetX, startY, 60), makeVector3DI(2, 8, 1));
 		if (!usingController) {
@@ -593,7 +655,7 @@ static void loadKeyConfigOptionsScreen() {
 		right = 282;
 	}
 
-	gOptionsScreenData.mKeyConfig.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 50), makeGeoRectangle(-5, -11, 92, 14));
+	gOptionsScreenData.mKeyConfig.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 50), GeoRectangle2D(-5, -11, 92, 14));
 	gOptionsScreenData.mKeyConfig.mIsSettingInput = 0;
 	gOptionsScreenData.mKeyConfig.mSettingFlankDone = 1;
 
@@ -611,6 +673,134 @@ static void unloadKeyConfigOptionsScreen() {
 	}
 
 	removeBoxCursor(gOptionsScreenData.mKeyConfig.mBoxCursorID);
+}
+
+static void setDreamcastSaveSelectedVMUText() {
+	changeMugenText(gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_SELECT_VMU], gVMUNames[uint32_t(gOptionsScreenData.mDreamcastSave.mSelectedVMU)].c_str());
+}
+
+static void setDreamcastFreeBlocksText() {
+	if (!isPrismSaveSlotActive(gOptionsScreenData.mDreamcastSave.mSelectedVMU)) {
+		changeMugenText(gOptionsScreenData.mDreamcastSave.mFreeBlocksTextID, "No VMU detected in slot");
+		return;
+	}
+
+	if (gOptionsScreenData.mDreamcastSave.mSaveLoadType == GENERAL_SETTING_LOAD_SAVE_OPTIONS) {
+		gOptionsScreenData.mDreamcastSave.mHasSave = hasMugenConfigSave(gOptionsScreenData.mDreamcastSave.mSelectedVMU);
+	}
+	else {
+		gOptionsScreenData.mDreamcastSave.mHasSave = hasGlobalVariablesSave(gOptionsScreenData.mDreamcastSave.mSelectedVMU);
+	}
+
+	const auto freeSize = getAvailableSizeForSaveSlot(gOptionsScreenData.mDreamcastSave.mSelectedVMU);
+	const auto blockAmount = freeSize / 512;
+	std::stringstream ss;
+	ss << "Free blocks: " << blockAmount;
+	if (gOptionsScreenData.mDreamcastSave.mHasSave) {
+		ss << " (save exists)";
+	}
+	changeMugenText(gOptionsScreenData.mDreamcastSave.mFreeBlocksTextID, ss.str().c_str());
+}
+
+static void setDreamcastSaveSaveSizeText() {
+	size_t saveSize;
+	if (gOptionsScreenData.mDreamcastSave.mSaveLoadType == GENERAL_SETTING_LOAD_SAVE_OPTIONS) {
+		saveSize = getMugenConfigSaveSize();
+	}
+	else {
+		saveSize = getGlobalVariablesSaveSize();
+	}
+
+	const auto blockAmount = saveSize / 512;
+	std::stringstream ss;
+	ss << "Save blocks: " << blockAmount;
+	changeMugenText(gOptionsScreenData.mDreamcastSave.mSaveSizeBlocksTextID, ss.str().c_str());
+}
+
+static void setSelectedDreamcastSaveOptionInactive() {
+	setMugenTextColor(gOptionsScreenData.mDreamcastSave.mSelectableTextID[gOptionsScreenData.mDreamcastSave.mSelected], getMugenTextColorFromMugenTextColorIndex(8));
+
+	const auto selectionColor = getMugenTextColor(gOptionsScreenData.mDreamcastSave.mSettingTextID[gOptionsScreenData.mDreamcastSave.mSelected]);
+	if (selectionColor.x != 0 && selectionColor.y != 0 && selectionColor.z != 0) {
+		setMugenTextColor(gOptionsScreenData.mDreamcastSave.mSettingTextID[gOptionsScreenData.mDreamcastSave.mSelected], getMugenTextColorFromMugenTextColorIndex(8));
+	}
+}
+
+static void setSelectedDreamcastSaveOptionActive() {
+	setMugenTextColor(gOptionsScreenData.mDreamcastSave.mSelectableTextID[gOptionsScreenData.mDreamcastSave.mSelected], getMugenTextColorFromMugenTextColorIndex(0));
+
+	const auto selectionColor = getMugenTextColor(gOptionsScreenData.mDreamcastSave.mSettingTextID[gOptionsScreenData.mDreamcastSave.mSelected]);
+	if (selectionColor.x != 0 && selectionColor.y != 0 && selectionColor.z != 0) {
+		setMugenTextColor(gOptionsScreenData.mDreamcastSave.mSettingTextID[gOptionsScreenData.mDreamcastSave.mSelected], getMugenTextColorFromMugenTextColorIndex(0));
+	}
+
+	auto pos = getMugenTextPosition(gOptionsScreenData.mDreamcastSave.mSelectableTextID[gOptionsScreenData.mDreamcastSave.mSelected]);
+	pos.z = 0;
+	setBoxCursorPosition(gOptionsScreenData.mDreamcastSave.mBoxCursorID, pos);
+}
+
+static void updateSelectedDreamcastSaveOption(int tDelta) {
+	setSelectedDreamcastSaveOptionInactive();
+	gOptionsScreenData.mDreamcastSave.mSelected += tDelta;
+	gOptionsScreenData.mDreamcastSave.mSelected = (gOptionsScreenData.mDreamcastSave.mSelected + DREAMCAST_SAVE_SETTING_AMOUNT) % DREAMCAST_SAVE_SETTING_AMOUNT;
+	tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCursorMoveSound.x, gOptionsScreenData.mHeader.mCursorMoveSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
+	setSelectedDreamcastSaveOptionActive();
+}
+
+
+static void loadDreamcastSaveOptionsScreen() {
+	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationElement, makePosition(52, 35, 40));
+	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, makePosition(216, 133, 1), makePosition(0, 0, 0));
+
+	if (gOptionsScreenData.mDreamcastSave.mSaveLoadType == GENERAL_SETTING_LOAD_SAVE_OPTIONS) {
+		changeMugenText(gOptionsScreenData.mHeaderTextID, "SAVE/LOAD OPTIONS");
+	}
+	else {
+		changeMugenText(gOptionsScreenData.mHeaderTextID, "SAVE/LOAD VARS");
+	}
+	setMugenTextPosition(gOptionsScreenData.mHeaderTextID, makePosition(160, 20, 60));
+	gOptionsScreenData.mActiveScreen = OPTION_SCREEN_DREAMCAST_SAVE;
+
+	int offsetX = 70;
+	int startY = 50;
+	int offsetY = 13;
+	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_SELECT_VMU] = addMugenTextMugenStyle("VMU", makePosition(offsetX, startY, 60), makeVector3DI(2, 8, 1));
+	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_SELECT_VMU] = addMugenTextMugenStyle("A1", makePosition(320 - offsetX, startY, 60), makeVector3DI(2, 8, -1));
+	setDreamcastSaveSelectedVMUText();
+
+	gOptionsScreenData.mDreamcastSave.mFreeBlocksTextID = addMugenTextMugenStyle("Free blocks: 0", makePosition(offsetX, startY + offsetY * 1, 60), makeVector3DI(2, 8, 1));
+	setDreamcastFreeBlocksText();
+
+	gOptionsScreenData.mDreamcastSave.mSaveSizeBlocksTextID = addMugenTextMugenStyle("Save size: 0", makePosition(offsetX, startY + offsetY * 2, 60), makeVector3DI(2, 8, 1));
+	setDreamcastSaveSaveSizeText();
+
+	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_SAVE] = addMugenTextMugenStyle("Save", makePosition(offsetX, startY + offsetY * 4, 60), makeVector3DI(2, 8, 1));
+	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_SAVE] = addMugenTextMugenStyle("Confirm", makePosition(320 - offsetX, startY + offsetY * 4, 60), makeVector3DI(2, 8, -1));
+
+	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_LOAD] = addMugenTextMugenStyle("Load", makePosition(offsetX, startY + offsetY * 5, 60), makeVector3DI(2, 8, 1));
+	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_LOAD] = addMugenTextMugenStyle("(Y)", makePosition(320 - offsetX, startY + offsetY * 5, 60), makeVector3DI(2, 2, -1));
+
+	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_DELETE] = addMugenTextMugenStyle("Delete", makePosition(offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 8, 1));
+	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_DELETE] = addMugenTextMugenStyle("(X)", makePosition(320 - offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 5, -1));
+
+	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_RETURN] = addMugenTextMugenStyle("Return to Options", makePosition(offsetX, startY + offsetY * 8, 60), makeVector3DI(2, 8, 1));
+	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_RETURN] = addMugenTextMugenStyle("(B)", makePosition(320 - offsetX, startY + offsetY * 8, 60), makeVector3DI(2, 3, -1));
+
+	gOptionsScreenData.mDreamcastSave.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 50), GeoRectangle2D(-6, -11, 320 - 2 * offsetX + 10, 14));
+
+	setSelectedDreamcastSaveOptionActive();
+}
+
+static void unloadDreamcastSaveOptionsScreen() {
+	removeMugenText(gOptionsScreenData.mDreamcastSave.mFreeBlocksTextID);
+	removeMugenText(gOptionsScreenData.mDreamcastSave.mSaveSizeBlocksTextID);
+
+	for (int i = 0; i < DREAMCAST_SAVE_SETTING_AMOUNT; i++) {
+		removeMugenText(gOptionsScreenData.mDreamcastSave.mSelectableTextID[i]);
+		removeMugenText(gOptionsScreenData.mDreamcastSave.mSettingTextID[i]);
+	}
+
+	removeBoxCursor(gOptionsScreenData.mDreamcastSave.mBoxCursorID);
 }
 
 static void sanitizeOptionsValues() {
@@ -646,6 +836,7 @@ static void loadOptionsScreen() {
 	setAnimationColor(gOptionsScreenData.mBackgroundAnimationElement, 0, 0, 0.6);
 	setAnimationTransparency(gOptionsScreenData.mBackgroundAnimationElement, 0.7);
 
+	gOptionsScreenData.mConfirmationDialog.mIsActive = 0;
 	loadGeneralOptionsScreen();
 
 	setWorkingDirectory("/");
@@ -679,6 +870,83 @@ static void inputConfigToKeyConfigOptions() {
 	loadKeyConfigOptionsScreen();
 }
 
+static void dreamcastSaveToGeneralOptions() {
+	if (gOptionsScreenData.mActiveScreen != OPTION_SCREEN_DREAMCAST_SAVE) return;
+
+	unloadDreamcastSaveOptionsScreen();
+	loadGeneralOptionsScreen();
+}
+
+static void generalToDreamcastSaveOptions() {
+	if (gOptionsScreenData.mActiveScreen != OPTION_SCREEN_GENERAL) return;
+
+	unloadGeneralOptionsScreen();
+	loadDreamcastSaveOptionsScreen();
+}
+
+static void setOptionScreenConfirmationDialogActive(const char* tQuestionText, const std::function<void()>& tFunc) {
+	gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement = playOneFrameAnimationLoop(makePosition(58, 60, 70), &gOptionsScreenData.mWhiteTexture);
+	setAnimationColor(gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement, 0, 0, 0.6);
+	setAnimationTransparency(gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement, 0.7);
+	setAnimationSize(gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement, makePosition(202, 50, 1), makePosition(0, 0, 0));
+
+	gOptionsScreenData.mConfirmationDialog.mQuestionTextID = addMugenTextMugenStyle(tQuestionText, makePosition(160, 75, 75), makeVector3DI(2, 0, 0));
+	gOptionsScreenData.mConfirmationDialog.mSelectionTextID[0] = addMugenTextMugenStyle("Yes", makePosition(130, 98, 75), makeVector3DI(2, 8, 1));
+	gOptionsScreenData.mConfirmationDialog.mSelectionTextID[1] = addMugenTextMugenStyle("No", makePosition(180, 98, 75), makeVector3DI(2, 0, 1));
+	gOptionsScreenData.mConfirmationDialog.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 71), GeoRectangle2D(-5, -11, 27, 14));
+
+	gOptionsScreenData.mConfirmationDialog.mSelectedOption = 1;
+	auto textPos = getMugenTextPosition(gOptionsScreenData.mConfirmationDialog.mSelectionTextID[gOptionsScreenData.mConfirmationDialog.mSelectedOption]);
+	textPos.z = 0.0;
+	setBoxCursorPosition(gOptionsScreenData.mConfirmationDialog.mBoxCursorID, textPos);
+
+	gOptionsScreenData.mConfirmationDialog.mFunc = tFunc;
+	gOptionsScreenData.mConfirmationDialog.mIsActive = 1;
+}
+
+static void setOptionScreenConfirmationDialogInactive() {
+	removeHandledAnimation(gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement);
+	removeMugenText(gOptionsScreenData.mConfirmationDialog.mQuestionTextID);
+	removeMugenText(gOptionsScreenData.mConfirmationDialog.mSelectionTextID[0]);
+	removeMugenText(gOptionsScreenData.mConfirmationDialog.mSelectionTextID[1]);
+	removeBoxCursor(gOptionsScreenData.mConfirmationDialog.mBoxCursorID);
+
+	gOptionsScreenData.mConfirmationDialog.mIsActive = 0;
+}
+
+static void handleOptionScreenGeneralSelectLoadSaveOptionsWindows(GeneralSettingType tType, void(*tLoad)(PrismSaveSlot), void(*tSave)(PrismSaveSlot)) {
+	if (!strcmp(getMugenTextText(gOptionsScreenData.mGeneral.mSettingTextID[tType]), "Load")) {
+		const auto func = [tLoad]() {
+			tLoad(PrismSaveSlot::AUTOMATIC);
+			generalToInputConfigOptions();
+			inputConfigToGeneralOptions();
+		};
+		setOptionScreenConfirmationDialogActive("Do you really want to load?", func);
+	}
+	else {
+		const auto func = [tSave]() {
+			tSave(PrismSaveSlot::AUTOMATIC);
+		};
+		setOptionScreenConfirmationDialogActive("Do you really want to save?", func);
+	}
+}
+
+static void handleOptionScreenGeneralSelectLoadSaveOptionsDreamcast(GeneralSettingType tType) {
+	gOptionsScreenData.mDreamcastSave.mSaveLoadType = tType;
+	generalToDreamcastSaveOptions();
+}
+
+static void handleOptionScreenGeneralSelectLoadSaveOptions(GeneralSettingType tType, void(*tLoad)(PrismSaveSlot), void(*tSave)(PrismSaveSlot)) {
+	if (isOnDreamcast()) {
+		handleOptionScreenGeneralSelectLoadSaveOptionsDreamcast(tType);
+		tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCursorDoneSound.x, gOptionsScreenData.mHeader.mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
+	}
+	else if (isOnWindows()) {
+		handleOptionScreenGeneralSelectLoadSaveOptionsWindows(tType, tLoad, tSave);
+		tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCursorDoneSound.x, gOptionsScreenData.mHeader.mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
+	}
+}
+
 static void updateOptionScreenGeneralSelect() {
 	if (gOptionsScreenData.mGeneral.mSelected == GENERAL_SETTING_INPUT_CONFIG) {
 		generalToInputConfigOptions();
@@ -687,6 +955,12 @@ static void updateOptionScreenGeneralSelect() {
 		tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCancelSound.x, gOptionsScreenData.mHeader.mCancelSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 		setNewScreen(getDreamTitleScreen());
 	} 
+	else if (gOptionsScreenData.mGeneral.mSelected == GENERAL_SETTING_LOAD_SAVE_OPTIONS) {
+		handleOptionScreenGeneralSelectLoadSaveOptions(GENERAL_SETTING_LOAD_SAVE_OPTIONS, loadMugenConfigSave, saveMugenConfigSave);
+	}
+	else if (gOptionsScreenData.mGeneral.mSelected == GENERAL_SETTING_LOAD_SAVE_VARS) {
+		handleOptionScreenGeneralSelectLoadSaveOptions(GENERAL_SETTING_LOAD_SAVE_VARS, loadGlobalVariables, saveGlobalVariables);
+	}
 	else if (gOptionsScreenData.mGeneral.mSelected == GENERAL_SETTING_DEFAULT_VALUES) {
 		setDefaultOptionVariables();
 		generalToInputConfigOptions();
@@ -821,6 +1095,16 @@ static void changeVolumeOption(int tDelta, GeneralSettingType tType, int(*tGet)(
 	setVolumeOptionText(tType, tGet);
 }
 
+static void toggleLoadSaveOption(GeneralSettingType tType) {
+	if (isOnDreamcast()) return;
+	if (!strcmp(getMugenTextText(gOptionsScreenData.mGeneral.mSettingTextID[tType]), "Load")) {
+		changeMugenText(gOptionsScreenData.mGeneral.mSettingTextID[tType], "Save");
+	}
+	else {
+		changeMugenText(gOptionsScreenData.mGeneral.mSettingTextID[tType], "Load");
+	}
+}
+
 static void changeSelectedGeneralOption(int tDelta) {
 	if (gOptionsScreenData.mGeneral.mSelected == GENERAL_SETTING_DIFFICULTY) {
 		changeDifficultyOption(tDelta);
@@ -839,6 +1123,12 @@ static void changeSelectedGeneralOption(int tDelta) {
 	}
 	else if (gOptionsScreenData.mGeneral.mSelected == GENERAL_SETTING_MIDI_VOLUME) {
 		changeVolumeOption(tDelta, GENERAL_SETTING_MIDI_VOLUME, getUnscaledGameMidiVolume, setUnscaledGameMidiVolume);
+	}
+	else if (gOptionsScreenData.mGeneral.mSelected == GENERAL_SETTING_LOAD_SAVE_OPTIONS) {
+		toggleLoadSaveOption(GENERAL_SETTING_LOAD_SAVE_OPTIONS);
+	}
+	else if (gOptionsScreenData.mGeneral.mSelected == GENERAL_SETTING_LOAD_SAVE_VARS) {
+		toggleLoadSaveOption(GENERAL_SETTING_LOAD_SAVE_VARS);
 	}
 }
 
@@ -907,8 +1197,6 @@ static void updateOptionScreenInputConfig() {
 			inputConfigToGeneralOptions();
 		}
 	}
-
-
 
 	if (hasPressedBFlank()) {
 		inputConfigToGeneralOptions();
@@ -1051,7 +1339,7 @@ static void setKeyConfigDefault() {
 static void startSettingKeyConfigInput() {
 	gOptionsScreenData.mKeyConfig.mCurrentTargetButton = 0;
 	gOptionsScreenData.mKeyConfig.mIsSettingInput = 1;
-	gOptionsScreenData.mKeyConfig.mSetKeyBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 50), makeGeoRectangle(-5, -10, 92, 12));
+	gOptionsScreenData.mKeyConfig.mSetKeyBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 50), GeoRectangle2D(-5, -10, 92, 12));
 	pauseBoxCursor(gOptionsScreenData.mKeyConfig.mBoxCursorID);
 	setCurrentKeyConfigSetActive();
 }
@@ -1122,13 +1410,164 @@ static void updateOptionScreenKeyConfig() {
 	}
 }
 
+static void changeDreamcastSaveSelectVMUOption(int tDelta) {
+	auto index = int(gOptionsScreenData.mDreamcastSave.mSelectedVMU) + tDelta;
+	index = (index + int(PrismSaveSlot::AMOUNT)) % int(PrismSaveSlot::AMOUNT);
+	gOptionsScreenData.mDreamcastSave.mSelectedVMU = PrismSaveSlot(index);
+	setDreamcastSaveSelectedVMUText();
+	setDreamcastFreeBlocksText();
+}
+
+static void changeSelectedDreamcastSaveOption(int tDelta) {
+	if (gOptionsScreenData.mDreamcastSave.mSelected == DREAMCAST_SAVE_SETTING_SELECT_VMU) {
+		changeDreamcastSaveSelectVMUOption(tDelta);
+	}
+}
+
+static void updateOptionScreenDreamcastSaveSelectSave() {
+	std::function<void()> func;
+	if (gOptionsScreenData.mDreamcastSave.mSaveLoadType == GENERAL_SETTING_LOAD_SAVE_OPTIONS) {
+		func = []() {
+			saveMugenConfigSave(gOptionsScreenData.mDreamcastSave.mSelectedVMU);
+			setDreamcastFreeBlocksText();
+		};
+	}
+	else {
+		func = []() {
+			saveGlobalVariables(gOptionsScreenData.mDreamcastSave.mSelectedVMU);
+			setDreamcastFreeBlocksText();
+		};
+	}
+	setOptionScreenConfirmationDialogActive("Do you really want to save?", func);
+}
+
+static void updateOptionScreenDreamcastSaveSelectLoad() {
+	std::function<void()> func;
+	if (gOptionsScreenData.mDreamcastSave.mSaveLoadType == GENERAL_SETTING_LOAD_SAVE_OPTIONS) {
+		func = []() {
+			loadMugenConfigSave(gOptionsScreenData.mDreamcastSave.mSelectedVMU);
+		};
+	}
+	else {
+		func = []() {
+			loadGlobalVariables(gOptionsScreenData.mDreamcastSave.mSelectedVMU);
+		};
+	}
+	setOptionScreenConfirmationDialogActive("Do you really want to load?", func);
+}
+
+static void updateOptionScreenDreamcastSaveSelectDelete() {
+	std::function<void()> func;
+	if (gOptionsScreenData.mDreamcastSave.mSaveLoadType == GENERAL_SETTING_LOAD_SAVE_OPTIONS) {
+		func = []() {
+			deleteMugenConfigSave(gOptionsScreenData.mDreamcastSave.mSelectedVMU);
+			setDreamcastFreeBlocksText();
+		};
+	}
+	else {
+		func = []() {
+			deleteGlobalVariables(gOptionsScreenData.mDreamcastSave.mSelectedVMU);
+			setDreamcastFreeBlocksText();
+		};
+	}
+	setOptionScreenConfirmationDialogActive("Do you really want to delete?", func);
+}
+
+static void updateOptionScreenDreamcastSaveSelect() {
+	if (gOptionsScreenData.mDreamcastSave.mSelected == DREAMCAST_SAVE_SETTING_SAVE && isPrismSaveSlotActive(gOptionsScreenData.mDreamcastSave.mSelectedVMU)) {
+		updateOptionScreenDreamcastSaveSelectSave();
+		tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCursorDoneSound.x, gOptionsScreenData.mHeader.mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
+	}
+	else if (gOptionsScreenData.mDreamcastSave.mSelected == DREAMCAST_SAVE_SETTING_LOAD && isPrismSaveSlotActive(gOptionsScreenData.mDreamcastSave.mSelectedVMU) && gOptionsScreenData.mDreamcastSave.mHasSave) {
+		updateOptionScreenDreamcastSaveSelectLoad();
+		tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCursorDoneSound.x, gOptionsScreenData.mHeader.mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
+	}
+	else if (gOptionsScreenData.mDreamcastSave.mSelected == DREAMCAST_SAVE_SETTING_DELETE && isPrismSaveSlotActive(gOptionsScreenData.mDreamcastSave.mSelectedVMU) && gOptionsScreenData.mDreamcastSave.mHasSave) {
+		updateOptionScreenDreamcastSaveSelectDelete();
+		tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCursorDoneSound.x, gOptionsScreenData.mHeader.mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
+	}
+	else if (gOptionsScreenData.mDreamcastSave.mSelected == DREAMCAST_SAVE_SETTING_RETURN) {
+		tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCancelSound.x, gOptionsScreenData.mHeader.mCancelSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
+		dreamcastSaveToGeneralOptions();
+	}
+}
+
+static void updateOptionScreenDreamcastSave() {
+	if (hasPressedUpFlank()) {
+		updateSelectedDreamcastSaveOption(-1);
+	}
+	else if (hasPressedDownFlank()) {
+		updateSelectedDreamcastSaveOption(1);
+	}
+
+	if (hasPressedLeftFlank()) {
+		changeSelectedDreamcastSaveOption(-1);
+	}
+	else if (hasPressedRightFlank()) {
+		changeSelectedDreamcastSaveOption(1);
+	}
+
+	if (hasPressedAFlank() || hasPressedStartFlank()) {
+		updateOptionScreenDreamcastSaveSelect();
+	}
+	else if (hasPressedXFlank() && isPrismSaveSlotActive(gOptionsScreenData.mDreamcastSave.mSelectedVMU) && gOptionsScreenData.mDreamcastSave.mHasSave) {
+		updateOptionScreenDreamcastSaveSelectDelete();
+		tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCursorDoneSound.x, gOptionsScreenData.mHeader.mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
+	}
+	else if (hasPressedYFlank() && isPrismSaveSlotActive(gOptionsScreenData.mDreamcastSave.mSelectedVMU) && gOptionsScreenData.mDreamcastSave.mHasSave) {
+		updateOptionScreenDreamcastSaveSelectLoad();
+		tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCursorDoneSound.x, gOptionsScreenData.mHeader.mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
+	}
+	else if (hasPressedBFlank()) {
+		tryPlayMugenSoundAdvanced(&gOptionsScreenData.mSounds, gOptionsScreenData.mHeader.mCancelSound.x, gOptionsScreenData.mHeader.mCancelSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
+		dreamcastSaveToGeneralOptions();
+	}
+}
+
+static void updateOptionScreenConfirmationDialogSelection() {
+	setMugenTextColor(gOptionsScreenData.mConfirmationDialog.mSelectionTextID[gOptionsScreenData.mConfirmationDialog.mSelectedOption], getMugenTextColorFromMugenTextColorIndex(8));
+
+	gOptionsScreenData.mConfirmationDialog.mSelectedOption ^= 1;
+	auto textPos = getMugenTextPosition(gOptionsScreenData.mConfirmationDialog.mSelectionTextID[gOptionsScreenData.mConfirmationDialog.mSelectedOption]);
+	textPos.z = 0.0;
+	setBoxCursorPosition(gOptionsScreenData.mConfirmationDialog.mBoxCursorID, textPos);
+	setMugenTextColor(gOptionsScreenData.mConfirmationDialog.mSelectionTextID[gOptionsScreenData.mConfirmationDialog.mSelectedOption], getMugenTextColorFromMugenTextColorIndex(0));
+}
+
+static void selectOptionScreenConfirmationDialogSelection() {
+	if (gOptionsScreenData.mConfirmationDialog.mSelectedOption == 0) {
+		gOptionsScreenData.mConfirmationDialog.mFunc();
+	}
+	setOptionScreenConfirmationDialogInactive();
+}
+
+static void updateOptionScreenConfirmationDialog() {
+	if (hasPressedLeftFlank() || hasPressedRightFlank()) {
+		updateOptionScreenConfirmationDialogSelection();
+	}
+
+	if (hasPressedAFlank() || hasPressedStartFlank()) {
+		selectOptionScreenConfirmationDialogSelection();
+	}
+	else if (hasPressedBFlank()) {
+		setOptionScreenConfirmationDialogInactive();
+	}
+}
+
 static void updateOptionScreenSelection() {
+	if (gOptionsScreenData.mConfirmationDialog.mIsActive) {
+		updateOptionScreenConfirmationDialog();
+		return;
+	}
+
 	if (gOptionsScreenData.mActiveScreen == OPTION_SCREEN_GENERAL) {
 		updateOptionScreenGeneral();
 	} else if (gOptionsScreenData.mActiveScreen == OPTION_SCREEN_INPUT_CONFIG) {
 		updateOptionScreenInputConfig();
 	} else if (gOptionsScreenData.mActiveScreen == OPTION_SCREEN_KEY_CONFIG) {
 		updateOptionScreenKeyConfig();
+	} else if (gOptionsScreenData.mActiveScreen == OPTION_SCREEN_DREAMCAST_SAVE) {
+		updateOptionScreenDreamcastSave();
 	}
 }
 

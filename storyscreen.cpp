@@ -149,9 +149,6 @@ static void loadStoryScreen() {
 	startScene();
 }
 
-
-
-
 static void unloadScenes() {
 	delete_vector(&gStoryScreenData.mScenes);
 }

@@ -22,6 +22,7 @@
 #include "mugenexplod.h"
 #include "dolmexicastoryscreen.h"
 #include "config.h"
+#include "mugenstatehandler.h"
 
 using namespace std;
 
@@ -1752,12 +1753,12 @@ static AssignmentReturnValue* animFunction(DreamPlayer* tPlayer) { return makeNu
 //static AssignmentReturnValue* animElemFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue* animTimeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerAnimationTimeDeltaUntilFinished(tPlayer)); }
 static AssignmentReturnValue* authorNameFunction(DreamPlayer* tPlayer) { return makeStringAssignmentReturn(getPlayerAuthorName(tPlayer)); }
-static AssignmentReturnValue* backEdgeFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScreenEdgeInBackX(tPlayer)); }
-static AssignmentReturnValue* backEdgeBodyDistFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackBodyDistanceToScreen(tPlayer)); }
-static AssignmentReturnValue* backEdgeDistFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackAxisDistanceToScreen(tPlayer)); }
-static AssignmentReturnValue* bottomEdgeFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamStageBottomEdgeY(getPlayerCoordinateP(tPlayer))); }
-static AssignmentReturnValue* cameraPosXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamCameraPositionX(getPlayerCoordinateP(tPlayer))); }
-static AssignmentReturnValue* cameraPosYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamCameraPositionY(getPlayerCoordinateP(tPlayer))); }
+static AssignmentReturnValue* backEdgeFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScreenEdgeInBackX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* backEdgeBodyDistFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackBodyDistanceToScreen(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* backEdgeDistFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackAxisDistanceToScreen(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* bottomEdgeFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(getDreamStageBottomEdgeY(getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* cameraPosXFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(getDreamCameraPositionX(getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* cameraPosYFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(getDreamCameraPositionY(getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* cameraZoomFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(getDreamCameraZoom()); }
 static AssignmentReturnValue* canRecoverFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(canPlayerRecoverFromFalling(tPlayer)); }
 //static AssignmentReturnValue* commandFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
@@ -1765,25 +1766,25 @@ static AssignmentReturnValue* ctrlFunction(DreamPlayer* tPlayer) { return makeBo
 static AssignmentReturnValue* drawGameFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(hasPlayerDrawn(tPlayer)); }
 static AssignmentReturnValue* eFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(M_E); }
 static AssignmentReturnValue* facingFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerIsFacingRight(tPlayer) ? 1 : -1); }
-static AssignmentReturnValue* frontEdgeFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScreenEdgeInFrontX(tPlayer)); }
-static AssignmentReturnValue* frontEdgeBodyDistFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerFrontBodyDistanceToScreen(tPlayer)); }
-static AssignmentReturnValue* frontEdgeDistFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerFrontAxisDistanceToScreen(tPlayer)); }
-static AssignmentReturnValue* gameHeightFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamGameHeight(getPlayerCoordinateP(tPlayer))); }
+static AssignmentReturnValue* frontEdgeFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScreenEdgeInFrontX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* frontEdgeBodyDistFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerFrontBodyDistanceToScreen(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* frontEdgeDistFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerFrontAxisDistanceToScreen(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* gameHeightFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(getDreamGameHeight(getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* gameTimeFunction(DreamPlayer* /*tPlayer*/) { return makeNumberAssignmentReturn(getDreamGameTime()); }
-static AssignmentReturnValue* gameWidthFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamGameWidth(getPlayerCoordinateP(tPlayer))); }
+static AssignmentReturnValue* gameWidthFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(getDreamGameWidth(getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* hitCountFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerHitCount(tPlayer)); }
 //static AssignmentReturnValue* hitDefAttrFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue* hitFallFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(isPlayerFalling(tPlayer)); }
 static AssignmentReturnValue* hitOverFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(isPlayerHitOver(tPlayer)); }
 static AssignmentReturnValue* hitPauseTimeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerTimeLeftInHitPause(tPlayer)); }
 static AssignmentReturnValue* hitShakeOverFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(isPlayerHitShakeOver(tPlayer));  }
-static AssignmentReturnValue* hitVelXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerHitVelocityX(tPlayer, getPlayerCoordinateP(tPlayer))); }
-static AssignmentReturnValue* hitVelYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerHitVelocityY(tPlayer, getPlayerCoordinateP(tPlayer))); }
+static AssignmentReturnValue* hitVelXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerHitVelocityX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* hitVelYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerHitVelocityY(tPlayer, getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* idFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(tPlayer->mID); }
 static AssignmentReturnValue* inGuardDistFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(isPlayerInGuardDistance(tPlayer)); }
 static AssignmentReturnValue* isHelperFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(isPlayerHelper(tPlayer)); }
 static AssignmentReturnValue* isHomeTeamFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(isPlayerHomeTeam(tPlayer)); }
-static AssignmentReturnValue* leftEdgeFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamStageLeftEdgeX(getPlayerCoordinateP(tPlayer))); }
+static AssignmentReturnValue* leftEdgeFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(getDreamStageLeftEdgeX(getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* lifeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerLife(tPlayer)); }
 static AssignmentReturnValue* lifeMaxFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerLifeMax(tPlayer)); }
 static AssignmentReturnValue* loseFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(hasPlayerLost(tPlayer)); }
@@ -1802,10 +1803,10 @@ static AssignmentReturnValue* numPartnerFunction(DreamPlayer* /*tPlayer*/) { ret
 static AssignmentReturnValue* numProjFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerProjectileAmount(tPlayer)); }
 static AssignmentReturnValue* numTargetFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerTargetAmount(tPlayer)); }
 static AssignmentReturnValue* p1NameFunction(DreamPlayer* tPlayer) { return nameFunction(tPlayer); }
-static AssignmentReturnValue* p2BodyDistFunctionX(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDistanceToFrontOfOtherPlayerX(tPlayer)); }
-static AssignmentReturnValue* p2BodyDistFunctionY(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAxisDistanceY(tPlayer)); }
-static AssignmentReturnValue* p2DistFunctionX(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAxisDistanceX(tPlayer)); }
-static AssignmentReturnValue* p2DistFunctionY(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAxisDistanceY(tPlayer)); }
+static AssignmentReturnValue* p2BodyDistFunctionX(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDistanceToFrontOfOtherPlayerX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* p2BodyDistFunctionY(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAxisDistanceY(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* p2DistFunctionX(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAxisDistanceX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* p2DistFunctionY(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAxisDistanceY(tPlayer, getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* p2LifeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerLife(getPlayerOtherPlayer(tPlayer))); }
 //static AssignmentReturnValue* p2MoveTypeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue* p2NameFunction(DreamPlayer* tPlayer) { return makeStringAssignmentReturn(getPlayerName(getPlayerOtherPlayer(tPlayer))); }
@@ -1814,11 +1815,11 @@ static AssignmentReturnValue* p2StateNoFunction(DreamPlayer* tPlayer) { return m
 static AssignmentReturnValue* p3NameFunction(DreamPlayer* /*tPlayer*/) { return makeStringAssignmentReturn(""); }
 static AssignmentReturnValue* p4NameFunction(DreamPlayer* /*tPlayer*/) { return makeStringAssignmentReturn(""); }
 static AssignmentReturnValue* palNoFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerPaletteNumber(tPlayer)); }
-static AssignmentReturnValue* parentDistXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDistanceToParentX(tPlayer)); }
-static AssignmentReturnValue* parentDistYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDistanceToParentY(tPlayer)); }
+static AssignmentReturnValue* parentDistXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDistanceToParentX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* parentDistYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDistanceToParentY(tPlayer, getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* piFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(M_PI); }
-static AssignmentReturnValue* posXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerPositionBasedOnScreenCenterX(tPlayer, getPlayerCoordinateP(tPlayer))); }
-static AssignmentReturnValue* posYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerPositionBasedOnStageFloorY(tPlayer, getPlayerCoordinateP(tPlayer))); }
+static AssignmentReturnValue* posXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerPositionBasedOnScreenCenterX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* posYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerPositionBasedOnStageFloorY(tPlayer, getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* powerFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerPower(tPlayer)); }
 static AssignmentReturnValue* powerMaxFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerPowerMax(tPlayer)); }
 static AssignmentReturnValue* prevStateNoFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerPreviousState(tPlayer)); }
@@ -1826,16 +1827,16 @@ static AssignmentReturnValue* prevStateNoFunction(DreamPlayer* tPlayer) { return
 //static AssignmentReturnValue* projGuardedFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 //static AssignmentReturnValue* projHitFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue* randomFunction(DreamPlayer* /*tPlayer*/) { return makeNumberAssignmentReturn(randfromInteger(0, 999)); }
-static AssignmentReturnValue* rightEdgeFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamStageRightEdgeX(getPlayerCoordinateP(tPlayer))); }
-static AssignmentReturnValue* rootDistXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDistanceToRootX(tPlayer)); }
-static AssignmentReturnValue* rootDistYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDistanceToRootY(tPlayer)); }
+static AssignmentReturnValue* rightEdgeFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(getDreamStageRightEdgeX(getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* rootDistXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDistanceToRootX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* rootDistYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDistanceToRootY(tPlayer, getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* roundNoFunction(DreamPlayer* /*tPlayer*/) { return makeNumberAssignmentReturn(getDreamRoundNumber()); }
 static AssignmentReturnValue* roundsExistedFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerRoundsExisted(tPlayer)); }
 static AssignmentReturnValue* roundStateFunction(DreamPlayer* /*tPlayer*/) { return makeNumberAssignmentReturn(getDreamRoundStateNumber()); }
-static AssignmentReturnValue* screenPosXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScreenPositionX(tPlayer, getPlayerCoordinateP(tPlayer))); }
-static AssignmentReturnValue* screenPosYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScreenPositionY(tPlayer, getPlayerCoordinateP(tPlayer))); }
-static AssignmentReturnValue* screenHeightFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamScreenHeight(getPlayerCoordinateP(tPlayer))); }
-static AssignmentReturnValue* screenWidthFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamScreenWidth(getPlayerCoordinateP(tPlayer))); }
+static AssignmentReturnValue* screenPosXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScreenPositionX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* screenPosYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScreenPositionY(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* screenHeightFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(getDreamScreenHeight(getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* screenWidthFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(getDreamScreenWidth(getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* stateNoFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerState(tPlayer)); }
 //static AssignmentReturnValue* stateTypeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 //static AssignmentReturnValue* teamModeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
@@ -1843,10 +1844,10 @@ static AssignmentReturnValue* teamSideFunction(DreamPlayer* tPlayer) { return ma
 static AssignmentReturnValue* ticksPerSecondFunction(DreamPlayer* /*tPlayer*/) { return makeNumberAssignmentReturn(getDreamTicksPerSecond()); }
 static AssignmentReturnValue* timeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerTimeInState(tPlayer)); }
 //static AssignmentReturnValue* timeModFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
-static AssignmentReturnValue* topEdgeFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getDreamStageTopEdgeY(getPlayerCoordinateP(tPlayer))); }
+static AssignmentReturnValue* topEdgeFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(getDreamStageTopEdgeY(getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* uniqHitCountFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerUniqueHitCount(tPlayer)); }
-static AssignmentReturnValue* velXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityX(tPlayer, getPlayerCoordinateP(tPlayer))); }
-static AssignmentReturnValue* velYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityY(tPlayer, getPlayerCoordinateP(tPlayer))); }
+static AssignmentReturnValue* velXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityY(tPlayer, getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* winFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(hasPlayerWon(tPlayer)); }
 static AssignmentReturnValue* winKOFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(hasPlayerWonByKO(tPlayer)); }
 static AssignmentReturnValue* winPerfectFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(hasPlayerWonPerfectly(tPlayer)); }
@@ -1870,71 +1871,71 @@ static AssignmentReturnValue* dataFloatPersistIndexFunction(DreamPlayer* tPlayer
 
 static AssignmentReturnValue* sizeXScaleFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScaleX(tPlayer)); }
 static AssignmentReturnValue* sizeYScaleFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerScaleY(tPlayer)); }
-static AssignmentReturnValue* sizeGroundBackFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerGroundSizeBack(tPlayer)); }
-static AssignmentReturnValue* sizeGroundFrontFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerGroundSizeFront(tPlayer)); }
-static AssignmentReturnValue* sizeAirBackFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeAirBack(tPlayer)); }
-static AssignmentReturnValue* sizeAirFrontFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeAirFront(tPlayer)); }
-static AssignmentReturnValue* sizeHeightFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerHeight(tPlayer)); }
-static AssignmentReturnValue* sizeAttackDistFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeAttackDist(tPlayer)); }
-static AssignmentReturnValue* sizeProjAttackDistFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeProjectileAttackDist(tPlayer)); }
+static AssignmentReturnValue* sizeGroundBackFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerGroundSizeBack(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* sizeGroundFrontFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerGroundSizeFront(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* sizeAirBackFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeAirBack(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* sizeAirFrontFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeAirFront(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* sizeHeightFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerHeight(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* sizeAttackDistFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeAttackDist(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* sizeProjAttackDistFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeProjectileAttackDist(tPlayer, getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* sizeProjDoScaleFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeProjectilesDoScale(tPlayer)); }
-static AssignmentReturnValue* sizeHeadPosXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerHeadPositionX(tPlayer)); }
-static AssignmentReturnValue* sizeHeadPosYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerHeadPositionY(tPlayer)); }
-static AssignmentReturnValue* sizeMidPosXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerMiddlePositionX(tPlayer)); }
-static AssignmentReturnValue* sizeMidPosYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerMiddlePositionY(tPlayer)); }
-static AssignmentReturnValue* sizeShadowOffsetFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeShadowOffset(tPlayer)); }
-static AssignmentReturnValue* sizeDrawOffsetXFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeDrawOffsetX(tPlayer)); }
-static AssignmentReturnValue* sizeDrawOffsetYFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeDrawOffsetY(tPlayer)); }
+static AssignmentReturnValue* sizeHeadPosXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerHeadPositionX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* sizeHeadPosYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerHeadPositionY(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* sizeMidPosXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerMiddlePositionX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* sizeMidPosYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerMiddlePositionY(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* sizeShadowOffsetFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeShadowOffset(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* sizeDrawOffsetXFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeDrawOffsetX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* sizeDrawOffsetYFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerSizeDrawOffsetY(tPlayer, getActiveStateMachineCoordinateP())); }
 
-static AssignmentReturnValue* velocityWalkFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardWalkVelocityX(tPlayer)); }
-static AssignmentReturnValue* velocityWalkBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardWalkVelocityX(tPlayer)); }
-static AssignmentReturnValue* velocityRunFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardRunVelocityX(tPlayer)); }
-static AssignmentReturnValue* velocityRunFwdYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardRunVelocityY(tPlayer)); }
-static AssignmentReturnValue* velocityRunBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardRunVelocityX(tPlayer)); }
-static AssignmentReturnValue* velocityRunBackYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardRunVelocityY(tPlayer));; }
-static AssignmentReturnValue* velocityJumpYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerJumpVelocityY(tPlayer)); }
-static AssignmentReturnValue* velocityJumpNeuXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerNeutralJumpVelocityX(tPlayer)); }
-static AssignmentReturnValue* velocityJumpBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardJumpVelocityX(tPlayer)); }
-static AssignmentReturnValue* velocityJumpFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardJumpVelocityX(tPlayer)); }
-static AssignmentReturnValue* velocityRunJumpBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardRunJumpVelocityX(tPlayer)); }
-static AssignmentReturnValue* velocityRunJumpFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardRunJumpVelocityX(tPlayer)); }
-static AssignmentReturnValue* velocityAirJumpYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirJumpVelocityY(tPlayer)); }
-static AssignmentReturnValue* velocityAirJumpNeuXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerNeutralAirJumpVelocityX(tPlayer)); }
-static AssignmentReturnValue* velocityAirJumpBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardAirJumpVelocityX(tPlayer)); }
-static AssignmentReturnValue* velocityAirJumpFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardAirJumpVelocityX(tPlayer)); }
-static AssignmentReturnValue* velocityAirGetHitGroundRecoverXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitGroundRecoverX(tPlayer)); }
-static AssignmentReturnValue* velocityAirGetHitGroundRecoverYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitGroundRecoverY(tPlayer)); }
+static AssignmentReturnValue* velocityWalkFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardWalkVelocityX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityWalkBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardWalkVelocityX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityRunFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardRunVelocityX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityRunFwdYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardRunVelocityY(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityRunBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardRunVelocityX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityRunBackYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardRunVelocityY(tPlayer, getActiveStateMachineCoordinateP()));; }
+static AssignmentReturnValue* velocityJumpYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerJumpVelocityY(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityJumpNeuXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerNeutralJumpVelocityX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityJumpBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardJumpVelocityX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityJumpFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardJumpVelocityX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityRunJumpBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardRunJumpVelocityX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityRunJumpFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardRunJumpVelocityX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityAirJumpYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirJumpVelocityY(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityAirJumpNeuXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerNeutralAirJumpVelocityX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityAirJumpBackXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerBackwardAirJumpVelocityX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityAirJumpFwdXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerForwardAirJumpVelocityX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityAirGetHitGroundRecoverXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitGroundRecoverX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityAirGetHitGroundRecoverYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitGroundRecoverY(tPlayer, getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* velocityAirGetHitAirRecoverMulXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverMulX(tPlayer)); }
 static AssignmentReturnValue* velocityAirGetHitAirRecoverMulYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverMulY(tPlayer)); }
-static AssignmentReturnValue* velocityAirGetHitAirRecoverAddXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverAddX(tPlayer)); }
-static AssignmentReturnValue* velocityAirGetHitAirRecoverAddYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverAddY(tPlayer)); }
-static AssignmentReturnValue* velocityAirGetHitAirRecoverBackFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverBack(tPlayer)); }
-static AssignmentReturnValue* velocityAirGetHitAirRecoverFwdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverFwd(tPlayer)); }
-static AssignmentReturnValue* velocityAirGetHitAirRecoverUpFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverUp(tPlayer)); }
-static AssignmentReturnValue* velocityAirGetHitAirRecoverDownFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverDown(tPlayer)); }
+static AssignmentReturnValue* velocityAirGetHitAirRecoverAddXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverAddX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityAirGetHitAirRecoverAddYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverAddY(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityAirGetHitAirRecoverBackFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverBack(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityAirGetHitAirRecoverFwdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverFwd(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityAirGetHitAirRecoverUpFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverUp(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* velocityAirGetHitAirRecoverDownFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVelocityAirGetHitAirRecoverDown(tPlayer, getActiveStateMachineCoordinateP())); }
 
 static AssignmentReturnValue* movementAirJumpNumFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerMovementAirJumpNum(tPlayer)); }
-static AssignmentReturnValue* movementAirJumpHeightFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerMovementAirJumpHeight(tPlayer)); }
-static AssignmentReturnValue* movementYAccelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVerticalAcceleration(tPlayer)); }
+static AssignmentReturnValue* movementAirJumpHeightFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerMovementAirJumpHeight(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* movementYAccelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerVerticalAcceleration(tPlayer, getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* movementStandFrictionFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerStandFriction(tPlayer)); }
 static AssignmentReturnValue* movementCrouchFrictionFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerCrouchFriction(tPlayer)); }
-static AssignmentReturnValue* movementStandFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerStandFrictionThreshold(tPlayer)); }
-static AssignmentReturnValue* movementCrouchFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerCrouchFrictionThreshold(tPlayer)); }
-static AssignmentReturnValue* movementJumpChangeAnimThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerMovementJumpChangeAnimThreshold(tPlayer)); }
-static AssignmentReturnValue* movementAirGetHitGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitGroundLevelY(tPlayer)); }
-static AssignmentReturnValue* movementAirGetHitGroundRecoverGroundThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitGroundRecoveryGroundYTheshold(tPlayer)); }
-static AssignmentReturnValue* movementAirGetHitGroundRecoverGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitGroundRecoveryGroundLevelY(tPlayer)); }
-static AssignmentReturnValue* movementAirGetHitAirRecoverThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitAirRecoveryVelocityYThreshold(tPlayer)); }
-static AssignmentReturnValue* movementAirGetHitAirRecoverYAccelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerMovementAirGetHitAirRecoverYAccel(tPlayer)); }
-static AssignmentReturnValue* movementAirGetHitTripGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitTripGroundLevelY(tPlayer)); }
-static AssignmentReturnValue* movementDownBounceOffsetXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceOffsetX(tPlayer)); }
-static AssignmentReturnValue* movementDownBounceOffsetYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceOffsetY(tPlayer)); }
-static AssignmentReturnValue* movementDownBounceYAccelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownVerticalBounceAcceleration(tPlayer)); }
-static AssignmentReturnValue* movementDownBounceGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceGroundLevel(tPlayer)); }
-static AssignmentReturnValue* movementDownFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerLyingDownFrictionThreshold(tPlayer)); }
+static AssignmentReturnValue* movementStandFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerStandFrictionThreshold(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* movementCrouchFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerCrouchFrictionThreshold(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* movementJumpChangeAnimThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerMovementJumpChangeAnimThreshold(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* movementAirGetHitGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitGroundLevelY(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* movementAirGetHitGroundRecoverGroundThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitGroundRecoveryGroundYTheshold(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* movementAirGetHitGroundRecoverGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitGroundRecoveryGroundLevelY(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* movementAirGetHitAirRecoverThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitAirRecoveryVelocityYThreshold(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* movementAirGetHitAirRecoverYAccelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerMovementAirGetHitAirRecoverYAccel(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* movementAirGetHitTripGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerAirGetHitTripGroundLevelY(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* movementDownBounceOffsetXFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceOffsetX(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* movementDownBounceOffsetYFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceOffsetY(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* movementDownBounceYAccelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownVerticalBounceAcceleration(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* movementDownBounceGroundLevelFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDownBounceGroundLevel(tPlayer, getActiveStateMachineCoordinateP())); }
+static AssignmentReturnValue* movementDownFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerLyingDownFrictionThreshold(tPlayer, getActiveStateMachineCoordinateP())); }
 
 static AssignmentReturnValue* getHitVarXVelAddFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(0.0); }
-static AssignmentReturnValue* getHitVarYVelAddFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDeathVelAddY(tPlayer)); }
+static AssignmentReturnValue* getHitVarYVelAddFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerDeathVelAddY(tPlayer, getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* getHitVarTypeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getActiveHitDataAttackType(tPlayer)); }
 static AssignmentReturnValue* getHitVarAnimtypeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getActiveHitDataAnimationType(tPlayer)); }
 static AssignmentReturnValue* getHitVarGroundtypeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getActiveHitDataGroundType(tPlayer)); }
@@ -2618,9 +2619,9 @@ static AssignmentReturnValue* ifElseFunction(DreamMugenAssignment** tIndexAssign
 static AssignmentReturnValue* condFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCondArrayAssignment(tIndexAssignment, tPlayer, tIsStatic); }
 static AssignmentReturnValue* animExistFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimationExistArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
 static AssignmentReturnValue* selfAnimExistFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateSelfAnimationExistArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
-static AssignmentReturnValue* const240pFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), 240); }
-static AssignmentReturnValue* const480pFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), 480); }
-static AssignmentReturnValue* const720pFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), 720); }
+static AssignmentReturnValue* const240pFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), 320); }
+static AssignmentReturnValue* const480pFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), 640); }
+static AssignmentReturnValue* const720pFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateConstCoordinatesArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), 1280); }
 static AssignmentReturnValue* externalFileFunctionF(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateExternalFileAnimationArrayAssignment('f', evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
 static AssignmentReturnValue* externalFileFunctionS(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateExternalFileAnimationArrayAssignment('s', evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
 static AssignmentReturnValue* numTargetArrayFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNumTargetArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tPlayer, tIsStatic); }
@@ -2887,16 +2888,34 @@ static void setupStoryVariableAssignments() {
 
 //static AssignmentReturnValue* movementDownFrictionThresholdFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getPlayerLyingDownFrictionThreshold(tPlayer)); }
 
+static AssignmentReturnValue* evaluateAnimStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeNumberAssignmentReturn(getDolmexicaStoryAnimationAnimation(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateAnimLoopStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeBooleanAssignmentReturn(getDolmexicaStoryAnimationIsLooping(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateAnimStageStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeBooleanAssignmentReturn(getDolmexicaStoryAnimationIsBoundToStage(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateAnimShadowStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeBooleanAssignmentReturn(getDolmexicaStoryAnimationHasShadow(tInstance, id));
+}
+
 static AssignmentReturnValue* evaluateAnimTimeStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
 	int id = convertAssignmentReturnToNumber(tIndex);
 	*tIsStatic = 0;
 	return makeNumberAssignmentReturn(getDolmexicaStoryAnimationTimeLeft(tInstance, id));
-}
-
-static AssignmentReturnValue* evaluateRootAnimTimeStoryArrayAssignment(AssignmentReturnValue* tIndex, int* tIsStatic) {
-	int id = convertAssignmentReturnToNumber(tIndex);
-	*tIsStatic = 0;
-	return makeNumberAssignmentReturn(getDolmexicaStoryAnimationTimeLeft(getDolmexicaStoryRootInstance(), id));
 }
 
 static AssignmentReturnValue* evaluateAnimPosXStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
@@ -2905,34 +2924,70 @@ static AssignmentReturnValue* evaluateAnimPosXStoryArrayAssignment(AssignmentRet
 	return makeFloatAssignmentReturn(getDolmexicaStoryAnimationPositionX(tInstance, id));
 }
 
+static AssignmentReturnValue* evaluateAnimPosYStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeFloatAssignmentReturn(getDolmexicaStoryAnimationPositionY(tInstance, id));
+}
+
 static AssignmentReturnValue* evaluateCharPosXStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
 	int id = convertAssignmentReturnToNumber(tIndex);
 	*tIsStatic = 0;
 	return makeFloatAssignmentReturn(getDolmexicaStoryCharacterPositionX(tInstance, id));
 }
 
-static AssignmentReturnValue* evaluateRootCharPosXStoryArrayAssignment(AssignmentReturnValue* tIndex, int* tIsStatic) {
+static AssignmentReturnValue* evaluateCharPosYStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
 	int id = convertAssignmentReturnToNumber(tIndex);
 	*tIsStatic = 0;
-	return makeFloatAssignmentReturn(getDolmexicaStoryCharacterPositionX(getDolmexicaStoryRootInstance(), id));
+	return makeFloatAssignmentReturn(getDolmexicaStoryCharacterPositionY(tInstance, id));
 }
 
-static AssignmentReturnValue* evaluateRootTextPosXStoryArrayAssignment(AssignmentReturnValue* tIndex, int* tIsStatic) {
+static AssignmentReturnValue* evaluateTextPosXStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
 	int id = convertAssignmentReturnToNumber(tIndex);
 	*tIsStatic = 0;
-	return makeFloatAssignmentReturn(getDolmexicaStoryTextBasePositionX(getDolmexicaStoryRootInstance(), id));
+	return makeFloatAssignmentReturn(getDolmexicaStoryTextBasePositionX(tInstance, id));
 }
 
-static AssignmentReturnValue* evaluateRootTextPosYStoryArrayAssignment(AssignmentReturnValue* tIndex, int* tIsStatic) {
+static AssignmentReturnValue* evaluateTextPosYStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
 	int id = convertAssignmentReturnToNumber(tIndex);
 	*tIsStatic = 0;
-	return makeFloatAssignmentReturn(getDolmexicaStoryTextBasePositionY(getDolmexicaStoryRootInstance(), id));
+	return makeFloatAssignmentReturn(getDolmexicaStoryTextBasePositionY(tInstance, id));
 }
 
-static AssignmentReturnValue* evaluateRootTextVisibleStoryArrayAssignment(AssignmentReturnValue* tIndex, int* tIsStatic) {
+static AssignmentReturnValue* evaluateTextVisibleStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
 	int id = convertAssignmentReturnToNumber(tIndex);
 	*tIsStatic = 0;
-	return makeBooleanAssignmentReturn(isDolmexicaStoryTextVisible(getDolmexicaStoryRootInstance(), id));
+	return makeBooleanAssignmentReturn(isDolmexicaStoryTextVisible(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateTextBuiltUpStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeBooleanAssignmentReturn(isDolmexicaStoryTextBuiltUp(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateTextStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeStringAssignmentReturn(getDolmexicaStoryTextText(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateDisplayedTextStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeStringAssignmentReturn(getDolmexicaStoryTextDisplayedText(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateNameTextStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeStringAssignmentReturn(getDolmexicaStoryTextNameText(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateTextNextStateStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeNumberAssignmentReturn(getDolmexicaStoryTextNextState(tInstance, id));
 }
 
 static AssignmentReturnValue* evaluateCharAnimStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
@@ -2941,10 +2996,16 @@ static AssignmentReturnValue* evaluateCharAnimStoryArrayAssignment(AssignmentRet
 	return makeNumberAssignmentReturn(getDolmexicaStoryCharacterAnimation(tInstance, id));
 }
 
-static AssignmentReturnValue* evaluateRootCharAnimStoryArrayAssignment(AssignmentReturnValue* tIndex, int* tIsStatic) {
+static AssignmentReturnValue* evaluateCharStageStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
 	int id = convertAssignmentReturnToNumber(tIndex);
 	*tIsStatic = 0;
-	return makeNumberAssignmentReturn(getDolmexicaStoryCharacterAnimation(getDolmexicaStoryRootInstance(), id));
+	return makeNumberAssignmentReturn(getDolmexicaStoryCharacterIsBoundToStage(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateCharShadowStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeNumberAssignmentReturn(getDolmexicaStoryCharacterHasShadow(tInstance, id));
 }
 
 static AssignmentReturnValue* evaluateCharAnimTimeStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
@@ -2953,14 +3014,6 @@ static AssignmentReturnValue* evaluateCharAnimTimeStoryArrayAssignment(Assignmen
 	int id = getDolmexicaStoryIDFromString(val.data(), tInstance);
 	*tIsStatic = 0;
 	return makeNumberAssignmentReturn(getDolmexicaStoryCharacterTimeLeft(tInstance, id));
-}
-
-static AssignmentReturnValue* evaluateRootCharAnimTimeStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
-	string val;
-	convertAssignmentReturnToString(val, tIndex);
-	int id = getDolmexicaStoryIDFromString(val.data(), tInstance);
-	*tIsStatic = 0;
-	return makeNumberAssignmentReturn(getDolmexicaStoryCharacterTimeLeft(getDolmexicaStoryRootInstance(), id));
 }
 
 static AssignmentReturnValue* evaluateSVarStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
@@ -3061,18 +3114,47 @@ static AssignmentReturnValue* evaluateHelperStateNoStoryArrayAssignment(Assignme
 	return makeNumberAssignmentReturn(getDolmexicaStoryStateNumber(helper));
 }
 
+static AssignmentReturnValue* animStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* animLoopStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimLoopStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* animStageStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimStageStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* animShadowStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimShadowStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* animTimeStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
-static AssignmentReturnValue* rootAnimTimeStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tIsStatic); }
+static AssignmentReturnValue* parentAnimTimeStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryInstanceParent((StoryInstance*)tPlayer), tIsStatic); }
+static AssignmentReturnValue* rootAnimTimeStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryRootInstance(), tIsStatic); }
 static AssignmentReturnValue* animPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* animPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* parentAnimPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryInstanceParent((StoryInstance*)tPlayer), tIsStatic); }
+static AssignmentReturnValue* parentAnimPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryInstanceParent((StoryInstance*)tPlayer), tIsStatic); }
+static AssignmentReturnValue* rootAnimPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryRootInstance(), tIsStatic); }
+static AssignmentReturnValue* rootAnimPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryRootInstance(), tIsStatic); }
 static AssignmentReturnValue* charPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
-static AssignmentReturnValue* rootCharPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootCharPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tIsStatic); }
-static AssignmentReturnValue* rootTextPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootTextPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tIsStatic); }
-static AssignmentReturnValue* rootTextPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootTextPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tIsStatic); }
-static AssignmentReturnValue* rootTextVisibleStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootTextVisibleStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tIsStatic); }
+static AssignmentReturnValue* charPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* parentCharPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryInstanceParent((StoryInstance*)tPlayer), tIsStatic); }
+static AssignmentReturnValue* parentCharPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryInstanceParent((StoryInstance*)tPlayer), tIsStatic); }
+static AssignmentReturnValue* rootCharPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryRootInstance(), tIsStatic); }
+static AssignmentReturnValue* rootCharPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryRootInstance(), tIsStatic); }
+static AssignmentReturnValue* textPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* textPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* parentTextPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryInstanceParent((StoryInstance*)tPlayer), tIsStatic); }
+static AssignmentReturnValue* parentTextPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryInstanceParent((StoryInstance*)tPlayer), tIsStatic); }
+static AssignmentReturnValue* rootTextPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryRootInstance(), tIsStatic); }
+static AssignmentReturnValue* rootTextPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryRootInstance(), tIsStatic); }
+static AssignmentReturnValue* textVisibleStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextVisibleStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* parentTextVisibleStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextVisibleStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryInstanceParent((StoryInstance*)tPlayer), tIsStatic); }
+static AssignmentReturnValue* rootTextVisibleStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextVisibleStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryRootInstance(), tIsStatic); }
+static AssignmentReturnValue* textBuiltUpStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextBuiltUpStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* textStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* displayedTextStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateDisplayedTextStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* nameTextStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNameTextStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* textNextStateStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextNextStateStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* charAnimStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharAnimStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
-static AssignmentReturnValue* rootCharAnimStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootCharAnimStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tIsStatic); }
+static AssignmentReturnValue* parentCharAnimStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharAnimStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryInstanceParent((StoryInstance*)tPlayer), tIsStatic); }
+static AssignmentReturnValue* rootCharAnimStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharAnimStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryRootInstance(), tIsStatic); }
+static AssignmentReturnValue* charStageStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharStageStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* charShadowStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharShadowStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* charAnimTimeStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
-static AssignmentReturnValue* rootCharAnimTimeStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateRootCharAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* parentCharAnimTimeStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryInstanceParent((StoryInstance*)tPlayer), tIsStatic); }
+static AssignmentReturnValue* rootCharAnimTimeStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharAnimTimeStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryRootInstance(), tIsStatic); }
 static AssignmentReturnValue* sVarStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateSVarStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* fVarStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateFVarStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* varStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateVarStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
@@ -3093,18 +3175,47 @@ static AssignmentReturnValue* helperStateNoStoryFunction(DreamMugenAssignment** 
 static void setupStoryArrayAssignments() {
 	gVariableHandler.mArrays.clear();
 
+	gVariableHandler.mArrays["anim"] = animStoryFunction;
+	gVariableHandler.mArrays["loop"] = animLoopStoryFunction;
+	gVariableHandler.mArrays["stage"] = animStageStoryFunction;
+	gVariableHandler.mArrays["shadow"] = animShadowStoryFunction;
 	gVariableHandler.mArrays["animtime"] = animTimeStoryFunction;
+	gVariableHandler.mArrays["parentanimtime"] = parentAnimTimeStoryFunction;
 	gVariableHandler.mArrays["rootanimtime"] = rootAnimTimeStoryFunction;
 	gVariableHandler.mArrays["x"] = animPosXStoryFunction;
+	gVariableHandler.mArrays["y"] = animPosYStoryFunction;
+	gVariableHandler.mArrays["parentx"] = parentAnimPosXStoryFunction;
+	gVariableHandler.mArrays["parenty"] = parentAnimPosYStoryFunction;
+	gVariableHandler.mArrays["rootx"] = rootAnimPosXStoryFunction;
+	gVariableHandler.mArrays["rooty"] = rootAnimPosYStoryFunction;
 	gVariableHandler.mArrays["charx"] = charPosXStoryFunction;
+	gVariableHandler.mArrays["chary"] = charPosYStoryFunction;
+	gVariableHandler.mArrays["parentcharx"] = parentCharPosXStoryFunction;
+	gVariableHandler.mArrays["parentchary"] = parentCharPosYStoryFunction;
 	gVariableHandler.mArrays["rootcharx"] = rootCharPosXStoryFunction;
+	gVariableHandler.mArrays["rootchary"] = rootCharPosYStoryFunction;
+	gVariableHandler.mArrays["textx"] = textPosXStoryFunction;
+	gVariableHandler.mArrays["texty"] = textPosYStoryFunction;
+	gVariableHandler.mArrays["parenttextx"] = parentTextPosXStoryFunction;
+	gVariableHandler.mArrays["parenttexty"] = parentTextPosYStoryFunction;
 	gVariableHandler.mArrays["roottextx"] = rootTextPosXStoryFunction;
 	gVariableHandler.mArrays["roottexty"] = rootTextPosYStoryFunction;
+	gVariableHandler.mArrays["textvisible"] = textVisibleStoryFunction;
+	gVariableHandler.mArrays["parenttextvisible"] = parentTextVisibleStoryFunction;
 	gVariableHandler.mArrays["roottextvisible"] = rootTextVisibleStoryFunction;
+	gVariableHandler.mArrays["textbuiltup"] = textBuiltUpStoryFunction;
+	gVariableHandler.mArrays["text"] = textStoryFunction;
+	gVariableHandler.mArrays["displayedtext"] = displayedTextStoryFunction;
+	gVariableHandler.mArrays["nametext"] = nameTextStoryFunction;
+	gVariableHandler.mArrays["textnextstate"] = textNextStateStoryFunction;
 	gVariableHandler.mArrays["ifelse"] = ifElseFunction;
 	gVariableHandler.mArrays["charanim"] = charAnimStoryFunction;
+	gVariableHandler.mArrays["parentcharanim"] = parentCharAnimStoryFunction;
 	gVariableHandler.mArrays["rootcharanim"] = rootCharAnimStoryFunction;
+	gVariableHandler.mArrays["charstage"] = charStageStoryFunction;
+	gVariableHandler.mArrays["charshadow"] = charShadowStoryFunction;
 	gVariableHandler.mArrays["charanimtime"] = charAnimTimeStoryFunction;
+	gVariableHandler.mArrays["parentcharanimtime"] = parentCharAnimTimeStoryFunction;
 	gVariableHandler.mArrays["rootcharanimtime"] = rootCharAnimTimeStoryFunction;
 	gVariableHandler.mArrays["svar"] = sVarStoryFunction;
 	gVariableHandler.mArrays["fvar"] = fVarStoryFunction;

@@ -11,6 +11,7 @@
 #include "mugencommandhandler.h"
 #include "gamelogic.h"
 #include "fightdebug.h"
+#include "mugenstagehandler.h"
 
 #define TRAINING_MODE_MENU_BG_Z 80
 #define TRAINING_MODE_MENU_TEXT_Z 81
@@ -104,6 +105,7 @@ static struct {
 static void	setSelectedOptionActive();
 
 static void loadTrainingModeMenu(void*) {
+	setProfilingSectionMarkerCurrentFunction();
 	gTrainingModeMenuData.mBackgroundAnimationElement = playOneFrameAnimationLoop(makePosition(78, 28, TRAINING_MODE_MENU_BG_Z), getEmptyWhiteTextureReference());
 	setAnimationSize(gTrainingModeMenuData.mBackgroundAnimationElement, makePosition(164, 124, 1), makePosition(0, 0, 0));
 	setAnimationColor(gTrainingModeMenuData.mBackgroundAnimationElement, 0, 0, 0.6);
@@ -130,6 +132,7 @@ static void loadTrainingModeMenu(void*) {
 }
 
 static void unloadTrainingModeMenu(void*) {
+	setProfilingSectionMarkerCurrentFunction();
 	gTrainingModeMenuData.mIsActive = 0;
 }
 
@@ -494,14 +497,14 @@ static void updateTrainingModeDummyMode(DreamPlayer* tPlayer, int tIsBeingAttack
 }
 
 static void updateTrainingModeDistanceClose(DreamPlayer* tPlayer) {
-	const auto dist = getPlayerDistanceToFrontOfOtherPlayerX(tPlayer);
+	const auto dist = getPlayerDistanceToFrontOfOtherPlayerX(tPlayer, getDreamMugenStageHandlerCameraCoordinateP());
 	if (dist > 30) {
 		setDreamPlayerCommandActiveForAI(tPlayer->mCommandID, "holdfwd", 2);
 	}
 }
 
 static void updateTrainingModeDistanceMedium(DreamPlayer* tPlayer) {
-	const auto dist = getPlayerDistanceToFrontOfOtherPlayerX(tPlayer);
+	const auto dist = getPlayerDistanceToFrontOfOtherPlayerX(tPlayer, getDreamMugenStageHandlerCameraCoordinateP());
 	if (dist < 140 && !isPlayerInCorner(tPlayer)) {
 		setDreamPlayerCommandActiveForAI(tPlayer->mCommandID, "holdback", 2);
 	}
@@ -583,6 +586,8 @@ static void updateTrainingModeEffect() {
 }
 
 static void updateTrainingModeMenu(void*) {
+	setProfilingSectionMarkerCurrentFunction();
+
 	updateSettingTrainingModeMenuActive();
 	if (gTrainingModeMenuData.mIsVisible) {
 		updateTrainingModeMenuInput();

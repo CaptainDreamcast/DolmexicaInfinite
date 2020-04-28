@@ -6,6 +6,7 @@
 
 #include <prism/wrapper.h>
 #include <prism/file.h>
+#include <prism/system.h>
 
 #include "commontestfunctionality.h"
 
@@ -27,6 +28,7 @@ protected:
 };
 
 static void testCharacter(const std::string& tCharacterName) {
+	updateGameName(("Testing " + tCharacterName).c_str());
 	initForAutomatedFightScreenTest();
 	setPlayerDefinitionPath(0, (getDolmexicaAssetFolder() + "chars/" + tCharacterName + "/" + tCharacterName + ".def").c_str());
 	setPlayerDefinitionPath(1, (getDolmexicaAssetFolder() + "chars/" + tCharacterName + "/" + tCharacterName + ".def").c_str());
@@ -59,6 +61,7 @@ TEST_F(CrashTest, CharacterCrashTest) {
 }
 
 static void testStage(const std::string& tStageDefPath) {
+	updateGameName(("Testing " + tStageDefPath).c_str());
 	initForAutomatedFightScreenTest();
 	setPlayerDefinitionPath(0, (getDolmexicaAssetFolder() + "chars/kfm/kfm.def").c_str());
 	setPlayerDefinitionPath(1, (getDolmexicaAssetFolder() + "chars/kfm/kfm.def").c_str());
