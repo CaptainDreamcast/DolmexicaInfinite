@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.11: http://docutils.sourceforge.net/" />
+<title>Dolmexica Infinite Update History</title>
+<style type="text/css">
+
+/*
+Dolmexica Infinite documentation stylesheet based on the original M.U.G.E.N documentation.
+
+
+Modified from voidspace.css.
+
+:Authors: Ian Bicking, Michael Foord
+:Contact: fuzzyman@voidspace.org.uk
+:Date: 2005/08/26 
+:Version: 0.1.0
+:Copyright: This stylesheet has been placed in the public domain.
+
+Stylesheet for Docutils.
+Based on ``blue_box.css`` by Ian Bicking
+and ``html4css1.css`` revision 1.46.
+*/
+
+@import url(html4css1.css);
+
+body {
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+em, i {
+  font-family: Times New Roman, Times, serif;
+}
+
+a {
+  color: #5577EE;
+  text-decoration: none;
+}
+
+a.reference.internal {
+  font-size: 80%;
+}
+
+a.toc-backref {
+  color: black;
+  text-decoration: none;
+}
+
+a.toc-backref:hover {
+  background-color: inherit;
+}
+
+a:hover {
+  background-color: #cccccc;
+  text-decoration: none;
+}
+
+a img {
+  border: none;
+}
+
+div.attention, div.caution, div.danger, div.error, div.hint,
+div.important, div.note, div.tip, div.warning {
+  background-color: #cccccc;
+  padding: 3px;
+  width: 80%;
+}
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title  {
+  text-align: center;
+  background-color: #999999;
+  display: block;
+  margin: 0;
+}
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: #cc0000;
+  font-family: sans-serif;
+  text-align: center;
+  background-color: #999999;
+  display: block;
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Verdana, Helvetica, Arial, sans-serif;
+  border: thin solid black;
+  /* This makes the borders rounded on Mozilla, which pleases me */
+  -moz-border-radius: 8px;
+  padding: 4px;
+}
+
+h1 {
+  background-color: #445BAA;
+  color: #ffffff;
+  border: medium solid black;
+}
+
+h1 a.toc-backref, h2 a.toc-backref { 
+  color: #ffffff;
+}
+
+h2 {
+  background-color: #667788;
+  color: #ffffff;
+  border: thin solid black;
+}
+
+h3, h4, h5, h6 {
+  background-color: #cccccc;
+  color: #000000;
+}
+
+h3 a.toc-backref, h4 a.toc-backref, h5 a.toc-backref, 
+h6 a.toc-backref { 
+  color: #000000;
+}
+
+h1.title {
+  text-align: center;
+  background-color: #445BAA;
+  color: #eeeeee;
+  border: thick solid black;
+  -moz-border-radius: 20px;
+}
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+table.footnote {
+  padding-left: 0.5ex;
+}
+
+table.citation {
+  padding-left: 0.5ex
+}
+
+pre.literal-block, pre.doctest-block {
+  border: thin black solid;
+  padding: 5px;
+}
+
+.image img { border-style : solid;
+            border-width : 2px;
+}
+
+h1 tt, h2 tt, h3 tt, h4 tt, h5 tt, h6 tt {
+  font-size: 100%;
+}
+
+code, tt {
+  color: #000066;
+  font-size: 120%;
+}
+
+</style>
+</head>
+<body>
+<div class="document" id="m-u-g-e-n-update-history">
+<h1 class="title">Dolmexica Infinite Update History</h1>
+<p>Updates shown are in order of most recent to least recent.</p>
+<div class="section" id="new-in-demo-14">
+<h1>New in Demo 14</h1>
+<p>01 May 2020</p>
+<div class="section" id="general">
+<h2>General updates</h2>
+<ul class="simple">
+<li>Rest of mugen.cfg (Loading keys from file, AI.cheat)</li>
+<li>Blending, Angle + Scale in M.U.G.E.N. animation steps</li>
+<li>Interpolation in M.U.G.E.N. animation steps</li>
+<li>SinX/SinY background statecontrollers</li>
+<li>Missing hitdef parameters (snap, mindist, maxdist)</li>
+<li>Make targetlifeadd work like in M.U.G.E.N.</li>
+<li>Palette controllers (PalFX, RemapPal, etc.)</li>
+<li>Parallax in stages</li>
+<li>M.U.G.E.N.-style Documentation</li>
+<li>Loading/Saving of options and global vars (Both for Windows and Dreamcast)</li>
+<li>Dolmexica is now under the MIT license, after loosely being GPL before, basically it's "I don't care what you do, I'm just not liable if something goes wrong" now</li>
+<li>Missing stage parameters (window, windowdelta, positionlink, maskwindow, sin, zoffsetlink, scalestart, scaledelta, zoomdelta, resetBG)</li>
+<li>NULL stage elements</li>
+<li>Missing projectile parameters (removeanimation, cancelanimation, removevelocity, velocitymultipliers, hitamount, misstime, priority, spritepriority, stagebound, lowerbound, upperbound, shadow, ownpal)</li>
+<li>480p/720p resolution for characters</li>
+<li>M.U.G.E.N. storyboards in story mode</li>
+<li>Basically feature-complete now (bugs and overlooked things nonwithstanding)</li>
+<li>18 bugfixes</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-in-demo-13">
+<h1>New in Demo 13</h1>
+<p>06 Mar 2020</p>
+<div class="section" id="legacy">
+<h2>Breaking legacy changes</h2>
+<ul class="simple">
+<li>Mask parameter for stages/menu bgs (at least breaks most of my old menus).</li>
+<li>Angle controllers now correctly use degrees instead of radians (at least breaks some of my old storyboards).</li>
+</ul>
+</div>
+<div class="section" id="general">
+<h2>General updates</h2>
+<ul class="simple">
+<li>AI "Improvements".</li>
+<li>More PlaySnd parameters.</li>
+<li>480p UI (can't recommend due to Dreamcast memory limits though).</li>
+<li>Camera Zoom.</li>
+<li>After Images (Web/Windows only; Technical limitations).</li>
+<li>Ability to run without assets folder (same exe position as original Mugen).</li>
+<li>ModifyExplod controller +  missing Explod parameters.</li>
+<li>Looping stages.</li>
+<li>Readd static trigger caching as optional config var (don't recommend it though).</li>
+<li>Fixed up targeting triggers/controllers.</li>
+<li>Fight.def now completely implemented (bugs nonwithstanding).</li>
+<li>Triggers now completely implemented (bugs nonwithstanding).</li>
+<li>Character.cns now completely implemented (bugs nonwithstanding).</li>
+<li>Supermovetime/pausetime fixed.</li>
+<li>Victory Quotes from Mugen 1.1.</li>
+<li>Destination alpha in stages/backgrounds, can be seen in Mountain Temple stage (Windows only; technical limitation).</li>
+<li>Reversaldef Controller.</li>
+<li>Missing ~ and ^ and ^^ operators.</li>
+<li>Operator precedence is correct now.</li>
+<li>Error screen is back in action for Dreamcast version completely.</li>
+<li>Web version error screen is back too, but cannot recover from error screen to Title.</li>
+<li>Hit priorities.</li>
+<li>Most of applicable mugen.cfg / dolmexica.cfg parameters (still in progress).</li>
+<li>IntPersistIndex, FloatPersistIndex + Variable resetting.</li>
+<li>Adding root, parent, targets and := operator to storyboard triggers (storyboard triggers still in progress).</li>
+<li>68 bugfixes.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-in-demo-12">
+<h1>New in Demo 12</h1>
+<p>03 Jan 2020</p>
+<div class="section" id="general">
+<h2>General updates</h2>
+<ul class="simple">
+<li>480p/scaling for stages (can't recommend on DC though due to memory).</li>
+<li>Draws.</li>
+<li>Missing gethitvar and projectile time triggers.</li>
+<li>KO slowdown.</li>
+<li>Environment shake.</li>
+<li>Proper super pause.</li>
+<li>Double KO, Timeout KO.</li>
+<li>Dreamcast sound effects (had to take out character sound effects due to load/stability problems, but the common/menu sounds are in in all their downsampled tinny glory).</li>
+<li>Some missing fight.def stuff like waittimes (hate them though, zeroed by default here).</li>
+<li>Make-your-own-game kit for web.</li>
+<li>Web version works on newgrounds now (not sure what fixed it though).</li>
+<li>Another trillion bugfixes.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-in-demo-11">
+<h1>New in Demo 11</h1>
+<p>01 Nov 2019</p>
+<div class="section" id="general">
+<h2>General updates</h2>
+<ul class="simple">
+<li>New time system (should be like Mugen now).</li>
+<li>Helper system rework.</li>
+<li>Proper standalone Osu mode.</li>
+<li>A trillion bugfixes.</li>
+<li>Custom icons + setting for them in dolmexica.cfg.</li>
+<li>mugen.cfg can now be called dolmexica.cfg.</li>
+<li>Small stuff like missing triggers/state controllers.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-in-demo-10">
+<h1>New in Demo 10</h1>
+<p>09 Sep 2019</p>
+<div class="section" id="general">
+<h2>General updates</h2>
+<ul class="simple">
+<li>Tons of bugfixes.</li>
+<li>Better tracking of stuff so maybe I can say more than "tons of bugfixes" next time.</li>
+<li>Osu mode comeback (story-mode only for now).</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-in-demo-9">
+<h1>New in Demo 9</h1>
+<p>05 Jul 2019</p>
+<div class="section" id="general">
+<h2>General updates</h2>
+<ul class="simple">
+<li>Bugfixes, no big features</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-in-demo-8">
+<h1>New in Demo 8</h1>
+<p>03 May 2019</p>
+<div class="section" id="general">
+<h2>General updates</h2>
+<ul class="simple">
+<li>Runtime speedups (a lot this time, but never enough).</li>
+<li>New texture virtualization (fix pvr heap corruption bugs on Dreamcast).</li>
+<li>Fixing everything Demo 7 broke.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-in-demo-7">
+<h1>New in Demo 7</h1>
+<p>01 Mar 2019</p>
+<div class="section" id="general">
+<h2>General updates</h2>
+<ul class="simple">
+<li>Runtime speedups (never enough).</li>
+<li>Option menu.</li>
+<li>Key remapping.</li>
+<li>Bugfixes.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-in-demo-6">
+<h1>New in Demo 6</h1>
+<p>31 Dec 2018</p>
+<div class="section" id="general">
+<h2>General updates</h2>
+<ul class="simple">
+<li>Gameplay fixes.</li>
+<li>Juggling, combo counter.</li>
+<li>RAM improvements.</li>
+<li>Runtime improvements (just not enough).</li>
+<li>Portrait loading offline optimizations.</li>
+<li>Bugfixes.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-in-demo-5">
+<h1>New in Demo 5</h1>
+<p>02 Nov 2018</p>
+<div class="section" id="general">
+<h2>General updates</h2>
+<ul class="simple">
+<li>Free Play Mode (1P vs CPU).</li>
+<li>Bugfixes.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-in-demo-4">
+<h1>New in Demo 4</h1>
+<p>07 Sep 2018</p>
+<div class="section" id="general">
+<h2>General updates</h2>
+<ul class="simple">
+<li>Loading screen.</li>
+<li>Error screen with log output.</li>
+<li>Survival Mode.</li>
+<li>Watch Mode.</li>
+<li>Demo Mode (turned off by default).</li>
+<li>Fixing bugs and making modes more similar to the original.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-in-demo-3">
+<h1>New in Demo 3</h1>
+<p>06 Jul 2018</p>
+<div class="section" id="general">
+<h2>General updates</h2>
+<ul class="simple">
+<li>Debug mode.</li>
+<li>Credits screen.</li>
+<li>More robustness improvements.</li>
+<li>Memory usage improvements.</li>
+<li>First run time improvements.</li>
+<li>Various bug fixes.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-in-demo-2">
+<h1>New in Demo 2</h1>
+<p>04 May 2018</p>
+<div class="section" id="general">
+<h2>General updates</h2>
+<ul class="simple">
+<li>Versus mode and Training mode.</li>
+<li>Story Mode.</li>
+<li>Loading custom characters is more robust.</li>
+<li>More RAM usage improvements.</li>
+<li>Load time improvements.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="new-in-demo-1">
+<h1>New in Demo 1</h1>
+<p>02 Mar 2018</p>
+<div class="section" id="general">
+<h2>General updates</h2>
+<ul class="simple">
+<li>Menus and related screens.</li>
+<li>Arcade mode.</li>
+<li>Story boards.</li>
+<li>Palettes.</li>
+<li>240p resolution.</li>
+<li>Blend modes.</li>
+<li>RAM usage improvements.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="dream-fight-16-a-d">
+<h1>Dream Fight 16 A.D.</h1>
+<p>09 Sep 2017</p>
+<div class="section" id="general">
+<h2>General</h2>
+<ul class="simple">
+<li>Just enough Mugen functionality to make Dream Fight 16 A.D. characters work.</li>
+</ul>
+</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.11: http://docutils.sourceforge.net/" />
+<title>Trigger Reference</title>
+<style type="text/css">
+
+/*
+Dolmexica Infinite documentation stylesheet based on the original M.U.G.E.N documentation.
+
+
+Modified from voidspace.css.
+
+:Authors: Ian Bicking, Michael Foord
+:Contact: fuzzyman@voidspace.org.uk
+:Date: 2005/08/26 
+:Version: 0.1.0
+:Copyright: This stylesheet has been placed in the public domain.
+
+Stylesheet for Docutils.
+Based on ``blue_box.css`` by Ian Bicking
+and ``html4css1.css`` revision 1.46.
+*/
+
+@import url(html4css1.css);
+
+body {
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+em, i {
+  font-family: Times New Roman, Times, serif;
+}
+
+a {
+  color: #5577EE;
+  text-decoration: none;
+}
+
+a.reference.internal {
+  font-size: 80%;
+}
+
+a.toc-backref {
+  color: black;
+  text-decoration: none;
+}
+
+a.toc-backref:hover {
+  background-color: inherit;
+}
+
+a:hover {
+  background-color: #cccccc;
+  text-decoration: none;
+}
+
+a img {
+  border: none;
+}
+
+div.attention, div.caution, div.danger, div.error, div.hint,
+div.important, div.note, div.tip, div.warning {
+  background-color: #cccccc;
+  padding: 3px;
+  width: 80%;
+}
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title  {
+  text-align: center;
+  background-color: #999999;
+  display: block;
+  margin: 0;
+}
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: #cc0000;
+  font-family: sans-serif;
+  text-align: center;
+  background-color: #999999;
+  display: block;
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Verdana, Helvetica, Arial, sans-serif;
+  border: thin solid black;
+  /* This makes the borders rounded on Mozilla, which pleases me */
+  -moz-border-radius: 8px;
+  padding: 4px;
+}
+
+h1 {
+  background-color: #445BAA;
+  color: #ffffff;
+  border: medium solid black;
+}
+
+h1 a.toc-backref, h2 a.toc-backref { 
+  color: #ffffff;
+}
+
+h2 {
+  background-color: #667788;
+  color: #ffffff;
+  border: thin solid black;
+}
+
+h3, h4, h5, h6 {
+  background-color: #cccccc;
+  color: #000000;
+}
+
+h3 a.toc-backref, h4 a.toc-backref, h5 a.toc-backref, 
+h6 a.toc-backref { 
+  color: #000000;
+}
+
+h1.title {
+  text-align: center;
+  background-color: #445BAA;
+  color: #eeeeee;
+  border: thick solid black;
+  -moz-border-radius: 20px;
+}
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+table.footnote {
+  padding-left: 0.5ex;
+}
+
+table.citation {
+  padding-left: 0.5ex
+}
+
+pre.literal-block, pre.doctest-block {
+  border: thin black solid;
+  padding: 5px;
+}
+
+.image img { border-style : solid;
+            border-width : 2px;
+}
+
+h1 tt, h2 tt, h3 tt, h4 tt, h5 tt, h6 tt {
+  font-size: 100%;
+}
+
+code, tt {
+  color: #000066;
+  font-size: 120%;
+}
+
+</style>
+</head>
+<body>
+<div class="document" id="trigger-reference">
+<h1 class="title">Trigger Reference</h1>
+
+<p>Dolmexica Infinite, presented by Dogma 2018-2020</p>
+<p>Documentation for demo version (2020)</p>
+<p>Updated 01 May 2020</p>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#about-triggers" id="id1">About Triggers</a><ul>
+<li><a class="reference internal" href="#globalfvar" id="id2">GlobalFVar</a></li>
+<li><a class="reference internal" href="#globalsvar" id="id3">GlobalSVar</a></li>
+<li><a class="reference internal" href="#globalvar" id="id4">GlobalVar</a></li>
+<li><a class="reference internal" href="#platform" id="id5">Platform</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="about-triggers">
+<h1><a class="toc-backref" href="#id1">About Triggers</a></h1>
+<p>This is an alphabetical index of function-type triggers that were added for Dolmexica Infinite. For details on the use of function-type triggers in expressions, see the expression documentation fom the original M.U.G.E.N documentation. Dolmexica Infinite also contains the triggers defined by M.U.G.E.N For documentation for those, consult the original M.U.G.E.N documentation as well. Changes to original triggers are documented in the Dolmexica Changes documentation.</p>
+<p>For more information on triggers, check the original M.U.G.E.N trigger documentation. Unless otherwise specified, documentation style for Dolmexica triggers follows the outlines presented in the original M.U.G.E.N trigger documentation.</p>
+
+
+<div class="section" id="globalfvar">
+<h2><a class="toc-backref" href="#id2">GlobalFVar</a></h2>
+<p>This trigger takes a mandatory variable number as an argument. It returns the value of the player's specified global float variable. Global variables carry over between fights/storyboards.</p>
+<dl class="docutils">
+<dt>Format:</dt>
+<dd>GlobalFVar(exprn)</dd>
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt>exprn</dt>
+<dd>An expression evaluating to a variable number.</dd>
+</dl>
+</dd>
+<dt>Return type:</dt>
+<dd>float</dd>
+<dt>Error conditions:</dt>
+<dd>Returns bottom if exprn evaluates to bottom.</dd>
+</dl>
+<p>Example:</p>
+<pre class="literal-block">
+trigger1 = GlobalFVar(5) = -1.23
+  Triggers if the value of global float variable 5 is -1.23.
+</pre>
+</div>
+<div class="section" id="globalsvar">
+<h2><a class="toc-backref" href="#id3">GlobalSVar</a></h2>
+<p>This trigger takes a mandatory variable number as an argument. It returns the value of the player's specified global string variable. Global variables carry over between fights/storyboards.</p>
+<dl class="docutils">
+<dt>Format:</dt>
+<dd>GlobalSVar(exprn)</dd>
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt>exprn</dt>
+<dd>An expression evaluating to a variable number.</dd>
+</dl>
+</dd>
+<dt>Return type:</dt>
+<dd>string</dd>
+<dt>Error conditions:</dt>
+<dd>Returns bottom if exprn evaluates to bottom.</dd>
+</dl>
+<p>Example:</p>
+<pre class="literal-block">
+trigger1 = GlobalSVar(5) = "TestString"
+  Triggers if the value of global string variable 5 is TestString.
+</pre>
+</div>
+<div class="section" id="globalvar">
+<h2><a class="toc-backref" href="#id4">GlobalVar</a></h2>
+<p>This trigger takes a mandatory variable number as an argument. It returns the value of the player's specified global integer variable. Global variables carry over between fights/storyboards.</p>
+<dl class="docutils">
+<dt>Format:</dt>
+<dd>GlobalVar(exprn)</dd>
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt>exprn</dt>
+<dd>An expression evaluating to a variable number.</dd>
+</dl>
+</dd>
+<dt>Return type:</dt>
+<dd>int</dd>
+<dt>Error conditions:</dt>
+<dd>Returns bottom if exprn evaluates to bottom.</dd>
+</dl>
+<p>Example:</p>
+<pre class="literal-block">
+trigger1 = GlobalVar(5) = 23
+  Triggers if the value of global integer variable 5 is 23.
+</pre>
+</div>
+<div class="section" id="platform">
+<h2><a class="toc-backref" href="#id5">Platform</a></h2>
+<p>Returns platform Dolmexica is running on as string. Returns "dreamcast" on Dreamcast, "windows" on Windows, "web" on Web.</p>
+<dl class="docutils">
+<dt>Format:</dt>
+<dd>Platform</dd>
+<dt>Arguments:</dt>
+<dd>none</dd>
+<dt>Return type:</dt>
+<dd>string</dd>
+<dt>Error conditions:</dt>
+<dd>none</dd>
+</dl>
+<p>Example:</p>
+<pre class="literal-block">
+trigger1 = Platform = "dreamcast"
+  Triggers if Dolmexica Infinite is running on the Sega Dreamcast.
+</pre>
+</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,1314 @@
+<!--?xml version="1.0" encoding="utf-8" ?-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Docutils 0.7: http://docutils.sourceforge.net/">
+<title>Story State Controller Reference</title>
+<style type="text/css">
+
+/*
+Dolmexica Infinite documentation stylesheet based on the original M.U.G.E.N documentation.
+
+
+Modified from voidspace.css.
+
+:Authors: Ian Bicking, Michael Foord
+:Contact: fuzzyman@voidspace.org.uk
+:Date: 2005/08/26 
+:Version: 0.1.0
+:Copyright: This stylesheet has been placed in the public domain.
+
+Stylesheet for Docutils.
+Based on ``blue_box.css`` by Ian Bicking
+and ``html4css1.css`` revision 1.46.
+*/
+
+@import url(html4css1.css);
+
+body {
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+em, i {
+  font-family: Times New Roman, Times, serif;
+}
+
+a {
+  color: #5577EE;
+  text-decoration: none;
+}
+
+a.reference.internal {
+  font-size: 80%;
+}
+
+a.toc-backref {
+  color: black;
+  text-decoration: none;
+}
+
+a.toc-backref:hover {
+  background-color: inherit;
+}
+
+a:hover {
+  background-color: #cccccc;
+  text-decoration: none;
+}
+
+a img {
+  border: none;
+}
+
+div.attention, div.caution, div.danger, div.error, div.hint,
+div.important, div.note, div.tip, div.warning {
+  background-color: #cccccc;
+  padding: 3px;
+  width: 80%;
+}
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title  {
+  text-align: center;
+  background-color: #999999;
+  display: block;
+  margin: 0;
+}
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: #cc0000;
+  font-family: sans-serif;
+  text-align: center;
+  background-color: #999999;
+  display: block;
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Verdana, Helvetica, Arial, sans-serif;
+  border: thin solid black;
+  /* This makes the borders rounded on Mozilla, which pleases me */
+  -moz-border-radius: 8px;
+  padding: 4px;
+}
+
+h1 {
+  background-color: #445BAA;
+  color: #ffffff;
+  border: medium solid black;
+}
+
+h1 a.toc-backref, h2 a.toc-backref { 
+  color: #ffffff;
+}
+
+h2 {
+  background-color: #667788;
+  color: #ffffff;
+  border: thin solid black;
+}
+
+h3, h4, h5, h6 {
+  background-color: #cccccc;
+  color: #000000;
+}
+
+h3 a.toc-backref, h4 a.toc-backref, h5 a.toc-backref, 
+h6 a.toc-backref { 
+  color: #000000;
+}
+
+h1.title {
+  text-align: center;
+  background-color: #445BAA;
+  color: #eeeeee;
+  border: thick solid black;
+  -moz-border-radius: 20px;
+}
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+table.footnote {
+  padding-left: 0.5ex;
+}
+
+table.citation {
+  padding-left: 0.5ex
+}
+
+pre.literal-block, pre.doctest-block {
+  border: thin black solid;
+  padding: 5px;
+}
+
+.image img { border-style : solid;
+            border-width : 2px;
+}
+
+h1 tt, h2 tt, h3 tt, h4 tt, h5 tt, h6 tt {
+  font-size: 100%;
+}
+
+code, tt {
+  color: #000066;
+  font-size: 120%;
+}
+
+</style>
+</head>
+<body>
+<div class="document" id="state-controller-reference">
+<h1 class="title">Story State Controller Reference</h1>
+
+<p>Dolmexica Infinite, presented by Dogma 2018-2020</p>
+<p>Documentation for demo version (2020)</p>
+<p>Updated 01 May 2020</p>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#about-story-controllers" id="id1">About Story Controllers</a></li>
+<li><a class="reference internal" href="#story-controller-reference" id="id2">Story Controller Reference</a><ul>
+<li><a class="reference internal" href="#animaddangle" id="id3">AnimAddAngle</a></li>
+<li><a class="reference internal" href="#animposadd" id="id4">AnimPosAdd</a></li>
+<li><a class="reference internal" href="#animposset" id="id5">AnimPosSet</a></li>
+<li><a class="reference internal" href="#animscaleset" id="id6">AnimScaleSet</a></li>
+<li><a class="reference internal" href="#animsetangle" id="id7">AnimSetAngle</a></li>
+<li><a class="reference internal" href="#animsetcolor" id="id8">AnimSetColor</a></li>
+<li><a class="reference internal" href="#animsetfacing" id="id9">AnimSetFacing</a></li>
+<li><a class="reference internal" href="#animsetopacity" id="id10">AnimSetOpacity</a></li>
+<li><a class="reference internal" href="#camerafocus" id="id11">CameraFocus</a></li>
+<li><a class="reference internal" href="#camerazoom" id="id12">CameraZoom</a></li>
+<li><a class="reference internal" href="#changeanim" id="id13">ChangeAnim</a></li>
+<li><a class="reference internal" href="#changestate" id="id14">ChangeState</a></li>
+<li><a class="reference internal" href="#changestateparent" id="id15">ChangeStateParent</a></li>
+<li><a class="reference internal" href="#changestateroot" id="id16">ChangeStateRoot</a></li>
+<li><a class="reference internal" href="#changetext" id="id17">ChangeText</a></li>
+<li><a class="reference internal" href="#charaddangle" id="id18">CharAddAngle</a></li>
+<li><a class="reference internal" href="#charchangeanim" id="id19">CharChangeAnim</a></li>
+<li><a class="reference internal" href="#charposadd" id="id20">CharPosAdd</a></li>
+<li><a class="reference internal" href="#charposset" id="id21">CharPosSet</a></li>
+<li><a class="reference internal" href="#charscaleset" id="id22">CharScaleSet</a></li>
+<li><a class="reference internal" href="#charsetangle" id="id23">CharSetAngle</a></li>
+<li><a class="reference internal" href="#charsetcolor" id="id24">CharSetColor</a></li>
+<li><a class="reference internal" href="#charsetfacing" id="id25">CharSetFacing</a></li>
+<li><a class="reference internal" href="#charsetopacity" id="id26">CharSetOpacity</a></li>
+<li><a class="reference internal" href="#createanim" id="id27">CreateAnim</a></li>
+<li><a class="reference internal" href="#createchar" id="id28">CreateChar</a></li>
+<li><a class="reference internal" href="#createhelper" id="id29">CreateHelper</a></li>
+<li><a class="reference internal" href="#createtext" id="id30">CreateText</a></li>
+<li><a class="reference internal" href="#destroyself" id="id31">DestroySelf</a></li>
+<li><a class="reference internal" href="#endstoryboard" id="id32">EndStoryboard</a></li>
+<li><a class="reference internal" href="#fadein" id="id33">FadeIn</a></li>
+<li><a class="reference internal" href="#fadeout" id="id34">FadeOut</a></li>
+<li><a class="reference internal" href="#globalvaradd" id="id35">GlobalVarAdd</a></li>
+<li><a class="reference internal" href="#globalvarset" id="id36">GlobalVarSet</a></li>
+<li><a class="reference internal" href="#gotointro" id="id37">GoToIntro</a></li>
+<li><a class="reference internal" href="#gotostorystep" id="id38">GoToStoryStep</a></li>
+<li><a class="reference internal" href="#gototitle" id="id39">GoToTitle</a></li>
+<li><a class="reference internal" href="#locktext" id="id40">LockText</a></li>
+<li><a class="reference internal" href="#movestage" id="id41">MoveStage</a></li>
+<li><a class="reference internal" href="#nameid" id="id42">NameID</a></li>
+<li><a class="reference internal" href="#null" id="id43">Null</a></li>
+<li><a class="reference internal" href="#pausemusic" id="id44">PauseMusic</a></li>
+<li><a class="reference internal" href="#playmusic" id="id45">PlayMusic</a></li>
+<li><a class="reference internal" href="#playsnd" id="id46">PlaySnd</a></li>
+<li><a class="reference internal" href="#removeanim" id="id47">RemoveAnim</a></li>
+<li><a class="reference internal" href="#removechar" id="id48">RemoveChar</a></li>
+<li><a class="reference internal" href="#removehelper" id="id49">RemoveHelper</a></li>
+<li><a class="reference internal" href="#removetext" id="id50">RemoveText</a></li>
+<li><a class="reference internal" href="#resumemusic" id="id51">ResumeMusic</a></li>
+<li><a class="reference internal" href="#sndpan" id="id52">SndPan</a></li>
+<li><a class="reference internal" href="#stopmusic" id="id53">StopMusic</a></li>
+<li><a class="reference internal" href="#stopsnd" id="id54">StopSnd</a></li>
+<li><a class="reference internal" href="#textposadd" id="id55">TextPosAdd</a></li>
+<li><a class="reference internal" href="#textposset" id="id56">TextPosSet</a></li>
+<li><a class="reference internal" href="#varadd" id="id57">VarAdd</a></li>
+<li><a class="reference internal" href="#varset" id="id58">VarSet</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="about-story-controllers">
+<h1><a class="toc-backref" href="#id1">About Story Controllers</a></h1>
+<p>Story controllers work the same way as original controllers.</p>
+</div>
+<div class="section" id="story-controller-reference">
+<h1><a class="toc-backref" href="#id2">Story Controller Reference</a></h1>
+<div class="section" id="animaddangle">
+<h2><a class="toc-backref" href="#id3">AnimAddAngle</a></h2>
+<p>Add animation rotation.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for animation.</dd>
+<dt>angle = <em>angle</em> (float)</dt>
+<dd>Angle used for the rotation in degrees.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change animations in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="animposadd">
+<h2><a class="toc-backref" href="#id4">AnimPosAdd</a></h2>
+<p>Add to animation position.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for animation.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>x = <em>val_x</em> (float)</dt>
+<dd>Position to add to x-axis.</dd>
+<dt>y = <em>val_y</em> (float)</dt>
+<dd>Position to add to y-axis.</dd>
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change animations in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="animposset">
+<h2><a class="toc-backref" href="#id5">AnimPosSet</a></h2>
+<p>Set animation position.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for animation.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>x = <em>val_x</em> (float)</dt>
+<dd>Position to set on x-axis.</dd>
+<dt>y = <em>val_y</em> (float)</dt>
+<dd>Position to set on y-axis.</dd>
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change animations in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="animscaleset">
+<h2><a class="toc-backref" href="#id6">AnimScaleSet</a></h2>
+<p>Set animation scale.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for animation.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>x = <em>val_x</em> (float)</dt>
+<dd>Scale on x-axis.</dd>
+<dt>y = <em>val_y</em> (float)</dt>
+<dd>Scale on y-axis.</dd>
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change animations in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="animsetangle">
+<h2><a class="toc-backref" href="#id7">AnimSetAngle</a></h2>
+<p>Set animation rotation.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for animation.</dd>
+<dt>angle = <em>angle</em> (float)</dt>
+<dd>Angle used for the rotation in degrees.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change animations in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="animsetcolor">
+<h2><a class="toc-backref" href="#id8">AnimSetColor</a></h2>
+<p>Set animation color tint.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for animation.</dd>
+<dt>color = <em>r, g, b</em> (float, float, float)</dt>
+<dd>Color tint to use with animation.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change animations in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="animsetfacing">
+<h2><a class="toc-backref" href="#id9">AnimSetFacing</a></h2>
+<p>Set animation scale.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for animation.</dd>
+<dt>facing = <em>direction</em> (int)</dt>
+<dd>1 to set facing right, -1 to set facing left, 0 for no change.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change animations in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="animsetopacity">
+<h2><a class="toc-backref" href="#id10">AnimSetOpacity</a></h2>
+<p>Set animation opacity.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for animation.</dd>
+<dt>opacity = <em>alpha</em> (float)</dt>
+<dd>Set opacity of animation.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change animations in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="camerafocus">
+<h2><a class="toc-backref" href="#id11">CameraFocus</a></h2>
+<p>Set focus position for camera (zoom center).</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>x = <em>val_x</em> (float)</dt>
+<dd>Position on x-axis.</dd>
+<dt>y = <em>val_y</em> (float)</dt>
+<dd>Position on y-axis.</dd>
+</dl>
+<dt>Optional parameters:</dt>
+<dd>None</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="camerazoom">
+<h2><a class="toc-backref" href="#id12">CameraZoom</a></h2>
+<p>Set camera zoom.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>value = <em>zoom</em> (float)</dt>
+<dd>Zoom value.</dd>
+</dl>
+<dt>Optional parameters:</dt>
+<dd>None</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="changeanim">
+<h2><a class="toc-backref" href="#id13">ChangeAnim</a></h2>
+<p>Change action for animation with id.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for animation defined in CreateAnim.</dd>
+<dt>anim = <em>action_no</em> (int)</dt>
+<dd>Action number to play.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change animations in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="changestate">
+<h2><a class="toc-backref" href="#id14">ChangeState</a></h2>
+<p>Change state machine state.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>value = <em>state_no</em> (int)</dt>
+<dd>State number to change into.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="changestateparent">
+<h2><a class="toc-backref" href="#id15">ChangeStateParent</a></h2>
+<p>Change state machine state in parent.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>value = <em>state_no</em> (int)</dt>
+<dd>State number to change parent into.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="changestateroot">
+<h2><a class="toc-backref" href="#id16">ChangeStateRoot</a></h2>
+<p>Change state machine state in root.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>value = <em>state_no</em> (int)</dt>
+<dd>State number to change root into.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="changetext">
+<h2><a class="toc-backref" href="#id17">ChangeText</a></h2>
+<p>Update text. Takes all parameters that CreateText does as optional parameters.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for text defined in CreateText.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="charaddangle">
+<h2><a class="toc-backref" href="#id18">CharAddAngle</a></h2>
+<p>Add character rotation.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for character.</dd>
+<dt>angle = <em>angle</em> (float)</dt>
+<dd>Angle used for the rotation in degrees.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change characters in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="charchangeanim">
+<h2><a class="toc-backref" href="#id19">CharChangeAnim</a></h2>
+<p>Change action for character with id.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for character defined in CreateChar.</dd>
+<dt>anim = <em>action_no</em> (int)</dt>
+<dd>Action number to play.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change characters in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="charposadd">
+<h2><a class="toc-backref" href="#id20">CharPosAdd</a></h2>
+<p>Add to character position.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for character.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>x = <em>val_x</em> (float)</dt>
+<dd>Position to add to x-axis.</dd>
+<dt>y = <em>val_y</em> (float)</dt>
+<dd>Position to add to y-axis.</dd>
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change characters in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="charposset">
+<h2><a class="toc-backref" href="#id21">CharPosSet</a></h2>
+<p>Set character position.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for character.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>x = <em>val_x</em> (float)</dt>
+<dd>Position to set on x-axis.</dd>
+<dt>y = <em>val_y</em> (float)</dt>
+<dd>Position to set on y-axis.</dd>
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change characters in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="charscaleset">
+<h2><a class="toc-backref" href="#id22">CharScaleSet</a></h2>
+<p>Set character scale.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for character.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>x = <em>val_x</em> (float)</dt>
+<dd>Scale on x-axis.</dd>
+<dt>y = <em>val_y</em> (float)</dt>
+<dd>Scale on y-axis.</dd>
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change characters in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="charsetangle">
+<h2><a class="toc-backref" href="#id23">CharSetAngle</a></h2>
+<p>Set character rotation.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for character.</dd>
+<dt>angle = <em>angle</em> (float)</dt>
+<dd>Angle used for the rotation in degrees.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change characters in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="charsetcolor">
+<h2><a class="toc-backref" href="#id24">CharSetColor</a></h2>
+<p>Set character color tint.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for character.</dd>
+<dt>color = <em>r, g, b</em> (float, float, float)</dt>
+<dd>Color tint to use with character.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change characters in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="charsetfacing">
+<h2><a class="toc-backref" href="#id25">CharSetFacing</a></h2>
+<p>Set character scale.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for character.</dd>
+<dt>facing = <em>direction</em> (int)</dt>
+<dd>1 to set facing right, -1 to set facing left, 0 for no change.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change characters in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="charsetopacity">
+<h2><a class="toc-backref" href="#id26">CharSetOpacity</a></h2>
+<p>Set character opacity.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for character.</dd>
+<dt>opacity = <em>alpha</em> (float)</dt>
+<dd>Set opacity of character.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change characters in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="createanim">
+<h2><a class="toc-backref" href="#id27">CreateAnim</a></h2>
+<p>Create animation. Uses sprite/animation files from header info. Z-order is based on ids, higher ids are drawn in front of lower ids.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for animation used in other state controllers. Higher ids are drawn in front of lower ids.</dd>
+<dt>anim = <em>action_no</em> (int)</dt>
+<dd>Action number to play.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>loop = <em>bvalue</em> (boolean)</dt>
+<dd>If 0 remove after animation has finished. Defaults to 1.</dd>
+<dt>pos = <em>off_x, off_y</em> (float, float)</dt>
+<dd>Position to place animation. Default to 0 when omitted.</dd>
+<dt>stage = <em>bvalue</em> (boolean)</dt>
+<dd>If set to 1, animation is bound to stage and coordinate system used in pos is based on stage coordinate system. Defaults to 0.</dd>
+<dt>shadow = <em>shadow_y</em> (float)</dt>
+<dd>If used, the animation will have a shadow at the y-position given here.</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="createchar">
+<h2><a class="toc-backref" href="#id28">CreateChar</a></h2>
+<p>Create character from character files. Basically an animation with its own set of sprites and actions defined in the character files. Z-order is based on ids, higher ids are drawn in front of lower ids. Most character controllers are the same as the anim controllers with the same parameters.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for character used in other state controllers. Higher ids are drawn in front of lower ids.</dd>
+<dt>name = <em>character_name</em> (string)</dt>
+<dd>Character name in chars folder.</dd>
+<dt>anim = <em>action_no</em> (int)</dt>
+<dd>Start action number to play.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>palette = <em>preferred_palette</em> (int)</dt>
+<dd>Palette to use with the character. Defaults to first palette defined in character definition.</dd>
+<dt>pos = <em>off_x, off_y</em> (float, float)</dt>
+<dd>Position to place character. Default to 0 when omitted.dd>
+<dt>stage = <em>bvalue</em> (boolean)</dt>
+<dd>If set to 1, character is bound to stage and coordinate system used in pos is based on stage coordinate system. Defaults to 0.</dd>
+<dt>shadow = <em>shadow_y</em> (float)</dt>
+<dd>If used, the character will have a shadow at the y-position given here.</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="createhelper">
+<h2><a class="toc-backref" href="#id29">CreateHelper</a></h2>
+<p>Create helper that runs state machine concurrently to root state machine. Helpers have their own animations, characters, texts and variables.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier used to adress helper in other state controllers.</dd>
+<dt>state = <em>state_no</em> (int)</dt>
+<dd>State to put the helper in.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="createtext">
+<h2><a class="toc-backref" href="#id30">CreateText</a></h2>
+<p>Create story text with optional text box, face sprite, continue animation and name text. If the text component is not empty, the text will be displayed and visible until the text has completely appeared and the player presses the advance button.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for text used in other state controllers.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>pos = <em>off_x, off_y</em> (float, float)</dt>
+<dd>Base position to place text element. Default to 0 when omitted.</dd>
+<dt>text.offset = <em>off_x, off_y</em> (float, float)</dt>
+<dd>Offset for main text to be drawn.</dd>
+<dt>bg.anim = <em>action_no</em> (int)</dt>
+<dd>Action number of background behind text. Use either this or bg.spr. When neither is set no background is drawn.</dd>
+<dt>bg.spr = <em>group, item</em> (int, int)</dt>
+<dd>Sprite element of background behind text. Use either this or bg.anim. When neither is set no background is drawn.</dd>
+<dt>bg.offset = <em>off_x, off_y</em> (float, float)</dt>
+<dd>Offset for background to be drawn.</dd>
+<dt>face.anim = <em>action_no</em> (int)</dt>
+<dd>Action number of face. Use either this or face.spr. When neither is set no face is drawn.</dd>
+<dt>face.spr = <em>group, item</em> (int, int)</dt>
+<dd>Sprite element of face. Use either this or face.anim. When neither is set no face is drawn.</dd>
+<dt>face.offset = <em>off_x, off_y</em> (float, float)</dt>
+<dd>Offset for face to be drawn.</dd>
+<dt>continue.anim = <em>action_no</em> (int)</dt>
+<dd>Action number of continue text anim. Use either this or continue.spr. When neither is set no continue anim is drawn.</dd>
+<dt>continue.spr = <em>group, item</em> (int, int)</dt>
+<dd>Sprite element of continue. Use either this or continue.anim. When neither is set no continue is drawn.</dd>
+<dt>continue.offset = <em>off_x, off_y</em> (float, float)</dt>
+<dd>Offset for continue to be drawn.</dd>
+<dt>name = <em>name_text</em> (string)</dt>
+<dd>Name text to draw alongside regular text.</dd>
+<dt>name.font = <em>font_index, color, alignment</em> (int, int, int)</dt>
+<dd>Font used to draw name. See original documentation for more info on the font format.</dd>
+<dt>name.offset = <em>off_x, off_y</em> (float, float)</dt>
+<dd>Offset for name to be drawn.</dd>
+<dt>text = <em>text</em> (string)</dt>
+<dd>Main text to display. Defaults to empty string when omitted.</dd>
+<dt>font = <em>font_index, color, alignment</em> (int, int, int)</dt>
+<dd>Font used to draw main text. See original documentation for more info on the font format.</dd>
+<dt>width = <em>width</em> (int)</dt>
+<dd>Size after which text wraps and starts the word on a new line. Defaults to no wrapping.</dd>
+<dt>buildup = <em>bvalue</em> (boolean)</dt>
+<dd>If set to 1, text appears on the screen letter by letter, typewriter style. Defaults to 1.</dd>
+<dt>nextstate = <em>state_no</em> (int)</dt>
+<dd>If this parameter is set, the statemachine will change to the specified state after the text has disappeared.</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="destroyself">
+<h2><a class="toc-backref" href="#id31">DestroySelf</a></h2>
+<p>Call from helper to destroy helper.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd>none</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</div>
+<div class="section" id="endstoryboard">
+<h2><a class="toc-backref" href="#id32">EndStoryboard</a></h2>
+<p>End storyboard and go to story step set in value.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>value = <em>story_state</em> (int)</dt>
+<dd>Story step to go to.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="fadein">
+<h2><a class="toc-backref" href="#id33">FadeIn</a></h2>
+<p>Fade in effect.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>duration = <em>ticks</em> (int)</dt>
+<dd>Time to play fade in from total black to total transparency.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>color = <em>r, g, b</em> (float, float, float)</dt>
+<dd>Fade color, defaults to black (0,0,0).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="fadeout">
+<h2><a class="toc-backref" href="#id34">FadeOut</a></h2>
+<p>Fade in effect.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>duration = <em>ticks</em> (int)</dt>
+<dd>Time to play fade in from total black to total transparency.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>color = <em>r, g, b</em> (float, float, float)</dt>
+<dd>Fade color, defaults to black (0,0,0).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="globalvaradd">
+<h2><a class="toc-backref" href="#id35">GlobalVarAdd</a></h2>
+<p>Same as VarAdd controller, but for global variables that are shared between storyboards/fights.</p>
+<dl class="docutils">
+</dl>
+</div>
+<div class="section" id="globalvarset">
+<h2><a class="toc-backref" href="#id36">GlobalVarSet</a></h2>
+<p>Same as VarSet controller, but for global variables that are shared between storyboards/fights.</p>
+<dl class="docutils">
+</dl>
+</div>
+<div class="section" id="gotointro">
+<h2><a class="toc-backref" href="#id37">GoToIntro</a></h2>
+<p>Ends storyboard and goes to intro storyboard if it exists. Otherwise go to title.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd>none</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</div>
+<div class="section" id="gotostorystep">
+<h2><a class="toc-backref" href="#id38">GoToStoryStep</a></h2>
+<p>End storyboard and go to specified step in story definition.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>value = <em>story_state</em> (int)</dt>
+<dd>Story step to go to.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="gototitle">
+<h2><a class="toc-backref" href="#id39">GoToTitle</a></h2>
+<p>End storyboard and go to title.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd>none</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</div>
+<div class="section" id="locktext">
+<h2><a class="toc-backref" href="#id40">LockText</a></h2>
+<p>Lock text to character so that text updates its position in relation to character automatically. Useful for speech bubbles etc.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>text_identifier</em> (int)</dt>
+<dd>Identifier for text that is supposed to be locked to the character.</dd>
+<dt>character = <em>character_identifier, character_location</em> (int, int)</dt>
+<dd>Identifier for character the text is locked to. The second parameter is optional and can be used to adress characters in helpers, in that case character_location is the helper id.</dd>
+<dt>offset = <em>off_x, off_y</em> (float, float)</dt>
+<dd>Offset in relation to character to lock the text at.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>None</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</dl>
+</div>
+<div class="section" id="movestage">
+<h2><a class="toc-backref" href="#id41">MoveStage</a></h2>
+<p>Move stage if stage is set.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd>None</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>x = <em>val_x</em> (float)</dt>
+<dd>Movement on x-axis.</dd>
+<dt>y = <em>val_y</em> (float)</dt>
+<dd>Movement on y-axis.</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="nameid">
+<h2><a class="toc-backref" href="#id42">NameID</a></h2>
+<p>This state controller can be used to define an alias for an integer identifier. So if you link "Sagat" with 10, you can use Sagat instead of 10 in id parameters. You can recover the numerical value with the nameid(string_value) array trigger. You don't have to use this state controller, but referring to things by name and not by numbers can make life easier.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Numerical identifier to set an alias for.</dd>
+<dt>name = <em>alias</em> (string)</dt>
+<dd>String to use as an alias for an identifier.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="null">
+<h2><a class="toc-backref" href="#id43">Null</a></h2>
+<p>Same as original M.U.G.E.N controller.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd>none</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</div>
+<div class="section" id="pausemusic">
+<h2><a class="toc-backref" href="#id44">PauseMusic</a></h2>
+<p>Pause active music.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd>none</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</div>
+<div class="section" id="playmusic">
+<h2><a class="toc-backref" href="#id45">PlayMusic</a></h2>
+<p>Play music from path. Same rules apply as for music paths in stages.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>path = <em>path_string</em> (string)</dt>
+<dd>Path to music file.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="playsnd">
+<h2><a class="toc-backref" href="#id46">PlaySnd</a></h2>
+<p>Same as original M.U.G.E.N controller, except that only abspan is supported.</p>
+<dl class="docutils">
+</dl>
+</div>
+<div class="section" id="removeanim">
+<h2><a class="toc-backref" href="#id47">RemoveAnim</a></h2>
+<p>Remove animation with id.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for animation defined in CreateAnim.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="removechar">
+<h2><a class="toc-backref" href="#id48">RemoveChar</a></h2>
+<p>Remove character with id.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for character defined in CreateChar.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="removehelper">
+<h2><a class="toc-backref" href="#id49">RemoveHelper</a></h2>
+<p>Remove helper with id from root.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Helper id set in CreateHelper.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="removetext">
+<h2><a class="toc-backref" href="#id50">RemoveText</a></h2>
+<p>Remove text with id.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Identifier for text defined in CreateText.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="resumemusic">
+<h2><a class="toc-backref" href="#id51">ResumeMusic</a></h2>
+<p>Resume active music.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd>none</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</div>
+<div class="section" id="sndpan">
+<h2><a class="toc-backref" href="#id52">SndPan</a></h2>
+<p>Same as original M.U.G.E.N controller, except that only abspan is supported.</p>
+<dl class="docutils">
+</dl>
+</div>
+<div class="section" id="stopmusic">
+<h2><a class="toc-backref" href="#id53">StopMusic</a></h2>
+<p>Stop active music.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd>none</dd>
+<dt>Optional parameters:</dt>
+<dd>none</dd>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</div>
+<div class="section" id="stopsnd">
+<h2><a class="toc-backref" href="#id54">StopSnd</a></h2>
+<p>Same as original M.U.G.E.N controller.</p>
+<dl class="docutils">
+</dl>
+</div>
+<div class="section" id="textposadd">
+<h2><a class="toc-backref" href="#id55">TextPosAdd</a></h2>
+<p>Add to base position of text element.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Text element identifier.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>x = <em>val_x</em> (float)</dt>
+<dd>Position to add to x-axis.</dd>
+<dt>y = <em>val_y</em> (float)</dt>
+<dd>Position to add to y-axis.</dd>
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change texts in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="textposset">
+<h2><a class="toc-backref" href="#id56">TextPosSet</a></h2>
+<p>Set base position of text element.</p>
+<dl class="docutils">
+<dt>Required parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>ID = <em>identifier</em> (int)</dt>
+<dd>Text element identifier.</dd>
+</dl>
+</dd>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>x = <em>val_x</em> (float)</dt>
+<dd>Position to set on x-axis.</dd>
+<dt>y = <em>val_y</em> (float)</dt>
+<dd>Position to set on y-axis.</dd>
+<dt>target = <em>target_value</em> (string)</dt>
+<dd>Can be used to change texts in helpers (set target_value to helper id) or from helpers in root (set target_value to root).</dd>
+</dl>
+<dt>Example:</dt>
+<dd>none</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="varadd">
+<h2><a class="toc-backref" href="#id57">VarAdd</a></h2>
+<p>Same as original M.U.G.E.N controller. Can also add integers to svar string variables, in which case the last character will be increased by the integer value.</p>
+<dl class="docutils">
+</dl>
+</div>
+<div class="section" id="varset">
+<h2><a class="toc-backref" href="#id58">VarSet</a></h2>
+<p>Same as original M.U.G.E.N controller, but can also set string variables with svar.</p>
+<dl class="docutils">
+</dl>
+</div>
+</div>
+</div>
+</body></html>

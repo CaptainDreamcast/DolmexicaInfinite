@@ -1,0 +1,362 @@
+<!--?xml version="1.0" encoding="utf-8" ?-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Docutils 0.7: http://docutils.sourceforge.net/">
+<title>Story Mode Reference</title>
+<style type="text/css">
+
+/*
+Dolmexica Infinite documentation stylesheet based on the original M.U.G.E.N documentation.
+
+
+Modified from voidspace.css.
+
+:Authors: Ian Bicking, Michael Foord
+:Contact: fuzzyman@voidspace.org.uk
+:Date: 2005/08/26 
+:Version: 0.1.0
+:Copyright: This stylesheet has been placed in the public domain.
+
+Stylesheet for Docutils.
+Based on ``blue_box.css`` by Ian Bicking
+and ``html4css1.css`` revision 1.46.
+*/
+
+@import url(html4css1.css);
+
+body {
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+em, i {
+  font-family: Times New Roman, Times, serif;
+}
+
+a {
+  color: #5577EE;
+  text-decoration: none;
+}
+
+a.reference.internal {
+  font-size: 80%;
+}
+
+a.toc-backref {
+  color: black;
+  text-decoration: none;
+}
+
+a.toc-backref:hover {
+  background-color: inherit;
+}
+
+a:hover {
+  background-color: #cccccc;
+  text-decoration: none;
+}
+
+a img {
+  border: none;
+}
+
+div.attention, div.caution, div.danger, div.error, div.hint,
+div.important, div.note, div.tip, div.warning {
+  background-color: #cccccc;
+  padding: 3px;
+  width: 80%;
+}
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title  {
+  text-align: center;
+  background-color: #999999;
+  display: block;
+  margin: 0;
+}
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: #cc0000;
+  font-family: sans-serif;
+  text-align: center;
+  background-color: #999999;
+  display: block;
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Verdana, Helvetica, Arial, sans-serif;
+  border: thin solid black;
+  /* This makes the borders rounded on Mozilla, which pleases me */
+  -moz-border-radius: 8px;
+  padding: 4px;
+}
+
+h1 {
+  background-color: #445BAA;
+  color: #ffffff;
+  border: medium solid black;
+}
+
+h1 a.toc-backref, h2 a.toc-backref { 
+  color: #ffffff;
+}
+
+h2 {
+  background-color: #667788;
+  color: #ffffff;
+  border: thin solid black;
+}
+
+h3, h4, h5, h6 {
+  background-color: #cccccc;
+  color: #000000;
+}
+
+h3 a.toc-backref, h4 a.toc-backref, h5 a.toc-backref, 
+h6 a.toc-backref { 
+  color: #000000;
+}
+
+h1.title {
+  text-align: center;
+  background-color: #445BAA;
+  color: #eeeeee;
+  border: thick solid black;
+  -moz-border-radius: 20px;
+}
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+table.footnote {
+  padding-left: 0.5ex;
+}
+
+table.citation {
+  padding-left: 0.5ex
+}
+
+pre.literal-block, pre.doctest-block {
+  border: thin black solid;
+  padding: 5px;
+}
+
+.image img { border-style : solid;
+            border-width : 2px;
+}
+
+h1 tt, h2 tt, h3 tt, h4 tt, h5 tt, h6 tt {
+  font-size: 100%;
+}
+
+code, tt {
+  color: #000066;
+  font-size: 120%;
+}
+
+</style>
+</head>
+<body>
+<div class="document" id="story-mode-reference">
+<h1 class="title">Story Mode Reference</h1>
+
+<p>Dolmexica Infinite, presented by Dogma 2018-2020</p>
+<p>Documentation for demo version (2020)</p>
+<p>Updated 01 May 2020</p>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#about-story-mode" id="id1">About story mode</a></li>
+<li><a class="reference internal" href="#story-mode-files" id="id2">Story mode files</a>
+<li><a class="reference internal" href="#adding-stories" id="id3">Adding stories</a>
+<li><a class="reference internal" href="#story-definition-file" id="id4">Story definition file</a>
+<ul>
+<li><a class="reference internal" href="#structure-story" id="id5">Structure</a></li>
+<li><a class="reference internal" href="#header-story" id="id6">Header</a></li>
+<li><a class="reference internal" href="#step-types-story" id="id7">Step types</a>
+<ul>
+<li><a class="reference internal" href="#step-types-story-fight" id="id8">Fight</a></li>
+<li><a class="reference internal" href="#step-types-story-storyboard" id="id9">Storyboard</a></li>
+<li><a class="reference internal" href="#step-types-story-title" id="id10">Title</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#storyboard-file" id="id11">Dolmexica Infinite storyboard file</a>
+<ul>
+<li><a class="reference internal" href="#structure-storyboard" id="id12">Structure</a></li>
+<li><a class="reference internal" href="#header-storyboard" id="id13">Header</a></li>
+<li><a class="reference internal" href="#states-storyboard" id="id14">States</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="about-story-controllers">
+<h1><a class="toc-backref" href="#id1">About story mode</a></h1>
+<p>Story mode is a mode in which players can create scenarios using advanced storyboards and fights. Storyboards can be either storyboards from the original M.U.G.E.N or Dolmexica Infinite storyboards, which contain more advanced text boxes, animations and character inclusion.</p>
+</div>
+<div class="section" id="story-mode-files">
+<h1><a class="toc-backref" href="#id2">Story mode files</a></h1>
+<p>Similar to characters and stages, stories consist of a .def file which declares further files to be used.</p>
+<p>Files used for a story:</p>
+<ul class="simple">
+<li><tt class="docutils literal">.def file</tt>: The aforementioned definition file. Contains header info and story steps.</li>
+<li><tt class="docutils literal">.sff file</tt>: Sprite file used in the story select screen. Can be set in the <tt class="docutils literal">[Info]</tt> group of the definition file with the <tt class="docutils literal">select.spr</tt> attribute. It follows the same rules as character portraits (e.g. expecting sprites 9000,0 and 9000,1).</li>
+<li><tt class="docutils literal">Storyboard files</tt>: Optionally used during story steps. Defined by definition files too, which can be either M.U.G.E.N or Dolmexica Infinite versions. Dolmexica Infinite uses the <tt class="docutils literal">[SceneDef]</tt> group to differentiate between storyboard types. If it is included in the storyboard file, Dolmexica Infinite will try to load the storyboard as a M.U.G.E.N storyboard.</li>
+</ul>
+</div>
+<div class="section" id="adding-stories">
+<h1><a class="toc-backref" href="#id3">Adding stories</a></h1>
+<p>Stories are added via the <tt class="docutils literal">select.def</tt>, just like characters and stages. To add a story, add the <tt class="docutils literal">[Stories]</tt> group to the file and add the path to the story file to it. For example, if your file is located at story/file.def, add <tt class="docutils literal">story/file.def</tt>. If multiple stories are present, the select screen is shown. If only one story is present, that story is started is automatically.</p>
+</div>
+<div class="section" id="story-definition-file">
+<h1><a class="toc-backref" href="#id4">Story definition file</a></h1>
+<div class="section" id="structure-story">
+<h2><a class="toc-backref" href="#id5">Structure</a></h2>
+<p>The story definition consists of two main parts. The header defined under the group <tt class="docutils literal">[Info]</tt> and the following groups, which each define a single story step. Story steps can have different types, which are explained below. Step group names are irrelevant, they are ordered zero-based based on definition order. So the first group after <tt class="docutils literal">[Info]</tt> will be step 0, the one after that step 1, and so on.</p>
+</div>
+<div class="section" id="header-story">
+<h2><a class="toc-backref" href="#id6">Header</a></h2>
+<p>Refers to the <tt class="docutils literal">[Info]</tt> group of the story definition file.</p>
+<dl class="docutils">
+<dt>Parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>startstate = <em>state_no</em> (int)</dt>
+<dd>Zero-indexed state to start in, usually you'd want this to be 0.</dd>
+<dt>name = <em>name_string</em> (string)</dt>
+<dd>Name shown for this story on the select screen.</dd>
+<dt>select.spr = <em>path</em> (string)</dt>
+<dd>Path to sprite file used with the select screen. Works the same as character portraits (e.g. 9000,0 and 9000,1). The path is relative to the definition file.</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="step-types-story">
+<h2><a class="toc-backref" href="#id7">Step types</a></h2>
+<p>Story steps can be set via the <tt class="docutils literal">type</tt> parameter. The following story step types are possible:</p>
+<div class="section" id="step-types-story-fight">
+<h3><a class="toc-backref" href="#id8">Fight</a></h3>
+<p>This step starts a fight with the corresponding parameters.</p>
+<dl class="docutils">
+<dt>Parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>player1 = <em>path</em> (string)</dt>
+<dd>Name of character 1 in chars folder. Set to select to show the select screen.</dd>
+<dt>player2 = <em>path</em> (string)</dt>
+<dd>Name of character 2 in chars folder.</dd>
+<dt>stage = <em>path</em> (string)</dt>
+<dd>Path to stage.</dd>
+<dt>win = <em>step_no</em> (int)</dt>
+<dd>Story step to enter if character 1 wins.</dd>
+</dl>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>bgm = <em>path</em> (string)</dt>
+<dd>Optional path to custom bgm for fight. If no bgm is provided, the one in the stage file is used.</dd>
+<dt>lose = <em>step_no</em> (int)</dt>
+<dd>Story state to enter if character 1 loses. Set to continue to just show continue option if the player loses (this is default).</dd>
+<dt>mode = <em>mode_name</em> (string)</dt>
+<dd>Possible values: story for regular player vs CPU fight or Osu for osu fight. Defaults to story.</dd>
+<dt>palette1 = <em>palette_no</em> (int)</dt>
+<dd>Set palette for player 1. Defaults to 1.</dd>
+<dt>palette2 = <em>palette_no</em> (int)</dt>
+<dd>Set palette for player 2. Defaults to 2.</dd>
+<dt>ailevel = <em>round_amount</em> (int)</dt>
+<dd>Set AiLevel (from 0, no AI, to 8, hardest). Defaults to difficulty selected in options.</dd>
+<dt>rounds = <em>ai_level</em> (int)</dt>
+<dd>Set amount of rounds. Default is 2.</dd>
+<dt>round.time = <em>round_duration</em> (int)</dt>
+<dd>Set duration of round timer. Default is round duration set in options.</dd>
+<dt>selectname = <em>select_name</em> (string)</dt>
+<dd>If Select screen shown for player 1, adjust text shown on select screen. Otherwise "Select your fighter!" is used.</dd>
+<dt>selectfile = <em>path</em> (string)</dt>
+<dd>Path to custom select.def if select screen shown for player 1. Otherwise regular select screen is used.</dd>
+<dt>p1.name = <em>name</em> (string)</dt>
+<dd>Set optional custom display name for player 1 character.</dd>
+<dt>p2.name = <em>name</em> (string)</dt>
+<dd>Set optional custom display name for player 2 character.</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="step-types-story-storyboard">
+<h3><a class="toc-backref" href="#id9">Storyboard</a></h3>
+<p>This step starts a storyboard.</p>
+<dl class="docutils">
+<dt>Parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>file = <em>path</em> (string)</dt>
+<dd>Path to storyboard file. If the storyboard contains a <tt class="docutils literal">[SceneDef]</tt> group, it is loaded as a M.U.G.E.N storyboard, otherwise it is loaded as a Dolmexica Infinite storyboard.</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="step-types-story-title">
+<h3><a class="toc-backref" href="#id10">Title</a></h3>
+<p>This step returns to the title screen.</p>
+<dl class="docutils">
+<dt>Parameters:</dt>
+<dd>none</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="section" id="storyboard-file">
+<h1><a class="toc-backref" href="#id11">Dolmexica Infinite storyboard file</a></h1>
+<div class="section" id="structure-storyboard">
+<h2><a class="toc-backref" href="#id12">Structure</a></h2>
+<p>Similar to the story mode files, storyboard files contain a header, the <tt class="docutils literal">[Info]</tt> group, and states. In that way, the storyboard state machine can be thought of as similar to the character state machine. There is one root instance that starts in state 0. It can spawn more helpers though, which can run concurrently to the root instance.</p>
+</div>
+<div class="section" id="header-storyboard">
+<h2><a class="toc-backref" href="#id13">Header</a></h2>
+<p>Refers to the <tt class="docutils literal">[Info]</tt> group of the storyboard file.</p>
+<dl class="docutils">
+<dt>Parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>spr = <em>path</em> (int)</dt>
+<dd>Zero-indexed state to start in, usually you'd want this to be 0.</dd>
+<dt>name = <em>name_string</em> (string)</dt>
+<dd>Name shown for this story on the select screen.</dd>
+<dt>select.spr = <em>path</em> (string)</dt>
+<dd>Path to sprite file used with the select screen. Works the same as character portraits (e.g. 9000,0 and 9000,1). The path is relative to the definition file.</dd>
+</dl>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>spr = <em>path</em> (string)</dt>
+<dd>Optional path to sprite file of storyboard state machine.</dd>
+<dt>anim = <em>path</em> (string)</dt>
+<dd>Optional path to action file of storyboard state machine.</dd>
+<dt>snd = <em>path</em> (string)</dt>
+<dd>Optional path to sound file of storyboard state machine.</dd>
+<dt>cmd = <em>path</em> (string)</dt>
+<dd>Optional path to command file of storyboard state machine.</dd>
+<dt>stage = <em>path</em> (string)</dt>
+<dd>Optional path to stage loaded for storyboard. The stage will be presented as if it was loaded for a fight.</dd>
+<dt>bgm = <em>path</em> (string)</dt>
+<dd>Optional path to music file for story.</dd>
+<dt>stage.bgm = <em>bvalue</em> (boolean)</dt>
+<dd>Set to 1 to use stage bgm. Defaults to 0. When both bgm and stage.bgm are defined, bgm is used.</dd>
+<dt>helper[0,9] = <em>path</em> (string)</dt>
+<dd>Optional paths to helper files containing more states.</dd>
+<dt>font[0,99] = <em>path</em> (string)</dt>
+<dd>Sets fonts used in story screen. If no fonts are set, the system fonts are used.</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="states-storyboard">
+<h2><a class="toc-backref" href="#id14">States</a></h2>
+<p>States work the same as M.U.G.E.N character state machines, using the <tt class="docutils literal">[Statedef X]</tt> format. Like characters, states have different state controllers. The state controllers for Dolmexica Infinite storyboards are outlined in <a href="storysctrls.html">storysctrls.html</a>. The corresponding Dolmexica Infinite storyboard triggers are outlined in <a href="storytrigger.html">storytrigger.html</a>.</p>
+</div>
+</div>
+</div>
+</body></html>
