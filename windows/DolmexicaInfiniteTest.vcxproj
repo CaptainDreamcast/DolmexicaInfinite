@@ -44,14 +44,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;..;$(IncludePath)</IncludePath>
+    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PROJECTS\addons\prism\include;..;$(IncludePath)</IncludePath>
     <LibraryPath>C:\DEV\PROJECTS\addons\prism\windows\vs17\LIB;$(LibraryPath)</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\</OutDir>
     <IntDir>Test\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;..;$(IncludePath)</IncludePath>
+    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PROJECTS\addons\prism\include;..;$(IncludePath)</IncludePath>
     <LibraryPath>C:\DEV\PROJECTS\addons\prism\windows\vs17\LIB;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\</OutDir>
     <IntDir>Test\$(Configuration)\</IntDir>
@@ -115,7 +115,6 @@
     <ClCompile Include="..\gamelogic.cpp" />
     <ClCompile Include="..\initscreen.cpp" />
     <ClCompile Include="..\intro.cpp" />
-    <ClCompile Include="..\menubackground.cpp" />
     <ClCompile Include="..\mugenanimationutilities.cpp" />
     <ClCompile Include="..\mugenassignment.cpp" />
     <ClCompile Include="..\mugenassignmentevaluator.cpp" />
@@ -138,6 +137,7 @@
     <ClCompile Include="..\playerhitdata.cpp" />
     <ClCompile Include="..\projectile.cpp" />
     <ClCompile Include="..\randomwatchmode.cpp" />
+    <ClCompile Include="..\scriptbackground.cpp" />
     <ClCompile Include="..\stage.cpp" />
     <ClCompile Include="..\storymode.cpp" />
     <ClCompile Include="..\storyscreen.cpp" />
@@ -148,6 +148,7 @@
     <ClCompile Include="..\test\crashtest.cpp" />
     <ClCompile Include="..\test\mugenassignmentevaluatortest.cpp" />
     <ClCompile Include="..\test\performancetest.cpp" />
+    <ClCompile Include="..\test\profilertest.cpp" />
     <ClCompile Include="..\titlescreen.cpp" />
     <ClCompile Include="..\trainingmode.cpp" />
     <ClCompile Include="..\trainingmodemenu.cpp" />
@@ -186,7 +187,6 @@
     <ClInclude Include="..\gamelogic.h" />
     <ClInclude Include="..\initscreen.h" />
     <ClInclude Include="..\intro.h" />
-    <ClInclude Include="..\menubackground.h" />
     <ClInclude Include="..\mugenanimationutilities.h" />
     <ClInclude Include="..\mugenassignment.h" />
     <ClInclude Include="..\mugenassignmentevaluator.h" />
@@ -209,6 +209,7 @@
     <ClInclude Include="..\playerhitdata.h" />
     <ClInclude Include="..\projectile.h" />
     <ClInclude Include="..\randomwatchmode.h" />
+    <ClInclude Include="..\scriptbackground.h" />
     <ClInclude Include="..\stage.h" />
     <ClInclude Include="..\storymode.h" />
     <ClInclude Include="..\storyscreen.h" />

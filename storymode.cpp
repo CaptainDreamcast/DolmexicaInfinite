@@ -44,8 +44,8 @@ static MugenDefScriptGroup* getMugenDefStoryScriptGroupByIndex(MugenDefScript* t
 static int isMugenStoryboard(const char* tPath) {
 	MugenDefScript script;
 	loadMugenDefScript(&script, tPath);
-	const auto ret = hasMugenDefScriptGroup(&script, "SceneDef");
-	unloadMugenDefScript(script);
+	const auto ret = hasMugenDefScriptGroup(&script, "scenedef");
+	unloadMugenDefScript(&script);
 	return ret;
 }
 
@@ -68,7 +68,7 @@ static void loadStoryboardGroup(MugenDefScriptGroup* tGroup) {
 	}
 
 	if (isMugenStoryboard(path)) {
-		setStoryDefinitionFile(path);
+		setStoryDefinitionFileAndPrepareScreen(path);
 		setStoryScreenFinishedCB(mugenStoryScreenFinishedCB);
 		setNewScreen(getStoryScreen());
 	}
@@ -224,7 +224,7 @@ static void loadStoryHeader() {
 	MugenDefScript storyScript;
 	loadMugenDefScript(&storyScript, path);
 
-	gStoryModeData.mCurrentState = getMugenDefIntegerOrDefault(&storyScript, "Info", "startstate", 0);
+	gStoryModeData.mCurrentState = getMugenDefIntegerOrDefault(&storyScript, "info", "startstate", 0);
 }
 
 static void startFirstStoryElement(MugenDefScriptGroup* tStories) {
@@ -250,12 +250,12 @@ void startStoryMode()
 {
 	MugenDefScript selectScript; 
 	loadMugenDefScript(&selectScript, getDolmexicaAssetFolder() + "data/select.def");
-	if (!stl_string_map_contains_array(selectScript.mGroups, "Stories")) {
+	if (!stl_string_map_contains_array(selectScript.mGroups, "stories")) {
 		setNewScreen(getDreamTitleScreen());
 		return;
 	}
 	
-	MugenDefScriptGroup* stories = &selectScript.mGroups["Stories"];
+	MugenDefScriptGroup* stories = &selectScript.mGroups["stories"];
 	if (!list_size(&stories->mOrderedElementList)) {
 		setNewScreen(getDreamTitleScreen());
 		return;

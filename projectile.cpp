@@ -20,7 +20,7 @@ typedef struct {
 	int mRemoveAnimation;
 	int mCancelAnimation;
 
-	Vector3D mScale;
+	Vector2D mScale;
 	int mRemoveAfterHit;
 	int mRemoveTime;
 
@@ -230,102 +230,102 @@ int getProjectileID(DreamPlayer * tProjectile)
 	return e->mID;
 }
 
-void setProjectileAnimation(DreamPlayer * p, int tAnimation)
+void setProjectileAnimation(DreamPlayer* p, int tAnimation)
 {
 	changePlayerAnimation(p, tAnimation);
 }
 
-int getProjectileHitAnimation(DreamPlayer * p)
+int getProjectileHitAnimation(DreamPlayer* p)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	return e->mHitAnimation;
 }
 
-void setProjectileHitAnimation(DreamPlayer * p, int tAnimation)
+void setProjectileHitAnimation(DreamPlayer* p, int tAnimation)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	e->mHitAnimation = tAnimation;
 }
 
-int getProjectileRemoveAnimation(DreamPlayer * p)
+int getProjectileRemoveAnimation(DreamPlayer* p)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	return e->mRemoveAnimation;
 }
 
-void setProjectileRemoveAnimation(DreamPlayer * p, int tAnimation)
+void setProjectileRemoveAnimation(DreamPlayer* p, int tAnimation)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	e->mRemoveAnimation = tAnimation;
 }
 
-void setProjectileCancelAnimation(DreamPlayer * p, int tAnimation)
+void setProjectileCancelAnimation(DreamPlayer* p, int tAnimation)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	e->mCancelAnimation = tAnimation;
 }
 
-void setProjectileScale(DreamPlayer * p, double tX, double tY)
+void setProjectileScale(DreamPlayer* p, double tX, double tY)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
-	e->mScale = makePosition(tX, tY, 1);
+	e->mScale = Vector2D(tX, tY);
 }
 
-void setProjectileRemoveAfterHit(DreamPlayer * p, int tValue)
+void setProjectileRemoveAfterHit(DreamPlayer* p, int tValue)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	e->mRemoveAfterHit = tValue;
 }
 
-void setProjectileRemoveTime(DreamPlayer * p, int tTime)
+void setProjectileRemoveTime(DreamPlayer* p, int tTime)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	e->mRemoveTime = tTime;
 }
 
-void setProjectileVelocity(DreamPlayer * p, double tX, double tY, int tCoordinateP)
+void setProjectileVelocity(DreamPlayer* p, double tX, double tY, int tCoordinateP)
 {
 	setPlayerVelocityX(p, tX, tCoordinateP);
 	setPlayerVelocityY(p, tY, tCoordinateP);
 }
 
-void setProjectileRemoveVelocity(DreamPlayer * p, double tX, double tY, int tCoordinateP)
+void setProjectileRemoveVelocity(DreamPlayer* p, double tX, double tY, int tCoordinateP)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
-	e->mRemoveVelocity = transformDreamCoordinatesVector(makePosition(tX, tY, 0), tCoordinateP, getDreamMugenStageHandlerCameraCoordinateP());
+	e->mRemoveVelocity = transformDreamCoordinatesVector(Vector3D(tX, tY, 0), tCoordinateP, getDreamMugenStageHandlerCameraCoordinateP());
 }
 
-void setProjectileAcceleration(DreamPlayer * p, double tX, double tY, int tCoordinateP)
+void setProjectileAcceleration(DreamPlayer* p, double tX, double tY, int tCoordinateP)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
-	e->mAcceleration = transformDreamCoordinatesVector(makePosition(tX, tY, 0), tCoordinateP, getDreamMugenStageHandlerCameraCoordinateP());
+	e->mAcceleration = transformDreamCoordinatesVector(Vector3D(tX, tY, 0), tCoordinateP, getDreamMugenStageHandlerCameraCoordinateP());
 }
 
-void setProjectileVelocityMultipliers(DreamPlayer * p, double tX, double tY)
+void setProjectileVelocityMultipliers(DreamPlayer* p, double tX, double tY)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
-	e->mVelocityMultipliers = makePosition(tX, tY, 1);
+	e->mVelocityMultipliers = Vector3D(tX, tY, 1);
 }
 
-void setProjectileHitAmountBeforeVanishing(DreamPlayer * p, int tHitAmount)
+void setProjectileHitAmountBeforeVanishing(DreamPlayer* p, int tHitAmount)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	e->mHitAmountBeforeVanishing = tHitAmount;
 }
 
-void setProjectilMisstime(DreamPlayer * p, int tMissTime)
+void setProjectilMisstime(DreamPlayer* p, int tMissTime)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
@@ -333,21 +333,21 @@ void setProjectilMisstime(DreamPlayer * p, int tMissTime)
 	e->mMissHitNow = e->mMissTime + 1;
 }
 
-int getProjectilePriority(DreamPlayer * p)
+int getProjectilePriority(DreamPlayer* p)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	return e->mPriority;
 }
 
-void setProjectilePriority(DreamPlayer * p, int tPriority)
+void setProjectilePriority(DreamPlayer* p, int tPriority)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	e->mPriority = tPriority;
 }
 
-void reduceProjectilePriorityAndResetHitData(DreamPlayer * p)
+void reduceProjectilePriorityAndResetHitData(DreamPlayer* p)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
@@ -355,26 +355,26 @@ void reduceProjectilePriorityAndResetHitData(DreamPlayer * p)
 	setHitDataActive(p);
 }
 
-void setProjectileSpritePriority(DreamPlayer * p, int tSpritePriority)
+void setProjectileSpritePriority(DreamPlayer* p, int tSpritePriority)
 {
 	setPlayerSpritePriority(p, tSpritePriority);
 }
 
-void setProjectileEdgeBound(DreamPlayer * p, int tEdgeBound, int tCoordinateP)
+void setProjectileEdgeBound(DreamPlayer* p, int tEdgeBound, int tCoordinateP)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	e->mEdgeBound = transformDreamCoordinatesI(tEdgeBound, tCoordinateP, getDreamMugenStageHandlerCameraCoordinateP());
 }
 
-void setProjectileStageBound(DreamPlayer * p, int tStageBound, int tCoordinateP)
+void setProjectileStageBound(DreamPlayer* p, int tStageBound, int tCoordinateP)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	e->mStageBound = transformDreamCoordinatesI(tStageBound, tCoordinateP, getDreamMugenStageHandlerCameraCoordinateP());
 }
 
-void setProjectileHeightBoundValues(DreamPlayer * p, int tLowerBound, int tUpperBound, int tCoordinateP)
+void setProjectileHeightBoundValues(DreamPlayer* p, int tLowerBound, int tUpperBound, int tCoordinateP)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
@@ -382,12 +382,12 @@ void setProjectileHeightBoundValues(DreamPlayer * p, int tLowerBound, int tUpper
 	e->mUpperBound = transformDreamCoordinatesI(tUpperBound, tCoordinateP, getDreamMugenStageHandlerCameraCoordinateP());
 }
 
-void setProjectilePosition(DreamPlayer * p, Position tPosition, int tCoordinateP)
+void setProjectilePosition(DreamPlayer* p, const Position2D& tPosition, int tCoordinateP)
 {
 	setPlayerPosition(p, tPosition, tCoordinateP);
 }
 
-void setProjectileShadow(DreamPlayer * p, int tShadow)
+void setProjectileShadow(DreamPlayer* p, int tShadow)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
@@ -395,27 +395,27 @@ void setProjectileShadow(DreamPlayer * p, int tShadow)
 	updateProjectileShadow(e);
 }
 
-void setProjectileSuperMoveTime(DreamPlayer * p, int tSuperMoveTime)
+void setProjectileSuperMoveTime(DreamPlayer* p, int tSuperMoveTime)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	setPlayerSuperMoveTime(e->mPlayer, tSuperMoveTime);
 }
 
-void setProjectilePauseMoveTime(DreamPlayer * p, int tPauseMoveTime)
+void setProjectilePauseMoveTime(DreamPlayer* p, int tPauseMoveTime)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	setPlayerPauseMoveTime(e->mPlayer, tPauseMoveTime);
 }
 
-void setProjectileHasOwnPalette(DreamPlayer * p, int tValue)
+void setProjectileHasOwnPalette(DreamPlayer* p, int tValue)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	setPlayerHasOwnPalette(p, tValue);
 }
 
-void setProjectileRemapPalette(DreamPlayer * p, int tGroup, int tItem)
+void setProjectileRemapPalette(DreamPlayer* p, int tGroup, int tItem)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
@@ -423,7 +423,7 @@ void setProjectileRemapPalette(DreamPlayer * p, int tGroup, int tItem)
 	e->mRemapPaletteItem = tItem;
 }
 
-int canProjectileHit(DreamPlayer * p)
+int canProjectileHit(DreamPlayer* p)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);

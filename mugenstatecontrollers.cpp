@@ -764,7 +764,7 @@ static void parseMakeDustController(DreamMugenStateController* tController, Muge
 	MakeDustController* e = (MakeDustController*)allocMemoryOnMemoryStackOrMemory(sizeof(MakeDustController));
 
 	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists("pos", tGroup, &e->mPositionOffset)) {
-		e->mPositionOffset = makeDream2DVectorMugenAssignment(makePosition(0, 0, 0));
+		e->mPositionOffset = makeDream2DVectorMugenAssignment(Vector2D(0, 0));
 	}
 
 	e->mHasSecondDustCloud = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("pos2", tGroup, &e->mPositionOffset2);
@@ -2623,171 +2623,27 @@ void unloadDreamMugenStateController(DreamMugenStateController * tController)
 	unloadStateControllerType(tController);
 }
 
-static void getSingleIntegerValueOrDefault(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* tDst, int tDefault) {
-	if (!(*tAssignment)) *tDst = tDefault;
-	else *tDst = evaluateDreamAssignmentAndReturnAsInteger(tAssignment, tPlayer);
-}
-
-static void getTwoIntegerValuesWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* v1, int* v2, int tDefault1, int tDefault2) {
-	if (!(*tAssignment)) {
-		*v1 = tDefault1;
-		*v2 = tDefault2;
-		return;
-	}
-
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-	char string1[20], comma[10], string2[20];
-	int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
-
-	if (items < 1 || !strcmp("", string1)) *v1 = tDefault1;
-	else *v1 = atoi(string1);
-	if (items < 3 || !strcmp("", string2)) *v2 = tDefault2;
-	else *v2 = atoi(string2);
-}
-
-static void getThreeIntegerValuesWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* v1, int* v2, int* v3, int tDefault1, int tDefault2, int tDefault3) {
-	int vals[3];
-	if (!(*tAssignment)) {
-		vals[0] = tDefault1;
-		vals[1] = tDefault2;
-		vals[2] = tDefault3;
-	}
-	else {
-		string flag;
-		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-		char string[3][20], comma[2][10];
-		int items = sscanf(flag.data(), "%s %s %s %s %s", string[0], comma[0], string[1], comma[1], string[2]);
-
-		int defaults[3];
-		defaults[0] = tDefault1;
-		defaults[1] = tDefault2;
-		defaults[2] = tDefault3;
-
-		int j;
-		for (j = 0; j < 3; j++) {
-			if (items < (1 + j * 2) || !strcmp("", string[j])) vals[j] = defaults[j];
-			else vals[j] = atoi(string[j]);
-		}
-	}
-
-	*v1 = vals[0];
-	*v2 = vals[1];
-	*v3 = vals[2];
-}
-
-static void getFourIntegerValuesWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* v1, int* v2, int* v3, int* v4, int tDefault1, int tDefault2, int tDefault3, int tDefault4) {
-	int vals[4];
-	if (!(*tAssignment)) {
-		vals[0] = tDefault1;
-		vals[1] = tDefault2;
-		vals[2] = tDefault3;
-		vals[3] = tDefault4;
-	}
-	else {
-		string flag;
-		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-		char string[4][20], comma[3][10];
-		int items = sscanf(flag.data(), "%s %s %s %s %s %s %s", string[0], comma[0], string[1], comma[1], string[2], comma[2], string[3]);
-
-		int defaults[4];
-		defaults[0] = tDefault1;
-		defaults[1] = tDefault2;
-		defaults[2] = tDefault3;
-		defaults[3] = tDefault4;
-
-		int j;
-		for (j = 0; j < 4; j++) {
-			if (items < (1 + j * 2) || !strcmp("", string[j])) vals[j] = defaults[j];
-			else vals[j] = atoi(string[j]);
-		}
-	}
-
-	*v1 = vals[0];
-	*v2 = vals[1];
-	*v3 = vals[2];
-	*v4 = vals[3];
-}
-
-static void getSingleFloatValueOrDefault(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, double* tDst, double tDefault) {
-	if (!(*tAssignment)) *tDst = tDefault;
-	else *tDst = evaluateDreamAssignmentAndReturnAsFloat(tAssignment, tPlayer);
-}
-
-static void getTwoFloatValuesWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, double* v1, double* v2, double tDefault1, double tDefault2) {
-	if (!(*tAssignment)) {
-		*v1 = tDefault1;
-		*v2 = tDefault2;
-		return;
-	}
-
-	string flag;
-	evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-	char string1[20], comma[10], string2[20];
-	int items = sscanf(flag.data(), "%s %s %s", string1, comma, string2);
-
-	if (items < 1 || !strcmp("", string1)) *v1 = tDefault1;
-	else *v1 = atof(string1);
-	if (items < 3 || !strcmp("", string2)) *v2 = tDefault2;
-	else *v2 = atof(string2);
-}
-
-static void getThreeFloatValuesWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, double* v1, double* v2, double* v3, double tDefault1, double tDefault2, double tDefault3) {
-	double vals[3];
-	if (!(*tAssignment)) {
-		vals[0] = tDefault1;
-		vals[1] = tDefault2;
-		vals[2] = tDefault3;
-	}
-	else {
-		string flag;
-		evaluateDreamAssignmentAndReturnAsString(flag, tAssignment, tPlayer);
-
-		char string[3][20], comma[2][10];
-		int items = sscanf(flag.data(), "%s %s %s %s %s", string[0], comma[0], string[1], comma[1], string[2]);
-
-		double defaults[3];
-		defaults[0] = tDefault1;
-		defaults[1] = tDefault2;
-		defaults[2] = tDefault3;
-
-		int j;
-		for (j = 0; j < 3; j++) {
-			if (items < (1 + j * 2) || !strcmp("", string[j])) vals[j] = defaults[j];
-			else vals[j] = atof(string[j]);
-		}
-	}
-
-	*v1 = vals[0];
-	*v2 = vals[1];
-	*v3 = vals[2];
-}
-
 static void handleHelperSetOneIntegerElement(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, int), int tDefault) {
 	int val;
-	getSingleIntegerValueOrDefault(tAssignment, tPlayer, &val, tDefault);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(tAssignment, tPlayer, &val, tDefault);
 	tFunc(tHelper, val);
 }
 
 static void handleHelperSetOneIntegerElementWithCoordinateP(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, int, int), int tDefault) {
 	int val;
-	getSingleIntegerValueOrDefault(tAssignment, tPlayer, &val, tDefault);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(tAssignment, tPlayer, &val, tDefault);
 	tFunc(tHelper, val, getActiveStateMachineCoordinateP());
 }
 
 static void handleHelperSetTwoIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, int, int), int tDefault1, int tDefault2) {
 	int val1, val2;
-	getTwoIntegerValuesWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
 	tFunc(tHelper, val1, val2);
 }
 
 static void handleHelperSetTwoIntegerElementsWithCoordinateP(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, int, int, int), int tDefault1, int tDefault2) {
 	int val1, val2;
-	getTwoIntegerValuesWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
 	tFunc(tHelper, val1, val2, getActiveStateMachineCoordinateP());
 }
 
@@ -2798,32 +2654,32 @@ static void handleHelperSetTwoOptionalIntegerElements(DreamMugenAssignment** tAs
 	}
 
 	int x, y;
-	getTwoIntegerValuesWithDefaultValues(tAssignment, tPlayer, &x, &y, 0, 0);
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(tAssignment, tPlayer, &x, &y, 0, 0);
 
 	tFunc(tHelper, x, y);
 }
 
 static void handleHelperSetThreeIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, int, int, int), int tDefault1, int tDefault2, int tDefault3) {
 	int val1, val2, val3;
-	getThreeIntegerValuesWithDefaultValues(tAssignment, tPlayer, &val1, &val2, &val3, tDefault1, tDefault2, tDefault3);
+	evaluateDreamAssignmentAndReturnAsThreeIntegersWithDefaultValues(tAssignment, tPlayer, &val1, &val2, &val3, tDefault1, tDefault2, tDefault3);
 	tFunc(tHelper, val1, val2, val3);
 }
 
 static void handleHelperSetOneFloatElement(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, double), double tDefault) {
 	double val;
-	getSingleFloatValueOrDefault(tAssignment, tPlayer, &val, tDefault);
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(tAssignment, tPlayer, &val, tDefault);
 	tFunc(tHelper, val);
 }
 
 static void handleHelperSetTwoFloatElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, double, double), double tDefault1, double tDefault2) {
 	double val1, val2;
-	getTwoFloatValuesWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
 	tFunc(tHelper, val1, val2);
 }
 
 static void handleHelperSetTwoFloatElementsWithCoordinateP(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, double, double, int), double tDefault1, double tDefault2) {
 	double val1, val2;
-	getTwoFloatValuesWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
 	tFunc(tHelper, val1, val2, getActiveStateMachineCoordinateP());
 }
 
@@ -2842,49 +2698,49 @@ static void handlePlayerSetTwoFloatElementsWithCoordinateP(DreamMugenAssignment*
 
 static void handleIDSetOneIntegerElement(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(int, int), int tDefault) {
 	int val;
-	getSingleIntegerValueOrDefault(tAssignment, tPlayer, &val, tDefault);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(tAssignment, tPlayer, &val, tDefault);
 	tFunc(tID, val);
 }
 
 static void handleIDSetTwoIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(int, int, int), int tDefault1, int tDefault2) {
 	int val1, val2;
-	getTwoIntegerValuesWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
 	tFunc(tID, val1, val2);
 }
 
 static void handleIDSetThreeIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(int, int, int, int), int tDefault1, int tDefault2, int tDefault3) {
 	int vals[3];
-	getThreeIntegerValuesWithDefaultValues(tAssignment, tPlayer, &vals[0], &vals[1], &vals[2], tDefault1, tDefault2, tDefault3);
+	evaluateDreamAssignmentAndReturnAsThreeIntegersWithDefaultValues(tAssignment, tPlayer, &vals[0], &vals[1], &vals[2], tDefault1, tDefault2, tDefault3);
 	tFunc(tID, vals[0], vals[1], vals[2]);
 }
 
 static void handleIDSetTwoFloatElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(int, double, double), double tDefault1, double tDefault2) {
 	double val1, val2;
-	getTwoFloatValuesWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
 	tFunc(tID, val1, val2);
 }
 
 static void handlePlayerIDSetOneIntegerElement(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(DreamPlayer*, int, int), int tDefault) {
 	int val;
-	getSingleIntegerValueOrDefault(tAssignment, tPlayer, &val, tDefault);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(tAssignment, tPlayer, &val, tDefault);
 	tFunc(tPlayer, tID, val);
 }
 
 static void handlePlayerIDSetTwoIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(DreamPlayer*, int, int, int), int tDefault1, int tDefault2) {
 	int val1, val2;
-	getTwoIntegerValuesWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
 	tFunc(tPlayer, tID, val1, val2);
 }
 
 static void handlePlayerIDSetThreeIntegerElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(DreamPlayer*, int, int, int, int), int tDefault1, int tDefault2, int tDefault3) {
 	int vals[3];
-	getThreeIntegerValuesWithDefaultValues(tAssignment, tPlayer, &vals[0], &vals[1], &vals[2], tDefault1, tDefault2, tDefault3);
+	evaluateDreamAssignmentAndReturnAsThreeIntegersWithDefaultValues(tAssignment, tPlayer, &vals[0], &vals[1], &vals[2], tDefault1, tDefault2, tDefault3);
 	tFunc(tPlayer, tID, vals[0], vals[1], vals[2]);
 }
 
 static void handlePlayerIDSetTwoFloatElements(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tID, void(tFunc)(DreamPlayer*, int, double, double), double tDefault1, double tDefault2) {
 	double val1, val2;
-	getTwoFloatValuesWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(tAssignment, tPlayer, &val1, &val2, tDefault1, tDefault2);
 	tFunc(tPlayer, tID, val1, val2);
 }
 
@@ -3012,7 +2868,7 @@ static int handleTargetStateChange(DreamMugenStateController* tController, Dream
 	TargetChangeStateController* e = (TargetChangeStateController*)tController->mData;
 
 	int id;
-	getSingleIntegerValueOrDefault(&e->mID, tPlayer, &id, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mID, tPlayer, &id, -1);
 
 	if (e->mIsChangingControl) {
 		int control = evaluateDreamAssignmentAndReturnAsInteger(&e->mControl, tPlayer);
@@ -3070,7 +2926,7 @@ static void handleSoundEffectValue(DreamMugenAssignment** tAssignment, DreamPlay
 
 static double handlePanningValue(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int tIsAbspan) {
 	int pan;
-	getSingleIntegerValueOrDefault(tAssignment, tPlayer, &pan, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(tAssignment, tPlayer, &pan, 0);
 	if (!getSoundAreStereoEffectsActive()) return 0.0;
 
 	double pos;
@@ -3091,9 +2947,9 @@ static int handlePlaySound(DreamMugenStateController* tController, DreamPlayer* 
 
 	int channel, isLowPriority, loop;
 	double frequencyMultiplier;
-	getSingleIntegerValueOrDefault(&e->mChannel, tPlayer, &channel, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mChannel, tPlayer, &channel, -1);
 	channel = parsePlayerSoundEffectChannel(channel, tPlayer);
-	getSingleIntegerValueOrDefault(&e->mLowPriority, tPlayer, &isLowPriority, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mLowPriority, tPlayer, &isLowPriority, 0);
 
 	if (channel != -1 && isSoundEffectPlayingOnChannel(channel) && isLowPriority) {
 		return 0;
@@ -3102,17 +2958,17 @@ static int handlePlaySound(DreamMugenStateController* tController, DreamPlayer* 
 	auto prismVolume = getPlayerMidiVolumeForPrism(tPlayer);
 	if (e->mIsVolumeScale) {
 		double volumeScale;
-		getSingleFloatValueOrDefault(&e->mVolume, tPlayer, &volumeScale, 100.0);
+		evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mVolume, tPlayer, &volumeScale, 100.0);
 		prismVolume *=  (volumeScale / 100.0);
 	}
 	else {
 		int volume;
-		getSingleIntegerValueOrDefault(&e->mVolume, tPlayer, &volume, 0);
+		evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mVolume, tPlayer, &volume, 0);
 		prismVolume *= ((volume + 100) / double(100));
 	}
 
-	getSingleFloatValueOrDefault(&e->mFrequencyMultiplier, tPlayer, &frequencyMultiplier, 1.0);
-	getSingleIntegerValueOrDefault(&e->mLoop, tPlayer, &loop, 0);
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mFrequencyMultiplier, tPlayer, &frequencyMultiplier, 1.0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mLoop, tPlayer, &loop, 0);
 	const auto panning = handlePanningValue(&e->mPan, tPlayer, e->mIsAbspan);
 
 	handleSoundEffectValue(&e->mValue, tPlayer, prismVolume, channel, frequencyMultiplier, loop, panning);
@@ -3259,14 +3115,14 @@ static void handleHitDefinitionPriority(DreamMugenAssignment** tAssignment, Drea
 static void handleHitDefinitionDamage(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper) {
 	int damage, guardDamage;
 
-	getTwoIntegerValuesWithDefaultValues(tAssignment, tPlayer, &damage, &guardDamage, 0, 0);
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(tAssignment, tPlayer, &damage, &guardDamage, 0, 0);
 	setHitDataDamage(tHelper, damage, guardDamage);
 }
 
 static void handleHitDefinitionSinglePauseTime(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, int, int), int tDefault1, int tDefault2) {
 	int p1PauseTime, p2PauseTime;
 
-	getTwoIntegerValuesWithDefaultValues(tAssignment, tPlayer, &p1PauseTime, &p2PauseTime, tDefault1, tDefault2);
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(tAssignment, tPlayer, &p1PauseTime, &p2PauseTime, tDefault1, tDefault2);
 	tFunc(tHelper, p1PauseTime, p2PauseTime);
 }
 
@@ -3290,12 +3146,20 @@ static void handleHitDefinitionSparkNumberSingle(DreamMugenAssignment** tAssignm
 			isInPlayerFile = tDefaultIsInFile;
 			number = tDefaultNumber;
 		}
-		else if (!strcmp("isinotherfilef", firstW) || !strcmp("isinotherfiles", firstW)) {
+		else if (!strcmp("isinotherfiles", firstW)) {
 			if (items != 2) {
 				logWarningFormat("Unable to parse hit definition spark number: %s", flag.data());
 				which = 0;
 			}
 			isInPlayerFile = 1;
+			number = which;
+		}
+		else if (!strcmp("isinotherfilef", firstW)) {
+			if (items != 2) {
+				logWarningFormat("Unable to parse hit definition spark number: %s", flag.data());
+				which = 0;
+			}
+			isInPlayerFile = 0;
 			number = which;
 		}
 		else {
@@ -3313,7 +3177,7 @@ static void handleHitDefinitionSparkNumberSingle(DreamMugenAssignment** tAssignm
 static void handleHitDefinitionSparkXY(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, int, int)) {
 	int x, y;
 
-	getTwoIntegerValuesWithDefaultValues(tAssignment, tPlayer, &x, &y, 0, 0);
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(tAssignment, tPlayer, &x, &y, 0, 0);
 	tFunc(tHelper, x, y);
 }
 
@@ -3566,16 +3430,15 @@ static int handleControlSetting(DreamMugenStateController* tController, DreamPla
 static int handleWidth(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	WidthController* e = (WidthController*)tController->mData;
 
-	Vector3DI stage;
-	Vector3DI player;
+	Vector2DI stage;
+	Vector2DI player;
 
 	if (e->mHasValue) {
-		stage = player = evaluateDreamAssignmentAndReturnAsVector3DI(&e->mValue, tPlayer);	
+		stage = player = evaluateDreamAssignmentAndReturnAsVector2DI(&e->mValue, tPlayer);	
 	}
 	else {
-		stage = player = makeVector3DI(0, 0, 0);
-		getTwoIntegerValuesWithDefaultValues(&e->mEdge, tPlayer, &stage.x, &stage.y, 0, 0);
-		getTwoIntegerValuesWithDefaultValues(&e->mPlayer, tPlayer, &player.x, &player.y, 0, 0);
+		evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(&e->mEdge, tPlayer, &stage.x, &stage.y, 0, 0);
+		evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(&e->mPlayer, tPlayer, &player.x, &player.y, 0, 0);
 	}
 
 	setPlayerWidthOneFrame(tPlayer, stage, player, getActiveStateMachineCoordinateP());
@@ -3587,9 +3450,9 @@ static int handleZoom(DreamMugenStateController* tController, DreamPlayer* tPlay
 	ZoomController* e = (ZoomController*)tController->mData;
 
 	double scale;
-	Position pos = makePosition(0.f, 0.f, 0.f);
-	getSingleFloatValueOrDefault(&e->mScale, tPlayer, &scale, 1.0);
-	getTwoFloatValuesWithDefaultValues(&e->mPos, tPlayer, &pos.x, &pos.y, 0, 0);
+	Position2D pos;
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mScale, tPlayer, &scale, 1.0);
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(&e->mPos, tPlayer, &pos.x, &pos.y, 0, 0);
 
 	setDreamStageZoomOneFrame(scale, pos);
 
@@ -3690,13 +3553,13 @@ static int handleSpecialAssert(DreamMugenStateController* tController, DreamPlay
 static int handleMakeDust(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	MakeDustController* e = (MakeDustController*)tController->mData;
 
-	Vector3D pos = evaluateDreamAssignmentAndReturnAsVector3D(&e->mPositionOffset, tPlayer);
+	Vector2D pos = evaluateDreamAssignmentAndReturnAsVector2D(&e->mPositionOffset, tPlayer);
 	int spacing = evaluateDreamAssignmentAndReturnAsInteger(&e->mSpacing, tPlayer);
 
 	addPlayerDust(tPlayer, 0, pos, spacing, getActiveStateMachineCoordinateP());
 
 	if (e->mHasSecondDustCloud) {
-		pos = evaluateDreamAssignmentAndReturnAsVector3D(&e->mPositionOffset2, tPlayer);
+		pos = evaluateDreamAssignmentAndReturnAsVector2D(&e->mPositionOffset2, tPlayer);
 		addPlayerDust(tPlayer, 1, pos, spacing, getActiveStateMachineCoordinateP());
 	}
 
@@ -4159,7 +4022,7 @@ static int handleExplod(DreamMugenStateController* tController, DreamPlayer* tPl
 static int handleModifyExplod(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	ModifyExplodController* e = (ModifyExplodController*)tController->mData;
 	int id;
-	getSingleIntegerValueOrDefault(&e->mID, tPlayer, &id, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mID, tPlayer, &id, -1);
 	
 	if (e->mHasAnim) {
 		handleExplodAnimationUpdate(&e->mAnim, tPlayer, id);
@@ -4365,9 +4228,14 @@ static void handleSuperPauseAnimation(DreamMugenAssignment** tAssignment, DreamP
 			isInPlayerFile = 0;
 			id = 30;
 		}
-		else if (!strcmp("isinotherfilef", firstW) || !strcmp("isinotherfiles", firstW)) {
+		else if (!strcmp("isinotherfiles", firstW)) {
 			assert(items == 2);
 			isInPlayerFile = 1;
+			id = which;
+		}
+		else if (!strcmp("isinotherfilef", firstW)) {
+			assert(items == 2);
+			isInPlayerFile = 0;
 			id = which;
 		}
 		else {
@@ -4472,7 +4340,7 @@ static int handlePauseController(DreamMugenStateController* tController, DreamPl
 
 static void handleHelperFacing(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper) {
 	int facing;
-	getSingleIntegerValueOrDefault(tAssignment, tPlayer, &facing, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(tAssignment, tPlayer, &facing, 1);
 
 	if (facing == 1) {
 		setPlayerIsFacingRight(tHelper, getPlayerIsFacingRight(tPlayer));
@@ -4483,44 +4351,43 @@ static void handleHelperFacing(DreamMugenAssignment** tAssignment, DreamPlayer* 
 
 }
 
-static Position getFinalHelperPositionFromPositionType(DreamExplodPositionType tPositionType, Position mOffset, DreamPlayer* tPlayer) {
-	Position p1 = getPlayerPosition(tPlayer, getActiveStateMachineCoordinateP());
-
+static Position2D getFinalHelperPositionFromPositionType(DreamExplodPositionType tPositionType, Position2D mOffset, DreamPlayer* tPlayer) {
+	const auto p1 = getPlayerPosition(tPlayer, getActiveStateMachineCoordinateP());
 
 	if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P1) {
 		DreamPlayer* target = tPlayer;
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p1, mOffset);
+		return p1 + mOffset;
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P2) {
 		DreamPlayer* target = getPlayerOtherPlayer(tPlayer);
-		Position p2 = getPlayerPosition(target, getActiveStateMachineCoordinateP());
+		const auto p2 = getPlayerPosition(target, getActiveStateMachineCoordinateP());
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p2, mOffset);
+		return p2 + mOffset;
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_FRONT) {
 		DreamPlayer* target = tPlayer;
-		Position p = makePosition(getPlayerScreenEdgeInFrontX(target, getActiveStateMachineCoordinateP()), p1.y, 0);
+		const auto p = Vector2D(getPlayerScreenEdgeInFrontX(target, getActiveStateMachineCoordinateP()), p1.y);
 		int isReversed = getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p, mOffset);
+		return p + mOffset;
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_BACK) {
 		DreamPlayer* target = tPlayer;
-		Position p = makePosition(getPlayerScreenEdgeInBackX(target, getActiveStateMachineCoordinateP()), p1.y, 0);
+		const auto p = Vector2D(getPlayerScreenEdgeInBackX(target, getActiveStateMachineCoordinateP()), p1.y);
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p, mOffset);
+		return p + mOffset;
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT) {
 		if (getPlayerIsFacingRight(tPlayer)) {
-			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
-			return vecAdd(p, mOffset);
+			const auto p = Vector2D(getDreamStageLeftOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y);
+			return p + mOffset;
 		}
 		else {
-			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
+			auto p = Vector2D(getDreamStageRightOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y);
 			p.x -= mOffset.x;
 			p.y += mOffset.y;
 			return p;
@@ -4528,33 +4395,32 @@ static Position getFinalHelperPositionFromPositionType(DreamExplodPositionType t
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT) {
 		if (getPlayerIsFacingRight(tPlayer)) {
-			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
-			return vecAdd(p, mOffset);
+			const auto p = Vector2D(getDreamStageRightOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y);
+			return p + mOffset;
 		}
 		else {
-			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
+			auto p = Vector2D(getDreamStageLeftOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y);
 			p.x -= mOffset.x;
 			p.y += mOffset.y;
 			return p;
 		}
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_NONE) {
-		Position p = makePosition(getDreamGameWidth(getActiveStateMachineCoordinateP()) / 2, p1.y, 0);
-		return vecAdd(p, mOffset);
+		const auto p = Vector2D(getDreamGameWidth(getActiveStateMachineCoordinateP()) / 2, p1.y);
+		return p + mOffset;
 	}
 	else {
 		logWarningFormat("Unrecognized position type %d. Defaulting to EXPLOD_POSITION_TYPE_RELATIVE_TO_P1.", tPositionType);
 		DreamPlayer* target = tPlayer;
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p1, mOffset);
+		return p1 + mOffset;
 	}
-
 }
 
 static void handleHelperScale(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, DreamPlayer* tHelper, void(tFunc)(DreamPlayer*, double), double tParentScale) {
 	double val;
-	getSingleFloatValueOrDefault(tAssignment, tPlayer, &val, 1.0);
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(tAssignment, tPlayer, &val, 1.0);
 	tFunc(tHelper, val*tParentScale);
 }
 
@@ -4564,13 +4430,12 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 
 	handleHelperSetOneIntegerElement(&e->mID, tPlayer, helper, setPlayerID, 0);
 
-	Vector3DI mOffset = makeVector3DI(0, 0, 0);
-	getTwoIntegerValuesWithDefaultValues(&e->mPosition, tPlayer, &mOffset.x, &mOffset.y, 0, 0);
+	Vector2DI offset;
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(&e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
 	DreamExplodPositionType positionType = getPositionTypeFromAssignment(&e->mPositionType, tPlayer);
-	Position position = getFinalHelperPositionFromPositionType(positionType, makePosition(mOffset.x, mOffset.y, mOffset.z), tPlayer);
+	const auto position = getFinalHelperPositionFromPositionType(positionType, offset.f(), tPlayer);
 
 	handleHelperFacing(&e->mFacing, tPlayer, helper);
-
 
 	handleHelperSetOneIntegerElement(&e->mCanControl, tPlayer, helper, setPlayerHelperControl, 0);
 	handleHelperSetOneIntegerElement(&e->mHasOwnPalette, tPlayer, helper, setPlayerHasOwnPalette, 0);
@@ -4601,8 +4466,6 @@ static int handleHelper(DreamMugenStateController* tController, DreamPlayer* tPl
 	setPlayerPosition(helper, position, getActiveStateMachineCoordinateP());
 	handleHelperSetOneIntegerElement(&e->mStateNumber, tPlayer, helper, changePlayerState, 0);
 
-
-
 	return 0;
 }
 
@@ -4615,9 +4478,9 @@ static int handleAddingLife(DreamMugenStateController* tController, DreamPlayer*
 	LifeAddController* e = (LifeAddController*)tController->mData;
 
 	int val, canKill, isAbsolute;
-	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &val, 0);
-	getSingleIntegerValueOrDefault(&e->mCanKill, tPlayer, &canKill, 1);
-	getSingleIntegerValueOrDefault(&e->mIsAbsolute, tPlayer, &isAbsolute, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mValue, tPlayer, &val, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mCanKill, tPlayer, &canKill, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mIsAbsolute, tPlayer, &isAbsolute, 0);
 
 	if (!isAbsolute) {
 		const auto defenseMultiplier = getInvertedPlayerDefenseMultiplier(tPlayer);
@@ -4638,10 +4501,10 @@ static int handleAddingTargetLife(DreamMugenStateController* tController, DreamP
 	TargetLifeAddController* e = (TargetLifeAddController*)tController->mData;
 
 	int val, canKill, isAbsolute, id;
-	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &val, 0);
-	getSingleIntegerValueOrDefault(&e->mID, tPlayer, &id, -1);
-	getSingleIntegerValueOrDefault(&e->mCanKill, tPlayer, &canKill, 1);
-	getSingleIntegerValueOrDefault(&e->mIsAbsolute, tPlayer, &isAbsolute, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mValue, tPlayer, &val, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mID, tPlayer, &id, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mCanKill, tPlayer, &canKill, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mIsAbsolute, tPlayer, &isAbsolute, 0);
 
 	addPlayerTargetLife(tPlayer, tPlayer, id, val, canKill, isAbsolute);
 
@@ -4652,8 +4515,8 @@ static int handleAddingTargetPower(DreamMugenStateController* tController, Dream
 	TargetPowerAddController* e = (TargetPowerAddController*)tController->mData;
 
 	int val, id;
-	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &val, 0);
-	getSingleIntegerValueOrDefault(&e->mID, tPlayer, &id, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mValue, tPlayer, &val, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mID, tPlayer, &id, -1);
 
 	addPlayerTargetPower(tPlayer, id, val);
 
@@ -4664,7 +4527,7 @@ static int handleTargetVelocityAddController(DreamMugenStateController* tControl
 	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	int id;
-	getSingleIntegerValueOrDefault(&e->mID, tPlayer, &id, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mID, tPlayer, &id, -1);
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
@@ -4683,7 +4546,7 @@ static int handleTargetVelocitySetController(DreamMugenStateController* tControl
 	Target2DPhysicsController* e = (Target2DPhysicsController*)tController->mData;
 
 	int id;
-	getSingleIntegerValueOrDefault(&e->mID, tPlayer, &id, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mID, tPlayer, &id, -1);
 
 	if (e->mIsSettingX) {
 		double x = evaluateDreamAssignmentAndReturnAsFloat(&e->x, tPlayer);
@@ -4702,7 +4565,7 @@ static int handleAngleDrawController(DreamMugenStateController* tController, Dre
 	AngleDrawController* e = (AngleDrawController*)tController->mData;
 
 	if (e->mHasScale) {
-		Vector3D scale = evaluateDreamAssignmentAndReturnAsVector3D(&e->mScale, tPlayer);
+		const auto scale = evaluateDreamAssignmentAndReturnAsVector2D(&e->mScale, tPlayer);
 		setPlayerTempScaleActive(tPlayer, scale);
 	}
 
@@ -4761,10 +4624,10 @@ static int handleBindToRootController(DreamMugenStateController* tController, Dr
 	BindController* e = (BindController*)tController->mData;
 
 	int time, facing;
-	Vector3D offset = makePosition(0, 0, 0);
-	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &time, 1);
-	getSingleIntegerValueOrDefault(&e->mFacing, tPlayer, &facing, 0);
-	getTwoFloatValuesWithDefaultValues(&e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
+	Vector2D offset;
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mTime, tPlayer, &time, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mFacing, tPlayer, &facing, 0);
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(&e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
 
 	bindPlayerToRoot(tPlayer, time, facing, offset, getActiveStateMachineCoordinateP());
 
@@ -4775,10 +4638,10 @@ static int handleBindToParentController(DreamMugenStateController* tController, 
 	BindController* e = (BindController*)tController->mData;
 
 	int time, facing;
-	Vector3D offset = makePosition(0, 0, 0);
-	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &time, 1);
-	getSingleIntegerValueOrDefault(&e->mFacing, tPlayer, &facing, 0);
-	getTwoFloatValuesWithDefaultValues(&e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
+	Vector2D offset;
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mTime, tPlayer, &time, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mFacing, tPlayer, &facing, 0);
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(&e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
 
 	bindPlayerToParent(tPlayer, time, facing, offset, getActiveStateMachineCoordinateP());
 
@@ -4819,10 +4682,10 @@ static int handleBindToTargetController(DreamMugenStateController* tController, 
 	BindController* e = (BindController*)tController->mData;
 
 	int time, id;
-	Vector3D offset = makePosition(0, 0, 0);
-	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &time, 1);
-	getSingleIntegerValueOrDefault(&e->mID, tPlayer, &id, -1);
-	getTwoFloatValuesWithDefaultValues(&e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
+	Vector2D offset;
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mTime, tPlayer, &time, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mID, tPlayer, &id, -1);
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(&e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
 	DreamPlayerBindPositionType bindType = handleBindToTargetPositionType(&e->mPosition, tPlayer);
 
 	bindPlayerToTarget(tPlayer, time, offset, bindType, id, getActiveStateMachineCoordinateP());
@@ -4850,9 +4713,9 @@ static int handleSettingVariableRange(DreamMugenStateController* tController, Dr
 
 	if (e->mType == VAR_SET_TYPE_INTEGER) {
 		int value, first, last;
-		getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &value, 0);
-		getSingleIntegerValueOrDefault(&e->mFirst, tPlayer, &first, 0);
-		getSingleIntegerValueOrDefault(&e->mLast, tPlayer, &last, 59);
+		evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mValue, tPlayer, &value, 0);
+		evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mFirst, tPlayer, &first, 0);
+		evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mLast, tPlayer, &last, 59);
 		int i;
 		for (i = first; i <= last; i++) {
 			setPlayerVariable(tPlayer, i, value);
@@ -4861,9 +4724,9 @@ static int handleSettingVariableRange(DreamMugenStateController* tController, Dr
 	else if (e->mType == VAR_SET_TYPE_FLOAT) {
 		double value;
 		int first, last;
-		getSingleFloatValueOrDefault(&e->mValue, tPlayer, &value, 0);
-		getSingleIntegerValueOrDefault(&e->mFirst, tPlayer, &first, 0);
-		getSingleIntegerValueOrDefault(&e->mLast, tPlayer, &last, 39);
+		evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mValue, tPlayer, &value, 0);
+		evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mFirst, tPlayer, &first, 0);
+		evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mLast, tPlayer, &last, 39);
 		int i;
 		for (i = first; i <= last; i++) {
 			setPlayerFloatVariable(tPlayer, i, value);
@@ -4882,8 +4745,8 @@ static int handleScreenBound(DreamMugenStateController* tController, DreamPlayer
 	int val;
 	int moveCameraX, moveCameraY;
 
-	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &val, 0);
-	getTwoIntegerValuesWithDefaultValues(&e->mMoveCameraFlags, tPlayer, &moveCameraX, &moveCameraY, 0, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mValue, tPlayer, &val, 0);
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(&e->mMoveCameraFlags, tPlayer, &moveCameraX, &moveCameraY, 0, 0);
 
 	setPlayerScreenBoundForTick(tPlayer, val, moveCameraX, moveCameraY);
 
@@ -4916,10 +4779,10 @@ static int handleTargetBindController(DreamMugenStateController* tController, Dr
 	BindController* e = (BindController*)tController->mData;
 
 	int time, id;
-	Vector3D offset = makePosition(0, 0, 0);
-	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &time, 1);
-	getSingleIntegerValueOrDefault(&e->mID, tPlayer, &id, -1);
-	getTwoFloatValuesWithDefaultValues(&e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
+	Vector2D offset;
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mTime, tPlayer, &time, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mID, tPlayer, &id, -1);
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(&e->mPosition, tPlayer, &offset.x, &offset.y, 0, 0);
 
 	bindPlayerTargetToPlayer(tPlayer, time, offset, id, getActiveStateMachineCoordinateP());
 
@@ -4931,7 +4794,7 @@ static int handleSetTargetFacing(DreamMugenStateController* tController, DreamPl
 
 	int value = evaluateDreamAssignmentAndReturnAsInteger(&e->mValue, tPlayer);
 	int id;
-	getSingleIntegerValueOrDefault(&e->mID, tPlayer, &id, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mID, tPlayer, &id, -1);
 
 	setPlayerTargetFacing(tPlayer, id, value);
 
@@ -4965,7 +4828,7 @@ static int handleReversalDefinition(DreamMugenStateController* tController, Drea
 	handleHitDefinitionSingleSound(&e->mHitSound, tPlayer, tPlayer, setReversalDefHitSound, 5, 0);
 	if (e->mHasP1StateNo) {
 		int p1stateNo;
-		getSingleIntegerValueOrDefault(&e->mP1StateNo, tPlayer, &p1stateNo, 0);
+		evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mP1StateNo, tPlayer, &p1stateNo, 0);
 		setReversalDefP1StateNo(tPlayer, 1, p1stateNo);
 	}
 	else {
@@ -4973,7 +4836,7 @@ static int handleReversalDefinition(DreamMugenStateController* tController, Drea
 	}
 	if (e->mHasP2StateNo) {
 		int p2stateNo;
-		getSingleIntegerValueOrDefault(&e->mP2StateNo, tPlayer, &p2stateNo, 0);
+		evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mP2StateNo, tPlayer, &p2stateNo, 0);
 		setReversalDefP2StateNo(tPlayer, 1, p2stateNo);
 	}
 	else {
@@ -4983,44 +4846,43 @@ static int handleReversalDefinition(DreamMugenStateController* tController, Drea
 	return 0;
 }
 
-static Position getFinalProjectilePositionFromPositionType(DreamExplodPositionType tPositionType, Position mOffset, DreamPlayer* tPlayer) {
-	Position p1 = getPlayerPosition(tPlayer, getActiveStateMachineCoordinateP());
-
+static Position2D getFinalProjectilePositionFromPositionType(DreamExplodPositionType tPositionType, Position2D mOffset, DreamPlayer* tPlayer) {
+	const auto p1 = getPlayerPosition(tPlayer, getActiveStateMachineCoordinateP());
 
 	if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P1) {
 		DreamPlayer* target = tPlayer;
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p1, mOffset);
+		return p1 + mOffset;
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P2) {
 		DreamPlayer* target = getPlayerOtherPlayer(tPlayer);
-		Position p2 = getPlayerPosition(target, getActiveStateMachineCoordinateP());
+		const auto p2 = getPlayerPosition(target, getActiveStateMachineCoordinateP());
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p2, mOffset);
+		return p2 + mOffset;
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_FRONT) {
 		DreamPlayer* target = tPlayer;
-		Position p = makePosition(getPlayerScreenEdgeInFrontX(target, getActiveStateMachineCoordinateP()), p1.y, 0);
+		const auto p = Vector2D(getPlayerScreenEdgeInFrontX(target, getActiveStateMachineCoordinateP()), p1.y);
 		int isReversed = getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p, mOffset);
+		return p + mOffset;
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_BACK) {
 		DreamPlayer* target = tPlayer;
-		Position p = makePosition(getPlayerScreenEdgeInBackX(target, getActiveStateMachineCoordinateP()), p1.y, 0);
+		const auto p = Vector2D(getPlayerScreenEdgeInBackX(target, getActiveStateMachineCoordinateP()), p1.y);
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p, mOffset);
+		return p + mOffset;
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT) {
 		if (getPlayerIsFacingRight(tPlayer)) {
-			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
-			return vecAdd(p, mOffset);
+			const auto p = Vector2D(getDreamStageLeftOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y);
+			return p + mOffset;
 		}
 		else {
-			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
+			auto p = Vector2D(getDreamStageRightOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y);
 			p.x -= mOffset.x;
 			p.y += mOffset.y;
 			return p;
@@ -5028,26 +4890,26 @@ static Position getFinalProjectilePositionFromPositionType(DreamExplodPositionTy
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT) {
 		if (getPlayerIsFacingRight(tPlayer)) {
-			Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
-			return vecAdd(p, mOffset);
+			const auto p = Vector2D(getDreamStageRightOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y);
+			return p + mOffset;
 		}
 		else {
-			Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y, 0);
+			auto p = Vector2D(getDreamStageLeftOfScreenBasedOnPlayer(getActiveStateMachineCoordinateP()), p1.y);
 			p.x -= mOffset.x;
 			p.y += mOffset.y;
 			return p;
 		}
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_NONE) {
-		Position p = makePosition(getDreamGameWidth(getActiveStateMachineCoordinateP()) / 2, p1.y, 0);
-		return vecAdd(p, mOffset);
+		const auto p = Vector2D(getDreamGameWidth(getActiveStateMachineCoordinateP()) / 2, p1.y);
+		return p + mOffset;
 	}
 	else {
 		logWarningFormat("Unrecognized position type %d. Defaulting to EXPLOD_POSITION_TYPE_RELATIVE_TO_P1.", tPositionType);
 		DreamPlayer* target = tPlayer;
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p1, mOffset);
+		return p1 + mOffset;
 	}
 
 }
@@ -5061,22 +4923,22 @@ static int handleAfterImageGeneral(AfterImageController* e, DreamPlayer* tPlayer
 	int palColor, palInvertAll;
 	std::string blendTypeString;
 	BlendType blendType;
-	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &duration, tDefaultDuration);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mTime, tPlayer, &duration, tDefaultDuration);
 	if (!duration) return 0;
-	getSingleIntegerValueOrDefault(&e->mLength, tPlayer, &historyBufferLength, tDefaultBufferLength);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mLength, tPlayer, &historyBufferLength, tDefaultBufferLength);
 	if (!historyBufferLength) return 0;
 	historyBufferLength = std::min(60, historyBufferLength);
-	getSingleIntegerValueOrDefault(&e->mPalColor, tPlayer, &palColor, 256);
-	getSingleIntegerValueOrDefault(&e->mPalInvertAll, tPlayer, &palInvertAll, 0);
-	getThreeIntegerValuesWithDefaultValues(&e->mPalBright, tPlayer, &palBright.x, &palBright.y, &palBright.z, 30, 30, 30);
-	getThreeIntegerValuesWithDefaultValues(&e->mPalContrast, tPlayer, &palContrast.x, &palContrast.y, &palContrast.z, 120, 120, 220);
-	getThreeIntegerValuesWithDefaultValues(&e->mPalPostBright, tPlayer, &palPostBright.x, &palPostBright.y, &palPostBright.z, 0, 0, 0);
-	const auto startColor = (((makeVector3DI(palColor, palColor, palColor) + palBright) * palContrast) / 256.0 + palPostBright) / 255.0;
-	getThreeIntegerValuesWithDefaultValues(&e->mPalAdd, tPlayer, &palAdd.x, &palAdd.y, &palAdd.z, 10, 10, 25);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mPalColor, tPlayer, &palColor, 256);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mPalInvertAll, tPlayer, &palInvertAll, 0);
+	evaluateDreamAssignmentAndReturnAsThreeIntegersWithDefaultValues(&e->mPalBright, tPlayer, &palBright.x, &palBright.y, &palBright.z, 30, 30, 30);
+	evaluateDreamAssignmentAndReturnAsThreeIntegersWithDefaultValues(&e->mPalContrast, tPlayer, &palContrast.x, &palContrast.y, &palContrast.z, 120, 120, 220);
+	evaluateDreamAssignmentAndReturnAsThreeIntegersWithDefaultValues(&e->mPalPostBright, tPlayer, &palPostBright.x, &palPostBright.y, &palPostBright.z, 0, 0, 0);
+	const auto startColor = (((Vector3DI(palColor, palColor, palColor) + palBright) * palContrast) / 256.0 + palPostBright) / 255.0;
+	evaluateDreamAssignmentAndReturnAsThreeIntegersWithDefaultValues(&e->mPalAdd, tPlayer, &palAdd.x, &palAdd.y, &palAdd.z, 10, 10, 25);
 	const auto colorAdd = palAdd / 255.0;
-	getThreeFloatValuesWithDefaultValues(&e->mPalMul, tPlayer, &colorMul.x, &colorMul.y, &colorMul.z, 0.65, 0.65, 0.75);
-	getSingleIntegerValueOrDefault(&e->mTimeGap, tPlayer, &timeGap, 1);
-	getSingleIntegerValueOrDefault(&e->mFrameGap, tPlayer, &frameGap, 4);
+	evaluateDreamAssignmentAndReturnAsThreeFloatsWithDefaultValues(&e->mPalMul, tPlayer, &colorMul.x, &colorMul.y, &colorMul.z, 0.65, 0.65, 0.75);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mTimeGap, tPlayer, &timeGap, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mFrameGap, tPlayer, &frameGap, 4);
 	evaluateDreamAssignmentAndReturnAsString(blendTypeString, &e->mTrans, tPlayer);
 
 	if (blendTypeString == "none") {
@@ -5124,12 +4986,11 @@ static int handleProjectile(DreamMugenStateController* tController, DreamPlayer*
 	handleHelperSetOneIntegerElementWithCoordinateP(&e->mStageBound, tPlayer, p, setProjectileStageBound, (int)transformDreamCoordinates(40, 320, getActiveStateMachineCoordinateP()));
 	handleHelperSetTwoIntegerElementsWithCoordinateP(&e->mHeightBoundValues, tPlayer, p, setProjectileHeightBoundValues, (int)transformDreamCoordinates(-240, 320, getActiveStateMachineCoordinateP()), (int)transformDreamCoordinates(1, 320, getActiveStateMachineCoordinateP()));
 
-	Position offset;
-	getTwoFloatValuesWithDefaultValues(&e->mOffset, p, &offset.x, &offset.y, 0, 0);
-	offset.z = 0;
+	Position2D offset;
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(&e->mOffset, p, &offset.x, &offset.y, 0, 0);
 	int positionType;
-	getSingleIntegerValueOrDefault(&e->mPositionType, p, &positionType, EXPLOD_POSITION_TYPE_RELATIVE_TO_P1);
-	Position pos = getFinalProjectilePositionFromPositionType((DreamExplodPositionType)positionType, offset, tPlayer);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mPositionType, p, &positionType, EXPLOD_POSITION_TYPE_RELATIVE_TO_P1);
+	const auto pos = getFinalProjectilePositionFromPositionType((DreamExplodPositionType)positionType, offset, tPlayer);
 	setProjectilePosition(p, pos, getActiveStateMachineCoordinateP());
 
 	handleHelperSetOneIntegerElement(&e->mShadow, tPlayer, p, setProjectileShadow, 0);
@@ -5166,7 +5027,7 @@ static int handleAfterImage(DreamMugenStateController* tController, DreamPlayer*
 static int handleAfterImageTime(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	AfterImageTimeController* e = (AfterImageTimeController*)tController->mData;
 	int duration;
-	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &duration, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mTime, tPlayer, &duration, 1);
 	setAfterImageDuration(tPlayer, duration);
 	return 0;
 }
@@ -5183,12 +5044,12 @@ static int handleAppendToClipboardController(DreamMugenStateController* tControl
 }
 
 static void parsePalFXControllerGeneral(PalFXController* e, DreamPlayer* tPlayer, int& tTime, Vector3DI& tAddition, Vector3DI& tMultiplierInteger, Vector3DI& tSineAmplitude, int& tSinePeriod, int& tInvertAll, int& tColorInteger) {
-	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &tTime, 1);
-	getThreeIntegerValuesWithDefaultValues(&e->mAdd, tPlayer, &tAddition.x, &tAddition.y, &tAddition.z, 0, 0, 0);
-	getThreeIntegerValuesWithDefaultValues(&e->mMul, tPlayer, &tMultiplierInteger.x, &tMultiplierInteger.y, &tMultiplierInteger.z, 256, 256, 256);
-	getFourIntegerValuesWithDefaultValues(&e->mSinAdd, tPlayer, &tSineAmplitude.x, &tSineAmplitude.y, &tSineAmplitude.z, &tSinePeriod, 0, 0, 0, 1);
-	getSingleIntegerValueOrDefault(&e->mInvertAll, tPlayer, &tInvertAll, 0);
-	getSingleIntegerValueOrDefault(&e->mColor, tPlayer, &tColorInteger, 256);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mTime, tPlayer, &tTime, 1);
+	evaluateDreamAssignmentAndReturnAsThreeIntegersWithDefaultValues(&e->mAdd, tPlayer, &tAddition.x, &tAddition.y, &tAddition.z, 0, 0, 0);
+	evaluateDreamAssignmentAndReturnAsThreeIntegersWithDefaultValues(&e->mMul, tPlayer, &tMultiplierInteger.x, &tMultiplierInteger.y, &tMultiplierInteger.z, 256, 256, 256);
+	evaluateDreamAssignmentAndReturnAsFourIntegersWithDefaultValues(&e->mSinAdd, tPlayer, &tSineAmplitude.x, &tSineAmplitude.y, &tSineAmplitude.z, &tSinePeriod, 0, 0, 0, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mInvertAll, tPlayer, &tInvertAll, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mColor, tPlayer, &tColorInteger, 256);
 }
 
 static int handleAllPalFXController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
@@ -5242,8 +5103,8 @@ static int handleEnvironmentColorController(DreamMugenStateController* tControll
 	int time;
 	int isUnderCharacters;
 	Vector3DI colors = evaluateDreamAssignmentAndReturnAsVector3DI(&e->mValue, tPlayer);
-	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &time, 1);
-	getSingleIntegerValueOrDefault(&e->mUnder, tPlayer, &isUnderCharacters, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mTime, tPlayer, &time, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mUnder, tPlayer, &isUnderCharacters, 1);
 	
 	setEnvironmentColor(colors, time, isUnderCharacters);
 	return 0;
@@ -5254,10 +5115,10 @@ static int handleEnvironmentShakeController(DreamMugenStateController* tControll
 
 	int time, ampl;
 	double freq, phase;
-	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &time, 1);
-	getSingleFloatValueOrDefault(&e->mFrequency, tPlayer, &freq, 60);
-	getSingleIntegerValueOrDefault(&e->mAmplitude, tPlayer, &ampl, (int)transformDreamCoordinates(-4.0, 320, getDreamStageCoordinateP()));
-	getSingleFloatValueOrDefault(&e->mPhaseOffset, tPlayer, &phase, freq >= 90.0 ? 90.0 : 0.0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mTime, tPlayer, &time, 1);
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mFrequency, tPlayer, &freq, 60);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mAmplitude, tPlayer, &ampl, (int)transformDreamCoordinates(-4.0, 320, getDreamStageCoordinateP()));
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mPhaseOffset, tPlayer, &phase, freq >= 90.0 ? 90.0 : 0.0);
 
 	setEnvironmentShake(time, freq, ampl, phase, getActiveStateMachineCoordinateP());
 	return 0;
@@ -5267,8 +5128,8 @@ static int handleExplodBindTimeController(DreamMugenStateController* tController
 	ExplodBindTimeController* e = (ExplodBindTimeController*)tController->mData;
 	
 	int id, time;
-	getSingleIntegerValueOrDefault(&e->mID, tPlayer, &id, -1);
-	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &time, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mID, tPlayer, &id, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mTime, tPlayer, &time, 1);
 
 	updateExplodBindTime(tPlayer, id, time);
 
@@ -5279,13 +5140,13 @@ static int handleForceFeedbackController(DreamMugenStateController* tController,
 	ForceFeedbackController* e = (ForceFeedbackController*)tController->mData;
 
 	int time;
-	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &time, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mTime, tPlayer, &time, 1);
 	int freq1, freq2;
-	getTwoIntegerValuesWithDefaultValues(&e->mFrequency, tPlayer, &freq1, &freq2, 128, 0);
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(&e->mFrequency, tPlayer, &freq1, &freq2, 128, 0);
 	int ampl1, ampl2;
-	getTwoIntegerValuesWithDefaultValues(&e->mAmplitude, tPlayer, &ampl1, &ampl2, 128, 0);
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(&e->mAmplitude, tPlayer, &ampl1, &ampl2, 128, 0);
 	int self;
-	getSingleIntegerValueOrDefault(&e->mSelf, tPlayer, &self, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mSelf, tPlayer, &self, 1);
 
 	int i = self ? tPlayer->mRootID : getPlayerOtherPlayer(tPlayer)->mRootID;
 	addControllerRumbleSingle(i, time, freq1, ampl1 / 255.0);
@@ -5296,26 +5157,23 @@ static int handleForceFeedbackController(DreamMugenStateController* tController,
 static int handleGameMakeAnimController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	GameMakeAnimController* e = (GameMakeAnimController*)tController->mData;
 	int animationNumber;
-	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &animationNumber, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mValue, tPlayer, &animationNumber, 0);
 
 	int isUnderPlayer;
-	getSingleIntegerValueOrDefault(&e->mIsUnderPlayer, tPlayer, &isUnderPlayer, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mIsUnderPlayer, tPlayer, &isUnderPlayer, 0);
 
-	Position pos = makePosition(0, 0, 0);
-	getTwoFloatValuesWithDefaultValues(&e->mPosOffset, tPlayer, &pos.x, &pos.y, 0, 0);
+	Position2D pos;
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(&e->mPosOffset, tPlayer, &pos.x, &pos.y, 0, 0);
 
 	int random;
-	getSingleIntegerValueOrDefault(&e->mRandomOffset, tPlayer, &random, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mRandomOffset, tPlayer, &random, 0);
 
-	pos = vecAdd(pos, makePosition(randfrom(-random / 2.0, random / 2.0), randfrom(-random / 2.0, random / 2.0), 0));
-	pos = vecAdd(pos, getPlayerPosition(tPlayer, getDreamMugenStageHandlerCameraCoordinateP()));
-	pos = vecAdd(pos, getDreamStageCoordinateSystemOffset(getDreamMugenStageHandlerCameraCoordinateP()));
-
-	if (isUnderPlayer) pos.z = GAME_MAKE_ANIM_UNDER_Z;
-	else pos.z = GAME_MAKE_ANIM_OVER_Z;
+	pos = pos + Vector2D(randfrom(-random / 2.0, random / 2.0), randfrom(-random / 2.0, random / 2.0));
+	pos = pos + getPlayerPosition(tPlayer, getDreamMugenStageHandlerCameraCoordinateP());
+	pos = pos + getDreamStageCoordinateSystemOffset(getDreamMugenStageHandlerCameraCoordinateP());
 
 	const auto coordinateDrawScale = getDreamMugenStageHandlerCameraCoordinateP() / double(getActiveStateMachineCoordinateP());
-	auto element = addMugenAnimation(getDreamFightEffectAnimation(animationNumber), getDreamFightEffectSprites(), pos);
+	auto element = addMugenAnimation(getDreamFightEffectAnimation(animationNumber), getDreamFightEffectSprites(), pos.xyz(isUnderPlayer ? GAME_MAKE_ANIM_UNDER_Z : GAME_MAKE_ANIM_OVER_Z));
 	setMugenAnimationCameraPositionReference(element, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationNoLoop(element);
 	setMugenAnimationBaseDrawScale(element, (getScreenSize().y / double(getDreamUICoordinateP())) * getDreamUIFightFXScale() * coordinateDrawScale);
@@ -5329,7 +5187,7 @@ static int handleHitAddController(DreamMugenStateController* tController, DreamP
 	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	int value;
-	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &value, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mValue, tPlayer, &value, 0);
 	increasePlayerComboCounter(tPlayer, value);
 
 	return 0;
@@ -5393,10 +5251,10 @@ static int handleHitOverrideController(DreamMugenStateController* tController, D
 	handleHitOverrideAttributeString(&e->mAttributeString, tPlayer, &stateTypeFlags, attackClassTypePairs);
 
 	int stateno, slot, time, forceAir;
-	getSingleIntegerValueOrDefault(&e->mStateNo, tPlayer, &stateno, 0);
-	getSingleIntegerValueOrDefault(&e->mSlot, tPlayer, &slot, 0);
-	getSingleIntegerValueOrDefault(&e->mTime, tPlayer, &time, 1);
-	getSingleIntegerValueOrDefault(&e->mForceAir, tPlayer, &forceAir, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mStateNo, tPlayer, &stateno, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mSlot, tPlayer, &slot, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mTime, tPlayer, &time, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mForceAir, tPlayer, &forceAir, 0);
 
 	setPlayerHitOverride(tPlayer, DreamMugenStateTypeFlags(stateTypeFlags), attackClassTypePairs, stateno, slot, time, forceAir);
 
@@ -5407,7 +5265,7 @@ static int handleSetLifeController(DreamMugenStateController* tController, Dream
 	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	int value;
-	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &value, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mValue, tPlayer, &value, 0);
 
 	setPlayerLife(tPlayer, tPlayer, value);
 
@@ -5432,10 +5290,9 @@ static int handleDrawOffsetController(DreamMugenStateController* tController, Dr
 
 static int handleRemapPaletteController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	RemapPaletteController* e = (RemapPaletteController*)tController->mData;
-	Vector3DI source, destination;
-	source.z = destination.z = 0;
-	getTwoIntegerValuesWithDefaultValues(&e->mSource, tPlayer, &source.x, &source.y, 1, 1);
-	getTwoIntegerValuesWithDefaultValues(&e->mDestination, tPlayer, &destination.x, &destination.y, 1, 1);
+	Vector2DI source, destination;
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(&e->mSource, tPlayer, &source.x, &source.y, 1, 1);
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(&e->mDestination, tPlayer, &destination.x, &destination.y, 1, 1);
 	remapPlayerPalette(tPlayer, source, destination);
 	return 0;
 }
@@ -5444,7 +5301,7 @@ static int handleSoundPanController(DreamMugenStateController* tController, Drea
 	SoundPanController* e = (SoundPanController*)tController->mData;
 
 	int channel;
-	getSingleIntegerValueOrDefault(&e->mChannel, tPlayer, &channel, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mChannel, tPlayer, &channel, -1);
 	channel = parsePlayerSoundEffectChannel(channel, tPlayer);
 	const auto panning = handlePanningValue(&e->mPan, tPlayer, e->mIsAbspan);
 	panSoundEffect(channel, panning);
@@ -5456,7 +5313,7 @@ static int handleStopSoundController(DreamMugenStateController* tController, Dre
 	SoundStopController* e = (SoundStopController*)tController->mData;
 
 	int channel;
-	getSingleIntegerValueOrDefault(&e->mChannel, tPlayer, &channel, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mChannel, tPlayer, &channel, -1);
 	channel = parsePlayerSoundEffectChannel(channel, tPlayer);
 
 	if (channel == -1) {
@@ -5472,8 +5329,8 @@ static int handleStopSoundController(DreamMugenStateController* tController, Dre
 static int handleTargetDropController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	TargetDropController* e = (TargetDropController*)tController->mData;
 	int excludeID, isKeepingOneAtMost;
-	getSingleIntegerValueOrDefault(&e->mExcludeID, tPlayer, &excludeID, -1);
-	getSingleIntegerValueOrDefault(&e->mKeepOne, tPlayer, &isKeepingOneAtMost, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mExcludeID, tPlayer, &excludeID, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mKeepOne, tPlayer, &isKeepingOneAtMost, 1);
 
 	dropPlayerTargets(tPlayer, excludeID, isKeepingOneAtMost);
 
@@ -5483,7 +5340,7 @@ static int handleTargetDropController(DreamMugenStateController* tController, Dr
 static int handleVictoryQuoteController(DreamMugenStateController* tController, DreamPlayer* tPlayer) {
 	VictoryQuoteController* e = (VictoryQuoteController*)tController->mData;
 	int index;
-	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &index, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mValue, tPlayer, &index, -1);
 	setPlayerVictoryQuoteIndex(tPlayer, index);
 	return 0;
 }
@@ -5536,7 +5393,7 @@ static int handleTransparencyController(DreamMugenStateController* tController, 
 	BlendType type = handleTransparencyType(&e->mTransparency, tPlayer, &alphaDefaultSrc, &alphaDefaultDst);
 
 	int alphaSource, alphaDest;
-	getTwoIntegerValuesWithDefaultValues(&e->mAlpha, tPlayer, &alphaSource, &alphaDest, alphaDefaultSrc, alphaDefaultDst);
+	evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(&e->mAlpha, tPlayer, &alphaSource, &alphaDest, alphaDefaultSrc, alphaDefaultDst);
 
 	setPlayerOneFrameTransparency(tPlayer, type, alphaSource, alphaDest);
 
@@ -5547,7 +5404,7 @@ static int handleRandomVariableController(DreamMugenStateController* tController
 	VarRandomController* e = (VarRandomController*)tController->mData;
 	
 	int index;
-	getSingleIntegerValueOrDefault(&e->mValue, tPlayer, &index, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mValue, tPlayer, &index, 0);
 
 	string rangeText;
 	evaluateDreamAssignmentAndReturnAsString(rangeText, &e->mRange, tPlayer);
@@ -6213,6 +6070,8 @@ typedef struct {
 	DreamMugenAssignment* mContinueSprite;
 	int mHasContinueAnimation;
 	DreamMugenAssignment* mContinueAnimation;
+	int mHasContinueSound;
+	DreamMugenAssignment* mContinueSound;
 	DreamMugenAssignment* mContinueOffset;
 
 	int mHasName;
@@ -6221,6 +6080,9 @@ typedef struct {
 	DreamMugenAssignment* mNameOffset;
 
 	DreamMugenAssignment* mText;
+	int mHasTextSound;
+	DreamMugenAssignment* mTextSound;
+	DreamMugenAssignment* mTextSoundFrequency;
 	DreamMugenAssignment* mFont;
 	DreamMugenAssignment* mWidth;
 
@@ -6248,6 +6110,7 @@ static void parseCreateTextStoryController(DreamMugenStateController* tControlle
 
 	e->mHasContinueSprite = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("continue.spr", tGroup, &e->mContinueSprite);
 	e->mHasContinueAnimation = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("continue.anim", tGroup, &e->mContinueAnimation);
+	e->mHasContinueSound = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("continue.snd", tGroup, &e->mContinueSound);
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("continue.offset", tGroup, &e->mContinueOffset);
 
 	e->mHasName = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name", tGroup, &e->mName);
@@ -6256,6 +6119,11 @@ static void parseCreateTextStoryController(DreamMugenStateController* tControlle
 
 
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("text", tGroup, &e->mText);
+	e->mHasTextSound = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("text.snd", tGroup, &e->mTextSound);
+	if (e->mHasTextSound)
+	{
+		fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("text.snd.freq", tGroup, &e->mTextSoundFrequency);
+	}
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("font", tGroup, &e->mFont, "1 , 0 , 0");
 	fetchAssignmentFromGroupAndReturnWhetherItExistsDefaultString("width", tGroup, &e->mWidth);
 
@@ -6300,6 +6168,8 @@ typedef struct {
 
 	int mDoesChangeContinueAnimation;
 	DreamMugenAssignment* mContinueAnimation;
+	int mDoesChangeContinueSound;
+	DreamMugenAssignment* mContinueSound;
 	int mDoesChangeContinueOffset;
 	DreamMugenAssignment* mContinueOffset;
 
@@ -6312,6 +6182,10 @@ typedef struct {
 
 	int mDoesChangeText;
 	DreamMugenAssignment* mText;
+	int mDoesChangeTextSound;
+	DreamMugenAssignment* mTextSound;
+	int mDoesChangeTextSoundFrequency;
+	DreamMugenAssignment* mTextSoundFrequency;
 
 	int mDoesChangeTextOffset;
 	DreamMugenAssignment* mTextOffset;
@@ -6336,6 +6210,7 @@ static void parseChangeTextStoryController(DreamMugenStateController* tControlle
 	e->mDoesChangeFaceOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("face.offset", tGroup, &e->mFaceOffset);
 
 	e->mDoesChangeContinueAnimation = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("continue.anim", tGroup, &e->mContinueAnimation);
+	e->mDoesChangeContinueSound = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("continue.snd", tGroup, &e->mContinueSound);
 	e->mDoesChangeContinueOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("continue.offset", tGroup, &e->mContinueOffset);
 
 	e->mDoesChangeName = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name", tGroup, &e->mName);
@@ -6343,6 +6218,8 @@ static void parseChangeTextStoryController(DreamMugenStateController* tControlle
 	e->mDoesChangeNameOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("name.offset", tGroup, &e->mNameOffset);
 
 	e->mDoesChangeText = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("text", tGroup, &e->mText);
+	e->mDoesChangeTextSound = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("text.snd", tGroup, &e->mTextSound);
+	e->mDoesChangeTextSoundFrequency = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("text.snd.freq", tGroup, &e->mTextSoundFrequency);
 	e->mDoesChangeTextOffset = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("text.offset", tGroup, &e->mTextOffset);
 
 	e->mDoesChangeNextState = fetchDreamAssignmentFromGroupAndReturnWhetherItExists("nextstate", tGroup, &e->mNextState);
@@ -6781,18 +6658,17 @@ static int handleCreateAnimationStoryController(DreamMugenStateController* tCont
 	CreateAnimationStoryController* e = (CreateAnimationStoryController*)tController->mData;
 
 	int id, animation, isLooping, isBoundToStage;
-	Position position = makePosition(0, 0, 0);
-
+	Position2D position;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
-	getSingleIntegerValueOrDefault(&e->mAnimation, (DreamPlayer*)tInstance, &animation, 0);
-	getSingleIntegerValueOrDefault(&e->mIsLooping, (DreamPlayer*)tInstance, &isLooping, 1);
-	getSingleIntegerValueOrDefault(&e->mIsBoundToStage, (DreamPlayer*)tInstance, &isBoundToStage, 0);
-	getTwoFloatValuesWithDefaultValues(&e->mPosition, (DreamPlayer*)tInstance, &position.x, &position.y, 0, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mAnimation, (DreamPlayer*)tInstance, &animation, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mIsLooping, (DreamPlayer*)tInstance, &isLooping, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mIsBoundToStage, (DreamPlayer*)tInstance, &isBoundToStage, 0);
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(&e->mPosition, (DreamPlayer*)tInstance, &position.x, &position.y, 0, 0);
 
 	addDolmexicaStoryAnimation(tInstance, id, animation, position);
 	if (e->mHasShadow) {
 		double shadowBasePosition;
-		getSingleFloatValueOrDefault(&e->mShadowBasePositionY, (DreamPlayer*)tInstance, &shadowBasePosition, 0);
+		evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mShadowBasePositionY, (DreamPlayer*)tInstance, &shadowBasePosition, 0);
 		setDolmexicaStoryAnimationShadow(tInstance, id, shadowBasePosition);
 	}
 	setDolmexicaStoryAnimationLooping(tInstance, id, isLooping);
@@ -6818,28 +6694,34 @@ static int handleChangeAnimationStoryController(DreamMugenStateController* tCont
 
 	int id, animation;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
-	getSingleIntegerValueOrDefault(&e->mAnimation, (DreamPlayer*)tInstance, &animation, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mAnimation, (DreamPlayer*)tInstance, &animation, 0);
 
 	changeDolmexicaStoryAnimation(tInstance, id, animation);
 
 	return 0;
 }
 
-static void handleSingleStoryTextSpriteOrAnimation(int id, int tHasSprite, DreamMugenAssignment** tSprite, void(*tSpriteFunc)(StoryInstance*, int, const Vector3DI&, const Position&), int tHasAnimation, DreamMugenAssignment** tAnimation, void(*tAnimationFunc)(StoryInstance*, int, int, const Position&), DreamMugenAssignment** tOffset, StoryInstance* tInstance) {
+static void handleSingleStoryTextSpriteOrAnimation(int id, int tHasSprite, DreamMugenAssignment** tSprite, void(*tSpriteFunc)(StoryInstance*, int, const Vector2DI&, const Position2D&), int tHasAnimation, DreamMugenAssignment** tAnimation, void(*tAnimationFunc)(StoryInstance*, int, int, const Position2D&), DreamMugenAssignment** tOffset, StoryInstance* tInstance) {
 	if (tHasAnimation) {
 		int animation;
-		Position offset = makePosition(0, 0, 0);
-		getSingleIntegerValueOrDefault(tAnimation, (DreamPlayer*)tInstance, &animation, 0);
-		getTwoFloatValuesWithDefaultValues(tOffset, (DreamPlayer*)tInstance, &offset.x, &offset.y, 0, 0);
+		Position2D offset;
+		evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(tAnimation, (DreamPlayer*)tInstance, &animation, 0);
+		evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(tOffset, (DreamPlayer*)tInstance, &offset.x, &offset.y, 0, 0);
 		tAnimationFunc(tInstance, id, animation, offset);
 	}
 	else if (tHasSprite) {
-		Vector3DI sprite = makeVector3DI(0, 0, 0);
-		Position offset = makePosition(0, 0, 0);
-		getTwoIntegerValuesWithDefaultValues(tSprite, (DreamPlayer*)tInstance, &sprite.x, &sprite.y, 0, 0);
-		getTwoFloatValuesWithDefaultValues(tOffset, (DreamPlayer*)tInstance, &offset.x, &offset.y, 0, 0);
+		Vector2DI sprite;
+		Position2D offset;
+		evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(tSprite, (DreamPlayer*)tInstance, &sprite.x, &sprite.y, 0, 0);
+		evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(tOffset, (DreamPlayer*)tInstance, &offset.x, &offset.y, 0, 0);
 		tSpriteFunc(tInstance, id, sprite, offset);
 	}
+}
+
+static void handleSingleStoryTextSound(int id, int tHasSound, DreamMugenAssignment** tSound, void(*tSoundFunc)(StoryInstance*, int, const Vector2DI&), StoryInstance* tInstance) {
+	if (!tHasSound) return;
+	const auto snd = evaluateDreamAssignmentAndReturnAsVector2DI(tSound, (DreamPlayer*)tInstance);
+	tSoundFunc(tInstance, id, snd);
 }
 
 static int isStringEmptyOrWhitespace(const char * tString)
@@ -6857,36 +6739,43 @@ static void handleSingleStoryTextName(int id, int tHasName, DreamMugenAssignment
 	evaluateDreamAssignmentAndReturnAsString(text, tText, (DreamPlayer*)tInstance);
 	Vector3DI font = evaluateDreamAssignmentAndReturnAsVector3DI(tFont, (DreamPlayer*)tInstance);
 	double x, y;
-	getTwoFloatValuesWithDefaultValues(tOffset, (DreamPlayer*)tInstance, &x, &y, 0, 0);
-	setDolmexicaStoryTextName(tInstance, id, text.data(), font, makePosition(x, y, 0));
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(tOffset, (DreamPlayer*)tInstance, &x, &y, 0, 0);
+	setDolmexicaStoryTextName(tInstance, id, text.data(), font, Vector2D(x, y));
 }
 
 static int handleCreateTextStoryController(DreamMugenStateController* tController, StoryInstance* tInstance) {
 	CreateTextStoryController* e = (CreateTextStoryController*)tController->mData;
 
 	int id;
-	Position basePosition = makePosition(0, 0, 0);
-	Position textOffset = makePosition(0, 0, 0);
-
+	Position2D basePosition;
+	Position2D textOffset;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
-	getTwoFloatValuesWithDefaultValues(&e->mPosition, (DreamPlayer*)tInstance, &basePosition.x, &basePosition.y, 0, 0);
-	getTwoFloatValuesWithDefaultValues(&e->mTextOffset, (DreamPlayer*)tInstance, &textOffset.x, &textOffset.y, 0, 0);
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(&e->mPosition, (DreamPlayer*)tInstance, &basePosition.x, &basePosition.y, 0, 0);
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(&e->mTextOffset, (DreamPlayer*)tInstance, &textOffset.x, &textOffset.y, 0, 0);
 
 	double width;
-	getSingleFloatValueOrDefault(&e->mWidth, (DreamPlayer*)tInstance, &width, INF);
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mWidth, (DreamPlayer*)tInstance, &width, INF);
 	Vector3DI font = evaluateDreamAssignmentAndReturnAsVector3DI(&e->mFont, (DreamPlayer*)tInstance);
 	string text;
 	evaluateDreamAssignmentAndReturnAsString(text, &e->mText, (DreamPlayer*)tInstance);
 	int isEmpty = isStringEmptyOrWhitespace(text.data());
 	addDolmexicaStoryText(tInstance, id, text.data(), font, basePosition, textOffset, width);
+	handleSingleStoryTextSound(id, e->mHasTextSound, &e->mTextSound, setDolmexicaStoryTextSound, tInstance);
+	if (e->mHasTextSound)
+	{
+		int freq;
+		evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mTextSoundFrequency, (DreamPlayer*)tInstance, &freq, 7);
+		setDolmexicaStoryTextSoundFrequency(tInstance, id, freq);
+	}
 
 	handleSingleStoryTextSpriteOrAnimation(id, e->mHasBackgroundSprite, &e->mBackgroundSprite, setDolmexicaStoryTextBackground, e->mHasBackgroundAnimation, &e->mBackgroundAnimation, setDolmexicaStoryTextBackground, &e->mBackgroundOffset, tInstance);
 	handleSingleStoryTextSpriteOrAnimation(id, e->mHasFaceSprite, &e->mFaceSprite, setDolmexicaStoryTextFace, e->mHasFaceAnimation, &e->mFaceAnimation, setDolmexicaStoryTextFace, &e->mFaceOffset, tInstance);
 	handleSingleStoryTextSpriteOrAnimation(id, e->mHasContinueSprite, &e->mContinueSprite, setDolmexicaStoryTextContinue, e->mHasContinueAnimation, &e->mContinueAnimation, setDolmexicaStoryTextContinue, &e->mContinueOffset, tInstance);
+	handleSingleStoryTextSound(id, e->mHasContinueSound, &e->mContinueSound, setDolmexicaStoryTextContinueSound, tInstance);
 	handleSingleStoryTextName(id, e->mHasName, &e->mName, &e->mNameFont, &e->mNameOffset, tInstance);
 
 	int buildUp;
-	getSingleIntegerValueOrDefault(&e->mIsBuildingUp, (DreamPlayer*)tInstance, &buildUp, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mIsBuildingUp, (DreamPlayer*)tInstance, &buildUp, 1);
 
 	if (e->mHasNextState) {
 		int nextState = evaluateDreamAssignmentAndReturnAsInteger(&e->mNextState, (DreamPlayer*)tInstance);
@@ -6938,7 +6827,7 @@ static int handleChangeTextStoryController(DreamMugenStateController* tControlle
 		targetInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
 	}
 	if (e->mDoesChangePosition) {
-		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mPosition, (DreamPlayer*)tInstance);
+		const auto offset = evaluateDreamAssignmentAndReturnAsVector2D(&e->mPosition, (DreamPlayer*)tInstance);
 		setDolmexicaStoryTextBasePosition(targetInstance, id, offset);
 	}
 	if (e->mDoesChangeText) {
@@ -6946,32 +6835,44 @@ static int handleChangeTextStoryController(DreamMugenStateController* tControlle
 		evaluateDreamAssignmentAndReturnAsString(text, &e->mText, (DreamPlayer*)tInstance);
 		setDolmexicaStoryTextText(targetInstance, id, text.data());
 	}
+	if (e->mDoesChangeTextSound) {
+		const auto snd = evaluateDreamAssignmentAndReturnAsVector2DI(&e->mTextSound, (DreamPlayer*)tInstance);
+		setDolmexicaStoryTextSound(targetInstance, id, snd);
+	}
+	if (e->mDoesChangeTextSoundFrequency) {
+		const auto freq = evaluateDreamAssignmentAndReturnAsInteger(&e->mTextSoundFrequency, (DreamPlayer*)tInstance);
+		setDolmexicaStoryTextSoundFrequency(targetInstance, id, freq);
+	}
 	if (e->mDoesChangeTextOffset) {
-		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mTextOffset, (DreamPlayer*)tInstance);
+		const auto offset = evaluateDreamAssignmentAndReturnAsVector2D(&e->mTextOffset, (DreamPlayer*)tInstance);
 		setDolmexicaStoryTextTextOffset(targetInstance, id, offset);
 	}
 	if (e->mDoesChangeBackgroundSprite) {
-		Vector3DI sprite = evaluateDreamAssignmentAndReturnAsVector3DI(&e->mBackgroundSprite, (DreamPlayer*)tInstance);
+		const auto sprite = evaluateDreamAssignmentAndReturnAsVector2DI(&e->mBackgroundSprite, (DreamPlayer*)tInstance);
 		setDolmexicaStoryTextBackgroundSprite(targetInstance, id, sprite);
 	}
 	if (e->mDoesChangeBackgroundOffset) {
-		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mBackgroundOffset, (DreamPlayer*)tInstance);
+		const auto offset = evaluateDreamAssignmentAndReturnAsVector2D(&e->mBackgroundOffset, (DreamPlayer*)tInstance);
 		setDolmexicaStoryTextBackgroundOffset(targetInstance, id, offset);
 	}
 	if (e->mDoesChangeFaceSprite) {
-		Vector3DI sprite = evaluateDreamAssignmentAndReturnAsVector3DI(&e->mFaceSprite, (DreamPlayer*)tInstance);
+		const auto sprite = evaluateDreamAssignmentAndReturnAsVector2DI(&e->mFaceSprite, (DreamPlayer*)tInstance);
 		setDolmexicaStoryTextFaceSprite(targetInstance, id, sprite);
 	}
 	if (e->mDoesChangeFaceOffset) {
-		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mFaceOffset, (DreamPlayer*)tInstance);
+		const auto offset = evaluateDreamAssignmentAndReturnAsVector2D(&e->mFaceOffset, (DreamPlayer*)tInstance);
 		setDolmexicaStoryTextFaceOffset(targetInstance, id, offset);
 	}
 	if (e->mDoesChangeContinueAnimation) {
 		int anim = evaluateDreamAssignmentAndReturnAsInteger(&e->mContinueAnimation, (DreamPlayer*)tInstance);
 		setDolmexicaStoryTextContinueAnimation(targetInstance, id, anim);
 	}
+	if (e->mDoesChangeContinueSound) {
+		const auto snd = evaluateDreamAssignmentAndReturnAsVector2DI(&e->mContinueSound, (DreamPlayer*)tInstance);
+		setDolmexicaStoryTextContinueSound(targetInstance, id, snd);
+	}
 	if (e->mDoesChangeContinueOffset) {
-		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mContinueOffset, (DreamPlayer*)tInstance);
+		const auto offset = evaluateDreamAssignmentAndReturnAsVector2D(&e->mContinueOffset, (DreamPlayer*)tInstance);
 		setDolmexicaStoryTextContinueOffset(targetInstance, id, offset);
 	}
 	if (e->mDoesChangeName) {
@@ -6984,7 +6885,7 @@ static int handleChangeTextStoryController(DreamMugenStateController* tControlle
 		setDolmexicaStoryTextNameFont(targetInstance, id, font);
 	}
 	if (e->mDoesChangeNameOffset) {
-		Position offset = evaluateDreamAssignmentAndReturnAsVector3D(&e->mNameOffset, (DreamPlayer*)tInstance);
+		const auto offset = evaluateDreamAssignmentAndReturnAsVector2D(&e->mNameOffset, (DreamPlayer*)tInstance);
 		setDolmexicaStoryTextNameOffset(targetInstance, id, offset);
 	}
 	if (e->mDoesChangeNextState) {
@@ -6992,9 +6893,8 @@ static int handleChangeTextStoryController(DreamMugenStateController* tControlle
 		setDolmexicaStoryTextNextState(targetInstance, id, nextState);
 	}
 
-
 	int buildUp;
-	getSingleIntegerValueOrDefault(&e->mIsBuildingUp, (DreamPlayer*)tInstance, &buildUp, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mIsBuildingUp, (DreamPlayer*)tInstance, &buildUp, 1);
 	if (!buildUp) {
 		setDolmexicaStoryTextBuiltUp(targetInstance, id);
 	}
@@ -7031,7 +6931,7 @@ static int handleFadeInStoryController(DreamMugenStateController* tController, S
 	FadeStoryController* e = (FadeStoryController*)tController->mData;
 
 	double duration;
-	getSingleFloatValueOrDefault(&e->mDuration, (DreamPlayer*)tInstance, &duration, 20);
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mDuration, (DreamPlayer*)tInstance, &duration, 20);
 	addFadeIn(duration, NULL, NULL);
 
 	return 0;
@@ -7042,7 +6942,7 @@ static int handleFadeOutStoryController(DreamMugenStateController* tController, 
 
 	double duration;
 	Vector3D color;
-	getSingleFloatValueOrDefault(&e->mDuration, (DreamPlayer*)tInstance, &duration, 20);
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mDuration, (DreamPlayer*)tInstance, &duration, 20);
 	color = evaluateDreamAssignmentAndReturnAsVector3D(&e->mColor, (DreamPlayer*)tInstance);
 	setFadeColorRGB(color.x, color.y, color.z);
 	addFadeOut(duration, NULL, NULL);
@@ -7137,7 +7037,7 @@ static int handleAnimationSetFaceDirectionStoryController(DreamMugenStateControl
 
 	int id, faceDirection;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
-	getSingleIntegerValueOrDefault(&e->mFacing, (DreamPlayer*)tInstance, &faceDirection, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mFacing, (DreamPlayer*)tInstance, &faceDirection, 1);
 
 	if (!faceDirection) return 0;
 
@@ -7152,7 +7052,7 @@ static int handleAnimationSetAngleStoryController(DreamMugenStateController* tCo
 	int id;
 	double angle;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
-	getSingleFloatValueOrDefault(&e->mFacing, (DreamPlayer*)tInstance, &angle, 0);
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mFacing, (DreamPlayer*)tInstance, &angle, 0);
 
 	setDolmexicaStoryAnimationAngle(tInstance, id, angle);
 
@@ -7165,7 +7065,7 @@ static int handleAnimationAddAngleStoryController(DreamMugenStateController* tCo
 	int id;
 	double angle;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
-	getSingleFloatValueOrDefault(&e->mFacing, (DreamPlayer*)tInstance, &angle, 0);
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mFacing, (DreamPlayer*)tInstance, &angle, 0);
 
 	addDolmexicaStoryAnimationAngle(tInstance, id, angle);
 
@@ -7202,7 +7102,7 @@ static int handleEndStoryboardController(DreamMugenStateController* tController,
 	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 
 	int nextState;
-	getSingleIntegerValueOrDefault(&e->mValue, (DreamPlayer*)tInstance, &nextState, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mValue, (DreamPlayer*)tInstance, &nextState, 1);
 
 	endDolmexicaStoryboard(tInstance, nextState);
 
@@ -7228,19 +7128,19 @@ static int handleCreateCharacterStoryController(DreamMugenStateController* tCont
 	CreateCharacterStoryController* e = (CreateCharacterStoryController*)tController->mData;
 
 	int id, animation, isBoundToStage, preferredPalette;
-	Position position = makePosition(0, 0, 0);
+	Position2D position;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
-	getSingleIntegerValueOrDefault(&e->mStartAnimationNumber, (DreamPlayer*)tInstance, &animation, 0);
-	getSingleIntegerValueOrDefault(&e->mIsBoundToStage, (DreamPlayer*)tInstance, &isBoundToStage, 0);
-	getSingleIntegerValueOrDefault(&e->mPreferredPalette, (DreamPlayer*)tInstance, &preferredPalette, 1);
-	getTwoFloatValuesWithDefaultValues(&e->mPosition, (DreamPlayer*)tInstance, &position.x, &position.y, 0, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mStartAnimationNumber, (DreamPlayer*)tInstance, &animation, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mIsBoundToStage, (DreamPlayer*)tInstance, &isBoundToStage, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mPreferredPalette, (DreamPlayer*)tInstance, &preferredPalette, 1);
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(&e->mPosition, (DreamPlayer*)tInstance, &position.x, &position.y, 0, 0);
 	string name;
 	evaluateDreamAssignmentAndReturnAsString(name, &e->mName, (DreamPlayer*)tInstance);
 
 	addDolmexicaStoryCharacter(tInstance, id, name.data(), preferredPalette, animation, position);
 	if (e->mHasShadow) {
 		double shadowBasePosition;
-		getSingleFloatValueOrDefault(&e->mShadowBasePositionY, (DreamPlayer*)tInstance, &shadowBasePosition, 0);
+		evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mShadowBasePositionY, (DreamPlayer*)tInstance, &shadowBasePosition, 0);
 		setDolmexicaStoryCharacterShadow(tInstance, id, shadowBasePosition);
 	}
 	setDolmexicaStoryCharacterBoundToStage(tInstance, id, isBoundToStage);
@@ -7265,7 +7165,7 @@ static int handleChangeCharacterAnimStoryController(DreamMugenStateController* t
 
 	int id, animation;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
-	getSingleIntegerValueOrDefault(&e->mAnimation, (DreamPlayer*)tInstance, &animation, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mAnimation, (DreamPlayer*)tInstance, &animation, 0);
 
 	if (e->mHasTarget) {
 		tInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
@@ -7350,7 +7250,7 @@ static int handleSetCharacterFaceDirectionStoryController(DreamMugenStateControl
 
 	int id, faceDirection;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
-	getSingleIntegerValueOrDefault(&e->mFacing, (DreamPlayer*)tInstance, &faceDirection, 1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mFacing, (DreamPlayer*)tInstance, &faceDirection, 1);
 
 	if (!faceDirection) return 0;
 
@@ -7411,7 +7311,7 @@ static int handleSetCharacterAngleStoryController(DreamMugenStateController* tCo
 		targetInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
 	}
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
-	getSingleFloatValueOrDefault(&e->mFacing, (DreamPlayer*)tInstance, &angle, 0);
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mFacing, (DreamPlayer*)tInstance, &angle, 0);
 
 	setDolmexicaStoryCharacterAngle(targetInstance, id, angle);
 
@@ -7429,7 +7329,7 @@ static int handleAddCharacterAngleStoryController(DreamMugenStateController* tCo
 		targetInstance = getTargetInstanceFromAssignment(&e->mTarget, tInstance);
 	}
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
-	getSingleFloatValueOrDefault(&e->mFacing, (DreamPlayer*)tInstance, &angle, 0);
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mFacing, (DreamPlayer*)tInstance, &angle, 0);
 
 	addDolmexicaStoryCharacterAngle(targetInstance, id, angle);
 
@@ -7441,7 +7341,7 @@ static int handleCreateHelperStoryController(DreamMugenStateController* tControl
 
 	int id, state;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
-	getSingleIntegerValueOrDefault(&e->mState, (DreamPlayer*)tInstance, &state, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mState, (DreamPlayer*)tInstance, &state, 0);
 
 	addDolmexicaStoryHelper(id, state, tInstance);
 
@@ -7484,13 +7384,13 @@ static int handleLockTextToCharacterStoryController(DreamMugenStateController* t
 	double dX, dY;
 	id = getDolmexicaStoryIDFromAssignment(&e->mID, tInstance);
 	getStoryCharacterAndHelperFromAssignment(&e->mCharacterID, tInstance, character, helper);
-	getTwoFloatValuesWithDefaultValues(&e->mOffset, (DreamPlayer*)tInstance, &dX, &dY, 0, 0);
+	evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(&e->mOffset, (DreamPlayer*)tInstance, &dX, &dY, 0, 0);
 
 	if (helper == -1) {
-		setDolmexicaStoryTextLockToCharacter(tInstance, id, character, makePosition(dX, dY, 0));
+		setDolmexicaStoryTextLockToCharacter(tInstance, id, character, Vector2D(dX, dY));
 	}
 	else {
-		setDolmexicaStoryTextLockToCharacter(tInstance, id, character, makePosition(dX, dY, 0), helper);
+		setDolmexicaStoryTextLockToCharacter(tInstance, id, character, Vector2D(dX, dY), helper);
 	}
 
 	return 0;
@@ -7765,7 +7665,7 @@ static int handleCameraZoomStoryController(DreamMugenStateController* tControlle
 	if (!tPlayer) return 0;
 	SingleRequiredValueController* e = (SingleRequiredValueController*)tController->mData;
 	double zoom;
-	getSingleFloatValueOrDefault(&e->mValue, (DreamPlayer*)tPlayer, &zoom, 1.0);
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mValue, (DreamPlayer*)tPlayer, &zoom, 1.0);
 	setDolmexicaStoryCameraZoom(zoom);
 
 	return 0;
@@ -7773,7 +7673,7 @@ static int handleCameraZoomStoryController(DreamMugenStateController* tControlle
 
 static double handleStoryPanningValue(DreamMugenAssignment** tAssignment, StoryInstance* tPlayer, int tIsAbspan) {
 	int pan;
-	getSingleIntegerValueOrDefault(tAssignment, (DreamPlayer*)tPlayer, &pan, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(tAssignment, (DreamPlayer*)tPlayer, &pan, 0);
 	if (!getSoundAreStereoEffectsActive()) return 0.0;
 
 	double pos;
@@ -7810,8 +7710,8 @@ static int handlePlaySoundStoryController(DreamMugenStateController* tController
 
 	int channel, isLowPriority, loop;
 	double frequencyMultiplier;
-	getSingleIntegerValueOrDefault(&e->mChannel, (DreamPlayer*)tPlayer, &channel, -1);
-	getSingleIntegerValueOrDefault(&e->mLowPriority, (DreamPlayer*)tPlayer, &isLowPriority, 0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mChannel, (DreamPlayer*)tPlayer, &channel, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mLowPriority, (DreamPlayer*)tPlayer, &isLowPriority, 0);
 
 	if (channel != -1 && isSoundEffectPlayingOnChannel(channel) && isLowPriority) {
 		return 0;
@@ -7820,17 +7720,17 @@ static int handlePlaySoundStoryController(DreamMugenStateController* tController
 	auto prismVolume = parseGameMidiVolumeToPrism(getGameMidiVolume());
 	if (e->mIsVolumeScale) {
 		double volumeScale;
-		getSingleFloatValueOrDefault(&e->mVolume, (DreamPlayer*)tPlayer, &volumeScale, 100.0);
+		evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mVolume, (DreamPlayer*)tPlayer, &volumeScale, 100.0);
 		prismVolume *= (volumeScale / 100.0);
 	}
 	else {
 		int volume;
-		getSingleIntegerValueOrDefault(&e->mVolume, (DreamPlayer*)tPlayer, &volume, 0);
+		evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mVolume, (DreamPlayer*)tPlayer, &volume, 0);
 		prismVolume *= ((volume + 100) / double(100));
 	}
 
-	getSingleFloatValueOrDefault(&e->mFrequencyMultiplier, (DreamPlayer*)tPlayer, &frequencyMultiplier, 1.0);
-	getSingleIntegerValueOrDefault(&e->mLoop, (DreamPlayer*)tPlayer, &loop, 0);
+	evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(&e->mFrequencyMultiplier, (DreamPlayer*)tPlayer, &frequencyMultiplier, 1.0);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mLoop, (DreamPlayer*)tPlayer, &loop, 0);
 	const auto panning = handleStoryPanningValue(&e->mPan, tPlayer, e->mIsAbspan);
 
 	handleStorySoundEffectValue(&e->mValue, tPlayer, prismVolume, channel, frequencyMultiplier, loop, panning);
@@ -7841,7 +7741,7 @@ static int handleSoundPanStoryController(DreamMugenStateController* tController,
 	SoundPanController* e = (SoundPanController*)tController->mData;
 
 	int channel;
-	getSingleIntegerValueOrDefault(&e->mChannel, (DreamPlayer*)tPlayer, &channel, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mChannel, (DreamPlayer*)tPlayer, &channel, -1);
 	const auto panning = handleStoryPanningValue(&e->mPan, tPlayer, e->mIsAbspan);
 	panSoundEffect(channel, panning);
 
@@ -7852,7 +7752,7 @@ static int handleStopSoundStoryController(DreamMugenStateController* tController
 	SoundStopController* e = (SoundStopController*)tController->mData;
 
 	int channel;
-	getSingleIntegerValueOrDefault(&e->mChannel, (DreamPlayer*)tPlayer, &channel, -1);
+	evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(&e->mChannel, (DreamPlayer*)tPlayer, &channel, -1);
 	if (channel == -1) {
 		stopAllSoundEffects();
 	}

@@ -19,7 +19,7 @@
 #include <prism/log.h>
 
 #include "mugensound.h"
-#include "menubackground.h"
+#include "scriptbackground.h"
 #include "characterselectscreen.h"
 #include "arcademode.h"
 #include "versusmode.h"
@@ -56,7 +56,7 @@ typedef struct {
 
 	Vector3D mItemSpacing;
 	Vector3D mWindowMarginsY;
-	GeoRectangle mMenuRectangle;
+	GeoRectangle2D mMenuRectangle;
 
 	int mIsBoxCursorVisible;
 	GeoRectangle2D mBoxCursorCoordinates;
@@ -229,42 +229,47 @@ static void exitCB() {
 }
 
 static void loadMenuHeader() {
-	gTitleScreenData.mHeader.mFadeInTime = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "Title Info", "fadein.time", 30);
-	gTitleScreenData.mHeader.mFadeOutTime = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "Title Info", "fadeout.time", 30);
+	gTitleScreenData.mHeader.mFadeInTime = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "title info", "fadein.time", 30);
+	gTitleScreenData.mHeader.mFadeOutTime = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "title info", "fadeout.time", 30);
 
-	gTitleScreenData.mHeader.mMenuPosition = getMugenDefVectorOrDefault(&gTitleScreenData.mScript, "Title Info", "menu.pos", makePosition(0, 0, 0));
-	gTitleScreenData.mHeader.mItemFont = getMugenDefVectorIOrDefault(&gTitleScreenData.mScript, "Title Info", "menu.item.font", makeVector3DI(1, 0, 0));
-	gTitleScreenData.mHeader.mItemActiveFont = getMugenDefVectorIOrDefault(&gTitleScreenData.mScript, "Title Info", "menu.item.active.font", makeVector3DI(1, 0, 0));
-	gTitleScreenData.mHeader.mItemSpacing = getMugenDefVectorOrDefault(&gTitleScreenData.mScript, "Title Info", "menu.item.spacing", makePosition(0, 0, 0));
+	gTitleScreenData.mHeader.mMenuPosition = getMugenDefVectorOrDefault(&gTitleScreenData.mScript, "title info", "menu.pos", Vector3D(0, 0, 0));
+	gTitleScreenData.mHeader.mItemFont = getMugenDefVectorIOrDefault(&gTitleScreenData.mScript, "title info", "menu.item.font", Vector3DI(-1, 0, 0));
+	gTitleScreenData.mHeader.mItemActiveFont = getMugenDefVectorIOrDefault(&gTitleScreenData.mScript, "title info", "menu.item.active.font", Vector3DI(-1, 0, 0));
+	gTitleScreenData.mHeader.mItemSpacing = getMugenDefVectorOrDefault(&gTitleScreenData.mScript, "title info", "menu.item.spacing", Vector3D(0, 0, 0));
 
-	gTitleScreenData.mHeader.mWindowMarginsY = getMugenDefVectorOrDefault(&gTitleScreenData.mScript, "Title Info", "menu.window.margins.y", makePosition(0, 0, 0));
+	gTitleScreenData.mHeader.mWindowMarginsY = getMugenDefVectorOrDefault(&gTitleScreenData.mScript, "title info", "menu.window.margins.y", Vector3D(0, 0, 0));
 
-	gTitleScreenData.mHeader.mVisibleItemAmount = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "Title Info", "menu.window.visibleitems", 10);
-	gTitleScreenData.mHeader.mIsBoxCursorVisible = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "Title Info", "menu.boxcursor.visible", 1);
+	gTitleScreenData.mHeader.mVisibleItemAmount = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "title info", "menu.window.visibleitems", 10);
+	gTitleScreenData.mHeader.mIsBoxCursorVisible = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "title info", "menu.boxcursor.visible", 1);
 
-	gTitleScreenData.mHeader.mMenuRectangle = makeGeoRectangle(-INF / 2, gTitleScreenData.mHeader.mMenuPosition.y - gTitleScreenData.mHeader.mWindowMarginsY.x, INF, gTitleScreenData.mHeader.mWindowMarginsY.x + gTitleScreenData.mHeader.mWindowMarginsY.y + gTitleScreenData.mHeader.mVisibleItemAmount*gTitleScreenData.mHeader.mItemSpacing.y);
+	gTitleScreenData.mHeader.mMenuRectangle = GeoRectangle2D(-INF / 2, gTitleScreenData.mHeader.mMenuPosition.y - gTitleScreenData.mHeader.mWindowMarginsY.x, INF, gTitleScreenData.mHeader.mWindowMarginsY.x + gTitleScreenData.mHeader.mWindowMarginsY.y + gTitleScreenData.mHeader.mVisibleItemAmount*gTitleScreenData.mHeader.mItemSpacing.y);
 
-	MugenStringVector boxCoordinateVector = getMugenDefStringVectorVariable(&gTitleScreenData.mScript, "Title Info", "menu.boxcursor.coords");
-	assert(boxCoordinateVector.mSize >= 4);
-	gTitleScreenData.mHeader.mBoxCursorCoordinates.mTopLeft.x = atof(boxCoordinateVector.mElement[0]);
-	gTitleScreenData.mHeader.mBoxCursorCoordinates.mTopLeft.y = atof(boxCoordinateVector.mElement[1]);
-	gTitleScreenData.mHeader.mBoxCursorCoordinates.mBottomRight.x = atof(boxCoordinateVector.mElement[2]);
-	gTitleScreenData.mHeader.mBoxCursorCoordinates.mBottomRight.y = atof(boxCoordinateVector.mElement[3]);
+	if (isMugenDefStringVariable(&gTitleScreenData.mScript, "title info", "menu.boxcursor.coords")) {
+		const auto boxCoordinateVector = getMugenDefStringVectorVariable(&gTitleScreenData.mScript, "title info", "menu.boxcursor.coords");
+		assert(boxCoordinateVector.mSize >= 4);
+		gTitleScreenData.mHeader.mBoxCursorCoordinates.mTopLeft.x = atof(boxCoordinateVector.mElement[0]);
+		gTitleScreenData.mHeader.mBoxCursorCoordinates.mTopLeft.y = atof(boxCoordinateVector.mElement[1]);
+		gTitleScreenData.mHeader.mBoxCursorCoordinates.mBottomRight.x = atof(boxCoordinateVector.mElement[2]);
+		gTitleScreenData.mHeader.mBoxCursorCoordinates.mBottomRight.y = atof(boxCoordinateVector.mElement[3]);
+	}
+	else {
+		gTitleScreenData.mHeader.mBoxCursorCoordinates = GeoRectangle2D(0, 0, 0, 0);
+	}
 
-	gTitleScreenData.mHeader.mCursorMoveSound = getMugenDefVectorIOrDefault(&gTitleScreenData.mScript, "Title Info", "cursor.move.snd", makeVector3DI(0, 0, 0));
-	gTitleScreenData.mHeader.mCursorDoneSound = getMugenDefVectorIOrDefault(&gTitleScreenData.mScript, "Title Info", "cursor.done.snd", makeVector3DI(0, 0, 0));
-	gTitleScreenData.mHeader.mCancelSound = getMugenDefVectorIOrDefault(&gTitleScreenData.mScript, "Title Info", "cancel.snd", makeVector3DI(0, 0, 0));
+	gTitleScreenData.mHeader.mCursorMoveSound = getMugenDefVectorIOrDefault(&gTitleScreenData.mScript, "title info", "cursor.move.snd", Vector3DI(0, 0, 0));
+	gTitleScreenData.mHeader.mCursorDoneSound = getMugenDefVectorIOrDefault(&gTitleScreenData.mScript, "title info", "cursor.done.snd", Vector3DI(0, 0, 0));
+	gTitleScreenData.mHeader.mCancelSound = getMugenDefVectorIOrDefault(&gTitleScreenData.mScript, "title info", "cancel.snd", Vector3DI(0, 0, 0));
 }
 
 static void loadDemoHeader() {
-	gTitleScreenData.mDemo.mIsEnabled = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "Demo Mode", "enabled", 1);
-	gTitleScreenData.mDemo.mWaitTime = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "Demo Mode", "title.waittime", 600);
+	gTitleScreenData.mDemo.mIsEnabled = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "demo mode", "enabled", 1);
+	gTitleScreenData.mDemo.mWaitTime = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "demo mode", "title.waittime", 600);
 	gTitleScreenData.mDemo.mNow = 0;
 }
 
 static void addMenuPoint(const char* tVariableName, void(*tCB)()) {
-	if (!isMugenDefStringVariable(&gTitleScreenData.mScript, "Title Info", tVariableName)) return;
-	char* text = getAllocatedMugenDefStringVariable(&gTitleScreenData.mScript, "Title Info", tVariableName);
+	if (!isMugenDefStringVariable(&gTitleScreenData.mScript, "title info", tVariableName)) return;
+	char* text = getAllocatedMugenDefStringVariable(&gTitleScreenData.mScript, "title info", tVariableName);
 	
 	if (!strcmp("", text)) {
 		freeMemory(text);
@@ -274,7 +279,7 @@ static void addMenuPoint(const char* tVariableName, void(*tCB)()) {
 	int index = vector_size(&gTitleScreenData.mMenus);
 	MenuText* e = (MenuText*)allocMemory(sizeof(MenuText));
 	e->mCB = tCB;
-	e->mOffset = makePosition(gTitleScreenData.mHeader.mItemSpacing.x*index, gTitleScreenData.mHeader.mItemSpacing.y*index, 50);
+	e->mOffset = Vector3D(gTitleScreenData.mHeader.mItemSpacing.x*index, gTitleScreenData.mHeader.mItemSpacing.y*index, 50);
 	Position position = vecAdd(gTitleScreenData.mHeader.mMenuPosition, e->mOffset);
 	e->mTextID = addMugenText(text, position, gTitleScreenData.mHeader.mItemFont.x);
 	setMugenTextColor(e->mTextID, getMugenTextColorFromMugenTextColorIndex(gTitleScreenData.mHeader.mItemFont.y));
@@ -287,12 +292,12 @@ static void addMenuPoint(const char* tVariableName, void(*tCB)()) {
 
 static void setLowerOptionAsBase() {
 	gTitleScreenData.mTopOption = gTitleScreenData.mSelected - (gTitleScreenData.mHeader.mVisibleItemAmount - 1);
-	gTitleScreenData.mMenuTargetPosition = makePosition(gTitleScreenData.mHeader.mMenuPosition.x - gTitleScreenData.mHeader.mItemSpacing.x*gTitleScreenData.mTopOption, gTitleScreenData.mHeader.mMenuPosition.y - gTitleScreenData.mHeader.mItemSpacing.y*gTitleScreenData.mTopOption, 0);
+	gTitleScreenData.mMenuTargetPosition = Vector3D(gTitleScreenData.mHeader.mMenuPosition.x - gTitleScreenData.mHeader.mItemSpacing.x*gTitleScreenData.mTopOption, gTitleScreenData.mHeader.mMenuPosition.y - gTitleScreenData.mHeader.mItemSpacing.y*gTitleScreenData.mTopOption, 0);
 }
 
 static void setUpperOptionAsBase() {
 	gTitleScreenData.mTopOption = gTitleScreenData.mSelected;	
-	gTitleScreenData.mMenuTargetPosition = makePosition(gTitleScreenData.mHeader.mMenuPosition.x - gTitleScreenData.mHeader.mItemSpacing.x*gTitleScreenData.mTopOption, gTitleScreenData.mHeader.mMenuPosition.y - gTitleScreenData.mHeader.mItemSpacing.y*gTitleScreenData.mTopOption, 0);
+	gTitleScreenData.mMenuTargetPosition = Vector3D(gTitleScreenData.mHeader.mMenuPosition.x - gTitleScreenData.mHeader.mItemSpacing.x*gTitleScreenData.mTopOption, gTitleScreenData.mHeader.mMenuPosition.y - gTitleScreenData.mHeader.mItemSpacing.y*gTitleScreenData.mTopOption, 0);
 }
 
 static void setSelectedMenuElementActive() {
@@ -317,26 +322,26 @@ static void setSelectedMenuElementInactive() {
 }
 
 static void loadCredits() {
-	gTitleScreenData.mCreditBGAnimationElement = playOneFrameAnimationLoop(makePosition(0, 230, 50), &gTitleScreenData.mWhiteTexture);
-	setAnimationSize(gTitleScreenData.mCreditBGAnimationElement, makePosition(320, 20, 1), makePosition(0, 0, 0));
+	gTitleScreenData.mCreditBGAnimationElement = playOneFrameAnimationLoop(Vector3D(0, 230, 50), &gTitleScreenData.mWhiteTexture);
+	setAnimationSize(gTitleScreenData.mCreditBGAnimationElement, Vector3D(320, 20, 1), Vector3D(0, 0, 0));
 	setAnimationColor(gTitleScreenData.mCreditBGAnimationElement, 0, 0, 0.5);
 
-	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 14", makePosition(0, 240, 51), 1);
+	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 15", Vector3D(0, 240, 51), -1);
 	
-	gTitleScreenData.mRightCreditTextID = addMugenText("05/01/20 Presented by Dogma", makePosition(320, 240, 51), 1);
+	gTitleScreenData.mRightCreditTextID = addMugenText("07/03/20 Presented by Dogma", Vector3D(320, 240, 51), -1);
 	setMugenTextAlignment(gTitleScreenData.mRightCreditTextID, MUGEN_TEXT_ALIGNMENT_RIGHT);
 }
 
 
 static void loadBoxCursor() {
 	if (gTitleScreenData.mHeader.mIsBoxCursorVisible) {
-		gTitleScreenData.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 49), gTitleScreenData.mHeader.mBoxCursorCoordinates); 
+		gTitleScreenData.mBoxCursorID = addBoxCursor(Vector3D(0, 0, 0), Vector3D(0, 0, 49), gTitleScreenData.mHeader.mBoxCursorCoordinates); 
 	}
 }
 
 static void loadTitleMusic() {
-	char* path = getAllocatedMugenDefStringOrDefault(&gTitleScreenData.mScript, "Music", "title.bgm", " ");
-	int isLooping = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "Music", "title.bgm.loop", 1);
+	char* path = getAllocatedMugenDefStringOrDefault(&gTitleScreenData.mScript, "music", "title.bgm", " ");
+	int isLooping = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "music", "title.bgm.loop", 1);
 
 	if (isMugenBGMMusicPath(path)) {
 		playMugenBGMMusicPath(path, isLooping);
@@ -354,24 +359,23 @@ static void loadTitleScreen() {
 
 	gTitleScreenData.mWhiteTexture = getEmptyWhiteTexture();
 
-	char folder[1024];
+	std::string folder;
 	const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
 	loadMugenDefScript(&gTitleScreenData.mScript, motifPath);
 	getPathToFile(folder, motifPath.c_str());
-	setWorkingDirectory(folder);
 
-	char* text = getAllocatedMugenDefStringVariable(&gTitleScreenData.mScript, "Files", "spr");
+	auto text = getSTLMugenDefStringVariable(&gTitleScreenData.mScript, "files", "spr");
+	text = findMugenSystemOrFightFilePath(text, folder);
 	gTitleScreenData.mSprites = loadMugenSpriteFileWithoutPalette(text);
-	gTitleScreenData.mAnimations = loadMugenAnimationFile(getPureFileName(motifPath.c_str()));
-	freeMemory(text);
+	gTitleScreenData.mAnimations = loadMugenAnimationFile(motifPath.c_str());
 
-	text = getAllocatedMugenDefStringVariable(&gTitleScreenData.mScript, "Files", "snd");
-	gTitleScreenData.mSounds = loadMugenSoundFile(text);
-	freeMemory(text);
+	text = getSTLMugenDefStringVariable(&gTitleScreenData.mScript, "files", "snd");
+	text = findMugenSystemOrFightFilePath(text, folder);
+	gTitleScreenData.mSounds = loadMugenSoundFile(text.c_str());
 	
 	loadMenuHeader();
 	loadDemoHeader();
-	loadMenuBackground(&gTitleScreenData.mScript, &gTitleScreenData.mSprites, &gTitleScreenData.mAnimations, "TitleBGdef", "TitleBG");
+	loadScriptBackground(&gTitleScreenData.mScript, &gTitleScreenData.mSprites, &gTitleScreenData.mAnimations, "titlebgdef", "titlebg");
 
 	gTitleScreenData.mMenus = new_vector();
 	addMenuPoint("menu.itemname.story", storyCB);
@@ -403,7 +407,6 @@ static void loadTitleScreen() {
 
 	loadCredits();
 
-	setWorkingDirectory("/");
 	loadTitleMusic();
 
 	addFadeIn(gTitleScreenData.mHeader.mFadeInTime, NULL, NULL);
@@ -413,7 +416,7 @@ static void loadTitleScreen() {
 }
 
 static void unloadTitleScreen() {
-	unloadMugenDefScript(gTitleScreenData.mScript);
+	unloadMugenDefScript(&gTitleScreenData.mScript);
 	unloadMugenSpriteFile(&gTitleScreenData.mSprites);
 	unloadMugenAnimationFile(&gTitleScreenData.mAnimations);
 	unloadMugenSoundFile(&gTitleScreenData.mSounds);

@@ -32,7 +32,7 @@ typedef struct {
 
 	int mExternalID;
 	DreamExplodSpace mSpace;
-	Position mPosition;
+	Position2D mPosition;
 	DreamExplodPositionType mPositionType;
 
 	int mIsFlippedHorizontallyAtStart;
@@ -45,13 +45,13 @@ typedef struct {
 	Velocity mVelocity;
 	Acceleration mAcceleration;
 
-	Vector3DI mRandomOffset;
+	Vector2DI mRandomOffset;
 	int mRemoveTime = -2;
 
 	int mSuperMoveTime;
 	int mPauseMoveTime;
 
-	Vector3D mScale;
+	Vector2D mScale;
 	int mSpritePriority;
 	int mIsOnTop;
 
@@ -122,8 +122,8 @@ void setExplodSpace(int tID, DreamExplodSpace tSpace)
 void setExplodPosition(int tID, int tOffsetX, int tOffsetY)
 {
 	Explod* e = &gMugenExplod.mExplods[tID];
-	e->mPosition = makePosition(tOffsetX, tOffsetY, 0);
-	e->mPosition = transformDreamCoordinatesVector(e->mPosition, getActiveStateMachineCoordinateP(), getDreamMugenStageHandlerCameraCoordinateP());
+	e->mPosition = Vector2D(tOffsetX, tOffsetY);
+	e->mPosition = transformDreamCoordinatesVector2D(e->mPosition, getActiveStateMachineCoordinateP(), getDreamMugenStageHandlerCameraCoordinateP());
 }
 
 void setExplodPositionType(int tID, DreamExplodPositionType tType)
@@ -154,14 +154,14 @@ void setExplodBindTime(int tID, int tBindTime)
 void setExplodVelocity(int tID, double tX, double tY)
 {
 	Explod* e = &gMugenExplod.mExplods[tID];
-	e->mVelocity = makePosition(tX, tY, 0);
+	e->mVelocity = Vector3D(tX, tY, 0);
 	e->mVelocity = transformDreamCoordinatesVector(e->mVelocity, getActiveStateMachineCoordinateP(), getDreamMugenStageHandlerCameraCoordinateP());
 }
 
 void setExplodAcceleration(int tID, double tX, double tY)
 {
 	Explod* e = &gMugenExplod.mExplods[tID];
-	e->mAcceleration = makePosition(tX, tY, 0);
+	e->mAcceleration = Vector3D(tX, tY, 0);
 	e->mAcceleration = transformDreamCoordinatesVector(e->mAcceleration, getActiveStateMachineCoordinateP(), getDreamMugenStageHandlerCameraCoordinateP());
 }
 
@@ -176,8 +176,8 @@ static int getExplodRandomRangeMax(int tX) {
 void setExplodRandomOffset(int tID, int tX, int tY)
 {
 	Explod* e = &gMugenExplod.mExplods[tID];
-	e->mRandomOffset = makeVector3DI(randfromInteger(getExplodRandomRangeMin(tX), getExplodRandomRangeMax(tX)), randfromInteger(getExplodRandomRangeMin(tY), getExplodRandomRangeMax(tY)), 0);
-	e->mRandomOffset = transformDreamCoordinatesVectorI(e->mRandomOffset, getActiveStateMachineCoordinateP(), getDreamMugenStageHandlerCameraCoordinateP());
+	e->mRandomOffset = Vector2DI(randfromInteger(getExplodRandomRangeMin(tX), getExplodRandomRangeMax(tX)), randfromInteger(getExplodRandomRangeMin(tY), getExplodRandomRangeMax(tY)));
+	e->mRandomOffset = transformDreamCoordinatesVector2DI(e->mRandomOffset, getActiveStateMachineCoordinateP(), getDreamMugenStageHandlerCameraCoordinateP());
 }
 
 void setExplodRemoveTime(int tID, int tRemoveTime)
@@ -207,7 +207,7 @@ void setExplodPauseMoveTime(int tID, int tPauseMoveTime)
 void setExplodScale(int tID, double tX, double tY)
 {
 	Explod* e = &gMugenExplod.mExplods[tID];
-	e->mScale = makePosition(tX, tY, 0);
+	e->mScale = Vector2D(tX, tY);
 }
 
 void setExplodSpritePriority(int tID, int tSpritePriority)
@@ -228,7 +228,7 @@ static void parseShadowStatus(Explod* e, int tR, int tG, int tB) {
 
 	}
 	else {
-		e->mShadowColor = makePosition(tR / 255.0, tG / 255.0, tB / 255.0);
+		e->mShadowColor = Vector3D(tR / 255.0, tG / 255.0, tB / 255.0);
 	}
 }
 
@@ -265,60 +265,60 @@ void setExplodTransparencyType(int tID, int tHasTransparencyType, DreamExplodTra
 
 static void explodAnimationFinishedCB(void* tCaller);
 
-static Position getFinalExplodPositionFromPositionType(DreamExplodPositionType tPositionType, Position mOffset, DreamPlayer* tPlayer) {
+static Position2D getFinalExplodPositionFromPositionType(DreamExplodPositionType tPositionType, Position2D mOffset, DreamPlayer* tPlayer) {
 	if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P1) {
 		DreamPlayer* target = tPlayer;
-		Position p = getPlayerPosition(target, getDreamMugenStageHandlerCameraCoordinateP());
+		const auto p = getPlayerPosition(target, getDreamMugenStageHandlerCameraCoordinateP());
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p, mOffset);
+		return p + mOffset;
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_P2) {
 		DreamPlayer* target = getPlayerOtherPlayer(tPlayer);
-		Position p = getPlayerPosition(target, getDreamMugenStageHandlerCameraCoordinateP());
+		const auto p = getPlayerPosition(target, getDreamMugenStageHandlerCameraCoordinateP());
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p, mOffset);
+		return p + mOffset;
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_FRONT) {
 		DreamPlayer* target = tPlayer;
-		Position p = makePosition(getPlayerScreenEdgeInFrontX(target, getDreamMugenStageHandlerCameraCoordinateP()), getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(getDreamMugenStageHandlerCameraCoordinateP()), 0);
+		const auto p = Vector2D(getPlayerScreenEdgeInFrontX(target, getDreamMugenStageHandlerCameraCoordinateP()), getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(getDreamMugenStageHandlerCameraCoordinateP()));
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p, mOffset);
+		return p + mOffset;
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_BACK) {
 		DreamPlayer* target = tPlayer;
-		Position p = makePosition(getPlayerScreenEdgeInBackX(target, getDreamMugenStageHandlerCameraCoordinateP()), getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(getDreamMugenStageHandlerCameraCoordinateP()), 0);
+		const auto p = Vector2D(getPlayerScreenEdgeInBackX(target, getDreamMugenStageHandlerCameraCoordinateP()), getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(getDreamMugenStageHandlerCameraCoordinateP()));
 		int isReversed = getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p, mOffset);
+		return p + mOffset;
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_LEFT) {
-		Position p = makePosition(getDreamStageLeftOfScreenBasedOnPlayer(getDreamMugenStageHandlerCameraCoordinateP()), getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(getDreamMugenStageHandlerCameraCoordinateP()), 0);
-		return vecAdd(p, mOffset);
+		const auto p = Vector2D(getDreamStageLeftOfScreenBasedOnPlayer(getDreamMugenStageHandlerCameraCoordinateP()), getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(getDreamMugenStageHandlerCameraCoordinateP()));
+		return p + mOffset;
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_RELATIVE_TO_RIGHT) {
-		Position p = makePosition(getDreamStageRightOfScreenBasedOnPlayer(getDreamMugenStageHandlerCameraCoordinateP()), getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(getDreamMugenStageHandlerCameraCoordinateP()), 0);
-		return vecAdd(p, mOffset);
+		const auto p = Vector2D(getDreamStageRightOfScreenBasedOnPlayer(getDreamMugenStageHandlerCameraCoordinateP()), getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(getDreamMugenStageHandlerCameraCoordinateP()));
+		return p + mOffset;
 	}
 	else if (tPositionType == EXPLOD_POSITION_TYPE_NONE) {
-		Position p = makePosition(getDreamGameWidth(getDreamMugenStageHandlerCameraCoordinateP()) / 2, 0, 0);
-		return vecAdd(p, mOffset);
+		const auto p = Vector2D(getDreamGameWidth(getDreamMugenStageHandlerCameraCoordinateP()) / 2, 0);
+		return p + mOffset;
 	}
 	else {
 		logWarningFormat("Unrecognized position type %d. Defaulting to EXPLOD_POSITION_TYPE_RELATIVE_TO_P1.", tPositionType);
 		DreamPlayer* target = tPlayer;
-		Position p = getPlayerPosition(target, getDreamMugenStageHandlerCameraCoordinateP());
+		const auto p = getPlayerPosition(target, getDreamMugenStageHandlerCameraCoordinateP());
 		int isReversed = !getPlayerIsFacingRight(target);
 		if (isReversed) mOffset.x *= -1;
-		return vecAdd(p, mOffset);
+		return p + mOffset;
 	}
 
 }
 
 static Position getExplodPosition(Explod* e) {
-	Position p;
+	Position2D p;
 	switch (e->mSpace) {
 	case EXPLOD_SPACE_NONE:
 		p = getDreamStageCoordinateSystemOffset(getDreamMugenStageHandlerCameraCoordinateP()) + getFinalExplodPositionFromPositionType(e->mPositionType, e->mPosition, e->mPlayer);
@@ -330,13 +330,12 @@ static Position getExplodPosition(Explod* e) {
 		p = e->mPosition;
 		break;
 	default:
-		p = makePosition(0.0, 0.0, 0.0);
+		p = Vector2D(0.0, 0.0);
 		logWarningFormat("Unrecognized explod space %d", int(e->mSpace));
 		break;
 	}
-	p.z = calculateSpriteZFromSpritePriority(e->mSpritePriority, e->mPlayer->mRootID, 1);
 	p = p + e->mRandomOffset;
-	return p;
+	return p.xyz(calculateSpriteZFromSpritePriority(e->mSpritePriority, e->mPlayer->mRootID, 1));
 }
 
 static void getExplodSpritesAnimationsScale(Explod* e, MugenSpriteFile** tSprites, MugenAnimation** tAnimation, double* tBaseScale) {
@@ -411,7 +410,7 @@ static void updateActiveExplodShadow(Explod* e) {
 	auto deltaY = noCameraPosY - stageOffset.y;
 	deltaY *= -getDreamStageShadowScaleY();
 	deltaY += getPlayerShadowOffset(e->mPlayer, getDreamMugenStageHandlerCameraCoordinateP());
-	const auto newShadowAnimationPosition = makePosition(explodAnimationPosition.x, stageOffset.y + deltaY - physicsPosition, EXPLOD_SHADOW_Z);
+	const auto newShadowAnimationPosition = Vector3D(explodAnimationPosition.x, stageOffset.y + deltaY - physicsPosition, EXPLOD_SHADOW_Z);
 	setMugenAnimationPosition(e->mShadowAnimationElement, newShadowAnimationPosition);
 	const auto posY = -(getDreamScreenHeight(getDreamMugenStageHandlerCameraCoordinateP()) - screenPositionY);
 	const auto t = getDreamStageShadowFadeRangeFactor(posY, getDreamMugenStageHandlerCameraCoordinateP());
@@ -444,12 +443,12 @@ void finalizeExplod(int tID)
 
 	updateExplodSpaceFinalization(e);
 
-	e->mPhysicsElement = addToPhysicsHandler(makePosition(0, 0, 0));
+	e->mPhysicsElement = addToPhysicsHandler(Vector3D(0, 0, 0));
 	addAccelerationToHandledPhysics(e->mPhysicsElement, e->mVelocity);
 
 	const auto p = getExplodPosition(e);
 	e->mAnimationElement = addMugenAnimation(animation, sprites, p);
-	e->mShadowAnimationElement = addMugenAnimation(animation, sprites, makePosition(0, 0, 0));
+	e->mShadowAnimationElement = addMugenAnimation(animation, sprites, Vector3D(0, 0, 0));
 	setMugenAnimationBasePosition(e->mAnimationElement, getHandledPhysicsPositionReference(e->mPhysicsElement));
 	setMugenAnimationBasePosition(e->mShadowAnimationElement, getHandledPhysicsPositionReference(e->mPhysicsElement));
 	setMugenAnimationCallback(e->mAnimationElement, explodAnimationFinishedCB, e);
@@ -458,7 +457,7 @@ void finalizeExplod(int tID)
 	setMugenAnimationVerticalFaceDirection(e->mAnimationElement, !e->mIsFlippedVertically);
 	setMugenAnimationVerticalFaceDirection(e->mShadowAnimationElement, !e->mIsFlippedVertically);
 	setMugenAnimationDrawScale(e->mAnimationElement, e->mScale);
-	setMugenAnimationDrawScale(e->mShadowAnimationElement, makePosition(1, -getDreamStageShadowScaleY(), 1) * e->mScale);
+	setMugenAnimationDrawScale(e->mShadowAnimationElement, Vector2D(1, -getDreamStageShadowScaleY()) * e->mScale);
 	setMugenAnimationBaseDrawScale(e->mAnimationElement, baseScale);
 	setMugenAnimationBaseDrawScale(e->mShadowAnimationElement, baseScale);
 	if (e->mHasTransparencyType) {
@@ -485,7 +484,7 @@ typedef struct {
 typedef struct {
 	DreamPlayer* mPlayer;
 	int mID;
-	Vector3D mValue;
+	Vector2D mValue;
 } FloatSetterForIDCaller;
 
 static void updateExplodAnimationForSingleExplod(IntegerSetterForIDCaller* tCaller, Explod& tData) {
@@ -565,8 +564,8 @@ static void updateExplodPositionForSingleExplod(IntegerSetterForIDCaller* tCalle
 	if (e->mPlayer != tCaller->mPlayer) return;
 	if (tCaller->mID != -1 && e->mExternalID != tCaller->mID) return;
 
-	e->mPosition = makePosition(tCaller->mValue.x, tCaller->mValue.y, 0);
-	e->mPosition = transformDreamCoordinatesVector(e->mPosition, getActiveStateMachineCoordinateP(), getDreamMugenStageHandlerCameraCoordinateP());
+	e->mPosition = Vector2D(tCaller->mValue.x, tCaller->mValue.y);
+	e->mPosition = transformDreamCoordinatesVector2D(e->mPosition, getActiveStateMachineCoordinateP(), getDreamMugenStageHandlerCameraCoordinateP());
 	updateExplodPositionAfterUpdate(e);
 }
 
@@ -605,7 +604,7 @@ static void updateExplodHorizontalFacingForSingleExplod(IntegerSetterForIDCaller
 	if (e->mPlayer != tCaller->mPlayer) return;
 	if (tCaller->mID != -1 && e->mExternalID != tCaller->mID) return;
 
-	e->mIsFlippedHorizontallyAtStart = e->mIsFlippedHorizontally = tCaller->mValue.x;
+	e->mIsFlippedHorizontallyAtStart = e->mIsFlippedHorizontally = tCaller->mValue.x == -1;
 	updateExplodSpaceFinalization(e);
 	setMugenAnimationFaceDirection(e->mAnimationElement, !e->mIsFlippedHorizontally);
 	setMugenAnimationFaceDirection(e->mShadowAnimationElement, !e->mIsFlippedHorizontally);
@@ -626,7 +625,7 @@ static void updateExplodVerticalFacingForSingleExplod(IntegerSetterForIDCaller* 
 	if (e->mPlayer != tCaller->mPlayer) return;
 	if (tCaller->mID != -1 && e->mExternalID != tCaller->mID) return;
 
-	e->mIsFlippedVertically = tCaller->mValue.x;
+	e->mIsFlippedVertically = tCaller->mValue.x == -1;
 	setMugenAnimationVerticalFaceDirection(e->mAnimationElement, !e->mIsFlippedVertically);
 	setMugenAnimationVerticalFaceDirection(e->mShadowAnimationElement, !e->mIsFlippedVertically);
 }
@@ -713,8 +712,8 @@ static void updateExplodRandomOffsetForSingleExplod(IntegerSetterForIDCaller* tC
 	if (e->mPlayer != tCaller->mPlayer) return;
 	if (tCaller->mID != -1 && e->mExternalID != tCaller->mID) return;
 
-	e->mRandomOffset = makeVector3DI(randfromInteger(getExplodRandomRangeMin(tCaller->mValue.x), getExplodRandomRangeMax(tCaller->mValue.x)), randfromInteger(getExplodRandomRangeMin(tCaller->mValue.y), getExplodRandomRangeMax(tCaller->mValue.y)), 0);
-	e->mRandomOffset = transformDreamCoordinatesVectorI(e->mRandomOffset, getActiveStateMachineCoordinateP(), getDreamMugenStageHandlerCameraCoordinateP());
+	e->mRandomOffset = Vector2DI(randfromInteger(getExplodRandomRangeMin(tCaller->mValue.x), getExplodRandomRangeMax(tCaller->mValue.x)), randfromInteger(getExplodRandomRangeMin(tCaller->mValue.y), getExplodRandomRangeMax(tCaller->mValue.y)));
+	e->mRandomOffset = transformDreamCoordinatesVector2DI(e->mRandomOffset, getActiveStateMachineCoordinateP(), getDreamMugenStageHandlerCameraCoordinateP());
 	updateExplodPositionAfterUpdate(e);
 }
 
@@ -809,7 +808,7 @@ static void updateExplodScaleForSingleExplod(FloatSetterForIDCaller* tCaller, Ex
 	e->mScale.x = tCaller->mValue.x;
 	e->mScale.y = tCaller->mValue.y;
 	setMugenAnimationDrawScale(e->mAnimationElement, e->mScale);
-	setMugenAnimationDrawScale(e->mShadowAnimationElement, makePosition(1, -getDreamStageShadowScaleY(), 1) * e->mScale);
+	setMugenAnimationDrawScale(e->mShadowAnimationElement, Vector2D(1, -getDreamStageShadowScaleY()) * e->mScale);
 }
 
 void updateExplodScale(DreamPlayer* tPlayer, int tID, double tX, double tY)
@@ -876,7 +875,7 @@ void updateExplodShadow(DreamPlayer* tPlayer, int tID, int tR, int tG, int tB)
 	IntegerSetterForIDCaller caller;
 	caller.mPlayer = tPlayer;
 	caller.mID = tID;
-	caller.mValue = makeVector3DI(tR, tG, tB);
+	caller.mValue = Vector3DI(tR, tG, tB);
 	stl_int_map_map(gMugenExplod.mExplods, updateExplodShadowForSingleExplod, &caller);
 }
 

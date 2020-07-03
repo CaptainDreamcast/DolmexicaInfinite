@@ -79,7 +79,7 @@ typedef struct {
 	
 	int mIsSparkInPlayerFile;
 	int mSparkNumber;
-	Vector3DI mSparkXY;
+	Vector2DI mSparkXY;
 
 	int mIsHitSoundInPlayerFile;
 	DreamMugenSound mHitSound;
@@ -124,7 +124,7 @@ typedef struct {
 	int mIsGuardSparkInPlayerFile;
 	int mGuardSparkNumber;
 
-	Position mSparkOffset;
+	Position2D mSparkOffset;
 
 	int mIsHitSoundInPlayerFile;
 	DreamMugenSound mHitSound;
@@ -144,10 +144,10 @@ typedef struct {
 	int mGuardDistance;
 
 	double mVerticalAcceleration;
-	Velocity mGroundVelocity;
+	Vector2D mGroundVelocity;
 	double mGuardVelocity;
-	Velocity mAirVelocity;
-	Velocity mAirGuardVelocity;
+	Vector2D mAirVelocity;
+	Vector2D mAirGuardVelocity;
 
 	double mGroundCornerPushVelocityOffset;
 	double mAirCornerPushVelocityOffset;
@@ -159,13 +159,13 @@ typedef struct {
 	int mAirJugglePoints;
 
 	int mHasMinimumDistance;
-	Vector3DI mMinimumDistance;
+	Vector2DI mMinimumDistance;
 
 	int mHasMaximumDistance;
-	Vector3DI mMaximumDistance;
+	Vector2DI mMaximumDistance;
 
 	int mHasSnap;
-	Vector3DI mSnap;
+	Vector2DI mSnap;
 
 	int mPlayer1DrawingPriority;
 	int mPlayer2DrawingPriority;
@@ -181,7 +181,7 @@ typedef struct {
 	int mIsForcingPlayer2ToStandingPosition;
 
 	int mFall;
-	Velocity mFallVelocity;
+	Vector2D mFallVelocity;
 
 	int mCanRecoverFall;
 	int mFallRecoveryTime;
@@ -190,13 +190,13 @@ typedef struct {
 	int mAirFall;
 	int mForcePlayer2OutOfFallState;
 
-	Velocity mDownVelocity;
+	Vector2D mDownVelocity;
 	int mDownHitTime;
 	int mDownDoesBounce;
 
 	int mHitID;
 	int mChainID;
-	Vector3DI mNoChainIDs;
+	Vector2DI mNoChainIDs;
 
 	int mDoesOnlyHitOneEnemy;
 
@@ -226,7 +226,7 @@ typedef struct {
 	int mFallEnvironmentShakeAmplitude;
 	double mFallEnvironmentShakePhase;
 
-	Velocity mVelocity;
+	Vector2D mVelocity;
 
 	int mIsFacingRight;
 
@@ -319,13 +319,13 @@ int getHitDataGuardSparkNumber(DreamPlayer * tPlayer);
 int getHitDataSparkNumber(DreamPlayer* tPlayer);
 void setHitDataSparkNumber(DreamPlayer* tPlayer, int tIsInPlayerFile, int tNumber);
 void setHitDataGuardSparkNumber(DreamPlayer* tPlayer, int tIsInPlayerFile, int tNumber);
-Position getActiveHitDataSparkXY(DreamPlayer* tPlayer);
-Position getHitDataSparkXY(DreamPlayer* tPlayer);
+Position2D getActiveHitDataSparkXY(DreamPlayer* tPlayer);
+Position2D getHitDataSparkXY(DreamPlayer* tPlayer);
 void setHitDataSparkXY(DreamPlayer* tPlayer, int tX, int tY);
 
-void getActiveHitDataHitSound(DreamPlayer* tPlayer, int* oIsInPlayerFile, Vector3DI* oSound);
+void getActiveHitDataHitSound(DreamPlayer* tPlayer, int* oIsInPlayerFile, Vector2DI* oSound);
 void setHitDataHitSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tGroup, int tItem);
-void getActiveHitDataGuardSound(DreamPlayer* tPlayer, int* oIsInPlayerFile, Vector3DI* oSound);
+void getActiveHitDataGuardSound(DreamPlayer* tPlayer, int* oIsInPlayerFile, Vector2DI* oSound);
 void setHitDataGuardSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tGroup, int tItem);
 
 MugenAttackHeight getActiveHitDataGroundType(DreamPlayer* tPlayer);
@@ -394,17 +394,17 @@ void setHitDataAirGuardControlTime(DreamPlayer* tPlayer, int tControlTime);
 void setHitDataAirJuggle(DreamPlayer* tPlayer, int tJuggle);
 
 int getActiveHitDataHasMinimumDistance(DreamPlayer* tPlayer);
-Vector3DI getActiveHitDataMinimumDistance(DreamPlayer* tPlayer);
+Vector2DI getActiveHitDataMinimumDistance(DreamPlayer* tPlayer);
 void setHitDataMinimumDistanceInactive(DreamPlayer* tPlayer);
 void setHitDataMinimumDistance(DreamPlayer* tPlayer, int x, int y);
 
 int getActiveHitDataHasMaximumDistance(DreamPlayer* tPlayer);
-Vector3DI getActiveHitDataMaximumDistance(DreamPlayer* tPlayer);
+Vector2DI getActiveHitDataMaximumDistance(DreamPlayer* tPlayer);
 void setHitDataMaximumDistanceInactive(DreamPlayer* tPlayer);
 void setHitDataMaximumDistance(DreamPlayer* tPlayer, int x, int y);
 
 int getActiveHitDataHasSnap(DreamPlayer* tPlayer);
-Vector3DI getActiveHitDataSnap(DreamPlayer* tPlayer);
+Vector2DI getActiveHitDataSnap(DreamPlayer* tPlayer);
 void setHitDataSnapInactive(DreamPlayer* tPlayer);
 void setHitDataSnap(DreamPlayer* tPlayer, int x, int y);
 
@@ -528,9 +528,9 @@ void setReversalDefPauseTime(DreamPlayer* tPlayer, int tPlayer1PauseTime, int tP
 int isReversalDefSparkInPlayerFile(DreamPlayer* tPlayer);
 int getReversalDefSparkNumber(DreamPlayer* tPlayer);
 void setReversalDefSparkNumber(DreamPlayer* tPlayer, int tIsInPlayerFile, int tNumber);
-Vector3DI getReversalDefSparkXY(DreamPlayer* tPlayer);
+Vector2DI getReversalDefSparkXY(DreamPlayer* tPlayer);
 void setReversalDefSparkXY(DreamPlayer* tPlayer, int tX, int tY);
-void getReversalDefHitSound(DreamPlayer* tPlayer, int* oIsInPlayerFile, Vector3DI* oHitSound);
+void getReversalDefHitSound(DreamPlayer* tPlayer, int* oIsInPlayerFile, Vector2DI* oHitSound);
 void setReversalDefHitSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tGroup, int tItem);
 int hasReversalDefP1StateNo(DreamPlayer* tPlayer);
 int getReversalDefP1StateNo(DreamPlayer* tPlayer);

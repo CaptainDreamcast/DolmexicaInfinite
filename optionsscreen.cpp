@@ -17,7 +17,7 @@
 #include <prism/saveload.h>
 
 #include "titlescreen.h"
-#include "menubackground.h"
+#include "scriptbackground.h"
 #include "boxcursorhandler.h"
 #include "config.h"
 
@@ -162,6 +162,7 @@ typedef enum {
 
 static struct {
 	TextureData mWhiteTexture;
+	int mTextFontID;
 
 	MugenDefScript mScript;
 	MugenSpriteFile mSprites;
@@ -181,9 +182,9 @@ static struct {
 } gOptionsScreenData;
 
 static void loadOptionsHeader() {
-	gOptionsScreenData.mHeader.mCursorMoveSound = getMugenDefVectorIOrDefault(&gOptionsScreenData.mScript, "Option Info", "cursor.move.snd", makeVector3DI(1, 0, 0));
-	gOptionsScreenData.mHeader.mCursorDoneSound = getMugenDefVectorIOrDefault(&gOptionsScreenData.mScript, "Option Info", "cursor.done.snd", makeVector3DI(1, 0, 0));
-	gOptionsScreenData.mHeader.mCancelSound = getMugenDefVectorIOrDefault(&gOptionsScreenData.mScript, "Option Info", "cancel.snd", makeVector3DI(1, 0, 0));
+	gOptionsScreenData.mHeader.mCursorMoveSound = getMugenDefVectorIOrDefault(&gOptionsScreenData.mScript, "option info", "cursor.move.snd", Vector3DI(1, 0, 0));
+	gOptionsScreenData.mHeader.mCursorDoneSound = getMugenDefVectorIOrDefault(&gOptionsScreenData.mScript, "option info", "cursor.done.snd", Vector3DI(1, 0, 0));
+	gOptionsScreenData.mHeader.mCancelSound = getMugenDefVectorIOrDefault(&gOptionsScreenData.mScript, "option info", "cancel.snd", Vector3DI(1, 0, 0));
 
 }
 
@@ -224,81 +225,81 @@ static void setGameSpeedOptionText();
 static void setVolumeOptionText(GeneralSettingType tType, int(*tGet)());
 
 static void loadGeneralOptionsScreen() {
-	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationElement, makePosition(52, 35, 40));
-	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, makePosition(216, 198, 1), makePosition(0, 0, 0));
+	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationElement, Vector3D(52, 35, 40));
+	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, Vector3D(216, 198, 1), Vector3D(0, 0, 0));
 	
 	changeMugenText(gOptionsScreenData.mHeaderTextID, "OPTIONS");
-	setMugenTextPosition(gOptionsScreenData.mHeaderTextID, makePosition(160, 20, 60));
+	setMugenTextPosition(gOptionsScreenData.mHeaderTextID, Vector3D(160, 20, 45));
 	gOptionsScreenData.mActiveScreen = OPTION_SCREEN_GENERAL;
 
 	int offsetX = 70;
 	int startY = 50;
 	int offsetY = 13;
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_DIFFICULTY] = addMugenTextMugenStyle("Difficulty", makePosition(offsetX, startY, 60), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_DIFFICULTY] = addMugenTextMugenStyle("Hard 8", makePosition(320 - offsetX, startY, 60), makeVector3DI(2, 8, -1));
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_DIFFICULTY] = addMugenTextMugenStyle("Difficulty", Vector3D(offsetX, startY, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_DIFFICULTY] = addMugenTextMugenStyle("Hard 8", Vector3D(320 - offsetX, startY, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 	setDifficultyOptionText();
 
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_LIFE] = addMugenTextMugenStyle("Life", makePosition(offsetX, startY + offsetY * 1, 60), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LIFE] = addMugenTextMugenStyle("100%", makePosition(320 - offsetX, startY + offsetY * 1, 60), makeVector3DI(2, 8, -1));
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_LIFE] = addMugenTextMugenStyle("Life", Vector3D(offsetX, startY + offsetY * 1, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LIFE] = addMugenTextMugenStyle("100%", Vector3D(320 - offsetX, startY + offsetY * 1, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 	setLifeOptionText();
 
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_TIME_LIMIT] = addMugenTextMugenStyle("Time Limit", makePosition(offsetX, startY + offsetY * 2, 60), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_TIME_LIMIT] = addMugenTextMugenStyle("99", makePosition(320 - offsetX, startY + offsetY * 2, 60), makeVector3DI(2, 8, -1));
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_TIME_LIMIT] = addMugenTextMugenStyle("Time Limit", Vector3D(offsetX, startY + offsetY * 2, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_TIME_LIMIT] = addMugenTextMugenStyle("99", Vector3D(320 - offsetX, startY + offsetY * 2, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 	setTimeLimitOptionText();
 
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_GAME_SPEED] = addMugenTextMugenStyle("Game Speed", makePosition(offsetX, startY + offsetY * 3, 60), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_GAME_SPEED] = addMugenTextMugenStyle("Normal", makePosition(320 - offsetX, startY + offsetY * 3, 60), makeVector3DI(2, 8, -1));
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_GAME_SPEED] = addMugenTextMugenStyle("Game Speed", Vector3D(offsetX, startY + offsetY * 3, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_GAME_SPEED] = addMugenTextMugenStyle("Normal", Vector3D(320 - offsetX, startY + offsetY * 3, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 	setGameSpeedOptionText();
 
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_WAV_VOLUME] = addMugenTextMugenStyle("Wav Volume", makePosition(offsetX, startY + offsetY * 4, 60), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_WAV_VOLUME] = addMugenTextMugenStyle("50", makePosition(320 - offsetX, startY + offsetY * 4, 60), makeVector3DI(2, 8, -1));
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_WAV_VOLUME] = addMugenTextMugenStyle("Wav Volume", Vector3D(offsetX, startY + offsetY * 4, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_WAV_VOLUME] = addMugenTextMugenStyle("50", Vector3D(320 - offsetX, startY + offsetY * 4, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 	setVolumeOptionText(GENERAL_SETTING_WAV_VOLUME, getUnscaledGameWavVolume);
 
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_MIDI_VOLUME] = addMugenTextMugenStyle("Midi Volume", makePosition(offsetX, startY + offsetY * 5, 60), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_MIDI_VOLUME] = addMugenTextMugenStyle("50", makePosition(320 - offsetX, startY + offsetY * 5, 60), makeVector3DI(2, 8, -1));
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_MIDI_VOLUME] = addMugenTextMugenStyle("Midi Volume", Vector3D(offsetX, startY + offsetY * 5, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_MIDI_VOLUME] = addMugenTextMugenStyle("50", Vector3D(320 - offsetX, startY + offsetY * 5, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 	setVolumeOptionText(GENERAL_SETTING_MIDI_VOLUME, getUnscaledGameMidiVolume);
 
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_INPUT_CONFIG] = addMugenTextMugenStyle("Input Config", makePosition(offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 8, 1));
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_INPUT_CONFIG] = addMugenTextMugenStyle("Input Config", Vector3D(offsetX, startY + offsetY * 6, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
 	if (!isUsingController()) {
-		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_INPUT_CONFIG] = addMugenTextMugenStyle("(F1)", makePosition(320 - offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 5, -1));
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_INPUT_CONFIG] = addMugenTextMugenStyle("(F1)", Vector3D(320 - offsetX, startY + offsetY * 6, 45), Vector3DI(gOptionsScreenData.mTextFontID, 5, -1));
 	}
 	else {
-		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_INPUT_CONFIG] = addMugenTextMugenStyle("(X)", makePosition(320 - offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 5, -1));
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_INPUT_CONFIG] = addMugenTextMugenStyle("(X)", Vector3D(320 - offsetX, startY + offsetY * 6, 45), Vector3DI(gOptionsScreenData.mTextFontID, 5, -1));
 	}
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_TEAM_MODE_CONFIG] = addMugenTextMugenStyle("Team Mode Config", makePosition(offsetX, startY + offsetY * 7, 60), makeVector3DI(2, 8, 1));
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_TEAM_MODE_CONFIG] = addMugenTextMugenStyle("Team Mode Config", Vector3D(offsetX, startY + offsetY * 7, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
 	if (!isUsingController()) {
-		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_TEAM_MODE_CONFIG] = addMugenTextMugenStyle("(F2)", makePosition(320 - offsetX, startY + offsetY * 7, 60), makeVector3DI(2, 5, -1));
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_TEAM_MODE_CONFIG] = addMugenTextMugenStyle("(F2)", Vector3D(320 - offsetX, startY + offsetY * 7, 45), Vector3DI(gOptionsScreenData.mTextFontID, 5, -1));
 	}
 	else {
-		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_TEAM_MODE_CONFIG] = addMugenTextMugenStyle("(Y)", makePosition(320 - offsetX, startY + offsetY * 7, 60), makeVector3DI(2, 2, -1));
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_TEAM_MODE_CONFIG] = addMugenTextMugenStyle("(Y)", Vector3D(320 - offsetX, startY + offsetY * 7, 45), Vector3DI(gOptionsScreenData.mTextFontID, 2, -1));
 	}
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_LOAD_SAVE_OPTIONS] = addMugenTextMugenStyle("Load/Save Options", makePosition(offsetX, startY + offsetY * 9, 60), makeVector3DI(2, 8, 1));
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_LOAD_SAVE_OPTIONS] = addMugenTextMugenStyle("Load/Save Options", Vector3D(offsetX, startY + offsetY * 9, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
 	if (isOnDreamcast()) {
-		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LOAD_SAVE_OPTIONS] = addMugenTextMugenStyle("", makePosition(320 - offsetX, startY + offsetY * 9, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LOAD_SAVE_OPTIONS] = addMugenTextMugenStyle("", Vector3D(320 - offsetX, startY + offsetY * 9, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 	}
 	else {
-		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LOAD_SAVE_OPTIONS] = addMugenTextMugenStyle("Load", makePosition(320 - offsetX, startY + offsetY * 9, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LOAD_SAVE_OPTIONS] = addMugenTextMugenStyle("Load", Vector3D(320 - offsetX, startY + offsetY * 9, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 	}
 
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_LOAD_SAVE_VARS] = addMugenTextMugenStyle("Load/Save Global Vars", makePosition(offsetX, startY + offsetY * 10, 60), makeVector3DI(2, 8, 1));
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_LOAD_SAVE_VARS] = addMugenTextMugenStyle("Load/Save Global Vars", Vector3D(offsetX, startY + offsetY * 10, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
 	if (isOnDreamcast()) {
-		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LOAD_SAVE_VARS] = addMugenTextMugenStyle("", makePosition(320 - offsetX, startY + offsetY * 10, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LOAD_SAVE_VARS] = addMugenTextMugenStyle("", Vector3D(320 - offsetX, startY + offsetY * 10, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 	}
 	else {
-		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LOAD_SAVE_VARS] = addMugenTextMugenStyle("Load", makePosition(320 - offsetX, startY + offsetY * 10, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_LOAD_SAVE_VARS] = addMugenTextMugenStyle("Load", Vector3D(320 - offsetX, startY + offsetY * 10, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 	}
 
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_DEFAULT_VALUES] = addMugenTextMugenStyle("Default Values", makePosition(offsetX, startY + offsetY * 11, 60), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_DEFAULT_VALUES] = addMugenTextMugenStyle("", makePosition(320 - offsetX, startY + offsetY * 11, 60), makeVector3DI(2, 8, -1));
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_DEFAULT_VALUES] = addMugenTextMugenStyle("Default Values", Vector3D(offsetX, startY + offsetY * 11, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+	gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_DEFAULT_VALUES] = addMugenTextMugenStyle("", Vector3D(320 - offsetX, startY + offsetY * 11, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
-	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_RETURN] = addMugenTextMugenStyle("Return to Main Menu", makePosition(offsetX, startY + offsetY * 13, 60), makeVector3DI(2, 8, 1));
+	gOptionsScreenData.mGeneral.mSelectableTextID[GENERAL_SETTING_RETURN] = addMugenTextMugenStyle("Return to Main Menu", Vector3D(offsetX, startY + offsetY * 13, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
 	if (!isUsingController()) {
-		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_RETURN] = addMugenTextMugenStyle("(Esc)", makePosition(320 - offsetX, startY + offsetY * 13, 60), makeVector3DI(2, 5, -1));
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_RETURN] = addMugenTextMugenStyle("(Esc)", Vector3D(320 - offsetX, startY + offsetY * 13, 45), Vector3DI(gOptionsScreenData.mTextFontID, 5, -1));
 	}
 	else {
-		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_RETURN] = addMugenTextMugenStyle("(B)", makePosition(320 - offsetX, startY + offsetY * 13, 60), makeVector3DI(2, 3, -1));
+		gOptionsScreenData.mGeneral.mSettingTextID[GENERAL_SETTING_RETURN] = addMugenTextMugenStyle("(B)", Vector3D(320 - offsetX, startY + offsetY * 13, 45), Vector3DI(gOptionsScreenData.mTextFontID, 3, -1));
 	}
-	gOptionsScreenData.mGeneral.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 50), GeoRectangle2D(-6, -11, 320 - 2 * offsetX + 10, 14));
+	gOptionsScreenData.mGeneral.mBoxCursorID = addBoxCursor(Vector3D(0, 0, 0), Vector3D(0, 0, 43), GeoRectangle2D(-6, -11, 320 - 2 * offsetX + 10, 14));
 
 	setSelectedGeneralOptionActive();
 }
@@ -342,15 +343,15 @@ static void setSelectedInputConfigOptionInactive(int i) {
 }
 
 static void loadInputConfigOptionsScreen() {
-	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationElement, makePosition(13, 35, 40));
-	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, makePosition(292, 121, 1), makePosition(0, 0, 0));
+	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationElement, Vector3D(13, 35, 40));
+	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, Vector3D(292, 121, 1), Vector3D(0, 0, 0));
 
 	changeMugenText(gOptionsScreenData.mHeaderTextID, "INPUT CONFIG");
-	setMugenTextPosition(gOptionsScreenData.mHeaderTextID, makePosition(160, 20, 60));
+	setMugenTextPosition(gOptionsScreenData.mHeaderTextID, Vector3D(160, 20, 45));
 	gOptionsScreenData.mActiveScreen = OPTION_SCREEN_INPUT_CONFIG;
 
-	gOptionsScreenData.mInputConfig.mPlayerTextID[0] = addMugenTextMugenStyle("PLAYER 1", makePosition(80, 48, 60), makeVector3DI(2, 4, 0));
-	gOptionsScreenData.mInputConfig.mPlayerTextID[1] = addMugenTextMugenStyle("PLAYER 2", makePosition(240, 48, 60), makeVector3DI(2, 1, 0));
+	gOptionsScreenData.mInputConfig.mPlayerTextID[0] = addMugenTextMugenStyle("PLAYER 1", Vector3D(80, 48, 45), Vector3DI(gOptionsScreenData.mTextFontID, 4, 0));
+	gOptionsScreenData.mInputConfig.mPlayerTextID[1] = addMugenTextMugenStyle("PLAYER 2", Vector3D(240, 48, 45), Vector3DI(gOptionsScreenData.mTextFontID, 1, 0));
 
 
 	int left = 0;
@@ -360,50 +361,50 @@ static void loadInputConfigOptionsScreen() {
 	int offsetY = 13;
 	for (int i = 0; i < 2; i++) {
 
-		gOptionsScreenData.mInputConfig.mSelectableTextID[i][INPUT_CONFIG_SETTING_KEY_CONFIG] = addMugenTextMugenStyle("Key Config", makePosition(left + offsetX, startY, 60), makeVector3DI(2, 8, 1));
+		gOptionsScreenData.mInputConfig.mSelectableTextID[i][INPUT_CONFIG_SETTING_KEY_CONFIG] = addMugenTextMugenStyle("Key Config", Vector3D(left + offsetX, startY, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
 		if (!i) {
-			gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_KEY_CONFIG] = addMugenTextMugenStyle("", makePosition(right - offsetX, startY, 60), makeVector3DI(2, 8, -1));
+			gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_KEY_CONFIG] = addMugenTextMugenStyle("", Vector3D(right - offsetX, startY, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 		}
 		else {
 			if (!isUsingController()) {
-				gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_KEY_CONFIG] = addMugenTextMugenStyle("(F1)", makePosition(right - offsetX, startY, 60), makeVector3DI(2, 5, -1));
+				gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_KEY_CONFIG] = addMugenTextMugenStyle("(F1)", Vector3D(right - offsetX, startY, 45), Vector3DI(gOptionsScreenData.mTextFontID, 5, -1));
 			}
 			else {
-				gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_KEY_CONFIG] = addMugenTextMugenStyle("(X)", makePosition(right - offsetX, startY, 60), makeVector3DI(2, 5, -1));
+				gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_KEY_CONFIG] = addMugenTextMugenStyle("(X)", Vector3D(right - offsetX, startY, 45), Vector3DI(gOptionsScreenData.mTextFontID, 5, -1));
 			}
 		}
-		gOptionsScreenData.mInputConfig.mSelectableTextID[i][INPUT_CONFIG_SETTING_JOYSTICK_TYPE] = addMugenTextMugenStyle("Joystick Type", makePosition(left + offsetX, startY + offsetY * 2, 60), makeVector3DI(2, 8, 1));
-		gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_JOYSTICK_TYPE] = addMugenTextMugenStyle("Disabled", makePosition(right - offsetX, startY + offsetY * 2, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mInputConfig.mSelectableTextID[i][INPUT_CONFIG_SETTING_JOYSTICK_TYPE] = addMugenTextMugenStyle("Joystick Type", Vector3D(left + offsetX, startY + offsetY * 2, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+		gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_JOYSTICK_TYPE] = addMugenTextMugenStyle("Disabled", Vector3D(right - offsetX, startY + offsetY * 2, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
-		gOptionsScreenData.mInputConfig.mSelectableTextID[i][INPUT_CONFIG_SETTING_JOYSTICK_CONFIG] = addMugenTextMugenStyle("Joystick Config", makePosition(left + offsetX, startY + offsetY * 3, 60), makeVector3DI(2, 8, 1));
+		gOptionsScreenData.mInputConfig.mSelectableTextID[i][INPUT_CONFIG_SETTING_JOYSTICK_CONFIG] = addMugenTextMugenStyle("Joystick Config", Vector3D(left + offsetX, startY + offsetY * 3, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
 		if (!i) {
-			gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_JOYSTICK_CONFIG] = addMugenTextMugenStyle("", makePosition(right - offsetX, startY + offsetY * 3, 60), makeVector3DI(2, 8, -1));
+			gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_JOYSTICK_CONFIG] = addMugenTextMugenStyle("", Vector3D(right - offsetX, startY + offsetY * 3, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 		}
 		else {
 			if (!isUsingController()) {
-				gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_JOYSTICK_CONFIG] = addMugenTextMugenStyle("(F2)", makePosition(right - offsetX, startY + offsetY * 3, 60), makeVector3DI(2, 5, -1));
+				gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_JOYSTICK_CONFIG] = addMugenTextMugenStyle("(F2)", Vector3D(right - offsetX, startY + offsetY * 3, 45), Vector3DI(gOptionsScreenData.mTextFontID, 5, -1));
 			}
 			else {
-				gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_JOYSTICK_CONFIG] = addMugenTextMugenStyle("(Y)", makePosition(right - offsetX, startY + offsetY * 3, 60), makeVector3DI(2, 2, -1));
+				gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_JOYSTICK_CONFIG] = addMugenTextMugenStyle("(Y)", Vector3D(right - offsetX, startY + offsetY * 3, 45), Vector3DI(gOptionsScreenData.mTextFontID, 2, -1));
 			}
 		}
-		gOptionsScreenData.mInputConfig.mSelectableTextID[i][INPUT_CONFIG_SETTING_DEFAULT_VALUES] = addMugenTextMugenStyle("Default Values", makePosition(left + offsetX, startY + offsetY * 5, 60), makeVector3DI(2, 8, 1));
-		gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_DEFAULT_VALUES] = addMugenTextMugenStyle("", makePosition(right - offsetX, startY + offsetY * 5, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mInputConfig.mSelectableTextID[i][INPUT_CONFIG_SETTING_DEFAULT_VALUES] = addMugenTextMugenStyle("Default Values", Vector3D(left + offsetX, startY + offsetY * 5, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+		gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_DEFAULT_VALUES] = addMugenTextMugenStyle("", Vector3D(right - offsetX, startY + offsetY * 5, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
-		gOptionsScreenData.mInputConfig.mSelectableTextID[i][INPUT_CONFIG_SETTING_RETURN] = addMugenTextMugenStyle("Return to Options", makePosition(left + offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 8, 1));
+		gOptionsScreenData.mInputConfig.mSelectableTextID[i][INPUT_CONFIG_SETTING_RETURN] = addMugenTextMugenStyle("Return to Options", Vector3D(left + offsetX, startY + offsetY * 6, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
 		
 		if (!i) {
-			gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_RETURN] = addMugenTextMugenStyle("", makePosition(right - offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 8, -1));
+			gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_RETURN] = addMugenTextMugenStyle("", Vector3D(right - offsetX, startY + offsetY * 6, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 		}
 		else {
 			if (!isUsingController()) {
-				gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_RETURN] = addMugenTextMugenStyle("", makePosition(right - offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 5, -1));
+				gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_RETURN] = addMugenTextMugenStyle("", Vector3D(right - offsetX, startY + offsetY * 6, 45), Vector3DI(gOptionsScreenData.mTextFontID, 5, -1));
 			}
 			else {
-				gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_RETURN] = addMugenTextMugenStyle("(B)", makePosition(right - offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 3, -1));
+				gOptionsScreenData.mInputConfig.mSettingTextID[i][INPUT_CONFIG_SETTING_RETURN] = addMugenTextMugenStyle("(B)", Vector3D(right - offsetX, startY + offsetY * 6, 45), Vector3DI(gOptionsScreenData.mTextFontID, 3, -1));
 			}
 		}
-		gOptionsScreenData.mInputConfig.mBoxCursorID[i] = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 50), GeoRectangle2D(-6, -11, 160 - 2 * offsetX + 10, 14));
+		gOptionsScreenData.mInputConfig.mBoxCursorID[i] = addBoxCursor(Vector3D(0, 0, 0), Vector3D(0, 0, 43), GeoRectangle2D(-6, -11, 160 - 2 * offsetX + 10, 14));
 
 		left = 160;
 		right = 320;
@@ -539,15 +540,15 @@ static string gButtonNames[11] = {
 };
 
 static void loadKeyConfigOptionsScreen() {
-	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationElement, makePosition(33, 15, 40));
-	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, makePosition(252, 221, 1), makePosition(0, 0, 0));
+	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationElement, Vector3D(33, 15, 40));
+	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, Vector3D(252, 221, 1), Vector3D(0, 0, 0));
 
 	changeMugenText(gOptionsScreenData.mHeaderTextID, "KEY CONFIG");
-	setMugenTextPosition(gOptionsScreenData.mHeaderTextID, makePosition(161, 11, 60));
+	setMugenTextPosition(gOptionsScreenData.mHeaderTextID, Vector3D(161, 11, 45));
 	gOptionsScreenData.mActiveScreen = OPTION_SCREEN_KEY_CONFIG;
 
-	gOptionsScreenData.mKeyConfig.mPlayerTextID[0] = addMugenTextMugenStyle("PLAYER 1", makePosition(91, 28, 60), makeVector3DI(2, 4, 0));
-	gOptionsScreenData.mKeyConfig.mPlayerTextID[1] = addMugenTextMugenStyle("PLAYER 2", makePosition(230, 28, 60), makeVector3DI(2, 1, 0));
+	gOptionsScreenData.mKeyConfig.mPlayerTextID[0] = addMugenTextMugenStyle("PLAYER 1", Vector3D(91, 28, 45), Vector3DI(gOptionsScreenData.mTextFontID, 4, 0));
+	gOptionsScreenData.mKeyConfig.mPlayerTextID[1] = addMugenTextMugenStyle("PLAYER 2", Vector3D(230, 28, 45), Vector3DI(gOptionsScreenData.mTextFontID, 1, 0));
 
 
 	int left = 38;
@@ -559,103 +560,103 @@ static void loadKeyConfigOptionsScreen() {
 
 		int usingController = isUsingController();
 
-		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_CONFIG_ALL] = addMugenTextMugenStyle("Config all", makePosition(left + offsetX, startY, 60), makeVector3DI(2, 8, 1));
+		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_CONFIG_ALL] = addMugenTextMugenStyle("Config all", Vector3D(left + offsetX, startY, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
 		if (!usingController) {
 			string ftext = i ? "(F2)" : "(F1)";
-			gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_CONFIG_ALL] = addMugenTextMugenStyle(ftext.data(), makePosition(right - offsetX, startY, 60), makeVector3DI(2, 5, -1));
+			gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_CONFIG_ALL] = addMugenTextMugenStyle(ftext.data(), Vector3D(right - offsetX, startY, 45), Vector3DI(gOptionsScreenData.mTextFontID, 5, -1));
 		}
 		else if (!i) {
-			gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_CONFIG_ALL] = addMugenTextMugenStyle("(X)", makePosition(right - offsetX, startY, 60), makeVector3DI(2, 5, -1));
+			gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_CONFIG_ALL] = addMugenTextMugenStyle("(X)", Vector3D(right - offsetX, startY, 45), Vector3DI(gOptionsScreenData.mTextFontID, 5, -1));
 		}
 		else {
-			gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_CONFIG_ALL] = addMugenTextMugenStyle("(Y)", makePosition(right - offsetX, startY, 60), makeVector3DI(2, 2, -1));
+			gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_CONFIG_ALL] = addMugenTextMugenStyle("(Y)", Vector3D(right - offsetX, startY, 45), Vector3DI(gOptionsScreenData.mTextFontID, 2, -1));
 		}
 		ControllerButtonPrism button = CONTROLLER_UP_PRISM;
 		string valueText = usingController ? gButtonNames[getButtonForController(i, button)] : gKeyNames[getButtonForKeyboard(i, button)];
-		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_UP] = addMugenTextMugenStyle("Up", makePosition(left + offsetX, startY + offsetY * 1, 60), makeVector3DI(2, 8, 1));
-		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_UP] = addMugenTextMugenStyle(valueText.data(), makePosition(right - offsetX, startY + offsetY * 1, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_UP] = addMugenTextMugenStyle("Up", Vector3D(left + offsetX, startY + offsetY * 1, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_UP] = addMugenTextMugenStyle(valueText.data(), Vector3D(right - offsetX, startY + offsetY * 1, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
 		button = CONTROLLER_DOWN_PRISM;
 		valueText = usingController ? gButtonNames[getButtonForController(i, button)] : gKeyNames[getButtonForKeyboard(i, button)];
-		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_DOWN] = addMugenTextMugenStyle("Down", makePosition(left + offsetX, startY + offsetY * 2, 60), makeVector3DI(2, 8, 1));
-		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_DOWN] = addMugenTextMugenStyle(valueText.data(), makePosition(right - offsetX, startY + offsetY * 2, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_DOWN] = addMugenTextMugenStyle("Down", Vector3D(left + offsetX, startY + offsetY * 2, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_DOWN] = addMugenTextMugenStyle(valueText.data(), Vector3D(right - offsetX, startY + offsetY * 2, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
 		button = CONTROLLER_LEFT_PRISM;
 		valueText = usingController ? gButtonNames[getButtonForController(i, button)] : gKeyNames[getButtonForKeyboard(i, button)];
-		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_LEFT] = addMugenTextMugenStyle("Left", makePosition(left + offsetX, startY + offsetY * 3, 60), makeVector3DI(2, 8, 1));
-		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_LEFT] = addMugenTextMugenStyle(valueText.data(), makePosition(right - offsetX, startY + offsetY * 3, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_LEFT] = addMugenTextMugenStyle("Left", Vector3D(left + offsetX, startY + offsetY * 3, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_LEFT] = addMugenTextMugenStyle(valueText.data(), Vector3D(right - offsetX, startY + offsetY * 3, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
 		button = CONTROLLER_RIGHT_PRISM;
 		valueText = usingController ? gButtonNames[getButtonForController(i, button)] : gKeyNames[getButtonForKeyboard(i, button)];
-		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_RIGHT] = addMugenTextMugenStyle("Right", makePosition(left + offsetX, startY + offsetY * 4, 60), makeVector3DI(2, 8, 1));
-		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_RIGHT] = addMugenTextMugenStyle(valueText.data(), makePosition(right - offsetX, startY + offsetY * 4, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_RIGHT] = addMugenTextMugenStyle("Right", Vector3D(left + offsetX, startY + offsetY * 4, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_RIGHT] = addMugenTextMugenStyle(valueText.data(), Vector3D(right - offsetX, startY + offsetY * 4, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
 		button = CONTROLLER_A_PRISM;
 		valueText = usingController ? gButtonNames[getButtonForController(i, button)] : gKeyNames[getButtonForKeyboard(i, button)];
-		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_A] = addMugenTextMugenStyle("A", makePosition(left + offsetX, startY + offsetY * 5, 60), makeVector3DI(2, 8, 1));
-		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_A] = addMugenTextMugenStyle(valueText.data(), makePosition(right - offsetX, startY + offsetY * 5, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_A] = addMugenTextMugenStyle("A", Vector3D(left + offsetX, startY + offsetY * 5, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_A] = addMugenTextMugenStyle(valueText.data(), Vector3D(right - offsetX, startY + offsetY * 5, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
 		button = CONTROLLER_B_PRISM;
 		valueText = usingController ? gButtonNames[getButtonForController(i, button)] : gKeyNames[getButtonForKeyboard(i, button)];
-		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_B] = addMugenTextMugenStyle("B", makePosition(left + offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 8, 1));
-		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_B] = addMugenTextMugenStyle(valueText.data(), makePosition(right - offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_B] = addMugenTextMugenStyle("B", Vector3D(left + offsetX, startY + offsetY * 6, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_B] = addMugenTextMugenStyle(valueText.data(), Vector3D(right - offsetX, startY + offsetY * 6, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
 		button = CONTROLLER_R_PRISM;
 		valueText = usingController ? gButtonNames[getButtonForController(i, button)] : gKeyNames[getButtonForKeyboard(i, button)];
-		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_C] = addMugenTextMugenStyle("C", makePosition(left + offsetX, startY + offsetY * 7, 60), makeVector3DI(2, 8, 1));
-		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_C] = addMugenTextMugenStyle(valueText.data(), makePosition(right - offsetX, startY + offsetY * 7, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_C] = addMugenTextMugenStyle("C", Vector3D(left + offsetX, startY + offsetY * 7, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_C] = addMugenTextMugenStyle(valueText.data(), Vector3D(right - offsetX, startY + offsetY * 7, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
 		button = CONTROLLER_X_PRISM;
 		valueText = usingController ? gButtonNames[getButtonForController(i, button)] : gKeyNames[getButtonForKeyboard(i, button)];
-		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_X] = addMugenTextMugenStyle("X", makePosition(left + offsetX, startY + offsetY * 8, 60), makeVector3DI(2, 8, 1));
-		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_X] = addMugenTextMugenStyle(valueText.data(), makePosition(right - offsetX, startY + offsetY * 8, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_X] = addMugenTextMugenStyle("X", Vector3D(left + offsetX, startY + offsetY * 8, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_X] = addMugenTextMugenStyle(valueText.data(), Vector3D(right - offsetX, startY + offsetY * 8, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
 		button = CONTROLLER_Y_PRISM;
 		valueText = usingController ? gButtonNames[getButtonForController(i, button)] : gKeyNames[getButtonForKeyboard(i, button)];
-		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_Y] = addMugenTextMugenStyle("Y", makePosition(left + offsetX, startY + offsetY * 9, 60), makeVector3DI(2, 8, 1));
-		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_Y] = addMugenTextMugenStyle(valueText.data(), makePosition(right - offsetX, startY + offsetY * 9, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_Y] = addMugenTextMugenStyle("Y", Vector3D(left + offsetX, startY + offsetY * 9, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_Y] = addMugenTextMugenStyle(valueText.data(), Vector3D(right - offsetX, startY + offsetY * 9, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
 		button = CONTROLLER_L_PRISM;
 		valueText = usingController ? gButtonNames[getButtonForController(i, button)] : gKeyNames[getButtonForKeyboard(i, button)];
-		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_Z] = addMugenTextMugenStyle("Z", makePosition(left + offsetX, startY + offsetY * 10, 60), makeVector3DI(2, 8, 1));
-		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_Z] = addMugenTextMugenStyle(valueText.data(), makePosition(right - offsetX, startY + offsetY * 10, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_Z] = addMugenTextMugenStyle("Z", Vector3D(left + offsetX, startY + offsetY * 10, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_Z] = addMugenTextMugenStyle(valueText.data(), Vector3D(right - offsetX, startY + offsetY * 10, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
 		button = CONTROLLER_START_PRISM;
 		valueText = usingController ? gButtonNames[getButtonForController(i, button)] : gKeyNames[getButtonForKeyboard(i, button)];
-		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_START] = addMugenTextMugenStyle("Start", makePosition(left + offsetX, startY + offsetY * 11, 60), makeVector3DI(2, 8, 1));
-		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_START] = addMugenTextMugenStyle(valueText.data(), makePosition(right - offsetX, startY + offsetY * 11, 60), makeVector3DI(2, 8, -1));
+		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_START] = addMugenTextMugenStyle("Start", Vector3D(left + offsetX, startY + offsetY * 11, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+		gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_START] = addMugenTextMugenStyle(valueText.data(), Vector3D(right - offsetX, startY + offsetY * 11, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
-		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_DEFAULT] = addMugenTextMugenStyle("Default", makePosition(left + offsetX, startY + offsetY * 13, 60), makeVector3DI(2, 8, 1));
+		gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_DEFAULT] = addMugenTextMugenStyle("Default", Vector3D(left + offsetX, startY + offsetY * 13, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
 
 		if (!usingController) {
 			string ftext = i ? "(F4)" : "(F3)";
-			gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_DEFAULT] = addMugenTextMugenStyle(ftext.data(), makePosition(right - offsetX, startY + offsetY * 13, 60), makeVector3DI(2, 5, -1));
+			gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_DEFAULT] = addMugenTextMugenStyle(ftext.data(), Vector3D(right - offsetX, startY + offsetY * 13, 45), Vector3DI(gOptionsScreenData.mTextFontID, 5, -1));
 		}
 		else {
 			string ftext = i ? "(L)" : "(R)";
-			gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_DEFAULT] = addMugenTextMugenStyle(ftext.data(), makePosition(right - offsetX, startY + offsetY * 13, 60), makeVector3DI(2, 0, -1));
+			gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_DEFAULT] = addMugenTextMugenStyle(ftext.data(), Vector3D(right - offsetX, startY + offsetY * 13, 45), Vector3DI(gOptionsScreenData.mTextFontID, 0, -1));
 		}
 
 		if (i == 0) {
-			gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_EXIT] = addMugenTextMugenStyle("Exit", makePosition(left + offsetX, startY + offsetY * 14, 60), makeVector3DI(2, 8, 1));
+			gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_EXIT] = addMugenTextMugenStyle("Exit", Vector3D(left + offsetX, startY + offsetY * 14, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
 			if (!usingController) {
-				gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_EXIT] = addMugenTextMugenStyle("", makePosition(right - offsetX, startY + offsetY * 14, 60), makeVector3DI(2, 5, -1));
+				gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_EXIT] = addMugenTextMugenStyle("", Vector3D(right - offsetX, startY + offsetY * 14, 45), Vector3DI(gOptionsScreenData.mTextFontID, 5, -1));
 			}
 			else {
-				gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_EXIT] = addMugenTextMugenStyle("(B)", makePosition(right - offsetX, startY + offsetY * 14, 60), makeVector3DI(2, 3, -1));
+				gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_EXIT] = addMugenTextMugenStyle("(B)", Vector3D(right - offsetX, startY + offsetY * 14, 45), Vector3DI(gOptionsScreenData.mTextFontID, 3, -1));
 			}
 		}
 		else {
 			left = 38;
 			right = 142;
-			gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_EXIT] = addMugenTextMugenStyle("", makePosition(left + offsetX, startY + offsetY * 14, 60), makeVector3DI(2, 8, 1));
-			gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_EXIT] = addMugenTextMugenStyle("", makePosition(right - offsetX, startY + offsetY * 14, 60), makeVector3DI(2, 5, -1));
+			gOptionsScreenData.mKeyConfig.mSelectableTextID[i][KEY_CONFIG_SETTING_EXIT] = addMugenTextMugenStyle("", Vector3D(left + offsetX, startY + offsetY * 14, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+			gOptionsScreenData.mKeyConfig.mSettingTextID[i][KEY_CONFIG_SETTING_EXIT] = addMugenTextMugenStyle("", Vector3D(right - offsetX, startY + offsetY * 14, 45), Vector3DI(gOptionsScreenData.mTextFontID, 5, -1));
 		}
 		left = 178;
 		right = 282;
 	}
 
-	gOptionsScreenData.mKeyConfig.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 50), GeoRectangle2D(-5, -11, 92, 14));
+	gOptionsScreenData.mKeyConfig.mBoxCursorID = addBoxCursor(Vector3D(0, 0, 0), Vector3D(0, 0, 43), GeoRectangle2D(-5, -11, 92, 14));
 	gOptionsScreenData.mKeyConfig.mIsSettingInput = 0;
 	gOptionsScreenData.mKeyConfig.mSettingFlankDone = 1;
 
@@ -749,8 +750,8 @@ static void updateSelectedDreamcastSaveOption(int tDelta) {
 
 
 static void loadDreamcastSaveOptionsScreen() {
-	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationElement, makePosition(52, 35, 40));
-	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, makePosition(216, 133, 1), makePosition(0, 0, 0));
+	setAnimationPosition(gOptionsScreenData.mBackgroundAnimationElement, Vector3D(52, 35, 40));
+	setAnimationSize(gOptionsScreenData.mBackgroundAnimationElement, Vector3D(216, 133, 1), Vector3D(0, 0, 0));
 
 	if (gOptionsScreenData.mDreamcastSave.mSaveLoadType == GENERAL_SETTING_LOAD_SAVE_OPTIONS) {
 		changeMugenText(gOptionsScreenData.mHeaderTextID, "SAVE/LOAD OPTIONS");
@@ -758,35 +759,35 @@ static void loadDreamcastSaveOptionsScreen() {
 	else {
 		changeMugenText(gOptionsScreenData.mHeaderTextID, "SAVE/LOAD VARS");
 	}
-	setMugenTextPosition(gOptionsScreenData.mHeaderTextID, makePosition(160, 20, 60));
+	setMugenTextPosition(gOptionsScreenData.mHeaderTextID, Vector3D(160, 20, 45));
 	gOptionsScreenData.mActiveScreen = OPTION_SCREEN_DREAMCAST_SAVE;
 
 	int offsetX = 70;
 	int startY = 50;
 	int offsetY = 13;
-	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_SELECT_VMU] = addMugenTextMugenStyle("VMU", makePosition(offsetX, startY, 60), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_SELECT_VMU] = addMugenTextMugenStyle("A1", makePosition(320 - offsetX, startY, 60), makeVector3DI(2, 8, -1));
+	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_SELECT_VMU] = addMugenTextMugenStyle("VMU", Vector3D(offsetX, startY, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_SELECT_VMU] = addMugenTextMugenStyle("A1", Vector3D(320 - offsetX, startY, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 	setDreamcastSaveSelectedVMUText();
 
-	gOptionsScreenData.mDreamcastSave.mFreeBlocksTextID = addMugenTextMugenStyle("Free blocks: 0", makePosition(offsetX, startY + offsetY * 1, 60), makeVector3DI(2, 8, 1));
+	gOptionsScreenData.mDreamcastSave.mFreeBlocksTextID = addMugenTextMugenStyle("Free blocks: 0", Vector3D(offsetX, startY + offsetY * 1, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
 	setDreamcastFreeBlocksText();
 
-	gOptionsScreenData.mDreamcastSave.mSaveSizeBlocksTextID = addMugenTextMugenStyle("Save size: 0", makePosition(offsetX, startY + offsetY * 2, 60), makeVector3DI(2, 8, 1));
+	gOptionsScreenData.mDreamcastSave.mSaveSizeBlocksTextID = addMugenTextMugenStyle("Save size: 0", Vector3D(offsetX, startY + offsetY * 2, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
 	setDreamcastSaveSaveSizeText();
 
-	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_SAVE] = addMugenTextMugenStyle("Save", makePosition(offsetX, startY + offsetY * 4, 60), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_SAVE] = addMugenTextMugenStyle("Confirm", makePosition(320 - offsetX, startY + offsetY * 4, 60), makeVector3DI(2, 8, -1));
+	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_SAVE] = addMugenTextMugenStyle("Save", Vector3D(offsetX, startY + offsetY * 4, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_SAVE] = addMugenTextMugenStyle("Confirm", Vector3D(320 - offsetX, startY + offsetY * 4, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, -1));
 
-	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_LOAD] = addMugenTextMugenStyle("Load", makePosition(offsetX, startY + offsetY * 5, 60), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_LOAD] = addMugenTextMugenStyle("(Y)", makePosition(320 - offsetX, startY + offsetY * 5, 60), makeVector3DI(2, 2, -1));
+	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_LOAD] = addMugenTextMugenStyle("Load", Vector3D(offsetX, startY + offsetY * 5, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_LOAD] = addMugenTextMugenStyle("(Y)", Vector3D(320 - offsetX, startY + offsetY * 5, 45), Vector3DI(gOptionsScreenData.mTextFontID, 2, -1));
 
-	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_DELETE] = addMugenTextMugenStyle("Delete", makePosition(offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_DELETE] = addMugenTextMugenStyle("(X)", makePosition(320 - offsetX, startY + offsetY * 6, 60), makeVector3DI(2, 5, -1));
+	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_DELETE] = addMugenTextMugenStyle("Delete", Vector3D(offsetX, startY + offsetY * 6, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_DELETE] = addMugenTextMugenStyle("(X)", Vector3D(320 - offsetX, startY + offsetY * 6, 45), Vector3DI(gOptionsScreenData.mTextFontID, 5, -1));
 
-	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_RETURN] = addMugenTextMugenStyle("Return to Options", makePosition(offsetX, startY + offsetY * 8, 60), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_RETURN] = addMugenTextMugenStyle("(B)", makePosition(320 - offsetX, startY + offsetY * 8, 60), makeVector3DI(2, 3, -1));
+	gOptionsScreenData.mDreamcastSave.mSelectableTextID[DREAMCAST_SAVE_SETTING_RETURN] = addMugenTextMugenStyle("Return to Options", Vector3D(offsetX, startY + offsetY * 8, 45), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+	gOptionsScreenData.mDreamcastSave.mSettingTextID[DREAMCAST_SAVE_SETTING_RETURN] = addMugenTextMugenStyle("(B)", Vector3D(320 - offsetX, startY + offsetY * 8, 45), Vector3DI(gOptionsScreenData.mTextFontID, 3, -1));
 
-	gOptionsScreenData.mDreamcastSave.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 50), GeoRectangle2D(-6, -11, 320 - 2 * offsetX + 10, 14));
+	gOptionsScreenData.mDreamcastSave.mBoxCursorID = addBoxCursor(Vector3D(0, 0, 0), Vector3D(0, 0, 43), GeoRectangle2D(-6, -11, 320 - 2 * offsetX + 10, 14));
 
 	setSelectedDreamcastSaveOptionActive();
 }
@@ -808,38 +809,37 @@ static void sanitizeOptionsValues() {
 }
 
 static void loadOptionsScreen() {
+	gOptionsScreenData.mTextFontID = hasMugenFont(2) ? 2 : -1;
+
 	sanitizeOptionsValues();
 
 	instantiateActor(getBoxCursorHandler());
 	gOptionsScreenData.mWhiteTexture = getEmptyWhiteTexture();
 
-	char folder[1024];
 	const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
 	loadMugenDefScript(&gOptionsScreenData.mScript, motifPath);
+	std::string folder;
 	getPathToFile(folder, motifPath.c_str());
-	setWorkingDirectory(folder);
 
-	char* text = getAllocatedMugenDefStringVariable(&gOptionsScreenData.mScript, "Files", "spr");
+	auto text = getSTLMugenDefStringVariable(&gOptionsScreenData.mScript, "files", "spr");
+	text = findMugenSystemOrFightFilePath(text, folder);
 	gOptionsScreenData.mSprites = loadMugenSpriteFileWithoutPalette(text);
-	gOptionsScreenData.mAnimations = loadMugenAnimationFile(getPureFileName(motifPath.c_str()));
-	freeMemory(text);
+	gOptionsScreenData.mAnimations = loadMugenAnimationFile(motifPath.c_str());
 
-	text = getAllocatedMugenDefStringVariable(&gOptionsScreenData.mScript, "Files", "snd");
-	gOptionsScreenData.mSounds = loadMugenSoundFile(text);
-	freeMemory(text);
+	text = getSTLMugenDefStringVariable(&gOptionsScreenData.mScript, "files", "snd");
+	text = findMugenSystemOrFightFilePath(text, folder);
+	gOptionsScreenData.mSounds = loadMugenSoundFile(text.c_str());
 
 	loadOptionsHeader();
-	loadMenuBackground(&gOptionsScreenData.mScript, &gOptionsScreenData.mSprites, &gOptionsScreenData.mAnimations, "OptionBGdef", "OptionBG");
+	loadScriptBackground(&gOptionsScreenData.mScript, &gOptionsScreenData.mSprites, &gOptionsScreenData.mAnimations, "optionbgdef", "optionbg");
 
-	gOptionsScreenData.mHeaderTextID = addMugenTextMugenStyle("OPTIONS", makePosition(160, 20, 60), makeVector3DI(2, 0, 0));
-	gOptionsScreenData.mBackgroundAnimationElement = playOneFrameAnimationLoop(makePosition(52, 35, 40), &gOptionsScreenData.mWhiteTexture);
+	gOptionsScreenData.mHeaderTextID = addMugenTextMugenStyle("OPTIONS", Vector3D(160, 20, 45), Vector3DI(gOptionsScreenData.mTextFontID, 0, 0));
+	gOptionsScreenData.mBackgroundAnimationElement = playOneFrameAnimationLoop(Vector3D(52, 35, 40), &gOptionsScreenData.mWhiteTexture);
 	setAnimationColor(gOptionsScreenData.mBackgroundAnimationElement, 0, 0, 0.6);
 	setAnimationTransparency(gOptionsScreenData.mBackgroundAnimationElement, 0.7);
 
 	gOptionsScreenData.mConfirmationDialog.mIsActive = 0;
 	loadGeneralOptionsScreen();
-
-	setWorkingDirectory("/");
 }
 
 static void inputConfigToGeneralOptions() {
@@ -885,15 +885,15 @@ static void generalToDreamcastSaveOptions() {
 }
 
 static void setOptionScreenConfirmationDialogActive(const char* tQuestionText, const std::function<void()>& tFunc) {
-	gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement = playOneFrameAnimationLoop(makePosition(58, 60, 70), &gOptionsScreenData.mWhiteTexture);
+	gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement = playOneFrameAnimationLoop(Vector3D(58, 60, 49), &gOptionsScreenData.mWhiteTexture);
 	setAnimationColor(gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement, 0, 0, 0.6);
 	setAnimationTransparency(gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement, 0.7);
-	setAnimationSize(gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement, makePosition(202, 50, 1), makePosition(0, 0, 0));
+	setAnimationSize(gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement, Vector3D(202, 50, 1), Vector3D(0, 0, 0));
 
-	gOptionsScreenData.mConfirmationDialog.mQuestionTextID = addMugenTextMugenStyle(tQuestionText, makePosition(160, 75, 75), makeVector3DI(2, 0, 0));
-	gOptionsScreenData.mConfirmationDialog.mSelectionTextID[0] = addMugenTextMugenStyle("Yes", makePosition(130, 98, 75), makeVector3DI(2, 8, 1));
-	gOptionsScreenData.mConfirmationDialog.mSelectionTextID[1] = addMugenTextMugenStyle("No", makePosition(180, 98, 75), makeVector3DI(2, 0, 1));
-	gOptionsScreenData.mConfirmationDialog.mBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 71), GeoRectangle2D(-5, -11, 27, 14));
+	gOptionsScreenData.mConfirmationDialog.mQuestionTextID = addMugenTextMugenStyle(tQuestionText, Vector3D(160, 75, 51), Vector3DI(gOptionsScreenData.mTextFontID, 0, 0));
+	gOptionsScreenData.mConfirmationDialog.mSelectionTextID[0] = addMugenTextMugenStyle("Yes", Vector3D(130, 98, 51), Vector3DI(gOptionsScreenData.mTextFontID, 8, 1));
+	gOptionsScreenData.mConfirmationDialog.mSelectionTextID[1] = addMugenTextMugenStyle("No", Vector3D(180, 98, 51), Vector3DI(gOptionsScreenData.mTextFontID, 0, 1));
+	gOptionsScreenData.mConfirmationDialog.mBoxCursorID = addBoxCursor(Vector3D(0, 0, 0), Vector3D(0, 0, 50), GeoRectangle2D(-5, -11, 27, 14));
 
 	gOptionsScreenData.mConfirmationDialog.mSelectedOption = 1;
 	auto textPos = getMugenTextPosition(gOptionsScreenData.mConfirmationDialog.mSelectionTextID[gOptionsScreenData.mConfirmationDialog.mSelectedOption]);
@@ -1339,7 +1339,7 @@ static void setKeyConfigDefault() {
 static void startSettingKeyConfigInput() {
 	gOptionsScreenData.mKeyConfig.mCurrentTargetButton = 0;
 	gOptionsScreenData.mKeyConfig.mIsSettingInput = 1;
-	gOptionsScreenData.mKeyConfig.mSetKeyBoxCursorID = addBoxCursor(makePosition(0, 0, 0), makePosition(0, 0, 50), GeoRectangle2D(-5, -10, 92, 12));
+	gOptionsScreenData.mKeyConfig.mSetKeyBoxCursorID = addBoxCursor(Vector3D(0, 0, 0), Vector3D(0, 0, 43), GeoRectangle2D(-5, -10, 92, 12));
 	pauseBoxCursor(gOptionsScreenData.mKeyConfig.mBoxCursorID);
 	setCurrentKeyConfigSetActive();
 }

@@ -52,7 +52,7 @@ static void* allocMemoryOnMemoryStackOrMemory(uint32_t tSize) {
 	else return allocMemory(tSize);
 }
 
-DreamMugenAssignment * makeDreamTrueMugenAssignment()
+DreamMugenAssignment* makeDreamTrueMugenAssignment()
 {
 	DreamMugenFixedBooleanAssignment* data = (DreamMugenFixedBooleanAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenFixedBooleanAssignment));
 	data->mType = MUGEN_ASSIGNMENT_TYPE_FIXED_BOOLEAN;
@@ -64,54 +64,54 @@ void destroyDreamFalseMugenAssignment(DreamMugenAssignment* tAssignment) {
 	freeMemory(tAssignment);
 }
 
-static void unloadDreamMugenAssignmentFixedBoolean(DreamMugenAssignment * tAssignment) {
+static void unloadDreamMugenAssignmentFixedBoolean(DreamMugenAssignment* tAssignment) {
 	(void)tAssignment;
 }
 
-static void unloadDreamMugenAssignmentDependOnOne(DreamMugenAssignment * tAssignment) {
+static void unloadDreamMugenAssignmentDependOnOne(DreamMugenAssignment* tAssignment) {
 	DreamMugenDependOnOneAssignment* e = (DreamMugenDependOnOneAssignment*)tAssignment;
 	destroyDreamMugenAssignment(e->a);
 }
 
-static void unloadDreamMugenAssignmentDependOnTwo(DreamMugenAssignment * tAssignment) {
+static void unloadDreamMugenAssignmentDependOnTwo(DreamMugenAssignment* tAssignment) {
 	DreamMugenDependOnTwoAssignment* e = (DreamMugenDependOnTwoAssignment*)tAssignment;
 	destroyDreamMugenAssignment(e->a);
 	destroyDreamMugenAssignment(e->b);
 }
 
-static void unloadDreamMugenAssignmentArray(DreamMugenAssignment * tAssignment) {
+static void unloadDreamMugenAssignmentArray(DreamMugenAssignment* tAssignment) {
 	DreamMugenArrayAssignment* e = (DreamMugenArrayAssignment*)tAssignment;
 	destroyDreamMugenAssignment(e->mIndex);
 }
 
-static void unloadDreamMugenAssignmentRange(DreamMugenAssignment * tAssignment) {
+static void unloadDreamMugenAssignmentRange(DreamMugenAssignment* tAssignment) {
 	DreamMugenRangeAssignment* e = (DreamMugenRangeAssignment*)tAssignment;
 	destroyDreamMugenAssignment(e->a);
 }
 
-static void unloadDreamMugenAssignmentNumber(DreamMugenAssignment * tAssignment) {
+static void unloadDreamMugenAssignmentNumber(DreamMugenAssignment* tAssignment) {
 	(void)tAssignment;
 }
 
-static void unloadDreamMugenAssignmentFloat(DreamMugenAssignment * tAssignment) {
+static void unloadDreamMugenAssignmentFloat(DreamMugenAssignment* tAssignment) {
 	(void)tAssignment;
 }
-static void unloadDreamMugenAssignmentString(DreamMugenAssignment * tAssignment) {
+static void unloadDreamMugenAssignmentString(DreamMugenAssignment* tAssignment) {
 	DreamMugenStringAssignment* e = (DreamMugenStringAssignment*)tAssignment;
 	freeMemory(e->mValue);
 }
 
-static void unloadDreamMugenAssignmentVariable(DreamMugenAssignment * tAssignment) {
+static void unloadDreamMugenAssignmentVariable(DreamMugenAssignment* tAssignment) {
 	DreamMugenVariableAssignment* e = (DreamMugenVariableAssignment*)tAssignment;
 	(void)e;
 }
 
-static void unloadDreamMugenAssignmentRawVariable(DreamMugenAssignment * tAssignment) {
+static void unloadDreamMugenAssignmentRawVariable(DreamMugenAssignment* tAssignment) {
 	DreamMugenRawVariableAssignment* e = (DreamMugenRawVariableAssignment*)tAssignment;
 	freeMemory(e->mName);
 }
 
-void destroyDreamMugenAssignment(DreamMugenAssignment * tAssignment)
+void destroyDreamMugenAssignment(DreamMugenAssignment* tAssignment)
 {
 	switch (tAssignment->mType) {
 	case MUGEN_ASSIGNMENT_TYPE_FIXED_BOOLEAN:
@@ -173,7 +173,7 @@ void destroyDreamMugenAssignment(DreamMugenAssignment * tAssignment)
 	freeMemory(tAssignment);
 }
 
-DreamMugenAssignment * makeDreamFalseMugenAssignment()
+DreamMugenAssignment* makeDreamFalseMugenAssignment()
 {
 	DreamMugenFixedBooleanAssignment* data = (DreamMugenFixedBooleanAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenFixedBooleanAssignment));
 	gDebugAssignmentAmount++;
@@ -182,7 +182,7 @@ DreamMugenAssignment * makeDreamFalseMugenAssignment()
 	return (DreamMugenAssignment*)data;
 }
 
-static DreamMugenAssignment * makeMugenOneElementAssignment(DreamMugenAssignmentType tType, DreamMugenAssignment * a) 
+static DreamMugenAssignment* makeMugenOneElementAssignment(DreamMugenAssignmentType tType, DreamMugenAssignment* a) 
 {
 
 	DreamMugenDependOnOneAssignment* data = (DreamMugenDependOnOneAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenDependOnOneAssignment));
@@ -193,7 +193,7 @@ static DreamMugenAssignment * makeMugenOneElementAssignment(DreamMugenAssignment
 }
 
 
-static DreamMugenAssignment * makeMugenTwoElementAssignment(DreamMugenAssignmentType tType, DreamMugenAssignment * a, DreamMugenAssignment * b)
+static DreamMugenAssignment* makeMugenTwoElementAssignment(DreamMugenAssignmentType tType, DreamMugenAssignment* a, DreamMugenAssignment* b)
 {
 	DreamMugenDependOnTwoAssignment* data = (DreamMugenDependOnTwoAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenDependOnTwoAssignment));
 	gDebugAssignmentAmount++;
@@ -205,7 +205,7 @@ static DreamMugenAssignment * makeMugenTwoElementAssignment(DreamMugenAssignment
 
 extern std::map<string, AssignmentReturnValue*(*)(DreamMugenAssignment**, DreamPlayer*, int*)>& getActiveMugenAssignmentArrayMap();
 
-static DreamMugenAssignment * makeMugenArrayAssignment(char* tName, DreamMugenAssignment * tIndex)
+static DreamMugenAssignment* makeMugenArrayAssignment(char* tName, DreamMugenAssignment* tIndex)
 {
 	std::map<string, AssignmentReturnValue*(*)(DreamMugenAssignment**, DreamPlayer*, int*)>& m = getActiveMugenAssignmentArrayMap();
 
@@ -225,7 +225,7 @@ static DreamMugenAssignment * makeMugenArrayAssignment(char* tName, DreamMugenAs
 	return (DreamMugenAssignment*)data;
 }
 
-DreamMugenAssignment * makeDreamNumberMugenAssignment(int tVal)
+DreamMugenAssignment* makeDreamNumberMugenAssignment(int tVal)
 {
 
 	DreamMugenNumberAssignment* number = (DreamMugenNumberAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenNumberAssignment));
@@ -235,7 +235,7 @@ DreamMugenAssignment * makeDreamNumberMugenAssignment(int tVal)
 	return (DreamMugenAssignment*)number;
 }
 
-DreamMugenAssignment * makeDreamFloatMugenAssignment(double tVal)
+DreamMugenAssignment* makeDreamFloatMugenAssignment(double tVal)
 {
 	DreamMugenFloatAssignment* f = (DreamMugenFloatAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenFloatAssignment));
 	gDebugAssignmentAmount++;
@@ -245,7 +245,7 @@ DreamMugenAssignment * makeDreamFloatMugenAssignment(double tVal)
 	return (DreamMugenAssignment*)f;
 }
 
-DreamMugenAssignment * makeDreamStringMugenAssignment(const char * tVal)
+DreamMugenAssignment* makeDreamStringMugenAssignment(const char * tVal)
 {
 	DreamMugenStringAssignment* s = (DreamMugenStringAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenStringAssignment));
 	gDebugAssignmentAmount++;
@@ -256,7 +256,7 @@ DreamMugenAssignment * makeDreamStringMugenAssignment(const char * tVal)
 	return (DreamMugenAssignment*)s;
 }
 
-DreamMugenAssignment * makeDream2DVectorMugenAssignment(const Vector3D& tVal)
+DreamMugenAssignment* makeDream2DVectorMugenAssignment(const Vector2D& tVal)
 {
 	DreamMugenDependOnTwoAssignment* data = (DreamMugenDependOnTwoAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenDependOnTwoAssignment));
 	gDebugAssignmentAmount++;
@@ -266,7 +266,7 @@ DreamMugenAssignment * makeDream2DVectorMugenAssignment(const Vector3D& tVal)
 	return (DreamMugenAssignment*)data;
 }
 
-DreamMugenAssignment * makeDreamAndMugenAssignment(DreamMugenAssignment * a, DreamMugenAssignment * b)
+DreamMugenAssignment* makeDreamAndMugenAssignment(DreamMugenAssignment* a, DreamMugenAssignment* b)
 {
 	if (!a) return b;
 	if (!b) return a;
@@ -274,7 +274,7 @@ DreamMugenAssignment * makeDreamAndMugenAssignment(DreamMugenAssignment * a, Dre
 	return makeMugenTwoElementAssignment(MUGEN_ASSIGNMENT_TYPE_AND, a, b);
 }
 
-DreamMugenAssignment * makeDreamOrMugenAssignment(DreamMugenAssignment * a, DreamMugenAssignment * b)
+DreamMugenAssignment* makeDreamOrMugenAssignment(DreamMugenAssignment* a, DreamMugenAssignment* b)
 {
 	if (!a) return b;
 	if (!b) return a;
@@ -1175,7 +1175,7 @@ static DreamMugenAssignment* parseMugenOperatorArgumentFromString(char* tText) {
 	return parseTwoElementLeftToRightMugenAssignmentFromString(text, MUGEN_ASSIGNMENT_TYPE_OPERATOR_ARGUMENT, "$$");
 }
 
-DreamMugenAssignment * parseDreamMugenAssignmentFromString(char * tText)
+DreamMugenAssignment* parseDreamMugenAssignmentFromString(char * tText)
 {
 	sanitizeText(&tText);
 
@@ -1282,7 +1282,7 @@ uint8_t fetchDreamAssignmentFromGroupAndReturnWhetherItExists(const char* tName,
 	return 1;
 }
 
-void fetchDreamAssignmentFromGroupAsElement(MugenDefScriptGroupElement * tElement, DreamMugenAssignment ** tOutput)
+void fetchDreamAssignmentFromGroupAsElement(MugenDefScriptGroupElement * tElement, DreamMugenAssignment** tOutput)
 {
 	char* text = getAllocatedMugenDefStringVariableForAssignmentAsElement(tElement);
 	*tOutput = parseDreamMugenAssignmentFromString(text);

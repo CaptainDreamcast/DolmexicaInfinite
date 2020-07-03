@@ -7,6 +7,7 @@
 #include <prism/wrapper.h>
 #include <prism/file.h>
 #include <prism/system.h>
+#include <prism/log.h>
 
 #include "commontestfunctionality.h"
 
@@ -28,6 +29,10 @@ protected:
 };
 
 static void testCharacter(const std::string& tCharacterName) {
+	setMinimumLogType(LOG_TYPE_NORMAL);
+	logFormat("Testing %s", tCharacterName.c_str());
+	setMinimumLogType(LOG_TYPE_ERROR);
+
 	updateGameName(("Testing " + tCharacterName).c_str());
 	initForAutomatedFightScreenTest();
 	setPlayerDefinitionPath(0, (getDolmexicaAssetFolder() + "chars/" + tCharacterName + "/" + tCharacterName + ".def").c_str());

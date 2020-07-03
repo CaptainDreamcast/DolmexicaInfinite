@@ -10,11 +10,12 @@
 #include <prism/system.h>
 #include <prism/mugentexthandler.h>
 #include <prism/input.h>
+#include <prism/geometry.h>
 
 #include "config.h"
 #include "playerdefinition.h"
 #include "gamelogic.h"
-#include "menubackground.h"
+#include "scriptbackground.h"
 
 #define VICTORY_QUOTE_SCREEN_PLAYER_IMAGE_Z 50
 #define VICTORY_QUOTE_SCREEN_PLAYER_TEXT_Z 51
@@ -25,8 +26,8 @@ typedef struct {
 	Vector3D mOffset;
 	Vector3DI mSprite;
 	int mIsFacingRight;
-	Vector3D mScale;
-	GeoRectangle mWindow;
+	Vector2D mScale;
+	GeoRectangle2D mWindow;
 
 	Vector3D mNameOffset;
 	Vector3DI mNameFont;
@@ -36,7 +37,7 @@ typedef struct {
 	std::string mText;
 	Vector3D mOffset;
 	Vector3DI mFont;
-	GeoRectangle mWindow;
+	GeoRectangle2D mWindow;
 	int mIsTextWrapping;
 } VictoryQuoteScreenHeaderWinQuote;
 
@@ -76,34 +77,34 @@ static struct {
 static void loadVictoryQuoteScreenHeader(MugenDefScript* tSystemScript) {
 	const auto sz = getScreenSize();
 
-	gVictoryQuoteScreenData.mHeader.mTime = getMugenDefIntegerOrDefault(tSystemScript, "Victory Screen", "time", 300);
-	gVictoryQuoteScreenData.mHeader.mFadeInTime = getMugenDefIntegerOrDefault(tSystemScript, "Victory Screen", "fadein.time", 8);
-	gVictoryQuoteScreenData.mHeader.mFadeOutTime = getMugenDefIntegerOrDefault(tSystemScript, "Victory Screen", "fadeout.time", 15);
+	gVictoryQuoteScreenData.mHeader.mTime = getMugenDefIntegerOrDefault(tSystemScript, "victory screen", "time", 300);
+	gVictoryQuoteScreenData.mHeader.mFadeInTime = getMugenDefIntegerOrDefault(tSystemScript, "victory screen", "fadein.time", 8);
+	gVictoryQuoteScreenData.mHeader.mFadeOutTime = getMugenDefIntegerOrDefault(tSystemScript, "victory screen", "fadeout.time", 15);
 
-	gVictoryQuoteScreenData.mHeader.mPlayer.mOffset = getMugenDefVectorOrDefault(tSystemScript, "Victory Screen", "p1.offset", makePosition(100, 20, 0));
-	gVictoryQuoteScreenData.mHeader.mPlayer.mSprite = getMugenDefVectorIOrDefault(tSystemScript, "Victory Screen", "p1.spr", makeVector3DI(9000, 2, 0));
-	gVictoryQuoteScreenData.mHeader.mPlayer.mIsFacingRight = getMugenDefIntegerOrDefault(tSystemScript, "Victory Screen", "p1.facing", 1) == 1;
-	gVictoryQuoteScreenData.mHeader.mPlayer.mScale = getMugenDefVectorOrDefault(tSystemScript, "Victory Screen", "p1.scale", makePosition(1, 1, 1));
-	gVictoryQuoteScreenData.mHeader.mPlayer.mWindow = getMugenDefGeoRectangleOrDefault(tSystemScript, "Victory Screen", "p1.window", makeGeoRectangle(0, 0, sz.x - 1, sz.y - 1));
+	gVictoryQuoteScreenData.mHeader.mPlayer.mOffset = getMugenDefVectorOrDefault(tSystemScript, "victory screen", "p1.offset", Vector3D(100, 20, 0));
+	gVictoryQuoteScreenData.mHeader.mPlayer.mSprite = getMugenDefVectorIOrDefault(tSystemScript, "victory screen", "p1.spr", Vector3DI(9000, 2, 0));
+	gVictoryQuoteScreenData.mHeader.mPlayer.mIsFacingRight = getMugenDefIntegerOrDefault(tSystemScript, "victory screen", "p1.facing", 1) == 1;
+	gVictoryQuoteScreenData.mHeader.mPlayer.mScale = getMugenDefVector2DOrDefault(tSystemScript, "victory screen", "p1.scale", Vector2D(1, 1));
+	gVictoryQuoteScreenData.mHeader.mPlayer.mWindow = getMugenDefGeoRectangle2DOrDefault(tSystemScript, "victory screen", "p1.window", GeoRectangle2D(0, 0, sz.x - 1, sz.y - 1));
 
-	gVictoryQuoteScreenData.mHeader.mPlayer.mNameOffset = getMugenDefVectorOrDefault(tSystemScript, "Victory Screen", "p1.name.offset", makePosition(20, 180, 0));
-	gVictoryQuoteScreenData.mHeader.mPlayer.mNameFont = getMugenDefVectorIOrDefault(tSystemScript, "Victory Screen", "p1.name.font", makeVector3DI(3, 0, 1));
+	gVictoryQuoteScreenData.mHeader.mPlayer.mNameOffset = getMugenDefVectorOrDefault(tSystemScript, "victory screen", "p1.name.offset", Vector3D(20, 180, 0));
+	gVictoryQuoteScreenData.mHeader.mPlayer.mNameFont = getMugenDefVectorIOrDefault(tSystemScript, "victory screen", "p1.name.font", Vector3DI(-1, 0, 1));
 
-	gVictoryQuoteScreenData.mHeader.mWinQuote.mText = getSTLMugenDefStringOrDefault(tSystemScript, "Victory Screen", "winquote.text", "Winner!");
-	gVictoryQuoteScreenData.mHeader.mWinQuote.mOffset = getMugenDefVectorOrDefault(tSystemScript, "Victory Screen", "winquote.offset", makePosition(20, 192, 0));
-	gVictoryQuoteScreenData.mHeader.mWinQuote.mFont = getMugenDefVectorIOrDefault(tSystemScript, "Victory Screen", "winquote.font", makeVector3DI(2, 0, 1));
-	gVictoryQuoteScreenData.mHeader.mWinQuote.mWindow = getMugenDefGeoRectangleOrDefault(tSystemScript, "Victory Screen", "winquote.window", makeGeoRectangle(0, 0, sz.x - 1, sz.y - 1));
-	const auto textWrapText = getSTLMugenDefStringOrDefault(tSystemScript, "Victory Screen", "winquote.textwrap", "w");
+	gVictoryQuoteScreenData.mHeader.mWinQuote.mText = getSTLMugenDefStringOrDefault(tSystemScript, "victory screen", "winquote.text", "Winner!");
+	gVictoryQuoteScreenData.mHeader.mWinQuote.mOffset = getMugenDefVectorOrDefault(tSystemScript, "victory screen", "winquote.offset", Vector3D(20, 192, 0));
+	gVictoryQuoteScreenData.mHeader.mWinQuote.mFont = getMugenDefVectorIOrDefault(tSystemScript, "victory screen", "winquote.font", Vector3DI(-1, 0, 1));
+	gVictoryQuoteScreenData.mHeader.mWinQuote.mWindow = getMugenDefGeoRectangle2DOrDefault(tSystemScript, "victory screen", "winquote.window", GeoRectangle2D(0, 0, sz.x - 1, sz.y - 1));
+	const auto textWrapText = getSTLMugenDefStringOrDefault(tSystemScript, "victory screen", "winquote.textwrap", "w");
 	gVictoryQuoteScreenData.mHeader.mWinQuote.mIsTextWrapping = textWrapText.find('w') != std::string::npos;
 }
 
 static int loadVictoryQuoteWithIndexAndReturnIfSuccessful(MugenDefScript* tScript, int tIndex, std::string& oQuote) {
 	std::stringstream ss;
 	ss << "victory" << tIndex;
-	if (!isMugenDefStringVariable(tScript, "Quotes", ss.str().c_str())) {
+	if (!isMugenDefStringVariable(tScript, "quotes", ss.str().c_str())) {
 		return 0;
 	}
-	oQuote = getSTLMugenDefStringVariable(tScript, "Quotes", ss.str().c_str());
+	oQuote = getSTLMugenDefStringVariable(tScript, "quotes", ss.str().c_str());
 	return 1;
 }
 
@@ -112,11 +113,11 @@ static int loadRandomQuoteAndReturnIfSuccessful(MugenDefScript* tScript, std::st
 	for (int i = 0; i <= 99; i++) {
 		std::stringstream ss;
 		ss << "victory" << i;
-		if (!isMugenDefStringVariable(tScript, "Quotes", ss.str().c_str())) {
+		if (!isMugenDefStringVariable(tScript, "quotes", ss.str().c_str())) {
 			if (i >= 1) break;
 			else continue;
 		}
-		quotes.push_back(getSTLMugenDefStringVariable(tScript, "Quotes", ss.str().c_str()));
+		quotes.push_back(getSTLMugenDefStringVariable(tScript, "quotes", ss.str().c_str()));
 	}
 	if (!quotes.size()) {
 		return 0;
@@ -155,15 +156,15 @@ static void loadPlayerAnimationsAndName(MugenDefScript* tPlayerScript, const cha
 
 	int preferredPalette = 0;
 	sprintf(name, "pal%d", preferredPalette + 1);
-	getMugenDefStringOrDefault(file, tPlayerScript, "Files", name, "");
+	getMugenDefStringOrDefault(file, tPlayerScript, "files", name, "");
 	int hasPalettePath = strcmp("", file);
 	sprintf(palettePath, "%s%s", tPath, file);
 
-	getMugenDefStringOrDefault(file, tPlayerScript, "Files", "sprite", "");
+	getMugenDefStringOrDefault(file, tPlayerScript, "files", "sprite", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", tPath, file);
 	gVictoryQuoteScreenData.mPlayer.mSprites = loadMugenSpriteFilePortraits(scriptPath, hasPalettePath, palettePath);
-	const auto playerName = getSTLMugenDefStringVariable(tPlayerScript, "Info", "displayname");
+	const auto playerName = getSTLMugenDefStringVariable(tPlayerScript, "info", "displayname");
 
 	auto pos = gVictoryQuoteScreenData.mHeader.mPlayer.mOffset;
 	pos.z = VICTORY_QUOTE_SCREEN_PLAYER_IMAGE_Z;
@@ -199,34 +200,34 @@ static void loadWinQuote(const std::string& tQuote) {
 
 static void loadVictoryQuoteScreen() {
 	char scriptPath[1024], path[1024], file[1024];
+	const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
 	MugenDefScript script;
-	loadMugenDefScript(&script, getDolmexicaAssetFolder() + getMotifPath());
-	gVictoryQuoteScreenData.mAnimations = loadMugenAnimationFile(getDolmexicaAssetFolder() + getMotifPath());
-	getPathToFile(path, (getDolmexicaAssetFolder() + getMotifPath()).c_str());
-	setWorkingDirectory(path);
+	loadMugenDefScript(&script, motifPath);
+	gVictoryQuoteScreenData.mAnimations = loadMugenAnimationFile(motifPath);
+	getPathToFile(path, motifPath.c_str());
 
-	const auto text = getSTLMugenDefStringVariable(&script, "Files", "spr");
+	auto text = getSTLMugenDefStringVariable(&script, "files", "spr");
+	text = findMugenSystemOrFightFilePath(text, path);
 	gVictoryQuoteScreenData.mSprites = loadMugenSpriteFileWithoutPalette(text);
-	setWorkingDirectory("/");
 
 	loadVictoryQuoteScreenHeader(&script);
-	loadMenuBackground(&script, &gVictoryQuoteScreenData.mSprites, &gVictoryQuoteScreenData.mAnimations, "VictoryBGdef", "VictoryBG");
+	loadScriptBackground(&script, &gVictoryQuoteScreenData.mSprites, &gVictoryQuoteScreenData.mAnimations, "victorybgdef", "victorybg");
 
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 
 	getPlayerDefinitionPath(scriptPath, getDreamMatchWinnerIndex());
 	getPathToFile(path, scriptPath);
 	loadMugenDefScript(&script, scriptPath);
 	loadPlayerAnimationsAndName(&script, path);
 
-	getMugenDefStringOrDefault(file, &script, "Files", "cns", "");
+	getMugenDefStringOrDefault(file, &script, "files", "cns", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 
 	loadMugenDefScript(&script, scriptPath);
 	const auto quote = loadVictoryQuote(&script);
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 	loadWinQuote(quote);
 
 	addFadeIn(gVictoryQuoteScreenData.mHeader.mFadeInTime, NULL, NULL);

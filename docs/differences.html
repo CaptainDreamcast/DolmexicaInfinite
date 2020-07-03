@@ -185,19 +185,20 @@ code, tt {
 <li><a class="reference internal" href="#credits-mode" id="id4">Credits mode</a></li>
 <li><a class="reference internal" href="#osu-mode" id="id5">Osu mode</a></li>
 <li><a class="reference internal" href="#freeplay-mode" id="id6">Freeplay mode</a></li>
-<li><a class="reference internal" href="#misc" id="id7">Misc</a></li>
+<li><a class="reference internal" href="#continue" id="id7">Continue</a></li>
+<li><a class="reference internal" href="#misc" id="id8">Misc</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#missing-features" id="id8">Missing features</a>
+<li><a class="reference internal" href="#missing-features" id="id9">Missing features</a>
 <ul>
-<li><a class="reference internal" href="#missing-overall-features" id="id9">Missing overall features</a>
+<li><a class="reference internal" href="#missing-overall-features" id="id10">Missing overall features</a>
 <ul>
-<li><a class="reference internal" href="#missing-cns-features" id="id10">Missing CNS features</a></li>
-<li><a class="reference internal" href="#missing-cfg-features" id="id11">Missing mugen.cfg/dolmexica.cfg features</a></li>
+<li><a class="reference internal" href="#missing-cns-features" id="id11">Missing CNS features</a></li>
+<li><a class="reference internal" href="#missing-cfg-features" id="id12">Missing mugen.cfg/dolmexica.cfg features</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#missing-dreamcast-features" id="id12">Missing Dreamcast features</a></li>
-<li><a class="reference internal" href="#missing-windows-features" id="id13">Missing Windows/Web features</a></li>
+<li><a class="reference internal" href="#missing-dreamcast-features" id="id13">Missing Dreamcast features</a></li>
+<li><a class="reference internal" href="#missing-windows-features" id="id14">Missing Windows/Web features</a></li>
 </ul>
 </li>
 </ul>
@@ -246,6 +247,8 @@ Osu mode is a special mode that adds elements from the rhythm game Osu to Dolmex
 Osu mode works just like freeplay mode. Adding osu files/stages is explained in more detail in <a class="reference external" href="osu.html">osu.html</a>
 <ul class="simple">
 <li>Osu mode is set in system.def with the <tt class="docutils literal">menu.itemname.osu</tt> item in the <tt class="docutils literal">[Title Info]</tt> group</li>
+<li>Most Osu parameters are set inside the Osu beatmap. For info on those refer to the <a href="https://osu.ppy.sh/help/wiki/osu!_File_Formats/Osu_(file_format)" target="_blank">documentation on osu beatmaps</a>.</li>
+<li>Animations, sprites and sounds can be set in the fight.def. Documentation on those parameters is in <a class="reference external" href="osu.html">osu.html</a>.</li>
 </ul>
 </div>
 <div class="section" id="freeplay-mode">
@@ -255,9 +258,21 @@ Freeplay mode is a 1-on-1 fight against the CPU. It uses the difficulty set in t
 <li>Freeplay mode is set in system.def with the <tt class="docutils literal">menu.itemname.freeplay</tt> item in the <tt class="docutils literal">[Title Info]</tt> group</li>
 </ul>
 </div>
+<div class="section" id="continue">
+<h2><a class="toc-backref" href="#id7">Continue</a></h2>
+Continue is shown in Arcade, Osu and (optionally) in Story Mode after the player character has lost. In Dolmexica, it is shown as part of the fight screen, to avoid unnecessary loading times. <br />
+The continue is part of the fight.def in Dolmexica as the new group <tt class="docutils literal">[Continue]</tt> with the following parameters:
+<ul class="simple">
+<li><tt class="docutils literal">enabled</tt> (<tt class="docutils literal">boolean</tt>): If set to 0, no continue is shown and the player will just lose.</li>
+<li><tt class="docutils literal">continue.pos</tt> (<tt class="docutils literal">float, float</tt>), <tt class="docutils literal">continue.text</tt> (<tt class="docutils literal">string</tt>), <tt class="docutils literal">continue.font</tt> (<tt class="docutils literal">int, int, int</tt>): Control the position/text/font of the "Continue?" text.</li>
+<li><tt class="docutils literal">counter.pos</tt> (<tt class="docutils literal">float, float</tt>), <tt class="docutils literal">counter.font</tt> (<tt class="docutils literal">int, int, int</tt>): Control the position/font of the counter.</li>
+<li><tt class="docutils literal">counter.value</tt> (<tt class="docutils literal">int</tt>): Count that is counted down from. Defaults to 10.</li>
+<li><tt class="docutils literal">counter.duration</tt> (<tt class="docutils literal">int</tt>): Time in ticks each counter value is displayed for. Defaults to 60.</li>
+</ul>
+</div>
 </div>
 <div class="section" id="misc">
-<h2><a class="toc-backref" href="#id7">Misc</a></h2>
+<h2><a class="toc-backref" href="#id8">Misc</a></h2>
 <ul class="simple">
 <li>To use 480p / Mugen 1.0 lifebars, add a folder called 480p in data and put your 480p fight.def etc there.</li>
 <li>In mugen.cfg/dolmexica.cfg, <tt class="docutils literal">[Config]</tt> <tt class="docutils literal">staticassignments</tt> (<tt class="docutils literal">boolean</tt>): If 1, use static assignment caching to speed up state machine evaluations, will result in additional memory usage during runtime though. Default is 0.</li>
@@ -272,10 +287,10 @@ Freeplay mode is a 1-on-1 fight against the CPU. It uses the difficulty set in t
 </div>
 
 <div class="section" id="missing-features">
-<h1><a class="toc-backref" href="#id8">Missing features</a></h1>
+<h1><a class="toc-backref" href="#id9">Missing features</a></h1>
 <p>Due to technical issues or general disinterest, certain features have been removed or changed from M.U.G.E.N:</p>
 <div class="section" id="missing-overall-features">
-<h2><a class="toc-backref" href="#id9">Missing overall features</a></h2>
+<h2><a class="toc-backref" href="#id10">Missing overall features</a></h2>
 <ul>
 <li>
 <p>Teams and all team-related triggers and state controller elements have been removed.</p>
@@ -294,15 +309,18 @@ Freeplay mode is a 1-on-1 fight against the CPU. It uses the difficulty set in t
 <li>
 <p>RemapPal can only be applied with <tt class="docutils literal">source = 1,1</tt>. RemapPal parameter is disabled for helper and projectile state controllers.</p>
 </li>
+<li>
+<p>To avoid loading <tt class="docutils literal">f6x9.fnt</tt> for all mods, the options screen uses the font with id 2 from the system.def if available, otherwise it will use the debug font <tt class="docutils literal">f4x6.fnt</tt>.</p>
+</li>
 </ul>
 <div class="section" id="missing-cns-features">
-<h3><a class="toc-backref" href="#id10">Missing CNS features</a></h3>
+<h3><a class="toc-backref" href="#id11">Missing CNS features</a></h3>
 <ul class="simple">
 <li><tt class="docutils literal">data.ko.echo</tt> was removed due to technical limitations.</li>
 </ul>
 </div>
 <div class="section" id="missing-cfg-features">
-<h3><a class="toc-backref" href="#id11">Missing mugen.cfg/dolmexica.cfg features</a></h3>
+<h3><a class="toc-backref" href="#id12">Missing mugen.cfg/dolmexica.cfg features</a></h3>
 <ul class="simple">
 <li>
 <tt class="docutils literal">[Options]</tt>
@@ -369,7 +387,7 @@ Freeplay mode is a 1-on-1 fight against the CPU. It uses the difficulty set in t
 </div>
 </div>
 <div class="section" id="missing-dreamcast-features">
-<h2><a class="toc-backref" href="#id12">Missing Dreamcast features</a></h2>
+<h2><a class="toc-backref" href="#id13">Missing Dreamcast features</a></h2>
 <ul class="simple">
 <li>After images, due to performance reasons.</li>
 <li>Subtraction blend mode, due to technical limitations.</li>
@@ -378,7 +396,7 @@ Freeplay mode is a 1-on-1 fight against the CPU. It uses the difficulty set in t
 </ul>
 </div>
 <div class="section" id="missing-windows-features">
-<h2><a class="toc-backref" href="#id13">Missing Windows/Web features</a></h2>
+<h2><a class="toc-backref" href="#id14">Missing Windows/Web features</a></h2>
 <ul class="simple">
 <li>Frequency multiplier for sound effects, due to technical limitations.</li>
 </ul>

@@ -37,7 +37,7 @@ void setProjectileSpritePriority(DreamPlayer* p, int tSpritePriority);
 void setProjectileEdgeBound(DreamPlayer* p, int tEdgeBound, int tCoordinateP);
 void setProjectileStageBound(DreamPlayer* p, int tStageBound, int tCoordinateP);
 void setProjectileHeightBoundValues(DreamPlayer* p, int tLowerBound, int tUpperBound, int tCoordinateP);
-void setProjectilePosition(DreamPlayer* p, Position tPosition, int tCoordinateP);
+void setProjectilePosition(DreamPlayer* p, const Position2D& tPosition, int tCoordinateP);
 
 void setProjectileShadow(DreamPlayer* p, int tShadow);
 void setProjectileSuperMoveTime(DreamPlayer* p, int tSuperMoveTime);

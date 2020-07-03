@@ -78,9 +78,6 @@
     <ClCompile Include="..\intro.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\menubackground.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\mugenanimationutilities.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -192,6 +189,12 @@
     <ClCompile Include="..\test\commontestfunctionality.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\test\profilertest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scriptbackground.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.DolmexicaInfiniteTest.config" />
@@ -252,9 +255,6 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="..\intro.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\menubackground.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="..\mugenanimationutilities.h">
@@ -361,6 +361,9 @@
     </ClInclude>
     <ClInclude Include="..\test\commontestfunctionality.h">
       <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scriptbackground.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -105,93 +105,93 @@ static struct {
 } gConfigData;
 
 static void loadConfigOptions(MugenDefScript* tScript) {
-	gConfigData.mOptions.mDefault.mDifficulty = getMugenDefIntegerOrDefault(tScript, "Options", "difficulty", 4);
-	gConfigData.mOptions.mDefault.mLifeStartPercentageNumber = getMugenDefIntegerOrDefault(tScript, "Options", "life", 100);
+	gConfigData.mOptions.mDefault.mDifficulty = getMugenDefIntegerOrDefault(tScript, "options", "difficulty", 4);
+	gConfigData.mOptions.mDefault.mLifeStartPercentageNumber = getMugenDefIntegerOrDefault(tScript, "options", "life", 100);
 	gConfigData.mOptions.mDefault.mIsTimerInfinite = false;
-	gConfigData.mOptions.mDefault.mTimerDuration = getMugenDefIntegerOrDefault(tScript, "Options", "time", 99);
-	gConfigData.mOptions.mDefault.mGameSpeed = getMugenDefIntegerOrDefault(tScript, "Options", "gamespeed", 0);
-	gConfigData.mOptions.mDefault.mWavVolume = getMugenDefIntegerOrDefault(tScript, "Options", "wavvolume", 50);
-	gConfigData.mOptions.mDefault.mMidiVolume = getMugenDefIntegerOrDefault(tScript, "Options", "midivolume", 50);
+	gConfigData.mOptions.mDefault.mTimerDuration = getMugenDefIntegerOrDefault(tScript, "options", "time", 99);
+	gConfigData.mOptions.mDefault.mGameSpeed = getMugenDefIntegerOrDefault(tScript, "options", "gamespeed", 0);
+	gConfigData.mOptions.mDefault.mWavVolume = getMugenDefIntegerOrDefault(tScript, "options", "wavvolume", 50);
+	gConfigData.mOptions.mDefault.mMidiVolume = getMugenDefIntegerOrDefault(tScript, "options", "midivolume", 50);
 	
-	gConfigData.mOptions.mMotif = getSTLMugenDefStringOrDefault(tScript, "Options", "motif", "data/system.def");
+	gConfigData.mOptions.mMotif = getSTLMugenDefStringOrDefault(tScript, "options", "motif", "data/system.def");
 }
 
 static void loadConfigRules(MugenDefScript* tScript) {
-	gConfigData.mRules.mDefaultAttackDamageDoneToPowerMultiplier = getMugenDefFloatOrDefault(tScript, "Rules", "default.attack.lifetopowermul", 0.7);
-	gConfigData.mRules.mDefaultAttackDamageReceivedToPowerMultiplier = getMugenDefFloatOrDefault(tScript, "Rules", "default.gethit.lifetopowermul", 0.6);
-	gConfigData.mRules.mSuperTargetDefenseMultiplier = getMugenDefFloatOrDefault(tScript, "Rules", "super.targetdefencemul", 1.5);
+	gConfigData.mRules.mDefaultAttackDamageDoneToPowerMultiplier = getMugenDefFloatOrDefault(tScript, "rules", "default.attack.lifetopowermul", 0.7);
+	gConfigData.mRules.mDefaultAttackDamageReceivedToPowerMultiplier = getMugenDefFloatOrDefault(tScript, "rules", "default.gethit.lifetopowermul", 0.6);
+	gConfigData.mRules.mSuperTargetDefenseMultiplier = getMugenDefFloatOrDefault(tScript, "rules", "super.targetdefencemul", 1.5);
 }
 
 static void loadConfigConfig(MugenDefScript* tScript) {
-	gConfigData.mConfig.mIsUsingStaticAssignments = getMugenDefIntegerOrDefault(tScript, "Config", "staticassignments", 0);
-	const auto gameSpeed = getMugenDefIntegerOrDefault(tScript, "Config", "gamespeed", 60);
+	gConfigData.mConfig.mIsUsingStaticAssignments = getMugenDefIntegerOrDefault(tScript, "config", "staticassignments", 0);
+	const auto gameSpeed = getMugenDefIntegerOrDefault(tScript, "config", "gamespeed", 60);
 	gConfigData.mConfig.mGameSpeedFactor = gameSpeed / 60.0;
-	gConfigData.mConfig.mIsDrawingShadows = getMugenDefIntegerOrDefault(tScript, "Config", "drawshadows", 1);
+	gConfigData.mConfig.mIsDrawingShadows = getMugenDefIntegerOrDefault(tScript, "config", "drawshadows", 1);
 
 	setWrapperTimeDilatation(gConfigData.mConfig.mGameSpeedFactor);
 }
 
 static void loadConfigDebug(MugenDefScript* tScript) {
-	gConfigData.mDebug.mDebug = getMugenDefIntegerOrDefault(tScript, "Debug", "debug", 0);
+	gConfigData.mDebug.mDebug = getMugenDefIntegerOrDefault(tScript, "debug", "debug", 0);
 	if (gConfigData.mDebug.mDebug) {
 		setFightDebugToPlayerOneBeforeFight();
 	}
-	gConfigData.mDebug.mAllowDebugMode = getMugenDefIntegerOrDefault(tScript, "Debug", "allowdebugmode", 1);
-	gConfigData.mDebug.mAllowDebugKeys = getMugenDefIntegerOrDefault(tScript, "Debug", "allowdebugkeys", 0);
-	gConfigData.mDebug.mSpeedup = getMugenDefIntegerOrDefault(tScript, "Debug", "speedup", 0);
+	gConfigData.mDebug.mAllowDebugMode = getMugenDefIntegerOrDefault(tScript, "debug", "allowdebugmode", 1);
+	gConfigData.mDebug.mAllowDebugKeys = getMugenDefIntegerOrDefault(tScript, "debug", "allowdebugkeys", 0);
+	gConfigData.mDebug.mSpeedup = getMugenDefIntegerOrDefault(tScript, "debug", "speedup", 0);
 	if (gConfigData.mDebug.mSpeedup) {
 		static const auto MAXIMUM_SPEEDUP_FACTOR = 900;
 		setGlobalGameSpeed(MAXIMUM_SPEEDUP_FACTOR);
 	}
-	gConfigData.mDebug.mStartStage = getSTLMugenDefStringOrDefault(tScript, "Debug", "startstage", "stages/stage0.def");
+	gConfigData.mDebug.mStartStage = getSTLMugenDefStringOrDefault(tScript, "debug", "startstage", "stages/stage0.def");
 }
 
 static void loadConfigSound(MugenDefScript* tScript) {
-	gConfigData.mSound.mIsPlayingSound = getMugenDefIntegerOrDefault(tScript, "Sound Win", "sound", 1);
-	gConfigData.mSound.mAreStereoEffectsActive = getMugenDefIntegerOrDefault(tScript, "Sound Win", "stereoeffects", 1);
-	gConfigData.mSound.mPanningWidthFactor = getMugenDefIntegerOrDefault(tScript, "Sound Win", "panningwidth", 240) / 255.0;
+	gConfigData.mSound.mIsPlayingSound = getMugenDefIntegerOrDefault(tScript, "sound win", "sound", 1);
+	gConfigData.mSound.mAreStereoEffectsActive = getMugenDefIntegerOrDefault(tScript, "sound win", "stereoeffects", 1);
+	gConfigData.mSound.mPanningWidthFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "panningwidth", 240) / 255.0;
 
-	gConfigData.mSound.mMasterWavVolumeFactor = getMugenDefIntegerOrDefault(tScript, "Sound Win", "masterwavvolume", 255) / 255.0;
+	gConfigData.mSound.mMasterWavVolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "masterwavvolume", 255) / 255.0;
 	
-	gConfigData.mSound.mWavVolumeFactor = getMugenDefIntegerOrDefault(tScript, "Sound Win", "wavvolume", 128) / 255.0;
-	gConfigData.mSound.mMidiVolumeFactor = getMugenDefIntegerOrDefault(tScript, "Sound Win", "midivolume", 128) / 255.0;
-	gConfigData.mSound.mMP3VolumeFactor = getMugenDefIntegerOrDefault(tScript, "Sound Win", "mp3volume", 128) / 255.0;
-	gConfigData.mSound.mModVolumeFactor = getMugenDefIntegerOrDefault(tScript, "Sound Win", "modvolume", 128) / 255.0;
-	const auto cdaValue = getMugenDefIntegerOrDefault(tScript, "Sound Win", "cdavolume", -1);
+	gConfigData.mSound.mWavVolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "wavvolume", 128) / 255.0;
+	gConfigData.mSound.mMidiVolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "midivolume", 128) / 255.0;
+	gConfigData.mSound.mMP3VolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "mp3volume", 128) / 255.0;
+	gConfigData.mSound.mModVolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "modvolume", 128) / 255.0;
+	const auto cdaValue = getMugenDefIntegerOrDefault(tScript, "sound win", "cdavolume", -1);
 	gConfigData.mSound.mCDAVolumeFactor = (cdaValue == -1) ? 1.0 : (cdaValue / 255.0);
 
-	gConfigData.mSound.mIsPlayingMidi = getMugenDefIntegerOrDefault(tScript, "Sound Win", "playmidi", 1);
-	gConfigData.mSound.mIsPlayingMP3 = getMugenDefIntegerOrDefault(tScript, "Sound Win", "playmp3", 1);
-	gConfigData.mSound.mIsPlayingMod = getMugenDefIntegerOrDefault(tScript, "Sound Win", "playmod", 1);
-	gConfigData.mSound.mIsPlayingCDA = getMugenDefIntegerOrDefault(tScript, "Sound Win", "playcda", 1);
+	gConfigData.mSound.mIsPlayingMidi = getMugenDefIntegerOrDefault(tScript, "sound win", "playmidi", 1);
+	gConfigData.mSound.mIsPlayingMP3 = getMugenDefIntegerOrDefault(tScript, "sound win", "playmp3", 1);
+	gConfigData.mSound.mIsPlayingMod = getMugenDefIntegerOrDefault(tScript, "sound win", "playmod", 1);
+	gConfigData.mSound.mIsPlayingCDA = getMugenDefIntegerOrDefault(tScript, "sound win", "playcda", 1);
 }
 
 static void loadWindowTitle(MugenDefScript* tScript) {
 	if (isOnDreamcast()) return;
-	if (!isMugenDefStringVariable(tScript, "Misc", "title")) return;
+	if (!isMugenDefStringVariable(tScript, "misc", "title")) return;
 
-	gConfigData.mMisc.mTitle = getSTLMugenDefStringOrDefault(tScript, "Misc", "title", "DOLMEXICA INFINITE");
+	gConfigData.mMisc.mTitle = getSTLMugenDefStringOrDefault(tScript, "misc", "title", "DOLMEXICA INFINITE");
 	updateGameName(gConfigData.mMisc.mTitle.c_str());
 
-	string iconPath = getSTLMugenDefStringOrDefault(tScript, "Misc", "icon", "");
+	string iconPath = getSTLMugenDefStringOrDefault(tScript, "misc", "icon", "");
 	if (isFile(getDolmexicaAssetFolder() + "data/" + iconPath)) {
 		setIcon((getDolmexicaAssetFolder() + "data/" + iconPath).c_str());
 	}
 }
 
 static void loadConfigArcade(MugenDefScript* tScript) {
-	gConfigData.mArcade.mAIRandomColor = getMugenDefIntegerOrDefault(tScript, "Arcade", "ai.randomcolor", 1);
-	gConfigData.mArcade.mAiCheat = getMugenDefIntegerOrDefault(tScript, "Arcade", "ai.cheat", 1);
+	gConfigData.mArcade.mAIRandomColor = getMugenDefIntegerOrDefault(tScript, "arcade", "ai.randomcolor", 1);
+	gConfigData.mArcade.mAiCheat = getMugenDefIntegerOrDefault(tScript, "arcade", "ai.cheat", 1);
 	
-	gConfigData.mArcade.mArcadeAIRampStart = getMugenDefVectorIOrDefault(tScript, "Arcade", "arcade.airamp.start", makeVector3DI(2, 0, 0));
-	gConfigData.mArcade.mArcadeAIRampEnd = getMugenDefVectorIOrDefault(tScript, "Arcade", "arcade.airamp.end", makeVector3DI(4, 3, 0));
-	gConfigData.mArcade.mSurvivalAIRampStart = getMugenDefVectorIOrDefault(tScript, "Arcade", "survival.airamp.start", makeVector3DI(0, -3, 0));
-	gConfigData.mArcade.mSurvivalAIRampEnd = getMugenDefVectorIOrDefault(tScript, "Arcade", "survival.airamp.end", makeVector3DI(16, 4, 0));
+	gConfigData.mArcade.mArcadeAIRampStart = getMugenDefVectorIOrDefault(tScript, "arcade", "arcade.airamp.start", Vector3DI(2, 0, 0));
+	gConfigData.mArcade.mArcadeAIRampEnd = getMugenDefVectorIOrDefault(tScript, "arcade", "arcade.airamp.end", Vector3DI(4, 3, 0));
+	gConfigData.mArcade.mSurvivalAIRampStart = getMugenDefVectorIOrDefault(tScript, "arcade", "survival.airamp.start", Vector3DI(0, -3, 0));
+	gConfigData.mArcade.mSurvivalAIRampEnd = getMugenDefVectorIOrDefault(tScript, "arcade", "survival.airamp.end", Vector3DI(16, 4, 0));
 }
 
 static void loadConfigKeysSinglePlayer(MugenDefScript* tScript, int tIndex) {
 	std::stringstream ss;
-	ss << "P" << (tIndex + 1) << " Keys Dolmexica";
+	ss << "p" << (tIndex + 1) << " keys dolmexica";
 	const auto groupName = ss.str();
 	auto key = getMugenDefIntegerOrDefault(tScript, groupName.c_str(), "jump", int(getButtonForKeyboard(tIndex, CONTROLLER_UP_PRISM)));
 	setButtonForKeyboard(tIndex, CONTROLLER_UP_PRISM, KeyboardKeyPrism(key));
@@ -259,7 +259,7 @@ void loadMugenConfig() {
 	loadWindowTitle(&script);
 	loadConfigArcade(&script);
 	loadConfigKeys(&script);
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 
 	setDefaultOptionVariables();
 
@@ -268,27 +268,77 @@ void loadMugenConfig() {
 	}
 }
 
+static std::string findFontPath(const std::string& tFile, const std::string& tFolder) {
+	if (isFile(tFile)) return tFile;
+
+	auto testPath = tFolder + tFile;
+	if (isFile(testPath)) {
+		return testPath;
+	}
+
+	testPath = getDolmexicaAssetFolder() + tFile;
+	if (isFile(testPath)) {
+		return testPath;
+	}
+
+	testPath = getDolmexicaAssetFolder() + "data/" + tFile;
+	if (isFile(testPath)) {
+		return testPath;
+	}
+
+	return getDolmexicaAssetFolder() + "font/" + tFile;
+}
+
+static void loadMugenFontsFromScript(MugenDefScript* tScript, const char* tGroupName, const std::string& tFolder) {
+	addMugenFont(-1, "font/f4x6.fnt");
+
+	int i;
+	for (i = 0; i < 100; i++) {
+		char name[100];
+		sprintf(name, "font%d", i);
+		if (isMugenDefStringVariable(tScript, tGroupName, name)) {
+			auto file = getSTLMugenDefStringVariable(tScript, tGroupName, name);
+			file = findFontPath(file, tFolder);
+			addMugenFont(i, file.c_str());
+		}
+	}
+}
+
 void loadMugenSystemFonts() {
+	const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
 	MugenDefScript script;
-	loadMugenDefScript(&script, getDolmexicaAssetFolder() + getMotifPath());
-	loadMugenFontsFromScript(&script, "Files");
-	unloadMugenDefScript(script);
+	loadMugenDefScript(&script, motifPath);
+	std::string folder;
+	getPathToFile(folder, motifPath.c_str());
+	loadMugenFontsFromScript(&script, "files", folder);
+	unloadMugenDefScript(&script);
 }
 
 void loadMugenFightFonts()
 {
+	const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
 	MugenDefScript script;
-	loadMugenDefScript(&script, getDolmexicaAssetFolder() + "data/fight.def");
-	loadMugenFontsFromScript(&script, "Files");
-	unloadMugenDefScript(script);
+	loadMugenDefScript(&script, motifPath);
+	std::string folder;
+	getPathToFile(folder, motifPath.c_str());
+	auto fightPath = getSTLMugenDefStringVariable(&script, "files", "fight");
+	fightPath = findMugenSystemOrFightFilePath(fightPath, folder);
+	unloadMugenDefScript(&script);
+
+	loadMugenDefScript(&script, fightPath);
+	getPathToFile(folder, fightPath.c_str());
+	loadMugenFontsFromScript(&script, "files", folder);
+	unloadMugenDefScript(&script);
 }
 
-void loadMugenStoryFonts(const char* tPath)
+void loadMugenStoryFonts(const char* tPath, const char* tGroupName)
 {
 	MugenDefScript script;
 	loadMugenDefScript(&script, tPath);
-	loadMugenFontsFromScript(&script, "Info");
-	unloadMugenDefScript(script);
+	std::string folder;
+	getPathToFile(folder, tPath);
+	loadMugenFontsFromScript(&script, tGroupName, folder);
+	unloadMugenDefScript(&script);
 }
 
 std::string getGameTitle()
@@ -304,6 +354,21 @@ const std::string& getDolmexicaAssetFolder()
 const std::string& getMotifPath()
 {
 	return gConfigData.mOptions.mMotif;
+}
+
+std::string findMugenSystemOrFightFilePath(const std::string & tFile, const std::string & tFolder)
+{
+	auto testPath = tFolder + tFile;
+	if (isFile(testPath)) {
+		return testPath;
+	}
+
+	testPath = getDolmexicaAssetFolder() + "data/" + tFile;
+	if (isFile(testPath)) {
+		return testPath;
+	}
+
+	return getDolmexicaAssetFolder() + tFile;
 }
 
 double getDreamDefaultAttackDamageDoneToPowerMultiplier()
@@ -625,17 +690,17 @@ void loadMugenConfigSave(PrismSaveSlot tSaveSlot)
 
 #ifdef _WIN32
 static void saveConfigOptionsWindows(ModifiableMugenDefScript* tScript) {
-	saveMugenDefInteger(tScript, "Options", "difficulty", gConfigData.mOptions.mActive.mDifficulty);
-	saveMugenDefInteger(tScript, "Options", "life", gConfigData.mOptions.mActive.mLifeStartPercentageNumber);
-	saveMugenDefInteger(tScript, "Options", "time", gConfigData.mOptions.mActive.mTimerDuration);
-	saveMugenDefInteger(tScript, "Options", "gamespeed", gConfigData.mOptions.mActive.mGameSpeed);
-	saveMugenDefInteger(tScript, "Options", "wavvolume", gConfigData.mOptions.mActive.mWavVolume);
-	saveMugenDefInteger(tScript, "Options", "midivolume", gConfigData.mOptions.mActive.mMidiVolume);
+	saveMugenDefInteger(tScript, "options", "difficulty", gConfigData.mOptions.mActive.mDifficulty);
+	saveMugenDefInteger(tScript, "options", "life", gConfigData.mOptions.mActive.mLifeStartPercentageNumber);
+	saveMugenDefInteger(tScript, "options", "time", gConfigData.mOptions.mActive.mTimerDuration);
+	saveMugenDefInteger(tScript, "options", "gamespeed", gConfigData.mOptions.mActive.mGameSpeed);
+	saveMugenDefInteger(tScript, "options", "wavvolume", gConfigData.mOptions.mActive.mWavVolume);
+	saveMugenDefInteger(tScript, "options", "midivolume", gConfigData.mOptions.mActive.mMidiVolume);
 }
 
 static void saveConfigKeysWindowSinglePlayer(ModifiableMugenDefScript* tScript, int tIndex) {
 	std::stringstream ss;
-	ss << "P" << (tIndex + 1) << " Keys Dolmexica";
+	ss << "p" << (tIndex + 1) << " keys dolmexica";
 	const auto groupName = ss.str();
 	saveMugenDefInteger(tScript, groupName.c_str(), "jump", int(getButtonForKeyboard(tIndex, CONTROLLER_UP_PRISM)));
 	saveMugenDefInteger(tScript, groupName.c_str(), "crouch", int(getButtonForKeyboard(tIndex, CONTROLLER_DOWN_PRISM)));
@@ -821,8 +886,8 @@ static std::string getGlobalVarSavePathAfterTitleSetWindows() {
 }
 
 static void loadGlobalIntegerVariablesWindows(MugenDefScript* tScript) {
-	if (!hasMugenDefScriptGroup(tScript, "Vars")) return;
-	auto group = getMugenDefScriptGroup(tScript, "Vars");
+	if (!hasMugenDefScriptGroup(tScript, "vars")) return;
+	auto group = getMugenDefScriptGroup(tScript, "vars");
 
 	for (auto& keyValuePair : group->mElements) {
 		const auto key = atoi(keyValuePair.first.c_str());
@@ -832,8 +897,8 @@ static void loadGlobalIntegerVariablesWindows(MugenDefScript* tScript) {
 }
 
 static void loadGlobalFloatVariablesWindows(MugenDefScript* tScript) {
-	if (!hasMugenDefScriptGroup(tScript, "FVars")) return;
-	auto group = getMugenDefScriptGroup(tScript, "FVars");
+	if (!hasMugenDefScriptGroup(tScript, "fvars")) return;
+	auto group = getMugenDefScriptGroup(tScript, "fvars");
 
 	for (auto& keyValuePair : group->mElements) {
 		const auto key = atoi(keyValuePair.first.c_str());
@@ -843,8 +908,8 @@ static void loadGlobalFloatVariablesWindows(MugenDefScript* tScript) {
 }
 
 static void loadGlobalStringVariablesWindows(MugenDefScript* tScript) {
-	if (!hasMugenDefScriptGroup(tScript, "SVars")) return;
-	auto group = getMugenDefScriptGroup(tScript, "SVars");
+	if (!hasMugenDefScriptGroup(tScript, "svars")) return;
+	auto group = getMugenDefScriptGroup(tScript, "svars");
 
 	for (auto& keyValuePair : group->mElements) {
 		const auto key = atoi(keyValuePair.first.c_str());
@@ -862,7 +927,7 @@ static void loadGlobalVariablesWindows() {
 	loadGlobalIntegerVariablesWindows(&script);
 	loadGlobalFloatVariablesWindows(&script);
 	loadGlobalStringVariablesWindows(&script);
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 }
 #elif defined(DREAMCAST)
 static constexpr auto VARS_SAVE_FILENAME_PRE = "DI_";
@@ -940,7 +1005,7 @@ static void saveGlobalIntegerVariablesWindows(ModifiableMugenDefScript* tScript)
 	for (const auto& keyValuePair : gConfigData.mGlobalVariables) {
 		stringstream ss;
 		ss << keyValuePair.first;
-		saveMugenDefInteger(tScript, "Vars", ss.str().c_str(), keyValuePair.second);
+		saveMugenDefInteger(tScript, "vars", ss.str().c_str(), keyValuePair.second);
 	}
 }
 
@@ -948,7 +1013,7 @@ static void saveGlobalFloatVariablesWindows(ModifiableMugenDefScript* tScript) {
 	for (const auto& keyValuePair : gConfigData.mGlobalFVariables) {
 		stringstream ss;
 		ss << keyValuePair.first;
-		saveMugenDefFloat(tScript, "FVars", ss.str().c_str(), keyValuePair.second);
+		saveMugenDefFloat(tScript, "fvars", ss.str().c_str(), keyValuePair.second);
 	}
 }
 
@@ -956,7 +1021,7 @@ static void saveGlobalStringVariablesWindows(ModifiableMugenDefScript* tScript) 
 	for (const auto& keyValuePair : gConfigData.mGlobalStringVariables) {
 		stringstream ss;
 		ss << keyValuePair.first;
-		saveMugenDefString(tScript, "SVars", ss.str().c_str(), "\"" + keyValuePair.second + "\"");
+		saveMugenDefString(tScript, "svars", ss.str().c_str(), "\"" + keyValuePair.second + "\"");
 	}
 }
 

@@ -197,7 +197,7 @@ typedef struct {
 } DreamMugenConstantsHeader;
 
 typedef struct {
-	Vector3D mScale;
+	Vector2D mScale;
 	int mGroundBackWidth;
 	int mGroundFrontWidth;
 	int mAirBackWidth;
@@ -206,37 +206,37 @@ typedef struct {
 	int mAttackDistance;
 	int mProjectileAttackDistance;
 	int mDoesScaleProjectiles;
-	Vector3D mHeadPosition;
-	Vector3D mMidPosition;
+	Vector2D mHeadPosition;
+	Vector2D mMidPosition;
 	int mShadowOffset;
-	Vector3DI mDrawOffset;
+	Vector2DI mDrawOffset;
 
 	int mHasAttackWidth;
-	Vector3DI mAttackWidth;
+	Vector2DI mAttackWidth;
 
 } DreamMugenConstantsSizeData;
 
 typedef struct {
-	Vector3D mWalkForward;
-	Vector3D mWalkBackward;
+	Vector2D mWalkForward;
+	Vector2D mWalkBackward;
 
-	Vector3D mRunForward;
-	Vector3D mRunBackward;
+	Vector2D mRunForward;
+	Vector2D mRunBackward;
 
-	Vector3D mJumpNeutral;
-	Vector3D mJumpBackward;
-	Vector3D mJumpForward;
+	Vector2D mJumpNeutral;
+	Vector2D mJumpBackward;
+	Vector2D mJumpForward;
 
-	Vector3D mRunJumpBackward;
-	Vector3D mRunJumpForward;
+	Vector2D mRunJumpBackward;
+	Vector2D mRunJumpForward;
 
-	Vector3D mAirJumpNeutral;
-	Vector3D mAirJumpBackward;
-	Vector3D mAirJumpForward;
+	Vector2D mAirJumpNeutral;
+	Vector2D mAirJumpBackward;
+	Vector2D mAirJumpForward;
 
-	Vector3D mAirGetHitGroundRecovery;
-	Vector3D mAirGetHitAirRecoveryMultiplier;
-	Vector3D mAirGetHitAirRecoveryOffset;
+	Vector2D mAirGetHitGroundRecovery;
+	Vector2D mAirGetHitAirRecoveryMultiplier;
+	Vector2D mAirGetHitAirRecoveryOffset;
 
 	double mAirGetHitExtraXWhenHoldingBackward;
 	double mAirGetHitExtraXWhenHoldingForward;
@@ -262,7 +262,7 @@ typedef struct {
 	double mAirGetHitAirRecoveryVerticalAcceleration;
 
 	int mAirGetHitTripGroundLevelY;
-	Vector3D mBounceOffset;
+	Vector2D mBounceOffset;
 	double mVerticalBounceAcceleration;
 	int mBounceGroundLevel;
 	double mLyingDownFrictionThreshold;

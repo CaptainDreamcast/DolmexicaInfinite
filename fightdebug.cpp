@@ -63,7 +63,7 @@ static void loadFightDebug(void* tData) {
 	(void)tData;
 	setProfilingSectionMarkerCurrentFunction();
 
-	loadPlayerDebugData(makePosition(5, 235, DEBUG_Z), MUGEN_TEXT_ALIGNMENT_LEFT);
+	loadPlayerDebugData(Vector3D(5, 235, DEBUG_Z), MUGEN_TEXT_ALIGNMENT_LEFT);
 
 	setSpeedLevel();
 	setDebugTextColor();

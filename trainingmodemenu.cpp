@@ -106,20 +106,20 @@ static void	setSelectedOptionActive();
 
 static void loadTrainingModeMenu(void*) {
 	setProfilingSectionMarkerCurrentFunction();
-	gTrainingModeMenuData.mBackgroundAnimationElement = playOneFrameAnimationLoop(makePosition(78, 28, TRAINING_MODE_MENU_BG_Z), getEmptyWhiteTextureReference());
-	setAnimationSize(gTrainingModeMenuData.mBackgroundAnimationElement, makePosition(164, 124, 1), makePosition(0, 0, 0));
+	gTrainingModeMenuData.mBackgroundAnimationElement = playOneFrameAnimationLoop(Vector3D(78, 28, TRAINING_MODE_MENU_BG_Z), getEmptyWhiteTextureReference());
+	setAnimationSize(gTrainingModeMenuData.mBackgroundAnimationElement, Vector3D(164, 124, 1), Vector3D(0, 0, 0));
 	setAnimationColor(gTrainingModeMenuData.mBackgroundAnimationElement, 0, 0, 0.6);
 	setAnimationTransparency(gTrainingModeMenuData.mBackgroundAnimationElement, 0.7);
 	setAnimationVisibility(gTrainingModeMenuData.mBackgroundAnimationElement, 0);
 
-	gTrainingModeMenuData.mTitleText = addMugenTextMugenStyle("Training Mode", makePosition(160, 40, TRAINING_MODE_MENU_TEXT_Z), makeVector3DI(-1, 0, 0));
+	gTrainingModeMenuData.mTitleText = addMugenTextMugenStyle("Training Mode", Vector3D(160, 40, TRAINING_MODE_MENU_TEXT_Z), Vector3DI(-1, 0, 0));
 	setMugenTextVisibility(gTrainingModeMenuData.mTitleText, 0);
 
 	int y = 60;
 	for (int i = 0; i < COOPERATIVE_MODE_OPTION_AMOUNT; i++) {
-		gTrainingModeMenuData.mOptionTexts[i][0] = addMugenTextMugenStyle("Text", makePosition(90, y, TRAINING_MODE_MENU_TEXT_Z), makeVector3DI(-1, 8, 1));
+		gTrainingModeMenuData.mOptionTexts[i][0] = addMugenTextMugenStyle("Text", Vector3D(90, y, TRAINING_MODE_MENU_TEXT_Z), Vector3DI(-1, 8, 1));
 		setMugenTextVisibility(gTrainingModeMenuData.mOptionTexts[i][0], 0);
-		gTrainingModeMenuData.mOptionTexts[i][1] = addMugenTextMugenStyle("Text", makePosition(180, y, TRAINING_MODE_MENU_TEXT_Z), makeVector3DI(-1, 5, 1));
+		gTrainingModeMenuData.mOptionTexts[i][1] = addMugenTextMugenStyle("Text", Vector3D(180, y, TRAINING_MODE_MENU_TEXT_Z), Vector3DI(-1, 5, 1));
 		setMugenTextVisibility(gTrainingModeMenuData.mOptionTexts[i][1], 0);
 		y += 20;
 	}

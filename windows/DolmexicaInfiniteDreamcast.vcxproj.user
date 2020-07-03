@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommand>C:\Program Files\WindowsApps\CanonicalGroupLimited.UbuntuonWindows_1804.2020.5.0_x64__79rhkp1fndgsc\ubuntu.exe</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>run "cd /home/captaindc/LIBS/kos &amp;&amp; . environ.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.dc run &amp;&amp; read -n 1"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommand>C:\DEV\TOOLS\ubunturun.bat</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments>DolmexicaInfinite run</LocalDebuggerCommandArguments>
     <LocalDebuggerDebuggerType>Script</LocalDebuggerDebuggerType>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>run "cd /home/captaindc/LIBS/kos &amp;&amp; . environ.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.dc run &amp;&amp; read -n 1"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>DolmexicaInfinite run</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommand>C:\Program Files\WindowsApps\CanonicalGroupLimited.UbuntuonWindows_1804.2020.5.0_x64__79rhkp1fndgsc\ubuntu.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommand>C:\DEV\TOOLS\ubunturun.bat</LocalDebuggerCommand>
     <LocalDebuggerDebuggerType>Script</LocalDebuggerDebuggerType>
   </PropertyGroup>
 </Project>

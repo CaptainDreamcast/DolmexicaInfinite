@@ -128,7 +128,7 @@
     <ClCompile Include="..\initscreen.cpp" />
     <ClCompile Include="..\intro.cpp" />
     <ClCompile Include="..\main.cpp" />
-    <ClCompile Include="..\menubackground.cpp" />
+    <ClCompile Include="..\scriptbackground.cpp" />
     <ClCompile Include="..\mugenanimationutilities.cpp" />
     <ClCompile Include="..\mugenassignment.cpp" />
     <ClCompile Include="..\mugenassignmentevaluator.cpp" />
@@ -184,7 +184,7 @@
     <ClInclude Include="..\gamelogic.h" />
     <ClInclude Include="..\initscreen.h" />
     <ClInclude Include="..\intro.h" />
-    <ClInclude Include="..\menubackground.h" />
+    <ClInclude Include="..\scriptbackground.h" />
     <ClInclude Include="..\mugenanimationutilities.h" />
     <ClInclude Include="..\mugenassignment.h" />
     <ClInclude Include="..\mugenassignmentevaluator.h" />

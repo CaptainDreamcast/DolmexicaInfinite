@@ -22,14 +22,15 @@ typedef struct {
 typedef struct StaticStageHandlerElement_t {
 	Position mStart;
 	Position mStartResetValue;
-	Position mSinOffset;
-	Position mSinOffsetInternal;
-	Position mDelta;
-	Vector3DI mCoordinates;
-	Vector3D mVelocity;
-	Vector3D mVelocityResetValue;
-	Vector3D mGlobalScale;
-	Vector3D mDrawScale;
+	Position2D mSinOffset;
+	Position2D mSinOffsetInternal;
+	Position2D mDelta;
+	Vector2DI mCoordinates;
+	Vector2D mVelocity;
+	Vector2D mVelocityResetValue;
+	Vector2D mGlobalScale;
+	Vector2D mDrawScale;
+	Vector2D mParallaxScale;
 
 	MugenSpriteFile* mSprites;
 	MugenAnimation* mAnimation;
@@ -38,12 +39,12 @@ typedef struct StaticStageHandlerElement_t {
 
 	double mScaleStartY;
 	double mScaleDeltaY;
-	Vector3D mScaleStart;
-	Vector3D mScaleDelta;
+	Vector2D mScaleStart;
+	Vector2D mScaleDelta;
 
-	Vector3DI mTile;
-	Vector3DI mTileSize;
-	Vector3DI mTileSpacing;
+	Vector2DI mTile;
+	Vector2DI mTileSize;
+	Vector2DI mTileSpacing;
 	int mLayerNo;
 
 	int mIsEnabled;
@@ -51,41 +52,42 @@ typedef struct StaticStageHandlerElement_t {
 	int mInvisibleFlag;
 
 	int mIsParallax;
-	Vector3D mWidth;
+	Vector2D mWidth;
 	double mInvertedMinimumWidthFactor;
-	Vector3D mXScale;
+	Vector2D mXScale;
 
-	GeoRectangle mConstraintRectangle;
-	Vector3D mConstraintRectangleDelta;
+	GeoRectangle2D mConstraintRectangle;
+	Vector2D mConstraintRectangleDelta;
 
 	int mSinTime;
 	Vector3D mSinX;
 	Vector3D mSinY;
 
 	Position mTileBasePosition;
-	Position mTileBaseScale;
+	Vector2D mTileBaseScale;
 	struct StaticStageHandlerElement_t* mPositionLinkElement;
 } StaticStageHandlerElement;
 
-Vector3DI getDreamMugenStageHandlerCameraCoordinates();
+Vector2DI getDreamMugenStageHandlerCameraCoordinates();
 int getDreamMugenStageHandlerCameraCoordinateP();
-void setDreamMugenStageHandlerCameraCoordinates(const Vector3DI& tCoordinates);
-void setDreamMugenStageHandlerCameraRange(const GeoRectangle& tRect);
-void setDreamMugenStageHandlerCameraPosition(const Position& p);
+void setDreamMugenStageHandlerCameraCoordinates(const Vector2DI& tCoordinates);
+void setDreamMugenStageHandlerCameraRange(const GeoRectangle2D& tRect);
+void setDreamMugenStageHandlerCameraPosition(const Position2D& p);
 void addDreamMugenStageHandlerCameraPositionX(double tX);
 void setDreamMugenStageHandlerCameraPositionX(double tX);
 void addDreamMugenStageHandlerCameraPositionY(double tY);
 void setDreamMugenStageHandlerCameraPositionY(double tY);
-void setDreamMugenStageHandlerScreenShake(const Position& tScreenShake);
+void setDreamMugenStageHandlerScreenShake(const Position2D& tScreenShake);
 void resetDreamMugenStageHandlerCameraPosition();
 void resetDreamMugenStageHandler();
+void clearDreamMugenStageHandler();
 
-void addDreamMugenStageHandlerAnimatedBackgroundElement(const Position& tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile * tSprites, const Position& tDelta, const Vector3DI& tTile, const Vector3DI& tTileSpacing, BlendType tBlendType, const Vector3D& tAlpha, const GeoRectangle& tConstraintRectangle, const Position& tConstraintRectangleDelta, const Vector3D& tVelocity, const Vector3D& tSinX, const Vector3D& tSinY, double tScaleStartY, double tScaleDeltaY, const Position& tScaleStart, const Position& tScaleDelta, const Position& tDrawScale, int tLayerNo, int tID, int tIsParallax, const Vector3DI& tWidth, const Vector3D& tXScale, double tZoomDelta, int tPositionLink, const Vector3DI& tCoordinates);
+void addDreamMugenStageHandlerAnimatedBackgroundElement(const Position& tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile * tSprites, const Position2D& tDelta, const Vector2DI& tTile, const Vector2DI& tTileSpacing, BlendType tBlendType, const Vector2D& tAlpha, const GeoRectangle2D& tConstraintRectangle, const Vector2D& tConstraintRectangleDelta, const Vector2D& tVelocity, const Vector3D& tSinX, const Vector3D& tSinY, double tScaleStartY, double tScaleDeltaY, const Vector2D& tScaleStart, const Vector2D& tScaleDelta, const Vector2D& tDrawScale, int tLayerNo, int tID, int tIsParallax, const Vector2DI& tWidth, const Vector2D& tXScale, double tZoomDelta, int tPositionLink, const Vector2DI& tCoordinates);
 Position* getDreamMugenStageHandlerCameraPositionReference();
-Position* getDreamMugenStageHandlerCameraEffectPositionReference();
+Position2D* getDreamMugenStageHandlerCameraEffectPositionReference();
 void setDreamMugenStageHandlerCameraEffectPositionX(double tX);
 void setDreamMugenStageHandlerCameraEffectPositionY(double tY);
-Position* getDreamMugenStageHandlerCameraTargetPositionReference();
+Position2D* getDreamMugenStageHandlerCameraTargetPositionReference();
 Position* getDreamMugenStageHandlerCameraZoomReference();
 void setDreamMugenStageHandlerCameraZoom(double tZoom);
 

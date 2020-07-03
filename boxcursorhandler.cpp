@@ -55,7 +55,7 @@ int addBoxCursor(const Position& tStartPosition, const Position& tOffset, const 
 	e->mBasePosition = tStartPosition;
 	double w = tRectangle.mBottomRight.x - tRectangle.mTopLeft.x;
 	double h = tRectangle.mBottomRight.y - tRectangle.mTopLeft.y;
-	setAnimationSize(e->mAnimationElement, makePosition(w, h, 1), makePosition(0, 0, 0));
+	setAnimationSize(e->mAnimationElement, Vector3D(w, h, 1), Vector3D(0, 0, 0));
 	setAnimationBasePositionReference(e->mAnimationElement, &e->mBasePosition);
 	setAnimationColor(e->mAnimationElement, 0, 1, 1);
 	setAnimationTransparency(e->mAnimationElement, 1);

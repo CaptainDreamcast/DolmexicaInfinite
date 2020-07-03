@@ -333,26 +333,26 @@ static Vector3DI getTimeFromControllerGroup(MugenDefScriptGroup* tGroup) {
 	if (isMugenDefStringVectorVariableAsGroup(tGroup, "time")) {
 		MugenStringVector vector = getMugenDefStringVectorVariableAsGroup(tGroup, "time");
 		if (vector.mSize == 1) {
-			return makeVector3DI(atoi(vector.mElement[0]), atoi(vector.mElement[0]), -1);
+			return Vector3DI(atoi(vector.mElement[0]), atoi(vector.mElement[0]), -1);
 		}
 		else if (vector.mSize == 2) {
-			return makeVector3DI(atoi(vector.mElement[0]), atoi(vector.mElement[1]), -1);
+			return Vector3DI(atoi(vector.mElement[0]), atoi(vector.mElement[1]), -1);
 		}
 		else if (vector.mSize >= 3) {
-			return makeVector3DI(atoi(vector.mElement[0]), atoi(vector.mElement[1]), atoi(vector.mElement[2]));
+			return Vector3DI(atoi(vector.mElement[0]), atoi(vector.mElement[1]), atoi(vector.mElement[2]));
 		}
 		else {
 			logWarningFormat("Unable to read time vector with size %d. Default to 0, INF, -1.", vector.mSize);
-			return makeVector3DI(0, INF, -1);
+			return Vector3DI(0, INF, -1);
 		}
 	}
 	else if (isMugenDefNumberVariableAsGroup(tGroup, "time")) {
 		int time = getMugenDefNumberVariableAsGroup(tGroup, "time");
-		return makeVector3DI(time, time, -1);
+		return Vector3DI(time, time, -1);
 	}
 	else {
 		logWarning("Unable to read time variable. Default to 0, INF, -1.");
-		return makeVector3DI(0, INF, -1);
+		return Vector3DI(0, INF, -1);
 	}
 }
 

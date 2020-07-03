@@ -168,13 +168,17 @@ static DreamMugenCommandInputStepTarget extractTargetFromInputStep(char* tInputS
 	return ret;
 }
 
-static void handleHoldingInputStep(Vector* tVector, char* tInputStep, int tDoesNotAllowOtherInputBetween) {
+static void addHoldingInputStep(Vector* tVector, int tDoesNotAllowOtherInputBetween, DreamMugenCommandInputStepTarget tTarget) {
 	DreamMugenCommandInputStep* e = (DreamMugenCommandInputStep*)allocMemory(sizeof(DreamMugenCommandInputStep));
-	e->mTarget = extractTargetFromInputStep(tInputStep);
+	e->mTarget = tTarget;
 	e->mType = MUGEN_COMMAND_INPUT_STEP_TYPE_HOLDING;
 	e->mDoesNotAllowOtherInputBetween = tDoesNotAllowOtherInputBetween;
 
 	vector_push_back_owned(tVector, e);
+}
+
+static void handleHoldingInputStep(Vector* tVector, char* tInputStep, int tDoesNotAllowOtherInputBetween) {
+	addHoldingInputStep(tVector, tDoesNotAllowOtherInputBetween, extractTargetFromInputStep(tInputStep));
 }
 
 int isNothingInbetweenStep(char* tInputStep) {
@@ -207,9 +211,14 @@ static int extractDurationFromReleaseInputStep(char* tInputStep) {
 static void handleReleaseStep(Vector* tVector, char* tInputStep, int tDoesNotAllowOtherInputBetween) {
 	DreamMugenCommandInputStepReleaseData* data = (DreamMugenCommandInputStepReleaseData*)allocMemory(sizeof(DreamMugenCommandInputStepReleaseData));
 	data->mDuration = extractDurationFromReleaseInputStep(tInputStep);
+	const auto target = extractTargetFromInputStep(tInputStep);
+
+	if (data->mDuration > 0) {
+		addHoldingInputStep(tVector, tDoesNotAllowOtherInputBetween, target);
+	}
 
 	DreamMugenCommandInputStep* e = (DreamMugenCommandInputStep*)allocMemory(sizeof(DreamMugenCommandInputStep));
-	e->mTarget = extractTargetFromInputStep(tInputStep);
+	e->mTarget = target;
 	e->mType = MUGEN_COMMAND_INPUT_STEP_TYPE_RELEASE;
 	e->mData = data;
 	e->mDoesNotAllowOtherInputBetween = tDoesNotAllowOtherInputBetween;
@@ -359,8 +368,6 @@ static void handleStateDef(MugenDefScriptGroup** tCurrentGroup) {
 	}
 }
 
-
-
 static void loadMugenCommandsFromDefScript(DreamMugenCommands* tCommands, MugenDefScript* tScript) {
 
 	gCommandReader.mDefaultTime = 15;
@@ -405,7 +412,7 @@ DreamMugenCommands loadDreamMugenCommandFile(char * tPath)
 
     loadMugenCommandsFromDefScript(&ret, &script);
 
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 
 	return ret;
 }

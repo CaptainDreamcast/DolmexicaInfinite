@@ -37,22 +37,23 @@ static void fightFinishedCB() {
 
 static void loadExhibitHeader(MugenDefScript* tScript) {
 
-	gExhibitModeData.mIsSelectEnabled = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "select.enabled", 0);
-	gExhibitModeData.mIsVersusEnabled = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "vsscreen.enabled", 0);
-	gExhibitModeData.mFightEndTime = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "fight.endtime", 1500);
-	gExhibitModeData.mIsPlayingFightBGM = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "fight.playbgm", 0);
-	gExhibitModeData.mIsDisplayingFightBars = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "fight.bars.display", 0);
-	gExhibitModeData.mIntroCycleAmount = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "intro.waitcycles", 1);
+	gExhibitModeData.mIsSelectEnabled = getMugenDefIntegerOrDefault(tScript, "demo mode", "select.enabled", 0);
+	gExhibitModeData.mIsVersusEnabled = getMugenDefIntegerOrDefault(tScript, "demo mode", "vsscreen.enabled", 0);
+	gExhibitModeData.mFightEndTime = getMugenDefIntegerOrDefault(tScript, "demo mode", "fight.endtime", 1500);
+	gExhibitModeData.mIsPlayingFightBGM = getMugenDefIntegerOrDefault(tScript, "demo mode", "fight.playbgm", 0);
+	gExhibitModeData.mIsDisplayingFightBars = getMugenDefIntegerOrDefault(tScript, "demo mode", "fight.bars.display", 0);
+	gExhibitModeData.mIntroCycleAmount = getMugenDefIntegerOrDefault(tScript, "demo mode", "intro.waitcycles", 1);
 
-	gExhibitModeData.mIsShowingDebugInfo = getMugenDefIntegerOrDefault(tScript, "Demo Mode", "debuginfo", 0);
+	gExhibitModeData.mIsShowingDebugInfo = getMugenDefIntegerOrDefault(tScript, "demo mode", "debuginfo", 0);
 }
 
-static void loadRandomCharacters() {
+static int loadRandomCharactersAndReturnIfSuccessful() {
 	MugenDefScript script;
 	loadMugenDefScript(&script, getDolmexicaAssetFolder() + "data/select.def");
-	setCharacterRandom(&script, 0);
-	setCharacterRandom(&script, 1);
+	if (!setCharacterRandomAndReturnIfSuccessful(&script, 0)) return 0;
+	if (!setCharacterRandomAndReturnIfSuccessful(&script, 1)) return 0;
 	setStageRandom(&script);
+	return 1;
 }
 
 void startExhibitMode()
@@ -63,9 +64,12 @@ void startExhibitMode()
 	MugenDefScript script; 
 	loadMugenDefScript(&script, scriptPath);
 	loadExhibitHeader(&script);
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 
-	loadRandomCharacters();
+	if (!loadRandomCharactersAndReturnIfSuccessful()) {
+		setNewScreen(getDreamTitleScreen());
+		return;
+	}
 	if (gExhibitModeData.mIsVersusEnabled) {
 		setVersusScreenNoMatchNumber();
 		setVersusScreenFinishedCB(versusScreenFinishedCB);

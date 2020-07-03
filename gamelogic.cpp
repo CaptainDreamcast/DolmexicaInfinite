@@ -77,9 +77,6 @@ static struct {
 } gGameLogicData;
 
 static void fightAnimationFinishedCB() {
-	changePlayerStateIfDifferent(getRootPlayer(0), 0);
-	changePlayerStateIfDifferent(getRootPlayer(1), 0);
-
 	gGameLogicData.mRoundStateNumber = ROUND_STATE_FIGHT;
 	enableDreamTimer();
 }
@@ -500,7 +497,10 @@ static void updateExhibitMode() {
 
 static void skipIntroFinishedCB(void* tCaller) {
 	(void)tCaller;
-
+	changePlayerStateIfDifferent(getRootPlayer(0), 0);
+	changePlayerStateIfDifferent(getRootPlayer(1), 0);
+	setPlayerControl(getRootPlayer(0), 1);
+	setPlayerControl(getRootPlayer(1), 1);
 	fightAnimationFinishedCB();
 }
 

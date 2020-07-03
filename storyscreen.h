@@ -4,5 +4,5 @@
 
 Screen* getStoryScreen();
 
-void setStoryDefinitionFile(char* tPath);
+void setStoryDefinitionFileAndPrepareScreen(const char* tPath);
 void setStoryScreenFinishedCB(void(*tCB)());

@@ -13,6 +13,6 @@ DreamMugenSound makeDreamMugenSound(int tGroup, int tItem);
 
 void setNoMusicFlag();
 int isMugenBGMMusicPath(const char* tPath);
-int isMugenBGMMusicPath(const char* tPath, const char* tStagePath);
+int isMugenBGMMusicPath(const char* tPath, const char* tRootFilePath);
 void playMugenBGMMusicPath(const char* tPath, int tIsLooping);
-void playMugenBGMMusicPath(const char* tPath, const char* tStagePath, int tIsLooping);
+void playMugenBGMMusicPath(const char* tPath, const char* tRootFilePath, int tIsLooping);

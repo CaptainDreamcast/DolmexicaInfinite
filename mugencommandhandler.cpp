@@ -33,6 +33,7 @@ typedef struct {
 	string mName;
 	DreamMugenCommandInput* mInput;
 	int mStep;
+	int mStepNow;
 	int mNow;
 } ActiveMugenCommand;
 
@@ -79,8 +80,6 @@ static void loadMugenCommandHandler(void* tData) {
 		}
 	}
 }
-
-
 
 static void unloadSingleRegisteredCommand(void* tCaller, RegisteredMugenCommand& tData) {
 	(void)tCaller;
@@ -238,13 +237,15 @@ int isOsuPlayerCommandInputAllowed(int tRootIndex)
 	return gMugenCommandHandler.mOsuInputAllowedFlag[tRootIndex];
 }
 
-static int handleSingleCommandInputStepAndReturnIfActive(DreamMugenCommandInputStep* tStep, int* oIsStepOver, int tControllerID, int tIsFacingRight);
+static int handleSingleCommandInputStepAndReturnIfActive(DreamMugenCommandInputStep* tStep, int* oIsStepOver, int* oIsStepRuined, int tControllerID, int tIsFacingRight, int tStepNow);
 
 typedef struct {
-	int isActiveAmount;
-	int isStepOverAmount;
+	int mIsActiveAmount;
+	int mIsStepOverAmount;
 	int mControllerID;
 	int mIsFacingRight;
+	int mStepNow;
+	int* mIsStepRuined;
 } MultipleCommandInputStepCaller;
 
 static void handleSingleMultipleCommandInputStep(void* tCaller, void* tData) {
@@ -252,28 +253,30 @@ static void handleSingleMultipleCommandInputStep(void* tCaller, void* tData) {
 	DreamMugenCommandInputStep* step = (DreamMugenCommandInputStep*)tData;
 
 	int isStepOver = 0;
-	int isActive = handleSingleCommandInputStepAndReturnIfActive(step, &isStepOver, caller->mControllerID, caller->mIsFacingRight);
+	int isActive = handleSingleCommandInputStepAndReturnIfActive(step, &isStepOver, caller->mIsStepRuined, caller->mControllerID, caller->mIsFacingRight, caller->mStepNow);
 
-	caller->isActiveAmount += isActive;
-	caller->isStepOverAmount += isStepOver;
+	caller->mIsActiveAmount += isActive;
+	caller->mIsStepOverAmount += isStepOver;
 }
 
-static int handleMultipleCommandInputStep(DreamMugenCommandInputStep* tStep, int* oIsStepOver, int tControllerID, int tIsFacingRight) {
+static int handleMultipleCommandInputStep(DreamMugenCommandInputStep* tStep, int* oIsStepOver, int* oIsStepRuined, int tControllerID, int tIsFacingRight, int tStepNow) {
 	DreamMugenCommandInputStepMultipleTargetData* data = (DreamMugenCommandInputStepMultipleTargetData*)tStep->mData;
 	assert(tStep->mTarget == MUGEN_COMMAND_INPUT_STEP_TARGET_MULTIPLE);
 
 	MultipleCommandInputStepCaller caller;
-	caller.isActiveAmount = 0;
-	caller.isStepOverAmount = 0;
+	caller.mIsActiveAmount = 0;
+	caller.mIsStepOverAmount = 0;
 	caller.mControllerID = tControllerID;
 	caller.mIsFacingRight = tIsFacingRight;
+	caller.mStepNow = tStepNow;
+	caller.mIsStepRuined = oIsStepRuined;
 	vector_map(&data->mSubSteps, handleSingleMultipleCommandInputStep, &caller);
 
-	if (caller.isActiveAmount < vector_size(&data->mSubSteps)) return 0;
+	if (caller.mIsActiveAmount < vector_size(&data->mSubSteps)) return 0;
 
-	assert(caller.isStepOverAmount == 0 || caller.isStepOverAmount == vector_size(&data->mSubSteps));
+	assert(caller.mIsStepOverAmount == 0 || caller.mIsStepOverAmount == vector_size(&data->mSubSteps));
 
-	if (caller.isStepOverAmount) *oIsStepOver = 1;
+	if (caller.mIsStepOverAmount) *oIsStepOver = 1;
 	else *oIsStepOver = 0;
 
 	return 1;
@@ -390,19 +393,25 @@ static int handlePressingCommandInputStep(DreamMugenCommandInputStep* tStep, int
 	return ret;
 }
 
-static int handleReleasingCommandInputStep(DreamMugenCommandInputStep* tStep, int* oIsStepOver, int tControllerID, int tIsFacingRight) {
+static int handleReleasingCommandInputStep(DreamMugenCommandInputStep* tStep, int* oIsStepOver, int* oIsStepRuined, int tControllerID, int tIsFacingRight, int tStepNow) {
 	int ret = isTargetReleased(tStep->mTarget, tControllerID, tIsFacingRight);
 	*oIsStepOver = 1; 
+
+	const auto data = (DreamMugenCommandInputStepReleaseData*)tStep->mData;
+	if (ret && tStepNow < data->mDuration) {
+		*oIsStepRuined = 1;
+		ret = 0;
+	}
 
 	return ret;
 }
 
 
 
-static int handleSingleCommandInputStepAndReturnIfActive(DreamMugenCommandInputStep* tStep, int* oIsStepOver, int tControllerID, int tIsFacingRight) {
+static int handleSingleCommandInputStepAndReturnIfActive(DreamMugenCommandInputStep* tStep, int* oIsStepOver, int* oIsStepRuined, int tControllerID, int tIsFacingRight, int tStepNow) {
 
 	if (tStep->mType == MUGEN_COMMAND_INPUT_STEP_TYPE_MULTIPLE) {
-		return handleMultipleCommandInputStep(tStep, oIsStepOver, tControllerID, tIsFacingRight);
+		return handleMultipleCommandInputStep(tStep, oIsStepOver, oIsStepRuined, tControllerID, tIsFacingRight, tStepNow);
 	}
 	else if (tStep->mType == MUGEN_COMMAND_INPUT_STEP_TYPE_HOLDING) {
 		return handleHoldingCommandInputStep(tStep, oIsStepOver, tControllerID, tIsFacingRight);
@@ -411,7 +420,7 @@ static int handleSingleCommandInputStepAndReturnIfActive(DreamMugenCommandInputS
 		return handlePressingCommandInputStep(tStep, oIsStepOver, tControllerID, tIsFacingRight);
 	}
 	else if (tStep->mType == MUGEN_COMMAND_INPUT_STEP_TYPE_RELEASE) {
-		return handleReleasingCommandInputStep(tStep, oIsStepOver, tControllerID, tIsFacingRight);
+		return handleReleasingCommandInputStep(tStep, oIsStepOver, oIsStepRuined, tControllerID, tIsFacingRight, tStepNow);
 	}
 	else {
 		return 0;
@@ -451,37 +460,59 @@ static int isSameStepAsBefore(ActiveMugenCommand* tCommand) {
 	return haveSameTarget;
 }
 
-static int isPreviousCommandInputStepNoHoldingOrActive(RegisteredMugenCommand* tRegisteredCommand, ActiveMugenCommand* tActiveCommand) {
+static int isPreviousCommandInputStepNoHoldingInapplicableOrActive(RegisteredMugenCommand* tRegisteredCommand, ActiveMugenCommand* tActiveCommand) {
 	if (tActiveCommand->mStep == 0) return 1;
 	const auto previousStep = (DreamMugenCommandInputStep*)vector_get(&tActiveCommand->mInput->mInputSteps, tActiveCommand->mStep - 1);
 	if (previousStep->mType != MUGEN_COMMAND_INPUT_STEP_TYPE_HOLDING) return 1;
+	const auto step = (DreamMugenCommandInputStep*)vector_get(&tActiveCommand->mInput->mInputSteps, tActiveCommand->mStep);
+	if (step->mType == MUGEN_COMMAND_INPUT_STEP_TYPE_RELEASE && step->mTarget == previousStep->mTarget) return 1;
 
 	int isStepOver;
-	const auto ret = handleSingleCommandInputStepAndReturnIfActive(previousStep, &isStepOver, tRegisteredCommand->mControllerID, tRegisteredCommand->mIsFacingRight);
+	int isStepRuined;
+	const auto ret = handleSingleCommandInputStepAndReturnIfActive(previousStep, &isStepOver, &isStepRuined, tRegisteredCommand->mControllerID, tRegisteredCommand->mIsFacingRight, INF);
 	return ret;
+}
+
+static int isFiniteCommandTimeStep(DreamMugenCommandInputStep* tStep) {
+	if (tStep->mType != MUGEN_COMMAND_INPUT_STEP_TYPE_RELEASE) return 1;
+
+	const auto data = (DreamMugenCommandInputStepReleaseData*)tStep->mData;
+	return data->mDuration == 0;
 }
 
 static int updateSingleActiveMugenCommand(RegisteredMugenCommand* tCaller, ActiveMugenCommand& tData) {
 	RegisteredMugenCommand* registeredCommand = (RegisteredMugenCommand*)tCaller;
 	ActiveMugenCommand* command = &tData;
 
-	command->mNow++;
-	if (command->mNow >= command->mInput->mTime) {
-		removeActiveCommand(command, registeredCommand);
-		return 1;
+	DreamMugenCommandInputStep* step = (DreamMugenCommandInputStep*)vector_get(&command->mInput->mInputSteps, command->mStep);
+	if (isFiniteCommandTimeStep(step)) {
+		command->mNow++;
+		if (command->mNow >= command->mInput->mTime) {
+			removeActiveCommand(command, registeredCommand);
+			return 1;
+		}
 	}
+	command->mStepNow++;
 
 	int isRunning = 1;
 	while (isRunning) {
-		DreamMugenCommandInputStep* step = (DreamMugenCommandInputStep*)vector_get(&command->mInput->mInputSteps, command->mStep);
+		step = (DreamMugenCommandInputStep*)vector_get(&command->mInput->mInputSteps, command->mStep);
 
 		int isStepOver = 0;
-		int isActive = handleSingleCommandInputStepAndReturnIfActive(step, &isStepOver, registeredCommand->mControllerID, registeredCommand->mIsFacingRight);
-		isActive = isActive && isPreviousCommandInputStepNoHoldingOrActive(registeredCommand, command);
+		int isStepRuined = 0;
+		int isActive = handleSingleCommandInputStepAndReturnIfActive(step, &isStepOver, &isStepRuined, registeredCommand->mControllerID, registeredCommand->mIsFacingRight, command->mStepNow);
+
+		if (isStepRuined) {
+			removeActiveCommand(command, registeredCommand);
+			return 1;
+		}
+
+		isActive = isActive && isPreviousCommandInputStepNoHoldingInapplicableOrActive(registeredCommand, command);
 		if (!isActive) return 0;
 
 		if (isStepOver) {
 			command->mStep++;
+			command->mStepNow = 0;
 			if (command->mStep == vector_size(&command->mInput->mInputSteps)) {
 				setCommandStateActive(registeredCommand, command->mName, command->mInput->mBufferTime);
 				removeActiveCommand(command, registeredCommand);
@@ -516,6 +547,7 @@ static void addNewActiveMugenCommand(DreamMugenCommandInput* tInput, RegisteredM
 	e.mName = tName;
 	e.mNow = 0;
 	e.mStep = min(1, mIsStepOver);
+	e.mStepNow = 0;
 
 	int isAlreadyOver = 0;
 	if (!isSameStepAsBefore(&e)) {
@@ -531,7 +563,8 @@ static void updateSingleStaticMugenCommandInput(void* tCaller, void* tData) {
 	DreamMugenCommandInputStep* firstStep = (DreamMugenCommandInputStep*)vector_get(&input->mInputSteps, 0);
 
 	int mIsStepOver = 0;
-	int mIsActive = handleSingleCommandInputStepAndReturnIfActive(firstStep, &mIsStepOver, caller->mRegisteredCommand->mControllerID, caller->mRegisteredCommand->mIsFacingRight);
+	int mIsStepRuined = 0;
+	int mIsActive = handleSingleCommandInputStepAndReturnIfActive(firstStep, &mIsStepOver, &mIsStepRuined, caller->mRegisteredCommand->mControllerID, caller->mRegisteredCommand->mIsFacingRight, 0);
 
 	if (!mIsActive) return;
 

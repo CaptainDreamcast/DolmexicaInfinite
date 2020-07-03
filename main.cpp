@@ -92,6 +92,7 @@ int main(int argc, char** argv) {
 	// setDisplayedScreenSize(320, 240);
 	disableWrapperErrorRecovery();
 	initDolmexicaDebug();
+	setDebugMinusCheckEnabled(1);
 #endif
 
 	startScreenHandling(getInitScreen());

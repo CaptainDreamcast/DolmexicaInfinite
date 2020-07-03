@@ -68,7 +68,7 @@ int isMugenBGMMusicPath(const char * tPath)
 	return isMugenBGMMusicPath(tPath, "");
 }
 
-int isMugenBGMMusicPath(const char* tPath, const char* tStagePath) {
+int isMugenBGMMusicPath(const char* tPath, const char* tRootFilePath) {
 	if (!strchr(tPath, '.')) return 0;
 	const char* fileExtension = getFileExtension(tPath);
 	if (!strcmp("da", fileExtension)) return 1;
@@ -78,11 +78,11 @@ int isMugenBGMMusicPath(const char* tPath, const char* tStagePath) {
 	sprintf(inFolderPath, "%smusic/%s", getDolmexicaAssetFolder().c_str(), tPath);
 	if (isFile(inFolderPath)) return 1;
 
-	if (*tStagePath) {
+	if (*tRootFilePath) {
 		string s;
-		const char* folderEnd = strrchr(tStagePath, '/');
+		const char* folderEnd = strrchr(tRootFilePath, '/');
 		if (folderEnd) {
-			s = string(tStagePath, size_t(folderEnd - tStagePath + 1));
+			s = string(tRootFilePath, size_t(folderEnd - tRootFilePath + 1));
 		}
 		sprintf(inFolderPath, "%s%s", s.data(), tPath);
 		if (isFile(inFolderPath)) return 1;
@@ -120,10 +120,19 @@ static void playMugenBGMMusicCompletePath(const char* tPath, int tIsLooping) {
 	gDolmexicaMugenSoundData.mIsPlayingMusic = 1;
 }
 
-
-void playMugenBGMMusicPath(const char* tPath, const char* tStagePath, int tIsLooping) {
+void playMugenBGMMusicPath(const char* tPath, const char* tRootFilePath, int tIsLooping) {
 	const char* fileExtension = getFileExtension(tPath);
 	if (!strcmp("osu", fileExtension)) {
+		if (*tRootFilePath)
+		{
+			std::string folder;
+			getPathToFile(folder, tRootFilePath);
+			const auto totalPath = folder + tPath;
+			if (isFile(totalPath)) {
+				setOsuFile(totalPath.c_str());
+				return;
+			}
+		}
 		setOsuFile(tPath);
 		return;
 	}
@@ -140,11 +149,11 @@ void playMugenBGMMusicPath(const char* tPath, const char* tStagePath, int tIsLoo
 		return;
 	}
 
-	if (*tStagePath) {
+	if (*tRootFilePath) {
 		string s;
-		const char* folderEnd = strrchr(tStagePath, '/');
+		const char* folderEnd = strrchr(tRootFilePath, '/');
 		if (folderEnd) {
-			s = string(tStagePath, size_t(folderEnd - tStagePath + 1));
+			s = string(tRootFilePath, size_t(folderEnd - tRootFilePath + 1));
 		}
 		sprintf(inFolderPath, "%s%s", s.data(), tPath);
 		if (isFile(inFolderPath)) {

@@ -21,10 +21,9 @@ static void addHistoryBufferElement(DreamPlayer* tPlayer) {
 	AfterImageHistoryBufferEntry e;
 	const auto sprite = getMugenAnimationSprite(tPlayer->mAnimationElement);
 	e.mAnimation = createOneFrameMugenAnimationForSprite(sprite.x, sprite.y);
-	auto p = getDreamStageCoordinateSystemOffset(getDreamMugenStageHandlerCameraCoordinateP()) + getHandledPhysicsPosition(tPlayer->mPhysicsElement);
-	p.z = PLAYER_Z;
-	e.mAnimationElement = addMugenAnimation(e.mAnimation, &tPlayer->mHeader->mFiles.mSprites, p);
-	setMugenAnimationDrawScale(e.mAnimationElement, makePosition(getPlayerScaleX(tPlayer), getPlayerScaleY(tPlayer), 1) * tPlayer->mTempScale * getPlayerToCameraScale(tPlayer));
+	const auto p = getDreamStageCoordinateSystemOffset(getDreamMugenStageHandlerCameraCoordinateP()) + getHandledPhysicsPosition(tPlayer->mPhysicsElement).xy();
+	e.mAnimationElement = addMugenAnimation(e.mAnimation, &tPlayer->mHeader->mFiles.mSprites, p.xyz(PLAYER_Z));
+	setMugenAnimationDrawScale(e.mAnimationElement, Vector2D(getPlayerScaleX(tPlayer), getPlayerScaleY(tPlayer)) * tPlayer->mTempScale * getPlayerToCameraScale(tPlayer));
 	setMugenAnimationCameraPositionReference(e.mAnimationElement, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationCameraEffectPositionReference(e.mAnimationElement, getDreamMugenStageHandlerCameraEffectPositionReference());
 	setMugenAnimationCameraScaleReference(e.mAnimationElement, getDreamMugenStageHandlerCameraZoomReference());

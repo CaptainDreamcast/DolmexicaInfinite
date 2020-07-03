@@ -22,6 +22,7 @@ void setupTestForScreenTestInAssetsFolder()
 	loadMugenConfig();
 	loadGlobalVariables(PrismSaveSlot::AMOUNT);
 	disableWrapperErrorRecovery();
+	setDebugMinusCheckEnabled(1);
 	initDolmexicaDebug();
 	loadMugenSystemFonts();
 	setMemoryHandlerCompressionActive();

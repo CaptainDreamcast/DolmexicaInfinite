@@ -68,8 +68,25 @@ typedef struct {
 
 } OsuPlayerAI;
 
+struct OsuParameters {
+	std::string mSpriteFilePath;
+	std::string mAnimationFilePath;
+	std::string mSoundFilePath;
+
+	int mHitCircleAnimation;
+	int mApproachCircleAnimation;
+	int mFreestyleAnimationPre;
+	int mFreestyleAnimationDuring;
+	int mFreestyleAnimationPost;
+	Vector2D mFreestylePosition;
+	int mHitAnimationBase;
+	Vector2DI mHitSound;
+};
+
 static struct {
 	char mPath[200];
+
+	OsuParameters mParameters;
 
 	MugenSpriteFile mSprites;
 	MugenAnimations mAnimations;
@@ -168,9 +185,9 @@ void resetOsuHandler() {
 
 static void loadOsuHandler(void* /*tData*/) {
 	setProfilingSectionMarkerCurrentFunction();
-	gOsuHandlerData.mSprites = loadMugenSpriteFileWithoutPalette(getDolmexicaAssetFolder() + "data/osu.sff");
-	gOsuHandlerData.mAnimations = loadMugenAnimationFile(getDolmexicaAssetFolder() + "data/osu.air");
-	gOsuHandlerData.mSounds = loadMugenSoundFile((getDolmexicaAssetFolder() + "data/osu.snd").c_str());
+	gOsuHandlerData.mSprites = loadMugenSpriteFileWithoutPalette(gOsuHandlerData.mParameters.mSpriteFilePath);
+	gOsuHandlerData.mAnimations = loadMugenAnimationFile(gOsuHandlerData.mParameters.mAnimationFilePath);
+	gOsuHandlerData.mSounds = loadMugenSoundFile(gOsuHandlerData.mParameters.mSoundFilePath.c_str());
 
 	gOsuHandlerData.mOsu = loadOsuFile(gOsuHandlerData.mPath);
 	gOsuHandlerData.mActiveHitObjects = new_list();
@@ -242,11 +259,11 @@ static void addActiveHitObject(OsuHitObject* tObject, int tIsOwned) {
 	}
 	e->mColor = (OsuColor*)list_iterator_get(gOsuHandlerData.mCurrentColor);
 
-	e->mCircleAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, 1001), &gOsuHandlerData.mSprites, makePosition(parsePositionX(tObject->mX), parsePositionY(tObject->mY), gOsuHandlerData.mGlobalZCounter));
+	e->mCircleAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, gOsuHandlerData.mParameters.mApproachCircleAnimation), &gOsuHandlerData.mSprites, Vector3D(parsePositionX(tObject->mX), parsePositionY(tObject->mY), gOsuHandlerData.mGlobalZCounter));
 	setMugenAnimationTransparency(e->mCircleAnimationElement, 0);
 	setMugenAnimationBaseDrawScale(e->mCircleAnimationElement, getCircleSizeScale());
 	setMugenAnimationColor(e->mCircleAnimationElement, e->mColor->mR, e->mColor->mG, e->mColor->mB);
-	e->mBodyAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, 1000), &gOsuHandlerData.mSprites, makePosition(parsePositionX(tObject->mX), parsePositionY(tObject->mY), gOsuHandlerData.mGlobalZCounter + 0.001));
+	e->mBodyAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, gOsuHandlerData.mParameters.mHitCircleAnimation), &gOsuHandlerData.mSprites, Vector3D(parsePositionX(tObject->mX), parsePositionY(tObject->mY), gOsuHandlerData.mGlobalZCounter + 0.001));
 	setMugenAnimationTransparency(e->mBodyAnimationElement, 0);
 	setMugenAnimationBaseDrawScale(e->mBodyAnimationElement, getCircleSizeScale());
 	setMugenAnimationColor(e->mBodyAnimationElement, e->mColor->mR*0.8, e->mColor->mG*0.8, e->mColor->mB*0.8);
@@ -291,7 +308,7 @@ static void addActiveSpinnerObject(OsuSpinnerObject* tObject, int tIsObjectOwned
 	ActiveSpinnerObject* e = (ActiveSpinnerObject*)allocMemory(sizeof(ActiveSpinnerObject));
 	e->mObject = tObject;
 	e->mIsObjectOwned = tIsObjectOwned;
-	e->mEncouragementAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, 2000), &gOsuHandlerData.mSprites, makePosition(160, 52, 90));
+	e->mEncouragementAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, gOsuHandlerData.mParameters.mFreestyleAnimationPre), &gOsuHandlerData.mSprites, gOsuHandlerData.mParameters.mFreestylePosition.xyz(90));
 
 	list_push_back_owned(&gOsuHandlerData.mActiveSpinnerObjects, e);
 }
@@ -498,10 +515,10 @@ static void addResponse(int i, ActiveHitObject* e, int tLevel) {
 	pos.x += 20 * (i ? 1 : -1);
 	pos.z += 0.001;
 
-	e->mPlayerResponse[i].mResponseAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, 1500 + tLevel), &gOsuHandlerData.mSprites, pos);
+	e->mPlayerResponse[i].mResponseAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, gOsuHandlerData.mParameters.mHitAnimationBase + tLevel), &gOsuHandlerData.mSprites, pos);
 
 	if (tLevel) {
-		tryPlayMugenSoundAdvanced(&gOsuHandlerData.mSounds, 1, 0, parseGameMidiVolumeToPrism(getGameMidiVolume()));
+		tryPlayMugenSoundAdvanced(&gOsuHandlerData.mSounds, gOsuHandlerData.mParameters.mHitSound.x, gOsuHandlerData.mParameters.mHitSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 	}
 
 	if (tLevel > 0) allowOsuPlayerCommandInputOneFrame(i);
@@ -676,11 +693,11 @@ static void updateActiveSpinnerControl(ActiveSpinnerObject* e) {
 
 
 static void updateActiveSpinnerTextDisplay(ActiveSpinnerObject* e, int tTime) {
-	if (tTime >= e->mObject->mTime && getMugenAnimationAnimationNumber(e->mEncouragementAnimationElement) < 2001) {
-		changeMugenAnimation(e->mEncouragementAnimationElement, getMugenAnimation(&gOsuHandlerData.mAnimations, 2001));
+	if (tTime >= e->mObject->mTime && getMugenAnimationAnimationNumber(e->mEncouragementAnimationElement) < gOsuHandlerData.mParameters.mFreestyleAnimationDuring) {
+		changeMugenAnimation(e->mEncouragementAnimationElement, getMugenAnimation(&gOsuHandlerData.mAnimations, gOsuHandlerData.mParameters.mFreestyleAnimationDuring));
 	}
-	if (tTime >= e->mObject->mEndTime && getMugenAnimationAnimationNumber(e->mEncouragementAnimationElement) < 2002) {
-		changeMugenAnimation(e->mEncouragementAnimationElement, getMugenAnimation(&gOsuHandlerData.mAnimations, 2002));
+	if (tTime >= e->mObject->mEndTime && getMugenAnimationAnimationNumber(e->mEncouragementAnimationElement) < gOsuHandlerData.mParameters.mFreestyleAnimationPost) {
+		changeMugenAnimation(e->mEncouragementAnimationElement, getMugenAnimation(&gOsuHandlerData.mAnimations, gOsuHandlerData.mParameters.mFreestyleAnimationPost));
 	}
 }
 
@@ -882,4 +899,26 @@ void stopOsuHandler()
 {
 	emptyOsuHandler();
 	gOsuHandlerData.mIsActive = 0;
+}
+
+void loadOsuParametersFromScript(MugenDefScript* tScript, const char* tFightPath) {
+	auto& parameters = gOsuHandlerData.mParameters;
+	std::string folder;
+	getPathToFile(folder, tFightPath);
+
+	parameters.mSpriteFilePath = getSTLMugenDefStringOrDefault(tScript, "files", "osu.sff", "osu.sff");
+	parameters.mSpriteFilePath = findMugenSystemOrFightFilePath(parameters.mSpriteFilePath, folder);
+	parameters.mAnimationFilePath = getSTLMugenDefStringOrDefault(tScript, "files", "osu.air", "osu.air");
+	parameters.mAnimationFilePath = findMugenSystemOrFightFilePath(parameters.mAnimationFilePath, folder);
+	parameters.mSoundFilePath = getSTLMugenDefStringOrDefault(tScript, "files", "osu.snd", "osu.snd");
+	parameters.mSoundFilePath = findMugenSystemOrFightFilePath(parameters.mSoundFilePath, folder);
+
+	parameters.mHitCircleAnimation = getMugenDefIntegerOrDefault(tScript, "osu", "hitcircle.anim", 1000);
+	parameters.mApproachCircleAnimation = getMugenDefIntegerOrDefault(tScript, "osu", "approachcircle.anim", 1001);
+	parameters.mFreestyleAnimationPre = getMugenDefIntegerOrDefault(tScript, "osu", "freestyle.pre.anim", 2000);
+	parameters.mFreestyleAnimationDuring = getMugenDefIntegerOrDefault(tScript, "osu", "freestyle.during.anim", 2001);
+	parameters.mFreestyleAnimationPost = getMugenDefIntegerOrDefault(tScript, "osu", "freestyle.post.anim", 2002);
+	parameters.mFreestylePosition = getMugenDefVector2DOrDefault(tScript, "osu", "freestyle.pos", Vector2D(160, 50));
+	parameters.mHitAnimationBase = getMugenDefIntegerOrDefault(tScript, "osu", "hit.animbase", 1500);
+	parameters.mHitSound = getMugenDefVector2DIOrDefault(tScript, "osu", "hit.snd", Vector2DI(1, 0));
 }

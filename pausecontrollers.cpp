@@ -208,7 +208,7 @@ void setDreamSuperPauseAnimation(DreamPlayer* tPlayer, int tIsInPlayerFile, int 
 	}
 
 	gPauseControllerData.mSuperPause.mHasAnimation = 1;
-	gPauseControllerData.mSuperPause.mMugenAnimationElement = addMugenAnimation(animation, sprites, makePosition(0, 0, 0));
+	gPauseControllerData.mSuperPause.mMugenAnimationElement = addMugenAnimation(animation, sprites, Vector3D(0, 0, 0));
 	setMugenAnimationBasePosition(gPauseControllerData.mSuperPause.mMugenAnimationElement, &gPauseControllerData.mSuperPause.mAnimationReferencePosition);
 	setMugenAnimationCameraPositionReference(gPauseControllerData.mSuperPause.mMugenAnimationElement, getDreamMugenStageHandlerCameraPositionReference());
 	setMugenAnimationBaseDrawScale(gPauseControllerData.mSuperPause.mMugenAnimationElement, baseScale);
@@ -234,19 +234,18 @@ void setDreamSuperPausePosition(DreamPlayer* tPlayer, double tX, double tY, int 
 	int isPlayerFacingRight = getPlayerIsFacingRight(tPlayer);
 	if (!isPlayerFacingRight) tX *= -1;
 
-	const auto superPauseOffset = transformDreamCoordinatesVector(makePosition(tX, tY, 0), tCoordinateP, getDreamMugenStageHandlerCameraCoordinateP());
-	Position mPlayerPosition = getDreamStageCoordinateSystemOffset(getDreamMugenStageHandlerCameraCoordinateP()) + getPlayerPosition(tPlayer, getDreamMugenStageHandlerCameraCoordinateP());
-	gPauseControllerData.mSuperPause.mAnimationReferencePosition = vecAdd(superPauseOffset, mPlayerPosition);
-	gPauseControllerData.mSuperPause.mAnimationReferencePosition.z = SUPERPAUSE_Z;
+	const auto superPauseOffset = transformDreamCoordinatesVector2D(Vector2D(tX, tY), tCoordinateP, getDreamMugenStageHandlerCameraCoordinateP());
+	const auto playerPosition = getDreamStageCoordinateSystemOffset(getDreamMugenStageHandlerCameraCoordinateP()) + getPlayerPosition(tPlayer, getDreamMugenStageHandlerCameraCoordinateP());
+	gPauseControllerData.mSuperPause.mAnimationReferencePosition = (superPauseOffset + playerPosition).xyz(SUPERPAUSE_Z);
 }
 
 void setDreamSuperPauseDarkening(DreamPlayer* /*tPlayer*/, int tIsDarkening)
 {
 	gPauseControllerData.mSuperPause.mIsDarkening = tIsDarkening;
 	if (tIsDarkening) {
-		gPauseControllerData.mSuperPause.mDarkeningAnimationElement = playOneFrameAnimationLoop(makePosition(0, 0, SUPERPAUSE_DARKENING_Z), getEmptyWhiteTextureReference());
+		gPauseControllerData.mSuperPause.mDarkeningAnimationElement = playOneFrameAnimationLoop(Vector3D(0, 0, SUPERPAUSE_DARKENING_Z), getEmptyWhiteTextureReference());
 		const auto sz = getScreenSize();
-		setAnimationSize(gPauseControllerData.mSuperPause.mDarkeningAnimationElement, makePosition(sz.x, sz.y, 1), makePosition(0, 0, 0));
+		setAnimationSize(gPauseControllerData.mSuperPause.mDarkeningAnimationElement, Vector3D(sz.x, sz.y, 1), Vector3D(0, 0, 0));
 		setAnimationTransparency(gPauseControllerData.mSuperPause.mDarkeningAnimationElement, 0.7);
 		setAnimationColor(gPauseControllerData.mSuperPause.mDarkeningAnimationElement, 0.0, 0.0, 0.1);
 	}

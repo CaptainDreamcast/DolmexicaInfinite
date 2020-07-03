@@ -26,8 +26,8 @@ static void fightFinishedCB() {
 	MugenDefScript script; 
 	loadMugenDefScript(&script, getDolmexicaAssetFolder() + "data/select.def");
 
-	setCharacterRandom(&script, 0);
-	setCharacterRandom(&script, 1);
+	setCharacterRandomAndReturnIfSuccessful(&script, 0);
+	setCharacterRandomAndReturnIfSuccessful(&script, 1);
 	setStageRandom(&script);
 
 	gRandomWatchModeData.mCurrentMatch++;

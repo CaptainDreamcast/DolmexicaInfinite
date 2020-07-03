@@ -9,12 +9,13 @@
 void loadMugenConfig();
 void loadMugenSystemFonts();
 void loadMugenFightFonts();
-void loadMugenStoryFonts(const char* tPath);
+void loadMugenStoryFonts(const char* tPath, const char* tGroupName);
 
 std::string getGameTitle();
 const std::string& getDolmexicaAssetFolder();
 
 const std::string& getMotifPath();
+std::string findMugenSystemOrFightFilePath(const std::string& tFile, const std::string& tFolder);
 
 double getDreamDefaultAttackDamageDoneToPowerMultiplier();
 double getDreamDefaultAttackDamageReceivedToPowerMultiplier();

@@ -16,7 +16,7 @@
 #include <prism/math.h>
 
 #include "mugensound.h"
-#include "menubackground.h"
+#include "scriptbackground.h"
 #include "titlescreen.h"
 #include "storyscreen.h"
 #include "playerdefinition.h"
@@ -25,29 +25,35 @@
 #include "storymode.h"
 #include "config.h"
 
+#define SELECTOR_Z 49
+
 using namespace std;
 
 typedef struct {
-	Vector3DI mCursorStartCell;
+	Vector2DI mCursorStartCell;
+	int mIsActiveCursorAnimationOwned;
 	MugenAnimation* mActiveCursorAnimation;
+	Vector2D mActiveCursorScale;
+	int mIsDoneCursorAnimationOwned;
 	MugenAnimation* mDoneCursorAnimation;
+	Vector2D mDoneCursorScale;
 
 	MugenAnimation* mBigPortraitAnimation;
-	Position mBigPortraitOffset;
-	Vector3D mBigPortraitScale;
+	Position2D mBigPortraitOffset;
+	Vector2D mBigPortraitScale;
 	int mBigPortraitIsFacingRight;
 
-	Position mNameOffset;
+	Position2D mNameOffset;
 	Vector3DI mNameFont;
 	double mNameWidth;
 
-	Vector3DI mCursorMoveSound;
-	Vector3DI mCursorDoneSound;
-	Vector3DI mRandomMoveSound;
+	Vector2DI mCursorMoveSound;
+	Vector2DI mCursorDoneSound;
+	Vector2DI mRandomMoveSound;
 } PlayerHeader;
 
 typedef struct {
-	Position mPosition;
+	Position2D mPosition;
 	Vector3DI mActiveFont1;
 	Vector3DI mActiveFont2;
 	Vector3DI mDoneFont;
@@ -62,24 +68,28 @@ typedef struct {
 	int mColumns;
 	int mIsWrapping;
 
-	Position mPosition;
+	Position2D mPosition;
 	int mIsShowingEmptyBoxes;
 	int mCanMoveOverEmptyBoxes;
 
-	Vector3D mCellSize;
+	Vector2D mCellSize;
 	double mCellSpacing;
 	
+	int mIsCellBackgroundAnimationOwned;
 	MugenAnimation* mCellBackgroundAnimation;
+	Vector2D mCellBackgroundScale;
+	int mIsRandomSelectionAnimationOwned;
 	MugenAnimation* mRandomSelectionAnimation;
+	Vector2D mRandomSelectionScale;
 	int mRandomPortraitSwitchTime;
 
 	PlayerHeader mPlayers[2];
 
 	MugenAnimation* mSmallPortraitAnimation;
-	Position mSmallPortraitOffset;
-	Vector3D mSmallPortraitScale;
+	Position2D mSmallPortraitOffset;
+	Vector2D mSmallPortraitScale;
 
-	Position mTitleOffset;
+	Position2D mTitleOffset;
 	Vector3DI mTitleFont;
 
 	StageSelectHeader mStageSelect;
@@ -102,7 +112,7 @@ typedef enum {
 typedef struct {
 	SelectCharacterType mType;
 	
-	Vector3DI mCellPosition;
+	Vector2DI mCellPosition;
 	MugenAnimationHandlerElement* mBackgroundAnimationElement;
 
 	MugenSpriteFile mSprites;
@@ -143,7 +153,7 @@ typedef struct {
 	int mNameTextID;
 
 	int mHasBeenLoadedBefore;
-	Vector3DI mSelectedCharacter;
+	Vector2DI mSelectedCharacter;
 	RandomSelector mRandom;
 } Selector;
 
@@ -222,16 +232,18 @@ static struct {
 	int mIsFadingOut;
 } gCharacterSelectScreenData;
 
-static MugenAnimation* getMugenDefMenuAnimationOrSprite(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName) {
+static MugenAnimation* getMugenDefMenuAnimationOrSprite(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName, int& oIsOwned) {
 	char fullVariableName[200];
 	sprintf(fullVariableName, "%s.anim", tVariableName);
 
 	if (isMugenDefNumberVariable(tScript, tGroupName, fullVariableName)) {
+		oIsOwned = 0;
 		return getMugenAnimation(&gCharacterSelectScreenData.mAnimations, getMugenDefNumberVariable(tScript, tGroupName, fullVariableName));
 	}
 
 	sprintf(fullVariableName, "%s.spr", tVariableName);
-	Vector3DI ret = getMugenDefVectorIOrDefault(tScript, tGroupName, fullVariableName, makeVector3DI(0, 0, 0));
+	const auto ret = getMugenDefVector2DIOrDefault(tScript, tGroupName, fullVariableName, Vector2DI(-1, -1));
+	oIsOwned = 1;
 	return createOneFrameMugenAnimationForSprite(ret.x, ret.y);
 }
 
@@ -239,57 +251,62 @@ static void loadMenuPlayerHeader(const char* tPlayerName, PlayerHeader* tHeader)
 	char fullVariableName[200];
 
 	sprintf(fullVariableName, "%s.cursor.startcell", tPlayerName);
-	tHeader->mCursorStartCell = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName, makeVector3DI(0, 0, 0));
+	tHeader->mCursorStartCell = getMugenDefVector2DIOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2DI(0, 0));
 
 	sprintf(fullVariableName, "%s.cursor.active", tPlayerName);
-	tHeader->mActiveCursorAnimation = getMugenDefMenuAnimationOrSprite(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName);
+	tHeader->mActiveCursorAnimation = getMugenDefMenuAnimationOrSprite(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, tHeader->mIsActiveCursorAnimationOwned);
+
+	sprintf(fullVariableName, "%s.cursor.active.scale", tPlayerName);
+	tHeader->mActiveCursorScale = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2D(1.0, 1.0));
 
 	sprintf(fullVariableName, "%s.cursor.done", tPlayerName);
-	tHeader->mDoneCursorAnimation = getMugenDefMenuAnimationOrSprite(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName);
+	tHeader->mDoneCursorAnimation = getMugenDefMenuAnimationOrSprite(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, tHeader->mIsDoneCursorAnimationOwned);
+
+	sprintf(fullVariableName, "%s.cursor.done.scale", tPlayerName);
+	tHeader->mDoneCursorScale = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2D(1.0, 1.0));
 
 	sprintf(fullVariableName, "%s.face.spr", tPlayerName);
-	Vector3DI bigPortraitSprite = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName, makeVector3DI(9000, 1, 0));
+	const auto bigPortraitSprite = getMugenDefVector2DIOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2DI(9000, 1));
 	tHeader->mBigPortraitAnimation = createOneFrameMugenAnimationForSprite(bigPortraitSprite.x, bigPortraitSprite.y);
 
 	sprintf(fullVariableName, "%s.face.offset", tPlayerName);
-	tHeader->mBigPortraitOffset = getMugenDefVectorOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName, makePosition(0, 0, 0));
+	tHeader->mBigPortraitOffset = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2D(0, 0));
 
 	sprintf(fullVariableName, "%s.face.scale", tPlayerName);
-	tHeader->mBigPortraitScale = getMugenDefVectorOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName, makePosition(0, 0, 0));
+	tHeader->mBigPortraitScale = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2D(0, 0));
 
 	sprintf(fullVariableName, "%s.face.facing", tPlayerName);
-	int faceDirection = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName, 1);
+	const auto faceDirection = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, 1);
 	tHeader->mBigPortraitIsFacingRight = faceDirection == 1;
 
 	sprintf(fullVariableName, "%s.name.offset", tPlayerName);
-	tHeader->mNameOffset = getMugenDefVectorOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName, makePosition(0, 0, 0));
+	tHeader->mNameOffset = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2D(0, 0));
 
 	sprintf(fullVariableName, "%s.name.font", tPlayerName);
-	tHeader->mNameFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName, makeVector3DI(1, 0, 0));
+	tHeader->mNameFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector3DI(-1, 0, 0));
 
 	sprintf(fullVariableName, "%s.name.width", tPlayerName);
-	tHeader->mNameWidth = getMugenDefFloatOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName, INF);
+	tHeader->mNameWidth = getMugenDefFloatOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, INF);
 
 	sprintf(fullVariableName, "%s.cursor.move.snd", tPlayerName);
-	tHeader->mCursorMoveSound = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName, makeVector3DI(0, 0, 0));
+	tHeader->mCursorMoveSound = getMugenDefVector2DIOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2DI(0, 0));
 
 	sprintf(fullVariableName, "%s.cursor.done.snd", tPlayerName);
-	tHeader->mCursorDoneSound = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName, makeVector3DI(0, 0, 0));
+	tHeader->mCursorDoneSound = getMugenDefVector2DIOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2DI(0, 0));
 
 	sprintf(fullVariableName, "%s.random.move.snd", tPlayerName);
-	tHeader->mRandomMoveSound = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", fullVariableName, makeVector3DI(0, 0, 0));
+	tHeader->mRandomMoveSound = getMugenDefVector2DIOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2DI(0, 0));
 }
 
 static void loadStageSelectHeader() {
-	gCharacterSelectScreenData.mHeader.mStageSelect.mPosition = getMugenDefVectorOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "stage.pos", makePosition(0, 0, 0));
-	gCharacterSelectScreenData.mHeader.mStageSelect.mActiveFont1 = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "stage.active.font", makeVector3DI(1, 0, 0));
-	gCharacterSelectScreenData.mHeader.mStageSelect.mActiveFont2 = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "stage.active2.font", gCharacterSelectScreenData.mHeader.mStageSelect.mActiveFont1);
-	gCharacterSelectScreenData.mHeader.mStageSelect.mDoneFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "stage.done.font", makeVector3DI(1, 0, 0));
+	gCharacterSelectScreenData.mHeader.mStageSelect.mPosition = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "stage.pos", Vector2D(0, 0));
+	gCharacterSelectScreenData.mHeader.mStageSelect.mActiveFont1 = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "stage.active.font", Vector3DI(-1, 0, 0));
+	gCharacterSelectScreenData.mHeader.mStageSelect.mActiveFont2 = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "stage.active2.font", gCharacterSelectScreenData.mHeader.mStageSelect.mActiveFont1);
+	gCharacterSelectScreenData.mHeader.mStageSelect.mDoneFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "stage.done.font", Vector3DI(-1, 0, 0));
 }
 
 static void loadStageSelect() {
-	Position pos = gCharacterSelectScreenData.mHeader.mStageSelect.mPosition;
-	pos.z = 40;
+	const auto pos = gCharacterSelectScreenData.mHeader.mStageSelect.mPosition.xyz(40.0);
 	gCharacterSelectScreenData.mStageSelect.mTextID = addMugenText(" ", pos, gCharacterSelectScreenData.mHeader.mStageSelect.mActiveFont1.x);
 
 	gCharacterSelectScreenData.mStageSelect.mIsActive = 0;
@@ -298,9 +315,9 @@ static void loadStageSelect() {
 static void loadSelectStageCredits(SelectStage* e, MugenDefScript* tScript) {
 	if (gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
 
-	e->mCredits.mName = getAllocatedMugenDefStringOrDefault(tScript, "Info", "name", e->mName);
-	e->mCredits.mAuthorName = getAllocatedMugenDefStringOrDefault(tScript, "Info", "author", "N/A");
-	e->mCredits.mVersionDate = getAllocatedMugenDefStringOrDefault(tScript, "Info", "versiondate", "N/A");
+	e->mCredits.mName = getAllocatedMugenDefStringOrDefault(tScript, "info", "name", e->mName);
+	e->mCredits.mAuthorName = getAllocatedMugenDefStringOrDefault(tScript, "info", "author", "N/A");
+	e->mCredits.mVersionDate = getAllocatedMugenDefStringOrDefault(tScript, "info", "versiondate", "N/A");
 }
 
 static int isSelectStageLoadedAlready(char* tPath) {
@@ -319,7 +336,7 @@ static void getStagePath(char* tDst, const char* tPath) {
 
 static int isInOsuModeAndNotOsuStage(MugenDefScript* tScript) {
 	if (!gCharacterSelectScreenData.mStageSelect.mIsInOsuMode) return 0;
-	const std::string fileName = getSTLMugenDefStringOrDefault(tScript, "Music", "bgmusic", "");
+	const std::string fileName = getSTLMugenDefStringOrDefault(tScript, "music", "bgmusic", "");
 	if (!hasFileExtension(fileName.c_str())) return 1;
 	const auto extension = getFileExtension(fileName.c_str());
 	return !stringEqualCaseIndependent(extension, "osu");
@@ -341,17 +358,17 @@ static void addSingleSelectStage(char* tPath) {
 	if (isUsingStage) {
 		SelectStage* e = (SelectStage*)allocMemory(sizeof(SelectStage));
 		strcpy(e->mPath, path);
-		e->mName = getAllocatedMugenDefStringVariable(&script, "Info", "name");
+		e->mName = getAllocatedMugenDefStringVariable(&script, "info", "name");
 		loadSelectStageCredits(e, &script);
 		vector_push_back_owned(&gCharacterSelectScreenData.mSelectStages, e);
 	}
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 }
 
 static void loadExtraStages() {
 	if (!gCharacterSelectScreenData.mStageSelect.mIsUsing) return;
 
-	MugenDefScriptGroup* group = &gCharacterSelectScreenData.mCharacterScript.mGroups["ExtraStages"];
+	MugenDefScriptGroup* group = &gCharacterSelectScreenData.mCharacterScript.mGroups["extrastages"];
 	ListIterator iterator = list_iterator_begin(&group->mOrderedElementList);
 	int hasElements = 1;
 	while (hasElements) {
@@ -376,51 +393,50 @@ static void loadStageSelectStages() {
 static void loadCreditsHeader() {
 	if (gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
 
-	Position basePosition = getMugenDefVectorOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "credits.position", makePosition(0, 0, 0));
-	basePosition.z = 40;
+	const auto basePosition = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.position", Vector2D(0, 0)).xyz(40.0);
 
-	Position offset = makePosition(0, 0, 0);
-	offset = getMugenDefVectorOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "credits.name.offset", makePosition(0, 0, 0));
-	gCharacterSelectScreenData.mCredits.mNamePosition = vecAdd2D(basePosition, offset);
-	gCharacterSelectScreenData.mCredits.mNameFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "credits.name.font", makeVector3DI(1, 0, 0));
+	auto offset = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.name.offset", Vector2D(0, 0));
+	gCharacterSelectScreenData.mCredits.mNamePosition = basePosition + offset;
+	gCharacterSelectScreenData.mCredits.mNameFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.name.font", Vector3DI(-1, 0, 0));
 
-	offset = getMugenDefVectorOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "credits.author.offset", makePosition(0, 0, 0));
-	gCharacterSelectScreenData.mCredits.mAuthorNamePosition = vecAdd2D(basePosition, offset);
-	gCharacterSelectScreenData.mCredits.mAuthorNameFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "credits.author.font", makeVector3DI(1, 0, 0));
+	offset = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.author.offset", Vector2D(0, 0));
+	gCharacterSelectScreenData.mCredits.mAuthorNamePosition = basePosition + offset;
+	gCharacterSelectScreenData.mCredits.mAuthorNameFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.author.font", Vector3DI(-1, 0, 0));
 
-	offset = getMugenDefVectorOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "credits.versiondate.offset", makePosition(0, 0, 0));
-	gCharacterSelectScreenData.mCredits.mVersionDatePosition = vecAdd2D(basePosition, offset);
-	gCharacterSelectScreenData.mCredits.mVersionDateFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "credits.versiondate.font", makeVector3DI(1, 0, 0));
-
+	offset = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.versiondate.offset", Vector2D(0, 0));
+	gCharacterSelectScreenData.mCredits.mVersionDatePosition = basePosition + offset;
+	gCharacterSelectScreenData.mCredits.mVersionDateFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.versiondate.font", Vector3DI(-1, 0, 0));
 }
 
 static void loadMenuHeader() {
-	gCharacterSelectScreenData.mHeader.mFadeInTime = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "fadein.time", 30);
-	gCharacterSelectScreenData.mHeader.mFadeOutTime = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "fadeout.time", 30);
+	gCharacterSelectScreenData.mHeader.mFadeInTime = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "fadein.time", 30);
+	gCharacterSelectScreenData.mHeader.mFadeOutTime = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "fadeout.time", 30);
 
-	gCharacterSelectScreenData.mHeader.mRows = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "rows", 1);
-	gCharacterSelectScreenData.mHeader.mColumns = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "columns", 1);
-	gCharacterSelectScreenData.mHeader.mIsWrapping = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "wrapping", 0);
-	gCharacterSelectScreenData.mHeader.mPosition = getMugenDefVectorOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "pos", makePosition(0,0,0));
+	gCharacterSelectScreenData.mHeader.mRows = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "rows", 1);
+	gCharacterSelectScreenData.mHeader.mColumns = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "columns", 1);
+	gCharacterSelectScreenData.mHeader.mIsWrapping = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "wrapping", 0);
+	gCharacterSelectScreenData.mHeader.mPosition = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "pos", Vector2D(0, 0));
 
-	gCharacterSelectScreenData.mHeader.mIsShowingEmptyBoxes = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "showemptyboxes", 1);
-	gCharacterSelectScreenData.mHeader.mCanMoveOverEmptyBoxes = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "moveoveremptyboxes", 1);
+	gCharacterSelectScreenData.mHeader.mIsShowingEmptyBoxes = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "showemptyboxes", 1);
+	gCharacterSelectScreenData.mHeader.mCanMoveOverEmptyBoxes = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "moveoveremptyboxes", 1);
 
-	gCharacterSelectScreenData.mHeader.mCellSize = getMugenDefVectorOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "cell.size", makePosition(1, 1, 0));
-	gCharacterSelectScreenData.mHeader.mCellSpacing = getMugenDefFloatOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "cell.spacing", 10);
+	gCharacterSelectScreenData.mHeader.mCellSize = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "cell.size", Vector2D(1, 1));
+	gCharacterSelectScreenData.mHeader.mCellSpacing = getMugenDefFloatOrDefault(&gCharacterSelectScreenData.mScript, "select info", "cell.spacing", 10);
 
-	gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation = getMugenDefMenuAnimationOrSprite(&gCharacterSelectScreenData.mScript, "Select Info", "cell.bg");
-	gCharacterSelectScreenData.mHeader.mRandomSelectionAnimation = getMugenDefMenuAnimationOrSprite(&gCharacterSelectScreenData.mScript, "Select Info", "cell.random");
-	gCharacterSelectScreenData.mHeader.mRandomPortraitSwitchTime = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "cell.random.switchtime", 1);
+	gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation = getMugenDefMenuAnimationOrSprite(&gCharacterSelectScreenData.mScript, "select info", "cell.bg", gCharacterSelectScreenData.mHeader.mIsCellBackgroundAnimationOwned);
+	gCharacterSelectScreenData.mHeader.mCellBackgroundScale = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "cell.bg.scale", Vector2D(1.0, 1.0));
+	gCharacterSelectScreenData.mHeader.mRandomSelectionAnimation = getMugenDefMenuAnimationOrSprite(&gCharacterSelectScreenData.mScript, "select info", "cell.random", gCharacterSelectScreenData.mHeader.mIsRandomSelectionAnimationOwned);
+	gCharacterSelectScreenData.mHeader.mRandomSelectionScale = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "cell.random.scale", Vector2D(1.0, 1.0));
+	gCharacterSelectScreenData.mHeader.mRandomPortraitSwitchTime = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "cell.random.switchtime", 1);
 
-	Vector3DI sprite = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "portrait.spr", makeVector3DI(9000, 0, 0));
+	const auto sprite = getMugenDefVector2DIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "portrait.spr", Vector2DI(9000, 0));
 	gCharacterSelectScreenData.mHeader.mSmallPortraitAnimation = createOneFrameMugenAnimationForSprite(sprite.x, sprite.y);
 
-	gCharacterSelectScreenData.mHeader.mSmallPortraitOffset = getMugenDefVectorOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "portrait.offset", makePosition(0, 0, 0));
-	gCharacterSelectScreenData.mHeader.mSmallPortraitScale = getMugenDefVectorOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "portrait.scale", makePosition(1, 1, 0));
+	gCharacterSelectScreenData.mHeader.mSmallPortraitOffset = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "portrait.offset", Vector2D(0, 0));
+	gCharacterSelectScreenData.mHeader.mSmallPortraitScale = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "portrait.scale", Vector2D(1, 1));
 
-	gCharacterSelectScreenData.mHeader.mTitleOffset = getMugenDefVectorOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "title.offset", makePosition(0, 0, 0));
-	gCharacterSelectScreenData.mHeader.mTitleFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "Select Info", "title.font", makeVector3DI(-1, 0, 0));
+	gCharacterSelectScreenData.mHeader.mTitleOffset = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "title.offset", Vector2D(0, 0));
+	gCharacterSelectScreenData.mHeader.mTitleFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "title.font", Vector3DI(-1, 0, 0));
 
 	loadCreditsHeader();
 	loadStageSelectHeader();
@@ -437,9 +453,9 @@ typedef struct {
 static void loadMenuCharacterCredits(SelectCharacter* e, MugenDefScript* tScript) {
 	if (gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
 
-	e->mCredits.mName = getAllocatedMugenDefStringOrDefault(tScript, "Info", "name", e->mDisplayCharacterName);
-	e->mCredits.mAuthorName = getAllocatedMugenDefStringOrDefault(tScript, "Info", "author", "N/A");
-	e->mCredits.mVersionDate = getAllocatedMugenDefStringOrDefault(tScript, "Info", "versiondate", "N/A");
+	e->mCredits.mName = getAllocatedMugenDefStringOrDefault(tScript, "info", "name", e->mDisplayCharacterName);
+	e->mCredits.mAuthorName = getAllocatedMugenDefStringOrDefault(tScript, "info", "author", "N/A");
+	e->mCredits.mVersionDate = getAllocatedMugenDefStringOrDefault(tScript, "info", "versiondate", "N/A");
 }
 
 static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter* e, char* tCharacterName) {
@@ -463,11 +479,11 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 
 	int preferredPalette = 0;
 	sprintf(name, "pal%d", preferredPalette + 1);
-	getMugenDefStringOrDefault(file, &script, "Files", name, "");
+	getMugenDefStringOrDefault(file, &script, "files", name, "");
 	int hasPalettePath = strcmp("", file);
 	sprintf(palettePath, "%s%s", path, file);
 
-	getMugenDefStringOrDefault(file, &script, "Files", "sprite", "");
+	getMugenDefStringOrDefault(file, &script, "files", "sprite", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
 	sprintf(scriptPathPreloaded, "%s.portraits.preloaded", scriptPath);
@@ -479,46 +495,49 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 	}
 
 	strcpy(e->mCharacterName, tCharacterName);
-	e->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "Info", "displayname");
+	e->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "displayname");
 
 	e->mType = SELECT_CHARACTER_TYPE_CHARACTER;
 	
 	loadMenuCharacterCredits(e, &script);
 	
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 	
 	vector_push_back(&gCharacterSelectScreenData.mRealSelectCharacters, e);
 	return 1;
 }
 
-static Position getCellScreenPosition(const Vector3DI& tCellPosition) {
+static Position2D getCellScreenPosition(const Vector2DI& tCellPosition) {
 	double dx = tCellPosition.x * (gCharacterSelectScreenData.mHeader.mCellSpacing + gCharacterSelectScreenData.mHeader.mCellSize.x);
 	double dy = tCellPosition.y * (gCharacterSelectScreenData.mHeader.mCellSpacing + gCharacterSelectScreenData.mHeader.mCellSize.y);
-	Position pos = makePosition(dx, dy, 0);
-	pos = vecAdd(gCharacterSelectScreenData.mHeader.mPosition, pos);
-	return pos;
+	return gCharacterSelectScreenData.mHeader.mPosition + Vector2D(dx, dy);
 }
 
 static void showMenuSelectableAnimations(MenuCharacterLoadCaller* /*tCaller*/, SelectCharacter* e) {
-	Position pos = getCellScreenPosition(e->mCellPosition);
-	pos.z = 40;
-	e->mPortraitAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mSmallPortraitAnimation, &e->mSprites, pos);
+	auto pos = getCellScreenPosition(e->mCellPosition).xyz(40.0);
+	e->mPortraitAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mSmallPortraitAnimation, &e->mSprites, pos + gCharacterSelectScreenData.mHeader.mSmallPortraitOffset);
+	setMugenAnimationDrawScale(e->mPortraitAnimationElement, gCharacterSelectScreenData.mHeader.mSmallPortraitScale);
 	if (!gCharacterSelectScreenData.mHeader.mIsShowingEmptyBoxes) {
 		pos.z = 30;
 		e->mBackgroundAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
+		setMugenAnimationDrawScale(e->mBackgroundAnimationElement, gCharacterSelectScreenData.mHeader.mCellBackgroundScale);
 	}
 }
 
-static void loadSingleRealMenuCharacter(MenuCharacterLoadCaller* tCaller, MugenDefScriptVectorElement* tVectorElement) {
-	assert(tVectorElement->mVector.mSize >= 2);
-	char* characterName = tVectorElement->mVector.mElement[0];
-	char* stageName = tVectorElement->mVector.mElement[1];
+static void loadSingleRealMenuCharacter(MenuCharacterLoadCaller* tCaller, const MugenStringVector& tVector) {
+	assert(tVector.mSize >= 1);
+	char* characterName = tVector.mElement[0];
 
 	int row = tCaller->i / gCharacterSelectScreenData.mHeader.mColumns;
 	int column = tCaller->i % gCharacterSelectScreenData.mHeader.mColumns;
 
 	SelectCharacter* e = (SelectCharacter*)vector_get((Vector*)vector_get(&gCharacterSelectScreenData.mSelectCharacters, row), column);
-	strcpy(e->mStageName, stageName);
+	if (tVector.mSize >= 2)	{
+		strcpy(e->mStageName, tVector.mElement[1]);
+	}
+	else {
+		strcpy(e->mStageName, "random");
+	}
 
 	tCaller->i++;
 	if (!loadMenuCharacterSpritesAndNameAndReturnWhetherExists(e, characterName)) {
@@ -527,10 +546,10 @@ static void loadSingleRealMenuCharacter(MenuCharacterLoadCaller* tCaller, MugenD
 
 	if (gCharacterSelectScreenData.mStageSelect.mIsUsing) {
 		int doesIncludeStage = 1;
-		parseOptionalCharacterSelectParameters(tVectorElement->mVector, NULL, &doesIncludeStage, NULL);
+		parseOptionalCharacterSelectParameters(tVector, NULL, &doesIncludeStage, NULL);
 
 		if (doesIncludeStage) {
-			addSingleSelectStage(stageName);
+			addSingleSelectStage(e->mStageName);
 		}
 	}
 
@@ -545,21 +564,27 @@ static void loadSingleRandomMenuCharacter(MenuCharacterLoadCaller* tCaller) {
 
 	e->mType = SELECT_CHARACTER_TYPE_RANDOM;
 
-	Position pos = getCellScreenPosition(e->mCellPosition);
-	pos.z = 40;
-	e->mPortraitAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mRandomSelectionAnimation, &gCharacterSelectScreenData.mSprites, pos);
+	auto pos = getCellScreenPosition(e->mCellPosition).xyz(40.0);
+	e->mPortraitAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mRandomSelectionAnimation, &gCharacterSelectScreenData.mSprites, pos + gCharacterSelectScreenData.mHeader.mSmallPortraitOffset);
+	setMugenAnimationDrawScale(e->mPortraitAnimationElement, gCharacterSelectScreenData.mHeader.mRandomSelectionScale);
 	if (!gCharacterSelectScreenData.mHeader.mIsShowingEmptyBoxes) {
 		pos.z = 30;
 		e->mBackgroundAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
+		setMugenAnimationDrawScale(e->mBackgroundAnimationElement, gCharacterSelectScreenData.mHeader.mCellBackgroundScale);
 	}
 
 	tCaller->i++;
 }
 
-static void loadSingleSpecialMenuCharacter(MenuCharacterLoadCaller* tCaller, MugenDefScriptStringElement* tStringElement) {
-	if (!strcmp("randomselect", tStringElement->mString)) {
+static void loadSingleRealMenuCharacter(MenuCharacterLoadCaller* tCaller, const char* tString) {
+	if (!strcmp("randomselect", tString)) {
 		loadSingleRandomMenuCharacter(tCaller);
+		return;
 	}
+
+	auto stringVector = createAllocatedMugenStringVectorFromString(tString);
+	loadSingleRealMenuCharacter(tCaller, stringVector);
+	destroyMugenStringVector(stringVector);
 }
 
 static void loadSingleMenuCharacter(void* tCaller, void* tData) {
@@ -568,15 +593,15 @@ static void loadSingleMenuCharacter(void* tCaller, void* tData) {
 	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)tData;
 	if (element->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
 		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)element->mData;
-		loadSingleRealMenuCharacter(caller, vectorElement);
+		loadSingleRealMenuCharacter(caller, vectorElement->mVector);
 	} else if (element->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
 		MugenDefScriptStringElement* stringElement = (MugenDefScriptStringElement*)element->mData;
-		loadSingleSpecialMenuCharacter(caller, stringElement);
+		loadSingleRealMenuCharacter(caller, stringElement->mString);
 	}
 }
 
 static void loadMenuCharacters() {
-	MugenDefScriptGroup* e = &gCharacterSelectScreenData.mCharacterScript.mGroups["Characters"];
+	MugenDefScriptGroup* e = &gCharacterSelectScreenData.mCharacterScript.mGroups["characters"];
 
 	MenuCharacterLoadCaller caller;
 	caller.i = 0;
@@ -599,17 +624,17 @@ static int loadSingleStoryFileAndReturnWhetherItExists(SelectCharacter* e, char*
 
 	getPathToFile(path, scriptPath);
 
-	getMugenDefStringOrDefault(file, &script, "Info", "select.spr", "");
+	getMugenDefStringOrDefault(file, &script, "info", "select.spr", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
 	e->mSprites = loadMugenSpriteFileWithoutPalette(scriptPath);
 
 	strcpy(e->mCharacterName, tPath);
-	e->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "Info", "name");
+	e->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "name");
 
 	e->mType = SELECT_CHARACTER_TYPE_CHARACTER;
 
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 
 	vector_push_back(&gCharacterSelectScreenData.mRealSelectCharacters, e);
 	return 1;
@@ -647,7 +672,7 @@ static void loadSingleMenuStory(void* tCaller, void* tData) {
 }
 
 static void loadMenuStories() {
-	MugenDefScriptGroup* e = &gCharacterSelectScreenData.mCharacterScript.mGroups["Stories"];
+	MugenDefScriptGroup* e = &gCharacterSelectScreenData.mCharacterScript.mGroups["stories"];
 
 	MenuCharacterLoadCaller caller;
 	caller.i = 0;
@@ -666,15 +691,15 @@ static void loadMenuSelectables() {
 	}
 }
 
-static void loadSingleMenuCell(const Vector3DI& tCellPosition) {
+static void loadSingleMenuCell(const Vector2DI& tCellPosition) {
 	SelectCharacter* e = (SelectCharacter*)allocMemory(sizeof(SelectCharacter));
 	e->mType = SELECT_CHARACTER_TYPE_EMPTY;
 	e->mCellPosition = tCellPosition;
 
 	if (gCharacterSelectScreenData.mHeader.mIsShowingEmptyBoxes) {
-		Position pos = getCellScreenPosition(e->mCellPosition);
-		pos.z = 30;
+		const auto pos = getCellScreenPosition(e->mCellPosition).xyz(30.0);
 		e->mBackgroundAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
+		setMugenAnimationDrawScale(e->mBackgroundAnimationElement, gCharacterSelectScreenData.mHeader.mCellBackgroundScale);
 	}
 
 	vector_push_back_owned((Vector*)vector_get(&gCharacterSelectScreenData.mSelectCharacters, tCellPosition.y), e);
@@ -691,20 +716,20 @@ static void loadMenuCells() {
 		vector_push_back_owned(&gCharacterSelectScreenData.mSelectCharacters, v);
 
 		for (x = 0; x < gCharacterSelectScreenData.mHeader.mColumns; x++) {
-			loadSingleMenuCell(makeVector3DI(x, y, 0));
+			loadSingleMenuCell(Vector2DI(x, y));
 		}
 	}
 }
 
-static SelectCharacter* getCellCharacter(Vector3DI tCellPosition) {
+static SelectCharacter* getCellCharacter(const Vector2DI& tCellPosition) {
 	SelectCharacter* ret = (SelectCharacter*)vector_get((Vector*)vector_get(&gCharacterSelectScreenData.mSelectCharacters, tCellPosition.y), tCellPosition.x);
 	return ret;
 }
 
-static void moveSelectionToTarget(int i, const Vector3DI& tTarget, int tDoesPlaySound);
+static void moveSelectionToTarget(int i, const Vector2DI& tTarget, int tDoesPlaySound);
 
-static Vector3DI increaseCellPositionWithDirection(const Vector3DI& pos, int tDelta) {
-	Vector3DI ret = pos;
+static Vector2DI increaseCellPositionWithDirection(const Vector2DI& pos, int tDelta) {
+	auto ret = pos;
 	if (tDelta < 0)
 	{
 		if (pos.x == 0) {
@@ -728,13 +753,13 @@ static Vector3DI increaseCellPositionWithDirection(const Vector3DI& pos, int tDe
 	return ret;
 }
 
-static Vector3DI findStartCellPosition(const Vector3DI& startPos, int delta, int forceValid = 0) {
-	Vector3DI pos = startPos;
+static Vector2DI findStartCellPosition(const Vector2DI& startPos, int delta, int forceValid = 0) {
+	auto pos = startPos;
 
 	int maxLength = gCharacterSelectScreenData.mHeader.mRows * gCharacterSelectScreenData.mHeader.mColumns;
 	for (int i = 0; i < maxLength; i++) {
 		SelectCharacter* selectChar = getCellCharacter(pos);
-		if ((gCharacterSelectScreenData.mHeader.mCanMoveOverEmptyBoxes && !forceValid) || selectChar->mType != SELECT_CHARACTER_TYPE_EMPTY) return pos;
+		if ((gCharacterSelectScreenData.mHeader.mCanMoveOverEmptyBoxes && !forceValid) || selectChar->mType == SELECT_CHARACTER_TYPE_CHARACTER) return pos;
 
 		pos = increaseCellPositionWithDirection(pos, delta);
 	}
@@ -748,22 +773,20 @@ static void loadSingleSelector(int i, int tOwner) {
 	PlayerHeader* owner = &gCharacterSelectScreenData.mHeader.mPlayers[tOwner];
 
 	if (!gCharacterSelectScreenData.mSelectors[i].mHasBeenLoadedBefore) {
-		gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter = makeVector3DI(player->mCursorStartCell.y, player->mCursorStartCell.x, 0);
+		gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter = Vector2DI(player->mCursorStartCell.y, player->mCursorStartCell.x);
 	}
 	gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter = findStartCellPosition(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter, i == 0 ? 1 : -1);
 
-	Position p = getCellScreenPosition(makeVector3DI(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter.y, gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter.x, 0));
-	p.z = 60;
+	const auto p = getCellScreenPosition(Vector2DI(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter.y, gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter.x)).xyz(SELECTOR_Z);
 	gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement = addMugenAnimation(owner->mActiveCursorAnimation, &gCharacterSelectScreenData.mSprites, p);
+	setMugenAnimationDrawScale(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement, owner->mActiveCursorScale);
 	
 	SelectCharacter* character = getCellCharacter(findStartCellPosition(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter, 1, 1));
-	player->mBigPortraitOffset.z = 30;
-	gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement = addMugenAnimation(player->mBigPortraitAnimation, &character->mSprites, player->mBigPortraitOffset);
+	gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement = addMugenAnimation(player->mBigPortraitAnimation, &character->mSprites, player->mBigPortraitOffset.xyz(30.0));
 	setMugenAnimationFaceDirection(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, player->mBigPortraitIsFacingRight);
-	setMugenAnimationDrawScale(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, makePosition(player->mBigPortraitScale.x, player->mBigPortraitScale.y, 1));
+	setMugenAnimationDrawScale(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, Vector2D(player->mBigPortraitScale.x, player->mBigPortraitScale.y));
 
-	player->mNameOffset.z = 40;
-	gCharacterSelectScreenData.mSelectors[i].mNameTextID = addMugenText(character->mDisplayCharacterName, player->mNameOffset, player->mNameFont.x);
+	gCharacterSelectScreenData.mSelectors[i].mNameTextID = addMugenText(character->mDisplayCharacterName, player->mNameOffset.xyz(40.0), player->mNameFont.x);
 	setMugenTextColor(gCharacterSelectScreenData.mSelectors[i].mNameTextID, getMugenTextColorFromMugenTextColorIndex(player->mNameFont.y));
 	setMugenTextAlignment(gCharacterSelectScreenData.mSelectors[i].mNameTextID, getMugenTextAlignmentFromMugenAlignmentIndex(player->mNameFont.z));
 	setMugenTextTextBoxWidth(gCharacterSelectScreenData.mSelectors[i].mNameTextID, player->mNameWidth);
@@ -799,8 +822,7 @@ static void loadSelectors() {
 }
 
 static void loadModeText() {
-	Position p = gCharacterSelectScreenData.mHeader.mTitleOffset;
-	p.z = 50;
+	const auto p = gCharacterSelectScreenData.mHeader.mTitleOffset.xyz(50.0);
 	gCharacterSelectScreenData.mModeText.mModeTextID = addMugenText(gCharacterSelectScreenData.mModeName, p, gCharacterSelectScreenData.mHeader.mTitleFont.x); 
 	setMugenTextColor(gCharacterSelectScreenData.mModeText.mModeTextID, getMugenTextColorFromMugenTextColorIndex(gCharacterSelectScreenData.mHeader.mTitleFont.y));
 	setMugenTextAlignment(gCharacterSelectScreenData.mModeText.mModeTextID, getMugenTextAlignmentFromMugenAlignmentIndex(gCharacterSelectScreenData.mHeader.mTitleFont.z));
@@ -823,8 +845,8 @@ static void loadCredits() {
 }
 
 static void loadSelectMusic() {
-	char* path = getAllocatedMugenDefStringOrDefault(&gCharacterSelectScreenData.mScript, "Music", "select.bgm", " ");
-	int isLooping = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "Music", "select.bgm.loop", 1);
+	char* path = getAllocatedMugenDefStringOrDefault(&gCharacterSelectScreenData.mScript, "music", "select.bgm", " ");
+	int isLooping = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "music", "select.bgm.loop", 1);
 
 	if (isMugenBGMMusicPath(path)) {
 		playMugenBGMMusicPath(path, isLooping);
@@ -862,49 +884,53 @@ static void setStageSelectorSane() {
 	gCharacterSelectScreenData.mStageSelect.mSelectedStage = min(gCharacterSelectScreenData.mStageSelect.mSelectedStage, vector_size(&gCharacterSelectScreenData.mSelectStages) - 1);
 }
 
-static void sanityCheck() {
+static int sanityCheck() {
 	if (!checkIfCharactersSane() || !checkIfStagesSane()) {
 		setNewScreen(getDreamTitleScreen());
+		return 0;
 	}
 	else {
 		setStageSelectorSane();
+		return 1;
 	}
 }
 
 static void loadCharacterSelectScreen() {
+	std::string folder;
+	const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
+	loadMugenDefScript(&gCharacterSelectScreenData.mScript, motifPath);
+	getPathToFile(folder, motifPath.c_str());
 
-	string selectPath;
+	std::string selectPath;
 	if (!isValidSelectPath(gCharacterSelectScreenData.mCustomSelectFilePath, selectPath)) {
-		selectPath = getDolmexicaAssetFolder() + "data/select.def";
+		selectPath = getSTLMugenDefStringVariable(&gCharacterSelectScreenData.mScript, "files", "select");
+		selectPath = findMugenSystemOrFightFilePath(selectPath, folder);
 	}
 	else gCharacterSelectScreenData.mCustomSelectFilePath = "";
 
 	loadMugenDefScript(&gCharacterSelectScreenData.mCharacterScript, selectPath);
 
-	char folder[1024];
-	loadMugenDefScript(&gCharacterSelectScreenData.mScript, getDolmexicaAssetFolder() + getMotifPath());
-	gCharacterSelectScreenData.mAnimations = loadMugenAnimationFile(getDolmexicaAssetFolder() + getMotifPath());
-	getPathToFile(folder, (getDolmexicaAssetFolder() + getMotifPath()).c_str());
-	setWorkingDirectory(folder);
+	gCharacterSelectScreenData.mAnimations = loadMugenAnimationFile(motifPath);
 
-	char* text = getAllocatedMugenDefStringVariable(&gCharacterSelectScreenData.mScript, "Files", "spr");
+	auto text = getSTLMugenDefStringVariable(&gCharacterSelectScreenData.mScript, "files", "spr");
+	text = findMugenSystemOrFightFilePath(text, folder);
 	gCharacterSelectScreenData.mSprites = loadMugenSpriteFileWithoutPalette(text);
-	freeMemory(text);
 
-	text = getAllocatedMugenDefStringVariable(&gCharacterSelectScreenData.mScript, "Files", "snd");
-	gCharacterSelectScreenData.mSounds = loadMugenSoundFile(text);
-	freeMemory(text);
+	text = getSTLMugenDefStringVariable(&gCharacterSelectScreenData.mScript, "files", "snd");
+	text = findMugenSystemOrFightFilePath(text, folder);
+	gCharacterSelectScreenData.mSounds = loadMugenSoundFile(text.c_str());
 
 	loadMenuHeader();
-	loadMenuBackground(&gCharacterSelectScreenData.mScript, &gCharacterSelectScreenData.mSprites, &gCharacterSelectScreenData.mAnimations, "SelectBGdef", "SelectBG");
-
-	setWorkingDirectory("/");
+	loadScriptBackground(&gCharacterSelectScreenData.mScript, &gCharacterSelectScreenData.mSprites, &gCharacterSelectScreenData.mAnimations, "selectbgdef", "selectbg");
 
 	loadStageSelectStages();
 	loadMenuCells();
 	loadMenuSelectables();
 	loadExtraStages();
 
+	if (!sanityCheck()) {
+		return;
+	}
 	loadCredits();
 	loadSelectors();
 	loadModeText();
@@ -915,7 +941,6 @@ static void loadCharacterSelectScreen() {
 
 	gCharacterSelectScreenData.mIsFadingOut = 0;
 	addFadeIn(gCharacterSelectScreenData.mHeader.mFadeInTime, NULL, NULL);
-	sanityCheck();
 }
 
 static void unloadSelectStageCredits(SelectStage* e) {
@@ -977,20 +1002,28 @@ static void resetSelectState() {
 }
 
 static void unloadCharacterSelectScreen() {
-	unloadMugenDefScript(gCharacterSelectScreenData.mScript);
-	unloadMugenDefScript(gCharacterSelectScreenData.mCharacterScript);
+	unloadMugenDefScript(&gCharacterSelectScreenData.mScript);
+	unloadMugenDefScript(&gCharacterSelectScreenData.mCharacterScript);
 
 	unloadMugenSpriteFile(&gCharacterSelectScreenData.mSprites);
 	unloadMugenAnimationFile(&gCharacterSelectScreenData.mAnimations);
 	unloadMugenSoundFile(&gCharacterSelectScreenData.mSounds);
 
-	destroyMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation);
-	destroyMugenAnimation(gCharacterSelectScreenData.mHeader.mRandomSelectionAnimation);
+	if (gCharacterSelectScreenData.mHeader.mIsCellBackgroundAnimationOwned) {
+		destroyMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation);
+	}
+	if (gCharacterSelectScreenData.mHeader.mIsRandomSelectionAnimationOwned) {
+		destroyMugenAnimation(gCharacterSelectScreenData.mHeader.mRandomSelectionAnimation);
+	}
 
 	int i;
 	for (i = 0; i < 2; i++) {
-		destroyMugenAnimation(gCharacterSelectScreenData.mHeader.mPlayers[i].mActiveCursorAnimation);
-		destroyMugenAnimation(gCharacterSelectScreenData.mHeader.mPlayers[i].mDoneCursorAnimation);
+		if (gCharacterSelectScreenData.mHeader.mPlayers[i].mIsActiveCursorAnimationOwned) {
+			destroyMugenAnimation(gCharacterSelectScreenData.mHeader.mPlayers[i].mActiveCursorAnimation);
+		}
+		if (gCharacterSelectScreenData.mHeader.mPlayers[i].mIsDoneCursorAnimationOwned) {
+			destroyMugenAnimation(gCharacterSelectScreenData.mHeader.mPlayers[i].mDoneCursorAnimation);
+		}
 		destroyMugenAnimation(gCharacterSelectScreenData.mHeader.mPlayers[i].mBigPortraitAnimation);
 	}
 
@@ -1024,11 +1057,11 @@ static void handleSingleWrapping(int* tPosition, int tSize) {
 	}
 }
 
-static Vector3DI findTargetCellPosition(int i, const Vector3DI& tDelta) {
+static Vector2DI findTargetCellPosition(int i, const Vector2DI& tDelta) {
 	
-	Vector3DI startPos = gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter;
-	Vector3DI pos = vecAddI(startPos, tDelta);
-	Vector3DI prevPos = startPos;
+	const auto startPos = gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter;
+	auto pos = startPos + tDelta;
+	auto prevPos = startPos;
 
 	int maxLength = max(gCharacterSelectScreenData.mHeader.mRows, gCharacterSelectScreenData.mHeader.mColumns);
 	for (int j = 0; j < maxLength; j++) {
@@ -1037,9 +1070,9 @@ static Vector3DI findTargetCellPosition(int i, const Vector3DI& tDelta) {
 		SelectCharacter* selectChar = getCellCharacter(pos);
 		if (gCharacterSelectScreenData.mHeader.mCanMoveOverEmptyBoxes || selectChar->mType != SELECT_CHARACTER_TYPE_EMPTY) return pos;
 
-		if (vecEqualsI(pos, prevPos) || vecEqualsI(pos, startPos)) return startPos;
+		if ((pos == prevPos) || (pos == startPos)) return startPos;
 		prevPos = pos;
-		pos = vecAddI(pos, tDelta);
+		pos = pos + tDelta;
 	}
 
 	return startPos;	
@@ -1083,12 +1116,11 @@ static void showSelectCharacterForSelector(int i, SelectCharacter* tCharacter) {
 
 static void showNewRandomSelectCharacter(int i);
 
-static void moveSelectionToTarget(int i, const Vector3DI& tTarget, int tDoesPlaySound) {
+static void moveSelectionToTarget(int i, const Vector2DI& tTarget, int tDoesPlaySound) {
 	PlayerHeader* owner = &gCharacterSelectScreenData.mHeader.mPlayers[gCharacterSelectScreenData.mSelectors[i].mOwner];
 
 	gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter = tTarget;
-	Position p = getCellScreenPosition(tTarget);
-	p.z = 60;
+	const auto p = getCellScreenPosition(tTarget).xyz(SELECTOR_Z);
 	setMugenAnimationPosition(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement, p);
 
 	if (tDoesPlaySound) {
@@ -1104,10 +1136,10 @@ static void moveSelectionToTarget(int i, const Vector3DI& tTarget, int tDoesPlay
 	}
 }
 
-static int hasCreditSelectionMovedToStage(int i, const Vector3DI& tDelta) {
+static int hasCreditSelectionMovedToStage(int i, const Vector2DI& tDelta) {
 	if (gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return 0;
 
-	Vector3DI target = vecAddI(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter, tDelta);
+	const auto target = gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter + tDelta;
 	return (target.y == -1 || target.y == gCharacterSelectScreenData.mHeader.mRows);
 }
 
@@ -1119,19 +1151,19 @@ static void moveCreditSelectionToStage(int i) {
 }
 
 static void updateSingleSelectionInput(int i) {
-	Vector3DI delta = makeVector3DI(0, 0, 0);
+	auto delta = Vector2DI(0, 0);
 	if (hasPressedRightFlankSingle(gCharacterSelectScreenData.mSelectors[i].mOwner)) {
-		delta = makeVector3DI(1, 0, 0);
+		delta = Vector2DI(1, 0);
 	}
 	else if (hasPressedLeftFlankSingle(gCharacterSelectScreenData.mSelectors[i].mOwner)) {
-		delta = makeVector3DI(-1, 0, 0);
+		delta = Vector2DI(-1, 0);
 	}
 
 	if (hasPressedDownFlankSingle(gCharacterSelectScreenData.mSelectors[i].mOwner)) {
-		delta = makeVector3DI(0, 1, 0);
+		delta = Vector2DI(0, 1);
 	}
 	else if (hasPressedUpFlankSingle(gCharacterSelectScreenData.mSelectors[i].mOwner)) {
-		delta = makeVector3DI(0, -1, 0);
+		delta = Vector2DI(0, -1);
 	}
 
 	if (hasCreditSelectionMovedToStage(i, delta)) {
@@ -1139,9 +1171,8 @@ static void updateSingleSelectionInput(int i) {
 		return;
 	}
 
-	Vector3DI target = findTargetCellPosition(i, delta);
-	
-	if (vecEqualsI(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter, target)) return;
+	const auto target = findTargetCellPosition(i, delta);
+	if (gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter == target) return;
 
 	moveSelectionToTarget(i, target, 1);
 }
@@ -1264,11 +1295,10 @@ static void checkFadeToNextScreen() {
 }
 
 static void flashSelection(int i) {
-	Position pos = getCellScreenPosition(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter);
-	pos.z = 41;
+	const auto pos = getCellScreenPosition(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter).xyz(41.0);
 	Animation anim = createAnimation(1, 2);
-	AnimationHandlerElement* element = playAnimation(pos, &gCharacterSelectScreenData.mWhiteTexture, anim, makeRectangleFromTexture(gCharacterSelectScreenData.mWhiteTexture), NULL, NULL);
-	setAnimationSize(element, makePosition(25, 25, 1), makePosition(0, 0, 0));
+	AnimationHandlerElement* element = playAnimation(pos + gCharacterSelectScreenData.mHeader.mSmallPortraitOffset, &gCharacterSelectScreenData.mWhiteTexture, anim, makeRectangleFromTexture(gCharacterSelectScreenData.mWhiteTexture), NULL, NULL);
+	setAnimationSize(element, Vector3D(25, 25, 1) * gCharacterSelectScreenData.mHeader.mSmallPortraitScale, Vector3D(0, 0, 0));
 }
 
 static void updateMugenTextBasedOnVector3DI(int tID, const Vector3DI& tFontData) {
@@ -1369,6 +1399,7 @@ static void setCharacterSelectionFinished(int i) {
 
 	PlayerHeader* owner = &gCharacterSelectScreenData.mHeader.mPlayers[gCharacterSelectScreenData.mSelectors[i].mOwner];
 	changeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement, owner->mDoneCursorAnimation);
+	setMugenAnimationDrawScale(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement, owner->mDoneCursorScale);
 	tryPlayMugenSoundAdvanced(&gCharacterSelectScreenData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 
 	if (character->mType == SELECT_CHARACTER_TYPE_RANDOM) {
@@ -1423,6 +1454,7 @@ static void deselectSelection(int i, int tDoesPlaySound) {
 
 	PlayerHeader* owner = &gCharacterSelectScreenData.mHeader.mPlayers[gCharacterSelectScreenData.mSelectors[i].mOwner];
 	changeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement, owner->mActiveCursorAnimation);
+	setMugenAnimationDrawScale(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement, owner->mActiveCursorScale);
 	if(tDoesPlaySound) tryPlayMugenSoundAdvanced(&gCharacterSelectScreenData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 
 	checkSetSecondPlayerInactive(i);
@@ -1599,7 +1631,7 @@ static void parseSingleOptionalCharacterParameter(char* tParameter, int* oOrder,
 	}
 }
 
-void parseOptionalCharacterSelectParameters(MugenStringVector& tVector, int* oOrder, int* oDoesIncludeStage, char* oMusicPath) {
+void parseOptionalCharacterSelectParameters(const MugenStringVector& tVector, int* oOrder, int* oDoesIncludeStage, char* oMusicPath) {
 	int i;
 	for (i = 2; i < tVector.mSize; i++) {
 		parseSingleOptionalCharacterParameter(tVector.mElement[i], oOrder, oDoesIncludeStage, oMusicPath);
@@ -1608,7 +1640,7 @@ void parseOptionalCharacterSelectParameters(MugenStringVector& tVector, int* oOr
 
 void getCharacterSelectNamePath(const char* tName, char* oDst) {
 	if (strchr(tName, '.')) {
-		if (strcmp("zip", getFileExtension(tName))) {
+		if (!strcmp("zip", getFileExtension(tName))) {
 			logWarningFormat("No support for zipped characters. Error loading %s.", tName);
 			*oDst = '\0';
 		}
@@ -1627,9 +1659,9 @@ typedef struct {
 
 } RandomCharacterCaller;
 
-static void loadRandomCharacter(RandomCharacterCaller* tCaller, MugenDefScriptVectorElement* tVectorElement) {
+static void loadRandomCharacter(RandomCharacterCaller* tCaller, const char* tName) {
 	PossibleRandomCharacterElement* e = (PossibleRandomCharacterElement*)allocMemory(sizeof(PossibleRandomCharacterElement));
-	getCharacterSelectNamePath(tVectorElement->mVector.mElement[0], e->mPath);
+	getCharacterSelectNamePath(tName, e->mPath);
 	if (!isFile(e->mPath)) {
 		freeMemory(e);
 		return;
@@ -1644,24 +1676,36 @@ static void loadSingleRandomCharacter(void* tCaller, void* tData) {
 	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)tData;
 	if (element->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
 		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)element->mData;
-		loadRandomCharacter(caller, vectorElement);
+		loadRandomCharacter(caller, vectorElement->mVector.mElement[0]);
+	}
+	else if (element->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
+		MugenDefScriptStringElement* stringElement = (MugenDefScriptStringElement*)element->mData;
+		if (strcmp("randomselect", stringElement->mString)) {
+			loadRandomCharacter(caller, stringElement->mString);
+		}
 	}
 }
 
-void setCharacterRandom(MugenDefScript * tScript, int i)
+int setCharacterRandomAndReturnIfSuccessful(MugenDefScript* tScript, int i)
 {
-	MugenDefScriptGroup* e = &tScript->mGroups["Characters"];
+	MugenDefScriptGroup* e = &tScript->mGroups["characters"];
 
 	RandomCharacterCaller caller;
 	caller.mElements = new_vector();
 
 	list_map(&e->mOrderedElementList, loadSingleRandomCharacter, &caller);
 
+	if (!vector_size(&caller.mElements)) {
+		delete_vector(&caller.mElements);
+		return 0;
+	}
+
 	int index = randfromInteger(0, vector_size(&caller.mElements) - 1);
 	PossibleRandomCharacterElement* newChar = (PossibleRandomCharacterElement*)vector_get(&caller.mElements, index);
 	setPlayerDefinitionPath(i, newChar->mPath);
 
 	delete_vector(&caller.mElements);
+	return 1;
 }
 
 typedef struct {
@@ -1717,10 +1761,10 @@ void setStageRandom(MugenDefScript * tScript)
 	caller.mElements = new_vector();
 	caller.mAllElements = new_string_map();
 
-	MugenDefScriptGroup* e = &tScript->mGroups["Characters"];
+	MugenDefScriptGroup* e = &tScript->mGroups["characters"];
 	list_map(&e->mOrderedElementList, loadSingleRandomCharacterStage, &caller);
 
-	e = &tScript->mGroups["ExtraStages"];
+	e = &tScript->mGroups["extrastages"];
 	list_map(&e->mOrderedElementList, loadSingleRandomStageStage, &caller);
 
 	if (!vector_size(&caller.mElements)) {

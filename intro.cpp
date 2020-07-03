@@ -17,20 +17,23 @@ static struct {
 } gIntroData;
 
 static void loadLogoAndIntroStoryboards() {
+	const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
 	MugenDefScript script; 
-	loadMugenDefScript(&script, getDolmexicaAssetFolder() + getMotifPath());
+	loadMugenDefScript(&script, motifPath);
+	std::string folder;
+	getPathToFile(folder, motifPath.c_str());
 
-	char* logoStoryboard = getAllocatedMugenDefStringOrDefault(&script, "Files", "logo.storyboard", " ");
+	auto logoStoryboard = getSTLMugenDefStringOrDefault(&script, "files", "logo.storyboard", " ");
+	logoStoryboard = findMugenSystemOrFightFilePath(logoStoryboard, folder);
 	gIntroData.mHasLogoStoryboard = isFile(logoStoryboard);
-	freeMemory(logoStoryboard);
 
-	char* introStoryboard = getAllocatedMugenDefStringOrDefault(&script, "Files", "intro.storyboard", " ");
+	auto introStoryboard = getSTLMugenDefStringOrDefault(&script, "files", "intro.storyboard", " ");
+	introStoryboard = findMugenSystemOrFightFilePath(introStoryboard, folder);
 	gIntroData.mHasIntroStoryboard = isFile(introStoryboard);
-	gIntroData.mWaitCycleAmount = getMugenDefIntegerOrDefault(&script, "Demo Mode", "intro.waitcycles", 1);
+	gIntroData.mWaitCycleAmount = getMugenDefIntegerOrDefault(&script, "demo mode", "intro.waitcycles", 1);
 	gIntroData.mWaitCycleNow = 0;
-	freeMemory(introStoryboard);
 
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 }
 
 static void logoStoryboardFinishedCB() {
@@ -43,21 +46,25 @@ static void logoStoryboardFinishedCB() {
 }
 
 static Screen* loadLogoStoryboardAndReturnScreen() {
+	const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
 	MugenDefScript script;
-	loadMugenDefScript(&script, getDolmexicaAssetFolder() + getMotifPath());
-	char* logoStoryboard = getAllocatedMugenDefStringOrDefault(&script, "Files", "logo.storyboard", " ");
+	loadMugenDefScript(&script, motifPath);
+	std::string folder;
+	getPathToFile(folder, motifPath.c_str());
+	auto logoStoryboard = getSTLMugenDefStringOrDefault(&script, "files", "logo.storyboard", " ");
+	logoStoryboard = findMugenSystemOrFightFilePath(logoStoryboard, folder);
 
 	MugenDefScript storyboardScript;
 	loadMugenDefScript(&storyboardScript, logoStoryboard);
-	auto versionString = getSTLMugenDefStringOrDefault(&storyboardScript, "Info", "version", "");
+	auto versionString = getSTLMugenDefStringOrDefault(&storyboardScript, "info", "version", "");
 	turnStringLowercase(versionString);
 
 	if (versionString == "dolmexica") {
-		setDolmexicaStoryScreenFileAndPrepareScreen(logoStoryboard);
+		setDolmexicaStoryScreenFileAndPrepareScreen(logoStoryboard.c_str());
 		return getDolmexicaStoryScreen();
 	}
 	else {
-		setStoryDefinitionFile(logoStoryboard);
+		setStoryDefinitionFileAndPrepareScreen(logoStoryboard.c_str());
 		setStoryScreenFinishedCB(logoStoryboardFinishedCB);
 		return getStoryScreen();
 	}
@@ -68,22 +75,26 @@ static void introStoryboardFinishedCB() {
 }
 
 static Screen* loadIntroStoryboardAndReturnScreen() {
+	const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
 	MugenDefScript script;
-	loadMugenDefScript(&script, getDolmexicaAssetFolder() + getMotifPath());
-	char* introStoryboard = getAllocatedMugenDefStringOrDefault(&script, "Files", "intro.storyboard", " ");
+	loadMugenDefScript(&script, motifPath);
+	std::string folder;
+	getPathToFile(folder, motifPath.c_str());
+	auto introStoryboard = getSTLMugenDefStringOrDefault(&script, "files", "intro.storyboard", " ");
+	introStoryboard = findMugenSystemOrFightFilePath(introStoryboard, folder);
 
 	MugenDefScript storyboardScript;
 	loadMugenDefScript(&storyboardScript, introStoryboard);
-	auto versionString = getSTLMugenDefStringOrDefault(&storyboardScript, "Info", "version", "");
+	auto versionString = getSTLMugenDefStringOrDefault(&storyboardScript, "info", "version", "");
 	turnStringLowercase(versionString);
 
 	gIntroData.mWaitCycleNow = 0;
 	if (versionString == "dolmexica") {
-		setDolmexicaStoryScreenFileAndPrepareScreen(introStoryboard);
+		setDolmexicaStoryScreenFileAndPrepareScreen(introStoryboard.c_str());
 		return getDolmexicaStoryScreen();
 	}
 	else {
-		setStoryDefinitionFile(introStoryboard);
+		setStoryDefinitionFileAndPrepareScreen(introStoryboard.c_str());
 		setStoryScreenFinishedCB(introStoryboardFinishedCB);
 		return getStoryScreen();
 	}

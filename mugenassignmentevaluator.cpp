@@ -15,6 +15,7 @@
 #include <prism/system.h>
 #include <prism/math.h>
 #include <prism/stlutil.h>
+#include <prism/profiling.h>
 
 #include "gamelogic.h"
 #include "stage.h"
@@ -155,44 +156,46 @@ static AssignmentReturnValue* getVectorAssignmentReturnSecondDependency(Assignme
 
 static AssignmentReturnValue* makeBooleanAssignmentReturn(int tValue);
 
+static void convertAssignmentReturnToString(string& ret, AssignmentReturnValue* tAssignmentReturn);
+
+static void convertVectorAssignmentReturnToString(std::string& ret, AssignmentReturnValue* tAssignmentReturn) {
+	stringstream ss;
+	string valueVA, valueVB;
+	convertAssignmentReturnToString(valueVA, getVectorAssignmentReturnFirstDependency(tAssignmentReturn));
+	convertAssignmentReturnToString(valueVB, getVectorAssignmentReturnSecondDependency(tAssignmentReturn));
+	ss << valueVA << " , " << valueVB;
+	ret = ss.str();
+}
+
+static void convertRangeAssignmentReturnToString(std::string& ret, AssignmentReturnValue* tAssignmentReturn) {
+	stringstream ss;
+	string valueVA, valueVB;
+	convertAssignmentReturnToString(valueVA, getVectorAssignmentReturnFirstDependency(tAssignmentReturn));
+	convertAssignmentReturnToString(valueVB, getVectorAssignmentReturnSecondDependency(tAssignmentReturn));
+	ss << "[ " << valueVA << " , " << valueVB << " ]";
+	ret = ss.str();
+}
 
 static void convertAssignmentReturnToString(string& ret, AssignmentReturnValue* tAssignmentReturn) {
-	char* cstring;
-	string valueVA, valueVB;
-	int valueI;
-	double valueF;
-	stringstream ss;
+	setProfilingSectionMarkerCurrentFunction();
 	switch (tAssignmentReturn->mType) {
 	case MUGEN_ASSIGNMENT_RETURN_TYPE_STRING:
-		cstring = getStringAssignmentReturnValue(tAssignmentReturn);
-		ret = cstring;
+		ret = getStringAssignmentReturnValue(tAssignmentReturn);
 		break;
 	case MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER:
-		valueI = getNumberAssignmentReturnValue(tAssignmentReturn);
-		ss << valueI;
-		ret = ss.str();
+		convertIntegerToStringFast(ret, getNumberAssignmentReturnValue(tAssignmentReturn));
 		break;
 	case MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT:
-		valueF = getFloatAssignmentReturnValue(tAssignmentReturn);
-		ss << valueF;
-		ret = ss.str();
+		convertFloatToStringFast(ret, getFloatAssignmentReturnValue(tAssignmentReturn));
 		break;
 	case MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN:
-		valueI = getBooleanAssignmentReturnValue(tAssignmentReturn);
-		ss << valueI;
-		ret = ss.str();
+		convertIntegerToStringFast(ret, getBooleanAssignmentReturnValue(tAssignmentReturn));
 		break;
 	case MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR:
-		convertAssignmentReturnToString(valueVA, getVectorAssignmentReturnFirstDependency(tAssignmentReturn));
-		convertAssignmentReturnToString(valueVB, getVectorAssignmentReturnSecondDependency(tAssignmentReturn));
-		ss << valueVA << " , " << valueVB;
-		ret = ss.str();
+		convertVectorAssignmentReturnToString(ret, tAssignmentReturn);
 		break;
 	case MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE:
-		convertAssignmentReturnToString(valueVA, getVectorAssignmentReturnFirstDependency(tAssignmentReturn));
-		convertAssignmentReturnToString(valueVB, getVectorAssignmentReturnSecondDependency(tAssignmentReturn));
-		ss << "[ " << valueVA << " , " << valueVB << " ]";
-		ret = ss.str();
+		convertRangeAssignmentReturnToString(ret, tAssignmentReturn);
 		break;
 	default:
 		ret = string();
@@ -203,6 +206,7 @@ static void convertAssignmentReturnToString(string& ret, AssignmentReturnValue* 
 }
 
 static int convertAssignmentReturnToBool(AssignmentReturnValue* tAssignmentReturn) {
+	setProfilingSectionMarkerCurrentFunction();
 	int ret;
 
 	char* string;
@@ -242,6 +246,7 @@ static int convertAssignmentReturnToBool(AssignmentReturnValue* tAssignmentRetur
 
 
 static int convertAssignmentReturnToNumber(AssignmentReturnValue* tAssignmentReturn) {
+	setProfilingSectionMarkerCurrentFunction();
 	int ret;
 
 	char* string;
@@ -279,6 +284,7 @@ static int convertAssignmentReturnToNumber(AssignmentReturnValue* tAssignmentRet
 }
 
 static double convertAssignmentReturnToFloat(AssignmentReturnValue* tAssignmentReturn) {
+	setProfilingSectionMarkerCurrentFunction();
 	double ret;
 
 	char* string;
@@ -379,6 +385,7 @@ static AssignmentReturnValue* makeBottomAssignmentReturn() {
 }
 
 static AssignmentReturnValue* evaluateOrAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* tIsStatic) {
+	setProfilingSectionMarkerCurrentFunction();
 	DreamMugenDependOnTwoAssignment* orAssignment = (DreamMugenDependOnTwoAssignment*)*tAssignment;
 
 	AssignmentReturnValue* a = evaluateAssignmentDependency(&orAssignment->a, tPlayer, tIsStatic);
@@ -403,6 +410,7 @@ static AssignmentReturnValue* evaluateXorAssignment(DreamMugenAssignment** tAssi
 }
 
 static AssignmentReturnValue* evaluateAndAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* tIsStatic) {
+	setProfilingSectionMarkerCurrentFunction();
 	DreamMugenDependOnTwoAssignment* andAssignment = (DreamMugenDependOnTwoAssignment*)*tAssignment;
 
 	AssignmentReturnValue* a = evaluateAssignmentDependency(&andAssignment->a, tPlayer, tIsStatic);
@@ -2831,6 +2839,7 @@ static void setAssignmentStatic(DreamMugenAssignment** tAssignment, AssignmentRe
 }
 
 static AssignmentReturnValue* evaluateAssignmentInternal(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* oIsStatic) {
+	setProfilingSectionMarkerCurrentFunction();
 	*oIsStatic = 1;
 	
 	if (!tAssignment || !(*tAssignment)) {
@@ -2865,6 +2874,7 @@ void setupDreamAssignmentEvaluator() {
 }
 
 static AssignmentReturnValue* evaluateAssignmentStart(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* oIsStatic) {
+	setProfilingSectionMarkerCurrentFunction();
 	gAssignmentEvaluator.mFreePointer = 0;
 
 	auto ret = evaluateAssignmentInternal(tAssignment, tPlayer, oIsStatic);
@@ -3312,6 +3322,7 @@ int evaluateDreamAssignmentAndReturnAsInteger(DreamMugenAssignment** tAssignment
 
 void evaluateDreamAssignmentAndReturnAsString(string& oString, DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer)
 {
+	setProfilingSectionMarkerCurrentFunction();
 	if (!(*tAssignment)) {
 		oString = "";
 		return;
@@ -3322,9 +3333,31 @@ void evaluateDreamAssignmentAndReturnAsString(string& oString, DreamMugenAssignm
 	convertAssignmentReturnToString(oString, ret);
 }
 
+Vector2D evaluateDreamAssignmentAndReturnAsVector2D(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer)
+{
+	if (!(*tAssignment)) return Vector2D(0, 0);
+
+	int isStatic;
+	AssignmentReturnValue* ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
+	string test;
+	convertAssignmentReturnToString(test, ret);
+
+	double x, y;
+	char tX[100], comma1[20], tY[100];
+
+	int items = sscanf(test.data(), "%99s %19s %99s", tX, comma1, tY);
+
+	if (items >= 1) x = atof(tX);
+	else x = 0;
+	if (items >= 3) y = atof(tY);
+	else y = 0;
+
+	return Vector2D(x, y);
+}
+
 Vector3D evaluateDreamAssignmentAndReturnAsVector3D(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer)
 {
-	if (!(*tAssignment)) return makePosition(0, 0, 0);
+	if (!(*tAssignment)) return Vector3D(0, 0, 0);
 
 	int isStatic;
 	AssignmentReturnValue* ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
@@ -3343,12 +3376,34 @@ Vector3D evaluateDreamAssignmentAndReturnAsVector3D(DreamMugenAssignment** tAssi
 	if (items >= 5) z = atof(tZ);
 	else z = 0;
 
-	return makePosition(x, y, z);
+	return Vector3D(x, y, z);
 }
 
-Vector3DI evaluateDreamAssignmentAndReturnAsVector3DI(DreamMugenAssignment** tAssignment, DreamPlayer * tPlayer)
+Vector2DI evaluateDreamAssignmentAndReturnAsVector2DI(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer)
 {
-	if (!(*tAssignment)) return makeVector3DI(0, 0, 0);
+	if (!(*tAssignment)) return Vector2DI(0, 0);
+
+	int isStatic;
+	AssignmentReturnValue* ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
+	string test;
+	convertAssignmentReturnToString(test, ret);
+
+	int x, y;
+	char tX[100], comma1[20], tY[100];
+
+	int items = sscanf(test.data(), "%99s %19s %99s", tX, comma1, tY);
+
+	if (items >= 1) x = atoi(tX);
+	else x = 0;
+	if (items >= 3) y = atoi(tY);
+	else y = 0;
+
+	return Vector2DI(x, y);
+}
+
+Vector3DI evaluateDreamAssignmentAndReturnAsVector3DI(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer)
+{
+	if (!(*tAssignment)) return Vector3DI(0, 0, 0);
 
 	int isStatic;
 	AssignmentReturnValue* ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
@@ -3367,5 +3422,591 @@ Vector3DI evaluateDreamAssignmentAndReturnAsVector3DI(DreamMugenAssignment** tAs
 	if (items >= 5) z = atoi(tZ);
 	else z = 0;
 
-	return makeVector3DI(x, y, z);
+	return Vector3DI(x, y, z);
+}
+
+static void evaluateDreamAssignmentReturnAndReturnAsOneFloatWithDefaultValue(AssignmentReturnValue* tRet, double* v1, double tDefault1) {
+	switch (tRet->mType) {
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_STRING:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+		*v1 = convertAssignmentReturnToFloat(tRet);
+		break;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE:
+		evaluateDreamAssignmentReturnAndReturnAsOneFloatWithDefaultValue(getVectorAssignmentReturnFirstDependency(tRet), v1, tDefault1);
+		break;
+	default:
+		*v1 = tDefault1;
+		break;
+	}
+}
+
+void evaluateDreamAssignmentAndReturnAsOneFloatWithDefaultValue(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, double* v1, double tDefault1)
+{
+	if (!(*tAssignment)) {
+		*v1 = tDefault1;
+		return;
+	}
+	int isStatic;
+	const auto ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
+	evaluateDreamAssignmentReturnAndReturnAsOneFloatWithDefaultValue(ret, v1, tDefault1);
+}
+
+static size_t evaluateTwoFloatsWithDefaultFromStringAndReturnProcessedReadAmount(const char* tValue, double* v1, double* v2, double tDefault1) {
+	char string1[20], comma[10], string2[20];
+	const auto items = sscanf(tValue, "%19s %9s %19s", string1, comma, string2);
+
+	if (items < 1 || !strcmp("", string1)) *v1 = tDefault1;
+	else *v1 = atof(string1);
+	if (items < 3 || !strcmp("", string2)) {
+		return 1;
+	}
+	else {
+		*v2 = atof(string2);
+		return 2;
+	}
+}
+
+static size_t evaluateDreamAssignmentReturnAndReturnAsTwoFloatsWithDefaultValuesAndProcessedReadAmount(AssignmentReturnValue* tRet, double* v1, double* v2, double tDefault1, double tDefault2);
+
+static size_t evaluateTwoFloatsWithDefaultFromVectorAndReturnProcessedReadAmount(AssignmentReturnValue* tRet, double* v1, double* v2, double tDefault1, double tDefault2) {
+	if (getVectorAssignmentReturnFirstDependency(tRet)->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR || getVectorAssignmentReturnFirstDependency(tRet)->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE) {
+		const auto readAmountFirst = evaluateDreamAssignmentReturnAndReturnAsTwoFloatsWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnFirstDependency(tRet), v1, v2, tDefault1, tDefault2);
+		if (readAmountFirst == 2) return 2;
+		evaluateDreamAssignmentReturnAndReturnAsOneFloatWithDefaultValue(getVectorAssignmentReturnSecondDependency(tRet), v2, tDefault2);
+	}
+	else {
+		*v1 = convertAssignmentReturnToFloat(getVectorAssignmentReturnFirstDependency(tRet));
+		evaluateDreamAssignmentReturnAndReturnAsOneFloatWithDefaultValue(getVectorAssignmentReturnSecondDependency(tRet), v2, tDefault2);
+	}
+	return 2;
+}
+
+static size_t evaluateDreamAssignmentReturnAndReturnAsTwoFloatsWithDefaultValuesAndProcessedReadAmount(AssignmentReturnValue* tRet, double* v1, double* v2, double tDefault1, double tDefault2) {
+	switch (tRet->mType) {
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_STRING:
+		return evaluateTwoFloatsWithDefaultFromStringAndReturnProcessedReadAmount(getStringAssignmentReturnValue(tRet), v1, v2, tDefault1);
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER:
+		*v1 = double(getNumberAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT:
+		*v1 = double(getFloatAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+		*v1 = double(getBooleanAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE:
+		return evaluateTwoFloatsWithDefaultFromVectorAndReturnProcessedReadAmount(tRet, v1, v2, tDefault1, tDefault2);
+	default:
+		*v1 = tDefault1;
+		return 1;
+	}
+}
+
+void evaluateDreamAssignmentAndReturnAsTwoFloatsWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, double* v1, double* v2, double tDefault1, double tDefault2)
+{
+	if (!(*tAssignment)) {
+		*v1 = tDefault1;
+		*v2 = tDefault2;
+		return;
+	}
+	int isStatic;
+	const auto ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
+	const auto setAmount = evaluateDreamAssignmentReturnAndReturnAsTwoFloatsWithDefaultValuesAndProcessedReadAmount(ret, v1, v2, tDefault1, tDefault2);
+	assert(setAmount >= 1);
+	if (setAmount < 2) {
+		*v2 = tDefault2;
+	}
+}
+
+static size_t evaluateThreeFloatsWithDefaultFromStringAndReturnProcessedReadAmount(const char* tValue, double* v1, double* v2, double* v3, double tDefault1, double tDefault2, double tDefault3) {
+	double vals[3];
+	char string[3][20], comma[2][10];
+	const auto items = sscanf(tValue, "%19s %9s %19s %9s %19s", string[0], comma[0], string[1], comma[1], string[2]);
+
+	double defaults[3];
+	defaults[0] = tDefault1;
+	defaults[1] = tDefault2;
+	defaults[2] = tDefault3;
+
+	size_t ret = 0;
+	for (int j = 0; j < 3; j++) {
+		if (items < (1 + j * 2) || !strcmp("", string[j])) vals[j] = defaults[j];
+		else {
+			vals[j] = atof(string[j]);
+			ret = j + 1;
+		}
+	}
+
+	*v1 = vals[0];
+	*v2 = vals[1];
+	*v3 = vals[2];
+	return std::max(size_t(1), ret);
+}
+
+static size_t evaluateDreamAssignmentReturnAndReturnAsThreeFloatsWithDefaultValuesAndProcessedReadAmount(AssignmentReturnValue* tRet, double* v1, double* v2, double* v3, double tDefault1, double tDefault2, double tDefault3);
+
+static size_t evaluateThreeFloatsWithDefaultFromVectorAndReturnProcessedReadAmount(AssignmentReturnValue* tRet, double* v1, double* v2, double* v3, double tDefault1, double tDefault2, double tDefault3) {
+	if (getVectorAssignmentReturnFirstDependency(tRet)->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR || getVectorAssignmentReturnFirstDependency(tRet)->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE) {
+		const auto readAmountFirst = evaluateDreamAssignmentReturnAndReturnAsThreeFloatsWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnFirstDependency(tRet), v1, v2, v3, tDefault1, tDefault2, tDefault3);
+		if (readAmountFirst == 3) {
+			return 3;
+		}
+		else if (readAmountFirst == 2) {
+			evaluateDreamAssignmentReturnAndReturnAsOneFloatWithDefaultValue(getVectorAssignmentReturnSecondDependency(tRet), v3, tDefault3);
+			return 3;
+		}
+		else {
+			assert(readAmountFirst == 1);
+			const auto subRet = evaluateDreamAssignmentReturnAndReturnAsTwoFloatsWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnSecondDependency(tRet), v2, v3, tDefault2, tDefault3);
+			return subRet + readAmountFirst;
+		}
+	}
+	else {
+		*v1 = convertAssignmentReturnToFloat(getVectorAssignmentReturnFirstDependency(tRet));
+		const auto subRet = evaluateDreamAssignmentReturnAndReturnAsTwoFloatsWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnSecondDependency(tRet), v2, v3, tDefault2, tDefault3);
+		return subRet + 1;
+	}
+}
+
+static size_t evaluateDreamAssignmentReturnAndReturnAsThreeFloatsWithDefaultValuesAndProcessedReadAmount(AssignmentReturnValue* tRet, double* v1, double* v2, double* v3, double tDefault1, double tDefault2, double tDefault3) {
+	switch (tRet->mType) {
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_STRING:
+		return evaluateThreeFloatsWithDefaultFromStringAndReturnProcessedReadAmount(getStringAssignmentReturnValue(tRet), v1, v2, v3, tDefault1, tDefault2, tDefault3);
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER:
+		*v1 = double(getNumberAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT:
+		*v1 = double(getFloatAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+		*v1 = double(getBooleanAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE:
+		return evaluateThreeFloatsWithDefaultFromVectorAndReturnProcessedReadAmount(tRet, v1, v2, v3, tDefault1, tDefault2, tDefault3);
+	default:
+		*v1 = tDefault1;
+		return 1;
+	}
+}
+
+void evaluateDreamAssignmentAndReturnAsThreeFloatsWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, double* v1, double* v2, double* v3, double tDefault1, double tDefault2, double tDefault3)
+{
+	if (!(*tAssignment)) {
+		*v1 = tDefault1;
+		*v2 = tDefault2;
+		*v3 = tDefault3;
+		return;
+	}
+	int isStatic;
+	const auto ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
+	const auto setAmount = evaluateDreamAssignmentReturnAndReturnAsThreeFloatsWithDefaultValuesAndProcessedReadAmount(ret, v1, v2, v3, tDefault1, tDefault2, tDefault3);
+
+	assert(setAmount >= 1);
+	if (setAmount < 2) {
+		*v2 = tDefault2;
+	}
+	if (setAmount < 3) {
+		*v3 = tDefault3;
+	}
+}
+
+static size_t evaluateFourFloatsWithDefaultFromStringAndReturnProcessedReadAmount(const char* tValue, double* v1, double* v2, double* v3, double* v4, double tDefault1, double tDefault2, double tDefault3, double tDefault4) {
+	double vals[4];
+	char string[4][20], comma[3][10];
+	const auto items = sscanf(tValue, "%19s %9s %19s %9s %19s %9s %19s", string[0], comma[0], string[1], comma[1], string[2], comma[2], string[3]);
+
+	double defaults[4];
+	defaults[0] = tDefault1;
+	defaults[1] = tDefault2;
+	defaults[2] = tDefault3;
+	defaults[3] = tDefault4;
+
+	size_t ret = 0;
+	for (int j = 0; j < 4; j++) {
+		if (items < (1 + j * 2) || !strcmp("", string[j])) vals[j] = defaults[j];
+		else {
+			vals[j] = atof(string[j]);
+			ret = j + 1;
+		}
+	}
+
+	*v1 = vals[0];
+	*v2 = vals[1];
+	*v3 = vals[2];
+	*v4 = vals[3];
+	return std::max(size_t(1), ret);
+}
+
+static size_t evaluateDreamAssignmentReturnAndReturnAsFourFloatsWithDefaultValuesAndProcessedReadAmount(AssignmentReturnValue* tRet, double* v1, double* v2, double* v3, double* v4, double tDefault1, double tDefault2, double tDefault3, double tDefault4);
+
+static size_t evaluateFourFloatsWithDefaultFromVectorAndReturnProcessedReadAmount(AssignmentReturnValue* tRet, double* v1, double* v2, double* v3, double* v4, double tDefault1, double tDefault2, double tDefault3, double tDefault4) {
+	if (getVectorAssignmentReturnFirstDependency(tRet)->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR || getVectorAssignmentReturnFirstDependency(tRet)->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE) {
+		const auto readAmountFirst = evaluateDreamAssignmentReturnAndReturnAsFourFloatsWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnFirstDependency(tRet), v1, v2, v3, v4, tDefault1, tDefault2, tDefault3, tDefault4);
+		if (readAmountFirst == 4) {
+			return 4;
+		}
+		else if (readAmountFirst == 3) {
+			evaluateDreamAssignmentReturnAndReturnAsOneFloatWithDefaultValue(getVectorAssignmentReturnSecondDependency(tRet), v4, tDefault4);
+			return 4;
+		}
+		else if (readAmountFirst == 2) {
+			const auto subRet = evaluateDreamAssignmentReturnAndReturnAsTwoFloatsWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnSecondDependency(tRet), v3, v4, tDefault3, tDefault4);
+			return subRet + readAmountFirst;
+		}
+		else {
+			assert(readAmountFirst == 1);
+			const auto subRet = evaluateDreamAssignmentReturnAndReturnAsThreeFloatsWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnSecondDependency(tRet), v2, v3, v4, tDefault2, tDefault3, tDefault4);
+			return subRet + readAmountFirst;
+		}
+	}
+	else {
+		*v1 = convertAssignmentReturnToFloat(getVectorAssignmentReturnFirstDependency(tRet));
+		const auto subRet = evaluateDreamAssignmentReturnAndReturnAsThreeFloatsWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnSecondDependency(tRet), v2, v3, v4, tDefault2, tDefault3, tDefault4);
+		return subRet + 1;
+	}
+}
+
+static size_t evaluateDreamAssignmentReturnAndReturnAsFourFloatsWithDefaultValuesAndProcessedReadAmount(AssignmentReturnValue* tRet, double* v1, double* v2, double* v3, double* v4, double tDefault1, double tDefault2, double tDefault3, double tDefault4) {
+	switch (tRet->mType) {
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_STRING:
+		return evaluateFourFloatsWithDefaultFromStringAndReturnProcessedReadAmount(getStringAssignmentReturnValue(tRet), v1, v2, v3, v4, tDefault1, tDefault2, tDefault3, tDefault4);
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER:
+		*v1 = double(getNumberAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT:
+		*v1 = double(getFloatAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+		*v1 = double(getBooleanAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE:
+		return evaluateFourFloatsWithDefaultFromVectorAndReturnProcessedReadAmount(tRet, v1, v2, v3, v4, tDefault1, tDefault2, tDefault3, tDefault4);
+	default:
+		*v1 = tDefault1;
+		return 1;
+	}
+}
+
+void evaluateDreamAssignmentAndReturnAsFourFloatsWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, double* v1, double* v2, double* v3, double* v4, double tDefault1, double tDefault2, double tDefault3, double tDefault4)
+{
+	if (!(*tAssignment)) {
+		*v1 = tDefault1;
+		*v2 = tDefault2;
+		*v3 = tDefault3;
+		*v4 = tDefault4;
+		return;
+	}
+	int isStatic;
+	const auto ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
+	const auto setAmount = evaluateDreamAssignmentReturnAndReturnAsFourFloatsWithDefaultValuesAndProcessedReadAmount(ret, v1, v2, v3, v4, tDefault1, tDefault2, tDefault3, tDefault4);
+
+	assert(setAmount >= 1);
+	if (setAmount < 2) {
+		*v2 = tDefault2;
+	}
+	if (setAmount < 3) {
+		*v3 = tDefault3;
+	}
+	if (setAmount < 4) {
+		*v4 = tDefault4;
+	}
+}
+
+static void evaluateDreamAssignmentReturnAndReturnAsOneIntegerWithDefaultValue(AssignmentReturnValue* tRet, int* v1, int tDefault1) {
+	switch (tRet->mType) {
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_STRING:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+		*v1 = convertAssignmentReturnToNumber(tRet);
+		break;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE:
+		evaluateDreamAssignmentReturnAndReturnAsOneIntegerWithDefaultValue(getVectorAssignmentReturnFirstDependency(tRet), v1, tDefault1);
+		break;
+	default:
+		*v1 = tDefault1;
+		break;
+	}
+}
+
+void evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* v1, int tDefault1)
+{
+	if (!(*tAssignment)) {
+		*v1 = tDefault1;
+		return;
+	}
+	int isStatic;
+	const auto ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
+	evaluateDreamAssignmentReturnAndReturnAsOneIntegerWithDefaultValue(ret, v1, tDefault1);
+}
+
+static size_t evaluateTwoIntegersWithDefaultFromStringAndReturnProcessedReadAmount(const char* tValue, int* v1, int* v2, int tDefault1) {
+	char string1[20], comma[10], string2[20];
+	const auto items = sscanf(tValue, "%19s %9s %19s", string1, comma, string2);
+
+	if (items < 1 || !strcmp("", string1)) *v1 = tDefault1;
+	else *v1 = atoi(string1);
+	if (items < 3 || !strcmp("", string2)) {
+		return 1;
+	}
+	else {
+		*v2 = atoi(string2);
+		return 2;
+	}
+}
+
+static size_t evaluateDreamAssignmentReturnAndReturnAsTwoIntegersWithDefaultValuesAndProcessedReadAmount(AssignmentReturnValue* tRet, int* v1, int* v2, int tDefault1, int tDefault2);
+
+static size_t evaluateTwoIntegersWithDefaultFromVectorAndReturnProcessedReadAmount(AssignmentReturnValue* tRet, int* v1, int* v2, int tDefault1, int tDefault2) {
+	if (getVectorAssignmentReturnFirstDependency(tRet)->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR || getVectorAssignmentReturnFirstDependency(tRet)->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE) {
+		const auto readAmountFirst = evaluateDreamAssignmentReturnAndReturnAsTwoIntegersWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnFirstDependency(tRet), v1, v2, tDefault1, tDefault2);
+		if (readAmountFirst == 2) return 2;
+		evaluateDreamAssignmentReturnAndReturnAsOneIntegerWithDefaultValue(getVectorAssignmentReturnSecondDependency(tRet), v2, tDefault2);
+	}
+	else {
+		*v1 = convertAssignmentReturnToNumber(getVectorAssignmentReturnFirstDependency(tRet));
+		evaluateDreamAssignmentReturnAndReturnAsOneIntegerWithDefaultValue(getVectorAssignmentReturnSecondDependency(tRet), v2, tDefault2);
+	}
+	return 2;
+}
+
+static size_t evaluateDreamAssignmentReturnAndReturnAsTwoIntegersWithDefaultValuesAndProcessedReadAmount(AssignmentReturnValue* tRet, int* v1, int* v2, int tDefault1, int tDefault2) {
+	switch (tRet->mType) {
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_STRING:
+		return evaluateTwoIntegersWithDefaultFromStringAndReturnProcessedReadAmount(getStringAssignmentReturnValue(tRet), v1, v2, tDefault1);
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER:
+		*v1 = int(getNumberAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT:
+		*v1 = int(getFloatAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+		*v1 = int(getBooleanAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE:
+		return evaluateTwoIntegersWithDefaultFromVectorAndReturnProcessedReadAmount(tRet, v1, v2, tDefault1, tDefault2);
+	default:
+		*v1 = tDefault1;
+		return 1;
+	}
+}
+
+void evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* v1, int* v2, int tDefault1, int tDefault2)
+{
+	if (!(*tAssignment)) {
+		*v1 = tDefault1;
+		*v2 = tDefault2;
+		return;
+	}
+	int isStatic;
+	const auto ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
+	const auto setAmount = evaluateDreamAssignmentReturnAndReturnAsTwoIntegersWithDefaultValuesAndProcessedReadAmount(ret, v1, v2, tDefault1, tDefault2);
+	assert(setAmount >= 1);
+	if (setAmount < 2) {
+		*v2 = tDefault2;
+	}
+}
+
+static size_t evaluateThreeIntegersWithDefaultFromStringAndReturnProcessedReadAmount(const char* tValue, int* v1, int* v2, int* v3, int tDefault1, int tDefault2, int tDefault3) {
+	int vals[3];
+	char string[3][20], comma[2][10];
+	const auto items = sscanf(tValue, "%19s %9s %19s %9s %19s", string[0], comma[0], string[1], comma[1], string[2]);
+
+	int defaults[3];
+	defaults[0] = tDefault1;
+	defaults[1] = tDefault2;
+	defaults[2] = tDefault3;
+
+	size_t ret = 0;
+	for (int j = 0; j < 3; j++) {
+		if (items < (1 + j * 2) || !strcmp("", string[j])) vals[j] = defaults[j];
+		else {
+			vals[j] = atoi(string[j]);
+			ret = j + 1;
+		}
+	}
+
+	*v1 = vals[0];
+	*v2 = vals[1];
+	*v3 = vals[2];
+	return std::max(size_t(1), ret);
+}
+
+static size_t evaluateDreamAssignmentReturnAndReturnAsThreeIntegersWithDefaultValuesAndProcessedReadAmount(AssignmentReturnValue* tRet, int* v1, int* v2, int* v3, int tDefault1, int tDefault2, int tDefault3);
+
+static size_t evaluateThreeIntegersWithDefaultFromVectorAndReturnProcessedReadAmount(AssignmentReturnValue* tRet, int* v1, int* v2, int* v3, int tDefault1, int tDefault2, int tDefault3) {
+	if (getVectorAssignmentReturnFirstDependency(tRet)->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR || getVectorAssignmentReturnFirstDependency(tRet)->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE) {
+		const auto readAmountFirst = evaluateDreamAssignmentReturnAndReturnAsThreeIntegersWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnFirstDependency(tRet), v1, v2, v3, tDefault1, tDefault2, tDefault3);
+		if (readAmountFirst == 3) {
+			return 3;
+		}
+		else if (readAmountFirst == 2) {
+			evaluateDreamAssignmentReturnAndReturnAsOneIntegerWithDefaultValue(getVectorAssignmentReturnSecondDependency(tRet), v3, tDefault3);
+			return 3;
+		}
+		else {
+			assert(readAmountFirst == 1);
+			const auto subRet = evaluateDreamAssignmentReturnAndReturnAsTwoIntegersWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnSecondDependency(tRet), v2, v3, tDefault2, tDefault3);
+			return subRet + readAmountFirst;
+		}
+	}
+	else {
+		*v1 = convertAssignmentReturnToNumber(getVectorAssignmentReturnFirstDependency(tRet));
+		const auto subRet = evaluateDreamAssignmentReturnAndReturnAsTwoIntegersWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnSecondDependency(tRet), v2, v3, tDefault2, tDefault3);
+		return subRet + 1;
+	}
+}
+
+static size_t evaluateDreamAssignmentReturnAndReturnAsThreeIntegersWithDefaultValuesAndProcessedReadAmount(AssignmentReturnValue* tRet, int* v1, int* v2, int* v3, int tDefault1, int tDefault2, int tDefault3) {
+	switch (tRet->mType) {
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_STRING:
+		return evaluateThreeIntegersWithDefaultFromStringAndReturnProcessedReadAmount(getStringAssignmentReturnValue(tRet), v1, v2, v3, tDefault1, tDefault2, tDefault3);
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER:
+		*v1 = int(getNumberAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT:
+		*v1 = int(getFloatAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+		*v1 = int(getBooleanAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE:
+		return evaluateThreeIntegersWithDefaultFromVectorAndReturnProcessedReadAmount(tRet, v1, v2, v3, tDefault1, tDefault2, tDefault3);
+	default:
+		*v1 = tDefault1;
+		return 1;
+	}
+}
+
+void evaluateDreamAssignmentAndReturnAsThreeIntegersWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* v1, int* v2, int* v3, int tDefault1, int tDefault2, int tDefault3)
+{
+	if (!(*tAssignment)) {
+		*v1 = tDefault1;
+		*v2 = tDefault2;
+		*v3 = tDefault3;
+		return;
+	}
+	int isStatic;
+	const auto ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
+	const auto setAmount = evaluateDreamAssignmentReturnAndReturnAsThreeIntegersWithDefaultValuesAndProcessedReadAmount(ret, v1, v2, v3, tDefault1, tDefault2, tDefault3);
+
+	assert(setAmount >= 1);
+	if (setAmount < 2) {
+		*v2 = tDefault2;
+	}
+	if (setAmount < 3) {
+		*v3 = tDefault3;
+	}
+}
+
+static size_t evaluateFourIntegersWithDefaultFromStringAndReturnProcessedReadAmount(const char* tValue, int* v1, int* v2, int* v3, int* v4, int tDefault1, int tDefault2, int tDefault3, int tDefault4) {
+	int vals[4];
+	char string[4][20], comma[3][10];
+	const auto items = sscanf(tValue, "%19s %9s %19s %9s %19s %9s %19s", string[0], comma[0], string[1], comma[1], string[2], comma[2], string[3]);
+
+	int defaults[4];
+	defaults[0] = tDefault1;
+	defaults[1] = tDefault2;
+	defaults[2] = tDefault3;
+	defaults[3] = tDefault4;
+
+	size_t ret = 0;
+	for (int j = 0; j < 4; j++) {
+		if (items < (1 + j * 2) || !strcmp("", string[j])) vals[j] = defaults[j];
+		else {
+			vals[j] = atoi(string[j]);
+			ret = j + 1;
+		}
+	}
+
+	*v1 = vals[0];
+	*v2 = vals[1];
+	*v3 = vals[2];
+	*v4 = vals[3];
+	return std::max(size_t(1), ret);
+}
+
+static size_t evaluateDreamAssignmentReturnAndReturnAsFourIntegersWithDefaultValuesAndProcessedReadAmount(AssignmentReturnValue* tRet, int* v1, int* v2, int* v3, int* v4, int tDefault1, int tDefault2, int tDefault3, int tDefault4);
+
+static size_t evaluateFourIntegersWithDefaultFromVectorAndReturnProcessedReadAmount(AssignmentReturnValue* tRet, int* v1, int* v2, int* v3, int* v4, int tDefault1, int tDefault2, int tDefault3, int tDefault4) {
+	if (getVectorAssignmentReturnFirstDependency(tRet)->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR || getVectorAssignmentReturnFirstDependency(tRet)->mType == MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE) {
+		const auto readAmountFirst = evaluateDreamAssignmentReturnAndReturnAsFourIntegersWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnFirstDependency(tRet), v1, v2, v3, v4, tDefault1, tDefault2, tDefault3, tDefault4);
+		if (readAmountFirst == 4) {
+			return 4;
+		}
+		else if (readAmountFirst == 3) {
+			evaluateDreamAssignmentReturnAndReturnAsOneIntegerWithDefaultValue(getVectorAssignmentReturnSecondDependency(tRet), v4, tDefault4);
+			return 4;
+		}
+		else if (readAmountFirst == 2) {
+			const auto subRet = evaluateDreamAssignmentReturnAndReturnAsTwoIntegersWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnSecondDependency(tRet), v3, v4, tDefault3, tDefault4);
+			return subRet + readAmountFirst;
+		}
+		else {
+			assert(readAmountFirst == 1);
+			const auto subRet = evaluateDreamAssignmentReturnAndReturnAsThreeIntegersWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnSecondDependency(tRet), v2, v3, v4, tDefault2, tDefault3, tDefault4);
+			return subRet + readAmountFirst;
+		}
+	}
+	else {
+		*v1 = convertAssignmentReturnToNumber(getVectorAssignmentReturnFirstDependency(tRet));
+		const auto subRet = evaluateDreamAssignmentReturnAndReturnAsThreeIntegersWithDefaultValuesAndProcessedReadAmount(getVectorAssignmentReturnSecondDependency(tRet), v2, v3, v4, tDefault2, tDefault3, tDefault4);
+		return subRet + 1;
+	}
+}
+
+static size_t evaluateDreamAssignmentReturnAndReturnAsFourIntegersWithDefaultValuesAndProcessedReadAmount(AssignmentReturnValue* tRet, int* v1, int* v2, int* v3, int* v4, int tDefault1, int tDefault2, int tDefault3, int tDefault4) {
+	switch (tRet->mType) {
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_STRING:
+		return evaluateFourIntegersWithDefaultFromStringAndReturnProcessedReadAmount(getStringAssignmentReturnValue(tRet), v1, v2, v3, v4, tDefault1, tDefault2, tDefault3, tDefault4);
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER:
+		*v1 = int(getNumberAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_FLOAT:
+		*v1 = int(getFloatAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_BOOLEAN:
+		*v1 = int(getBooleanAssignmentReturnValue(tRet));
+		return 1;
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR:
+	case MUGEN_ASSIGNMENT_RETURN_TYPE_RANGE:
+		return evaluateFourIntegersWithDefaultFromVectorAndReturnProcessedReadAmount(tRet, v1, v2, v3, v4, tDefault1, tDefault2, tDefault3, tDefault4);
+	default:
+		*v1 = tDefault1;
+		return 1;
+	}
+}
+
+void evaluateDreamAssignmentAndReturnAsFourIntegersWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* v1, int* v2, int* v3, int* v4, int tDefault1, int tDefault2, int tDefault3, int tDefault4)
+{
+	if (!(*tAssignment)) {
+		*v1 = tDefault1;
+		*v2 = tDefault2;
+		*v3 = tDefault3;
+		*v4 = tDefault4;
+		return;
+	}
+	int isStatic;
+	const auto ret = evaluateAssignmentStart(tAssignment, tPlayer, &isStatic);
+	const auto setAmount = evaluateDreamAssignmentReturnAndReturnAsFourIntegersWithDefaultValuesAndProcessedReadAmount(ret, v1, v2, v3, v4, tDefault1, tDefault2, tDefault3, tDefault4);
+
+	assert(setAmount >= 1);
+	if (setAmount < 2) {
+		*v2 = tDefault2;
+	}
+	if (setAmount < 3) {
+		*v3 = tDefault3;
+	}
+	if (setAmount < 4) {
+		*v4 = tDefault4;
+	}
 }

@@ -1,6 +1,7 @@
 #include "dolmexicastoryscreen.h"
 
 #include <string.h>
+#include <assert.h>
 
 #include <prism/log.h>
 #include <prism/math.h>
@@ -58,7 +59,7 @@ static void loadSystemFonts(void*) {
 
 static void loadStoryFonts(void*) {
 	unloadMugenFonts();
-	loadMugenStoryFonts(gDolmexicaStoryScreenData.mPath);
+	loadMugenStoryFonts(gDolmexicaStoryScreenData.mPath, "info");
 }
 
 static void loadStoryFilesFromScript(MugenDefScript* tScript) {
@@ -68,15 +69,15 @@ static void loadStoryFilesFromScript(MugenDefScript* tScript) {
 
 	getPathToFile(pathToFile, gDolmexicaStoryScreenData.mPath);
 
-	getMugenDefStringOrDefault(path, tScript, "Info", "spr", "");
+	getMugenDefStringOrDefault(path, tScript, "info", "spr", "");
 	sprintf(fullPath, "%s%s", pathToFile, path);
 	gDolmexicaStoryScreenData.mSprites = loadMugenSpriteFileWithoutPalette(fullPath);
 
-	getMugenDefStringOrDefault(path, tScript, "Info", "anim", "");
+	getMugenDefStringOrDefault(path, tScript, "info", "anim", "");
 	sprintf(fullPath, "%s%s", pathToFile, path);
 	gDolmexicaStoryScreenData.mAnimations = loadMugenAnimationFile(fullPath);
 
-	getMugenDefStringOrDefault(path, tScript, "Info", "snd", "");
+	getMugenDefStringOrDefault(path, tScript, "info", "snd", "");
 	sprintf(fullPath, "%s%s", pathToFile, path);
 	if (isFile(fullPath)) {
 		gDolmexicaStoryScreenData.mSounds = loadMugenSoundFile(fullPath);
@@ -85,7 +86,7 @@ static void loadStoryFilesFromScript(MugenDefScript* tScript) {
 		gDolmexicaStoryScreenData.mSounds = createEmptyMugenSoundFile();
 	}
 
-	getMugenDefStringOrDefault(path, tScript, "Info", "cmd", "");
+	getMugenDefStringOrDefault(path, tScript, "info", "cmd", "");
 	sprintf(fullPath, "%s%s", pathToFile, path);
 	gDolmexicaStoryScreenData.mHasCommands = isFile(fullPath);
 	if (gDolmexicaStoryScreenData.mHasCommands) {
@@ -93,19 +94,19 @@ static void loadStoryFilesFromScript(MugenDefScript* tScript) {
 		gDolmexicaStoryScreenData.mCommandID = registerDreamMugenCommands(0, &gDolmexicaStoryScreenData.mCommands);
 	}
 
-	getMugenDefStringOrDefault(path, tScript, "Info", "stage", "");
+	getMugenDefStringOrDefault(path, tScript, "info", "stage", "");
 	sprintf(fullPath, "%s%s", getDolmexicaAssetFolder().c_str(), path);
-	const auto musicPath = getSTLMugenDefStringOrDefault(tScript, "Info", "bgm", "");
+	const auto musicPath = getSTLMugenDefStringOrDefault(tScript, "info", "bgm", "");
 	setDreamStageMugenDefinition(fullPath, musicPath.c_str());
 	gDolmexicaStoryScreenData.mHasStage = isFile(fullPath);
 	gDolmexicaStoryScreenData.mHasMusic = isMugenBGMMusicPath(musicPath.c_str(), fullPath);
-	gDolmexicaStoryScreenData.mHasMusic |= getMugenDefIntegerOrDefault(tScript, "Info", "stage.bgm", 0);
+	gDolmexicaStoryScreenData.mHasMusic |= getMugenDefIntegerOrDefault(tScript, "info", "stage.bgm", 0);
 
 	for (int i = 0; i < 10; i++) {
 		char name[20];
 		
 		sprintf(name, "helper%d", i);
-		getMugenDefStringOrDefault(path, tScript, "Info", name, "");
+		getMugenDefStringOrDefault(path, tScript, "info", name, "");
 		sprintf(fullPath, "%s%s", pathToFile, path);
 		if (!isFile(fullPath)) continue;
 
@@ -118,7 +119,7 @@ static void loadStoryFilesFromScript(MugenDefScript* tScript) {
 }
 
 static void initStoryInstance(StoryInstance& e){
-	e.mStateMachineID = registerDreamMugenStoryStateMachine(&gDolmexicaStoryScreenData.mStoryStates, &e);
+	e.mRegisteredStateMachine = registerDreamMugenStoryStateMachine(&gDolmexicaStoryScreenData.mStoryStates, &e);
 	e.mStoryAnimations.clear();
 	e.mStoryTexts.clear();
 	e.mStoryCharacters.clear();
@@ -132,7 +133,7 @@ static void initStoryInstance(StoryInstance& e){
 }
 
 static void unloadStoryInstance(StoryInstance& e) {
-	removeDreamRegisteredStateMachine(e.mStateMachineID);
+	removeDreamRegisteredStateMachine(e.mRegisteredStateMachine);
 }
 
 static void loadStoryScreen() {
@@ -149,7 +150,7 @@ static void loadStoryScreen() {
 	MugenDefScript script;
 	loadMugenDefScript(&script, gDolmexicaStoryScreenData.mPath);
 	loadStoryFilesFromScript(&script);
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 	
 	gDolmexicaStoryScreenData.mHelperInstances.clear();
 	StoryInstance root;
@@ -161,7 +162,7 @@ static void loadStoryScreen() {
 		setDreamStageNoAutomaticCameraMovement();
 	}
 
-	updateDreamSingleStateMachineByID(gDolmexicaStoryScreenData.mHelperInstances[-1].mStateMachineID);
+	updateDreamSingleStateMachineByID(gDolmexicaStoryScreenData.mHelperInstances[-1].mRegisteredStateMachine);
 
 	if (gDolmexicaStoryScreenData.mHasMusic) {
 		playDreamStageMusic();
@@ -175,7 +176,7 @@ static void unloadStoryScreen() {
 
 static void unloadDolmexicaStoryText(StoryText* e);
 
-static int updateSingleTextInput(StoryInstance* tInstance, StoryText* e) {
+static int updateSingleTextInputAndSound(StoryInstance* tInstance, StoryText* e) {
 	if (e->mHasFinished) return 0;
 
 	if (e->mHasContinue) {
@@ -191,11 +192,24 @@ static int updateSingleTextInput(StoryInstance* tInstance, StoryText* e) {
 				e->mGoesToNextState = 0;
 				e->mHasFinished = 1;
 				setDolmexicaStoryTextInactive(tInstance, e->mID);
+				if (e->mHasContinueSound)
+				{
+					tryPlayMugenSoundAdvanced(&gDolmexicaStoryScreenData.mSounds, e->mContinueSound.x, e->mContinueSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
+				}
 			}
 		}
 		else {
 			setMugenTextBuiltUp(e->mTextID);
+			if (e->mHasContinueSound)
+			{
+				tryPlayMugenSoundAdvanced(&gDolmexicaStoryScreenData.mSounds, e->mContinueSound.x, e->mContinueSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
+			}
 		}
+	}
+
+	if (e->mHasTextSound && !isMugenTextBuiltUp(e->mTextID) && strlen(getMugenTextDisplayedText(e->mTextID)) % e->mTextSoundFrequency == 0)
+	{
+		tryPlayMugenSoundAdvanced(&gDolmexicaStoryScreenData.mSounds, e->mTextSound.x, e->mTextSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 	}
 
 	return 0;
@@ -204,12 +218,12 @@ static int updateSingleTextInput(StoryInstance* tInstance, StoryText* e) {
 static void updateLockedTextPosition(StoryInstance* tInstance, StoryText* e) {
 	if (!e->mIsLockedOnToCharacter) return;
 
-	Position p = vecAdd(*e->mLockCharacterPositionReference, e->mLockOffset);
+	auto p = *e->mLockCharacterPositionReference + e->mLockOffset;
 	if (e->mLockCharacterIsBoundToStage)
 	{
 		p = vecSub(p, *getDreamMugenStageHandlerCameraPositionReference());
 	}
-	setDolmexicaStoryTextBasePosition(tInstance, e->mID, p);
+	setDolmexicaStoryTextBasePosition(tInstance, e->mID, p.xy());
 }
 
 static int updateSingleText(StoryInstance* instance, StoryText& tData) {
@@ -217,7 +231,7 @@ static int updateSingleText(StoryInstance* instance, StoryText& tData) {
 	updateLockedTextPosition(instance, e);
 	if (e->mIsDisabled) return 0;
 
-	return updateSingleTextInput(instance, e);
+	return updateSingleTextInputAndSound(instance, e);
 }
 
 static void updateTexts(StoryInstance& e) {
@@ -264,16 +278,16 @@ static void setupFontTransition() {
 	for (int i = 0; i < 100; i++) {
 		char name[100];
 		sprintf(name, "font%d", i);
-		gDolmexicaStoryScreenData.mHasFonts |= isMugenDefStringVariable(&script, "Info", name);
+		gDolmexicaStoryScreenData.mHasFonts |= isMugenDefStringVariable(&script, "info", name);
 	}
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 
 	if (gDolmexicaStoryScreenData.mHasFonts) {
 		setWrapperBetweenScreensCB(loadStoryFonts, NULL);
 	}
 }
 
-void setDolmexicaStoryScreenFileAndPrepareScreen(char * tPath)
+void setDolmexicaStoryScreenFileAndPrepareScreen(const char * tPath)
 {
 	strcpy(gDolmexicaStoryScreenData.mPath, tPath);
 	setupFontTransition();
@@ -298,13 +312,13 @@ static void initDolmexicaStoryAnimation(StoryAnimation& e, int tID, int tAnimati
 	e.mIsDeleted = 0;
 }
 
-void addDolmexicaStoryAnimation(StoryInstance* tInstance, int tID, int tAnimation, const Position& tPosition)
+void addDolmexicaStoryAnimation(StoryInstance* tInstance, int tID, int tAnimation, const Position2D& tPosition)
 {
 	if (stl_map_contains(tInstance->mStoryAnimations, tID)) {
 		removeDolmexicaStoryAnimation(tInstance, tID);
 	}
 	const auto z = DOLMEXICA_STORY_ANIMATION_BASE_Z + tID * 0.1;
-	initDolmexicaStoryAnimation(tInstance->mStoryAnimations[tID], tID, tAnimation, makePosition(tPosition.x, tPosition.y, z), &gDolmexicaStoryScreenData.mSprites, &gDolmexicaStoryScreenData.mAnimations);
+	initDolmexicaStoryAnimation(tInstance->mStoryAnimations[tID], tID, tAnimation, tPosition.xyz(z), &gDolmexicaStoryScreenData.mSprites, &gDolmexicaStoryScreenData.mAnimations);
 }
 
 static void unloadDolmexicaStoryAnimation(StoryAnimation& e) {
@@ -322,7 +336,7 @@ void removeDolmexicaStoryAnimation(StoryInstance* tInstance, int tID)
 	tInstance->mStoryAnimations.erase(e.mID);
 }
 
-int getDolmexicaStoryAnimationIsLooping(StoryInstance * tInstance, int tID)
+int getDolmexicaStoryAnimationIsLooping(StoryInstance* tInstance, int tID)
 {
 	StoryAnimation& e = tInstance->mStoryAnimations[tID];
 	return getMugenAnimationIsLooping(e.mAnimationElement);
@@ -346,7 +360,7 @@ void setDolmexicaStoryAnimationLooping(StoryInstance* tInstance, int tID, int tI
 	}
 }
 
-int getDolmexicaStoryAnimationIsBoundToStage(StoryInstance * tInstance, int tID)
+int getDolmexicaStoryAnimationIsBoundToStage(StoryInstance* tInstance, int tID)
 {
 	StoryAnimation& e = tInstance->mStoryAnimations[tID];
 	return e.mIsBoundToStage;
@@ -356,15 +370,15 @@ static void setDolmexicaStoryAnimationBoundToStageInternal(StoryAnimation& e, in
 {
 	if (tIsBoundToStage) {
 		Position* p = getMugenAnimationPositionReference(e.mAnimationElement);
-		*p = vecAdd(*p, getDreamStageCoordinateSystemOffset(COORD_P));
-		*p = vecAdd(*p, makePosition(160, 0, 0));
+		*p = (*p) + getDreamStageCoordinateSystemOffset(COORD_P);
+		p->x += 160;
 		setMugenAnimationCameraPositionReference(e.mAnimationElement, getDreamMugenStageHandlerCameraPositionReference());
 		setMugenAnimationCameraEffectPositionReference(e.mAnimationElement, getDreamMugenStageHandlerCameraEffectPositionReference());
 		setMugenAnimationCameraScaleReference(e.mAnimationElement, getDreamMugenStageHandlerCameraZoomReference());
 		if (e.mHasShadow) {
 			p = getMugenAnimationPositionReference(e.mShadowAnimationElement);
-			*p = vecAdd(*p, getDreamStageCoordinateSystemOffset(COORD_P));
-			*p = vecAdd(*p, makePosition(160, 0, 0));
+			*p = (*p) + getDreamStageCoordinateSystemOffset(COORD_P);
+			p->x += 160;
 			setMugenAnimationCameraPositionReference(e.mShadowAnimationElement, getDreamMugenStageHandlerCameraPositionReference());
 			setMugenAnimationCameraEffectPositionReference(e.mShadowAnimationElement, getDreamMugenStageHandlerCameraEffectPositionReference());
 			setMugenAnimationCameraScaleReference(e.mShadowAnimationElement, getDreamMugenStageHandlerCameraZoomReference());
@@ -380,7 +394,7 @@ void setDolmexicaStoryAnimationBoundToStage(StoryInstance* tInstance, int tID, i
 	setDolmexicaStoryAnimationBoundToStageInternal(e, tIsBoundToStage);
 }
 
-int getDolmexicaStoryAnimationHasShadow(StoryInstance * tInstance, int tID)
+int getDolmexicaStoryAnimationHasShadow(StoryInstance* tInstance, int tID)
 {
 	StoryAnimation& e = tInstance->mStoryAnimations[tID];
 	return e.mHasShadow;
@@ -396,7 +410,7 @@ static void setDolmexicaStoryAnimationShadowInternal(StoryAnimation& e, double t
 	Position pos = getMugenAnimationPosition(e.mAnimationElement);
 	pos.z = DOLMEXICA_STORY_SHADOW_BASE_Z;
 	e.mShadowAnimationElement = addMugenAnimation(getMugenAnimation(tAnimations, getMugenAnimationAnimationNumber(e.mAnimationElement)), tSprites, pos);
-	setMugenAnimationDrawScale(e.mShadowAnimationElement, makePosition(1, -getDreamStageShadowScaleY(), 1));
+	setMugenAnimationDrawScale(e.mShadowAnimationElement, Vector2D(1, -getDreamStageShadowScaleY()));
 	Vector3D color = getDreamStageShadowColor();
 	if (isOnDreamcast()) {
 		setMugenAnimationColor(e.mShadowAnimationElement, 0, 0, 0);
@@ -513,7 +527,7 @@ void addDolmexicaStoryAnimationPositionY(StoryInstance* tInstance, int tID, doub
 
 static void setDolmexicaStoryAnimationScaleXInternal(StoryAnimation& e, double tX)
 {
-	Vector3D scale = getMugenAnimationDrawScale(e.mAnimationElement);
+	Vector2D scale = getMugenAnimationDrawScale(e.mAnimationElement);
 	scale.x = tX;
 	setMugenAnimationDrawScale(e.mAnimationElement, scale);
 
@@ -532,7 +546,7 @@ void setDolmexicaStoryAnimationScaleX(StoryInstance* tInstance, int tID, double 
 
 static void setDolmexicaStoryAnimationScaleYInternal(StoryAnimation& e, double tY)
 {
-	Vector3D scale = getMugenAnimationDrawScale(e.mAnimationElement);
+	Vector2D scale = getMugenAnimationDrawScale(e.mAnimationElement);
 	scale.y = tY;
 	setMugenAnimationDrawScale(e.mAnimationElement, scale);
 
@@ -574,7 +588,7 @@ static void setDolmexicaStoryAnimationAngleInternal(StoryAnimation& e, double tA
 	}
 }
 
-void setDolmexicaStoryAnimationAngle(StoryInstance * tInstance, int tID, double tAngle)
+void setDolmexicaStoryAnimationAngle(StoryInstance* tInstance, int tID, double tAngle)
 {
 	StoryAnimation& e = tInstance->mStoryAnimations[tID];
 	setDolmexicaStoryAnimationAngleInternal(e, tAngle);
@@ -589,7 +603,7 @@ static void addDolmexicaStoryAnimationAngleInternal(StoryAnimation& e, double tA
 	}
 }
 
-void addDolmexicaStoryAnimationAngle(StoryInstance * tInstance, int tID, double tAngle)
+void addDolmexicaStoryAnimationAngle(StoryInstance* tInstance, int tID, double tAngle)
 {
 	StoryAnimation& e = tInstance->mStoryAnimations[tID];
 	addDolmexicaStoryAnimationAngleInternal(e, tAngle);
@@ -600,7 +614,7 @@ static void setDolmexicaStoryAnimationColorInternal(StoryAnimation& e, const Vec
 	setMugenAnimationColor(e.mAnimationElement, tColor.x, tColor.y, tColor.z);
 }
 
-void setDolmexicaStoryAnimationColor(StoryInstance * tInstance, int tID, const Vector3D& tColor)
+void setDolmexicaStoryAnimationColor(StoryInstance* tInstance, int tID, const Vector3D& tColor)
 {
 	StoryAnimation& e = tInstance->mStoryAnimations[tID];
 	setDolmexicaStoryAnimationColorInternal(e, tColor);
@@ -614,13 +628,13 @@ static void setDolmexicaStoryAnimationOpacityInternal(StoryAnimation& e, double 
 	}
 }
 
-void setDolmexicaStoryAnimationOpacity(StoryInstance * tInstance, int tID, double tOpacity)
+void setDolmexicaStoryAnimationOpacity(StoryInstance* tInstance, int tID, double tOpacity)
 {
 	StoryAnimation& e = tInstance->mStoryAnimations[tID];
 	setDolmexicaStoryAnimationOpacityInternal(e, tOpacity);
 }
 
-void addDolmexicaStoryText(StoryInstance* tInstance, int tID, const char * tText, const Vector3DI& tFont, const Position& tBasePosition, const Position& tTextOffset, double tTextBoxWidth)
+void addDolmexicaStoryText(StoryInstance* tInstance, int tID, const char* tText, const Vector3DI& tFont, const Position2D& tBasePosition, const Position2D& tTextOffset, double tTextBoxWidth)
 {
 	if (stl_map_contains(tInstance->mStoryTexts, tID)) {
 		removeDolmexicaStoryText(tInstance, tID);
@@ -629,10 +643,10 @@ void addDolmexicaStoryText(StoryInstance* tInstance, int tID, const char * tText
 	StoryText& e = tInstance->mStoryTexts[tID];
 	e.mID = tID;
 	const auto z = DOLMEXICA_STORY_TEXT_BASE_Z + tID * 0.1;
-	e.mPosition = makePosition(tBasePosition.x, tBasePosition.y, z);
+	e.mPosition = Vector3D(tBasePosition.x, tBasePosition.y, z);
 	e.mTextOffset = tTextOffset;
 
-	Position textPosition = vecAdd(e.mPosition, e.mTextOffset);
+	const auto textPosition = e.mPosition + e.mTextOffset;
 	e.mTextID = addMugenText(tText, textPosition, tFont.x);
 	setMugenTextColor(e.mTextID, getMugenTextColorFromMugenTextColorIndex(tFont.y));
 	setMugenTextAlignment(e.mTextID, getMugenTextAlignmentFromMugenAlignmentIndex(tFont.z));
@@ -640,9 +654,11 @@ void addDolmexicaStoryText(StoryInstance* tInstance, int tID, const char * tText
 	setMugenTextBuildup(e.mTextID, 1);
 	setMugenTextTextBoxWidth(e.mTextID, tTextBoxWidth);
 	
+	e.mHasTextSound = 0;
 	e.mHasBackground = 0;
 	e.mHasFace = 0;
 	e.mHasContinue = 0;
+	e.mHasContinueSound = 0;
 	e.mHasName = 0;
 	e.mGoesToNextState = 0;
 	e.mHasFinished = 0;
@@ -683,34 +699,34 @@ void removeDolmexicaStoryText(StoryInstance* tInstance, int tID)
 	tInstance->mStoryTexts.erase(e->mID);
 }
 
-const char* getDolmexicaStoryTextText(StoryInstance * tInstance, int tID)
+const char* getDolmexicaStoryTextText(StoryInstance* tInstance, int tID)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
 	return getMugenTextText(e->mTextID);
 }
 
-const char* getDolmexicaStoryTextDisplayedText(StoryInstance * tInstance, int tID)
+const char* getDolmexicaStoryTextDisplayedText(StoryInstance* tInstance, int tID)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
 	return getMugenTextDisplayedText(e->mTextID);
 }
 
-const char* getDolmexicaStoryTextNameText(StoryInstance * tInstance, int tID)
+const char* getDolmexicaStoryTextNameText(StoryInstance* tInstance, int tID)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
 	if (!e->mHasName) return "";
 	return getMugenTextText(e->mNameID);
 }
 
-int isDolmexicaStoryTextVisible(StoryInstance * tInstance, int tID)
+int isDolmexicaStoryTextVisible(StoryInstance* tInstance, int tID)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
 	return !e->mIsDisabled;
 }
 
-static void setDolmexicaStoryTextBackgroundInternal(StoryInstance* tInstance, int tID, MugenAnimation* tAnimation, int tIsOwned, const Position& tOffset) {
+static void setDolmexicaStoryTextBackgroundInternal(StoryInstance* tInstance, int tID, MugenAnimation* tAnimation, int tIsOwned, const Position2D& tOffset) {
 	StoryText* e = &tInstance->mStoryTexts[tID];
-	e->mBackgroundOffset = makePosition(tOffset.x, tOffset.y, -2);
+	e->mBackgroundOffset = Vector3D(tOffset.x, tOffset.y, -2);
 	Position p = vecAdd(e->mPosition, e->mBackgroundOffset);
 	e->mBackgroundAnimation = tAnimation;
 	e->mIsBackgroundAnimationOwned = tIsOwned;
@@ -718,20 +734,20 @@ static void setDolmexicaStoryTextBackgroundInternal(StoryInstance* tInstance, in
 	e->mHasBackground = 1;
 }
 
-void setDolmexicaStoryTextBackground(StoryInstance* tInstance, int tID, const Vector3DI& tSprite, const Position& tOffset)
+void setDolmexicaStoryTextBackground(StoryInstance* tInstance, int tID, const Vector2DI& tSprite, const Position2D& tOffset)
 {
 	setDolmexicaStoryTextBackgroundInternal(tInstance, tID, createOneFrameMugenAnimationForSprite(tSprite.x, tSprite.y), 1, tOffset);
 }
 
-void setDolmexicaStoryTextBackground(StoryInstance * tInstance, int tID, int tAnimation, const Position& tOffset)
+void setDolmexicaStoryTextBackground(StoryInstance* tInstance, int tID, int tAnimation, const Position2D& tOffset)
 {
 	setDolmexicaStoryTextBackgroundInternal(tInstance, tID, getMugenAnimation(&gDolmexicaStoryScreenData.mAnimations, tAnimation), 0, tOffset);
 }
 
-static void setDolmexicaStoryTextFaceInternal(StoryInstance* tInstance, int tID, MugenAnimation* tAnimation, int tIsOwned, const Position& tOffset)
+static void setDolmexicaStoryTextFaceInternal(StoryInstance* tInstance, int tID, MugenAnimation* tAnimation, int tIsOwned, const Position2D& tOffset)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
-	e->mFaceOffset = makePosition(tOffset.x, tOffset.y, -1);
+	e->mFaceOffset = Vector3D(tOffset.x, tOffset.y, -1);
 	Position p = vecAdd(e->mPosition, e->mFaceOffset);
 	p.z = DOLMEXICA_STORY_TEXT_BASE_Z + (tID - 1) * 0.1;
 	e->mFaceAnimation = tAnimation;
@@ -740,29 +756,29 @@ static void setDolmexicaStoryTextFaceInternal(StoryInstance* tInstance, int tID,
 	e->mHasFace = 1;
 }
 
-void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, const Vector3DI& tSprite, const Position& tOffset)
+void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, const Vector2DI& tSprite, const Position2D& tOffset)
 {
 	setDolmexicaStoryTextFaceInternal(tInstance, tID, createOneFrameMugenAnimationForSprite(tSprite.x, tSprite.y), 1, tOffset);
 }
 
-void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, int tAnimation, const Position& tOffset)
+void setDolmexicaStoryTextFace(StoryInstance* tInstance, int tID, int tAnimation, const Position2D& tOffset)
 {
 	setDolmexicaStoryTextFaceInternal(tInstance, tID, getMugenAnimation(&gDolmexicaStoryScreenData.mAnimations, tAnimation), 0, tOffset);
 }
 
-void setDolmexicaStoryTextName(StoryInstance* tInstance, int tID, const char * tText, const Vector3DI& tFont, const Position& tOffset)
+void setDolmexicaStoryTextName(StoryInstance* tInstance, int tID, const char* tText, const Vector3DI& tFont, const Position2D& tOffset)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
-	e->mNameOffset = makePosition(tOffset.x, tOffset.y, 0);
-	Position p = vecAdd(e->mPosition, e->mNameOffset);
+	e->mNameOffset = tOffset;
+	const auto p = e->mPosition + e->mNameOffset;
 	e->mNameID = addMugenTextMugenStyle(tText, p, tFont);
 	e->mHasName = 1;
 }
 
-static void setDolmexicaStoryTextContinueInternal(StoryInstance* tInstance, int tID, MugenAnimation* tAnimation, int tIsOwned, const Position& tOffset)
+static void setDolmexicaStoryTextContinueInternal(StoryInstance* tInstance, int tID, MugenAnimation* tAnimation, int tIsOwned, const Position2D& tOffset)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
-	e->mContinueOffset = makePosition(tOffset.x, tOffset.y, -1);
+	e->mContinueOffset = Vector3D(tOffset.x, tOffset.y, -1);
 	Position p = vecAdd(e->mPosition, e->mContinueOffset);
 	p.z = DOLMEXICA_STORY_TEXT_BASE_Z + (tID - 1) * 0.1;
 	e->mContinueAnimation = tAnimation;
@@ -772,38 +788,38 @@ static void setDolmexicaStoryTextContinueInternal(StoryInstance* tInstance, int 
 	e->mHasContinue = 1;
 }
 
-void setDolmexicaStoryTextContinue(StoryInstance* tInstance, int tID, const Vector3DI& tSprite, const Position& tOffset)
+void setDolmexicaStoryTextContinue(StoryInstance* tInstance, int tID, const Vector2DI& tSprite, const Position2D& tOffset)
 {
 	setDolmexicaStoryTextContinueInternal(tInstance, tID, createOneFrameMugenAnimationForSprite(tSprite.x, tSprite.y), 1, tOffset);
 }
 
-void setDolmexicaStoryTextContinue(StoryInstance* tInstance, int tID, int tAnimation, const Position& tOffset)
+void setDolmexicaStoryTextContinue(StoryInstance* tInstance, int tID, int tAnimation, const Position2D& tOffset)
 {
 	setDolmexicaStoryTextContinueInternal(tInstance, tID, getMugenAnimation(&gDolmexicaStoryScreenData.mAnimations, tAnimation), 0, tOffset);
 }
 
-static Position getDolmexicaStoryTextBasePosition(StoryInstance* tInstance, int tID) {
+static Position2D getDolmexicaStoryTextBasePosition(StoryInstance* tInstance, int tID) {
 	StoryText* e = &tInstance->mStoryTexts[tID];
-	return e->mPosition;
+	return e->mPosition.xy();
 }
 
-double getDolmexicaStoryTextBasePositionX(StoryInstance * tInstance, int tID)
+double getDolmexicaStoryTextBasePositionX(StoryInstance* tInstance, int tID)
 {
 	return getDolmexicaStoryTextBasePosition(tInstance, tID).x;
 }
 
-double getDolmexicaStoryTextBasePositionY(StoryInstance * tInstance, int tID)
+double getDolmexicaStoryTextBasePositionY(StoryInstance* tInstance, int tID)
 {
 	return getDolmexicaStoryTextBasePosition(tInstance, tID).y;
 }
 
-void setDolmexicaStoryTextBasePosition(StoryInstance* tInstance, int tID, const Position& tPosition)
+void setDolmexicaStoryTextBasePosition(StoryInstance* tInstance, int tID, const Position2D& tPosition)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
 	const auto z = DOLMEXICA_STORY_TEXT_BASE_Z + tID * 0.1;
-	e->mPosition = makePosition(tPosition.x, tPosition.y, z);
+	e->mPosition = tPosition.xyz(z);
 
-	Position textPosition = e->mPosition + e->mTextOffset;
+	const auto textPosition = e->mPosition + e->mTextOffset;
 	setMugenTextPosition(e->mTextID, textPosition);
 	if (e->mHasBackground) {	
 		setMugenAnimationPosition(e->mBackgroundAnimationElement, e->mPosition + e->mBackgroundOffset);
@@ -842,14 +858,29 @@ void setDolmexicaStoryTextText(StoryInstance* tInstance, int tID, const char * t
 	e->mHasFinished = 0;
 }
 
-void setDolmexicaStoryTextTextOffset(StoryInstance * tInstance, int tID, const Position& tOffset)
+void setDolmexicaStoryTextSound(StoryInstance* tInstance, int tID, const Vector2DI& tSound)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
-	e->mTextOffset = makePosition(tOffset.x, tOffset.y, 0);
-	setDolmexicaStoryTextBasePosition(tInstance, tID, e->mPosition);
+	e->mTextSound = tSound;
+	e->mTextSoundFrequency = std::max(e->mTextSoundFrequency, 1);
+	e->mHasTextSound = 1;
 }
 
-void setDolmexicaStoryTextBackgroundSprite(StoryInstance* tInstance, int tID, const Vector3DI& tSprite)
+void setDolmexicaStoryTextSoundFrequency(StoryInstance* tInstance, int tID, int tSoundFrequency)
+{
+	StoryText* e = &tInstance->mStoryTexts[tID];
+	assert(e->mHasTextSound);
+	e->mTextSoundFrequency = tSoundFrequency;
+}
+
+void setDolmexicaStoryTextTextOffset(StoryInstance* tInstance, int tID, const Position2D& tOffset)
+{
+	StoryText* e = &tInstance->mStoryTexts[tID];
+	e->mTextOffset = tOffset;
+	setDolmexicaStoryTextBasePosition(tInstance, tID, e->mPosition.xy());
+}
+
+void setDolmexicaStoryTextBackgroundSprite(StoryInstance* tInstance, int tID, const Vector2DI& tSprite)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
 	destroyMugenAnimation(e->mBackgroundAnimation);
@@ -857,14 +888,14 @@ void setDolmexicaStoryTextBackgroundSprite(StoryInstance* tInstance, int tID, co
 	changeMugenAnimation(e->mBackgroundAnimationElement, e->mBackgroundAnimation);
 }
 
-void setDolmexicaStoryTextBackgroundOffset(StoryInstance* tInstance, int tID, const Position& tOffset)
+void setDolmexicaStoryTextBackgroundOffset(StoryInstance* tInstance, int tID, const Position2D& tOffset)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
-	e->mBackgroundOffset = makePosition(tOffset.x, tOffset.y, -2);
+	e->mBackgroundOffset = Vector3D(tOffset.x, tOffset.y, -2);
 	setMugenAnimationPosition(e->mBackgroundAnimationElement, vecAdd(getMugenTextPosition(e->mTextID), e->mBackgroundOffset));
 }
 
-void setDolmexicaStoryTextFaceSprite(StoryInstance* tInstance, int tID, const Vector3DI& tSprite)
+void setDolmexicaStoryTextFaceSprite(StoryInstance* tInstance, int tID, const Vector2DI& tSprite)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
 	destroyMugenAnimation(e->mFaceAnimation);
@@ -872,10 +903,10 @@ void setDolmexicaStoryTextFaceSprite(StoryInstance* tInstance, int tID, const Ve
 	changeMugenAnimation(e->mFaceAnimationElement, e->mFaceAnimation);
 }
 
-void setDolmexicaStoryTextFaceOffset(StoryInstance* tInstance, int tID, const Position& tOffset)
+void setDolmexicaStoryTextFaceOffset(StoryInstance* tInstance, int tID, const Position2D& tOffset)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
-	e->mFaceOffset = makePosition(tOffset.x, tOffset.y, -1);
+	e->mFaceOffset = Vector3D(tOffset.x, tOffset.y, -1);
 	setMugenAnimationPosition(e->mFaceAnimationElement, vecAdd(getMugenTextPosition(e->mTextID), e->mFaceOffset));
 }
 
@@ -885,20 +916,27 @@ void setDolmexicaStoryTextContinueAnimation(StoryInstance* tInstance, int tID, i
 	changeMugenAnimation(e->mContinueAnimationElement, getMugenAnimation(&gDolmexicaStoryScreenData.mAnimations, tAnimation));
 }
 
-void setDolmexicaStoryTextContinueOffset(StoryInstance* tInstance, int tID, const Position& tOffset)
+void setDolmexicaStoryTextContinueSound(StoryInstance* tInstance, int tID, const Vector2DI& tSound)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
-	e->mContinueOffset = makePosition(tOffset.x, tOffset.y, -1);
+	e->mContinueSound = tSound;
+	e->mHasContinueSound = 1;
+}
+
+void setDolmexicaStoryTextContinueOffset(StoryInstance* tInstance, int tID, const Position2D& tOffset)
+{
+	StoryText* e = &tInstance->mStoryTexts[tID];
+	e->mContinueOffset = Vector3D(tOffset.x, tOffset.y, -1);
 	setMugenAnimationPosition(e->mContinueAnimationElement, vecAdd(getMugenTextPosition(e->mTextID), e->mContinueOffset));
 }
 
-void setDolmexicaStoryTextNameText(StoryInstance * tInstance, int tID, const char * tText)
+void setDolmexicaStoryTextNameText(StoryInstance* tInstance, int tID, const char * tText)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
 	changeMugenText(e->mNameID, tText);
 }
 
-void setDolmexicaStoryTextNameFont(StoryInstance * tInstance, int tID, const Vector3DI& tFont)
+void setDolmexicaStoryTextNameFont(StoryInstance* tInstance, int tID, const Vector3DI& tFont)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
 	setMugenTextFont(e->mNameID, tFont.x);
@@ -906,14 +944,14 @@ void setDolmexicaStoryTextNameFont(StoryInstance * tInstance, int tID, const Vec
 	setMugenTextAlignment(e->mNameID, getMugenTextAlignmentFromMugenAlignmentIndex(tFont.z));
 }
 
-void setDolmexicaStoryTextNameOffset(StoryInstance * tInstance, int tID, const Position& tOffset)
+void setDolmexicaStoryTextNameOffset(StoryInstance* tInstance, int tID, const Position2D& tOffset)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
-	e->mNameOffset = makePosition(tOffset.x, tOffset.y, e->mNameOffset.z);
-	setDolmexicaStoryTextBasePosition(tInstance, tID, e->mPosition);
+	e->mNameOffset = tOffset;
+	setDolmexicaStoryTextBasePosition(tInstance, tID, e->mPosition.xy());
 }
 
-int getDolmexicaStoryTextNextState(StoryInstance * tInstance, int tID)
+int getDolmexicaStoryTextNextState(StoryInstance* tInstance, int tID)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
 	if (!e->mGoesToNextState) return 0;
@@ -927,7 +965,7 @@ void setDolmexicaStoryTextNextState(StoryInstance* tInstance, int tID, int tNext
 	e->mGoesToNextState = 1;
 }
 
-static void setDolmexicaStoryTextLockToCharacterInternal(StoryInstance * tInstance, StoryInstance* tCharacterInstance, int tID, int tCharacterID, const Position& tOffset) {
+static void setDolmexicaStoryTextLockToCharacterInternal(StoryInstance* tInstance, StoryInstance* tCharacterInstance, int tID, int tCharacterID, const Position2D& tOffset) {
 	StoryText* e = &tInstance->mStoryTexts[tID];
 	StoryCharacter& character = tCharacterInstance->mStoryCharacters[tCharacterID];
 
@@ -938,17 +976,17 @@ static void setDolmexicaStoryTextLockToCharacterInternal(StoryInstance * tInstan
 	updateLockedTextPosition(tInstance, e);
 }
 
-void setDolmexicaStoryTextLockToCharacter(StoryInstance * tInstance, int tID, int tCharacterID, const Position& tOffset)
+void setDolmexicaStoryTextLockToCharacter(StoryInstance* tInstance, int tID, int tCharacterID, const Position2D& tOffset)
 {
 	setDolmexicaStoryTextLockToCharacterInternal(tInstance, tInstance, tID, tCharacterID, tOffset);
 }
 
-void setDolmexicaStoryTextLockToCharacter(StoryInstance * tInstance, int tID, int tCharacterID, const Position& tOffset, int tHelperID)
+void setDolmexicaStoryTextLockToCharacter(StoryInstance* tInstance, int tID, int tCharacterID, const Position2D& tOffset, int tHelperID)
 {
 	setDolmexicaStoryTextLockToCharacterInternal(tInstance, &gDolmexicaStoryScreenData.mHelperInstances[tHelperID], tID, tCharacterID, tOffset);
 }
 
-void setDolmexicaStoryTextInactive(StoryInstance * tInstance, int tID)
+void setDolmexicaStoryTextInactive(StoryInstance* tInstance, int tID)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
 	
@@ -971,66 +1009,66 @@ void setDolmexicaStoryTextInactive(StoryInstance * tInstance, int tID)
 	e->mIsDisabled = 1;
 }
 
-int isDolmexicaStoryTextBuiltUp(StoryInstance * tInstance, int tID)
+int isDolmexicaStoryTextBuiltUp(StoryInstance* tInstance, int tID)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
 	return isMugenTextBuiltUp(e->mTextID);
 }
 
-void setDolmexicaStoryTextBuiltUp(StoryInstance * tInstance, int tID)
+void setDolmexicaStoryTextBuiltUp(StoryInstance* tInstance, int tID)
 {
 	StoryText* e = &tInstance->mStoryTexts[tID];
 	setMugenTextBuiltUp(e->mTextID);
 }
 
-void setDolmexicaStoryTextPositionX(StoryInstance * tInstance, int tID, double tX)
+void setDolmexicaStoryTextPositionX(StoryInstance* tInstance, int tID, double tX)
 {
-	Position p = getDolmexicaStoryTextBasePosition(tInstance, tID);
+	auto p = getDolmexicaStoryTextBasePosition(tInstance, tID);
 	p.x = tX;
 	setDolmexicaStoryTextBasePosition(tInstance, tID, p);
 }
 
-void setDolmexicaStoryTextPositionY(StoryInstance * tInstance, int tID, double tY)
+void setDolmexicaStoryTextPositionY(StoryInstance* tInstance, int tID, double tY)
 {
-	Position p = getDolmexicaStoryTextBasePosition(tInstance, tID);
+	auto p = getDolmexicaStoryTextBasePosition(tInstance, tID);
 	p.y = tY;
 	setDolmexicaStoryTextBasePosition(tInstance, tID, p);
 }
 
-void addDolmexicaStoryTextPositionX(StoryInstance * tInstance, int tID, double tX)
+void addDolmexicaStoryTextPositionX(StoryInstance* tInstance, int tID, double tX)
 {
-	Position p = getDolmexicaStoryTextBasePosition(tInstance, tID);
+	auto p = getDolmexicaStoryTextBasePosition(tInstance, tID);
 	p.x += tX;
 	setDolmexicaStoryTextBasePosition(tInstance, tID, p);
 }
 
-void addDolmexicaStoryTextPositionY(StoryInstance * tInstance, int tID, double tY)
+void addDolmexicaStoryTextPositionY(StoryInstance* tInstance, int tID, double tY)
 {
-	Position p = getDolmexicaStoryTextBasePosition(tInstance, tID);
+	auto p = getDolmexicaStoryTextBasePosition(tInstance, tID);
 	p.y += tY;
 	setDolmexicaStoryTextBasePosition(tInstance, tID, p);
 }
 
-void setDolmexicaStoryIDName(StoryInstance * tInstance, int tID, const std::string& tName)
+void setDolmexicaStoryIDName(StoryInstance* tInstance, int tID, const std::string& tName)
 {
 	tInstance->mTextNames[tName] = tID;
 }
 
-int getDolmexicaStoryTextIDFromName(StoryInstance * tInstance, const std::string& tName)
+int getDolmexicaStoryTextIDFromName(StoryInstance* tInstance, const std::string& tName)
 {
 	return tInstance->mTextNames[tName];
 }
 
 void changeDolmexicaStoryState(StoryInstance* tInstance, int tNextState)
 {
-	changeDreamHandledStateMachineState(tInstance->mStateMachineID, tNextState);
-	setDreamRegisteredStateTimeInState(tInstance->mStateMachineID, 0);
+	changeDreamHandledStateMachineState(tInstance->mRegisteredStateMachine, tNextState);
+	setDreamRegisteredStateTimeInState(tInstance->mRegisteredStateMachine, 0);
 }
 
 void changeDolmexicaStoryStateOutsideStateHandler(StoryInstance* tInstance, int tNextState)
 {
-	changeDreamHandledStateMachineState(tInstance->mStateMachineID, tNextState);
-	setDreamRegisteredStateTimeInState(tInstance->mStateMachineID, -1);
+	changeDreamHandledStateMachineState(tInstance->mRegisteredStateMachine, tNextState);
+	setDreamRegisteredStateTimeInState(tInstance->mRegisteredStateMachine, -1);
 }
 
 void endDolmexicaStoryboard(StoryInstance* /*tInstance*/, int tNextStoryState)
@@ -1040,12 +1078,12 @@ void endDolmexicaStoryboard(StoryInstance* /*tInstance*/, int tNextStoryState)
 
 int getDolmexicaStoryTimeInState(StoryInstance* tInstance)
 {
-	return getDreamRegisteredStateTimeInState(tInstance->mStateMachineID);
+	return getDreamRegisteredStateTimeInState(tInstance->mRegisteredStateMachine);
 }
 
 int getDolmexicaStoryStateNumber(StoryInstance* tInstance)
 {
-	return getDreamRegisteredStateState(tInstance->mStateMachineID);
+	return getDreamRegisteredStateState(tInstance->mRegisteredStateMachine);
 }
 
 static int getDolmexicaStoryAnimationTimeLeftInternal(StoryAnimation& e)
@@ -1092,7 +1130,7 @@ double getDolmexicaStoryAnimationPositionY(StoryInstance* tInstance, int tID)
 	return getDolmexicaStoryAnimationPositionYInternal(e);
 }
 
-void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* tName, int tPreferredPalette, int tAnimation, const Position& tPosition)
+void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* tName, int tPreferredPalette, int tAnimation, const Position2D& tPosition)
 {
 	if (stl_map_contains(tInstance->mStoryCharacters, tID)) {
 		logWarningFormat("Trying to create existing character %d. Erasing previous.", tID);
@@ -1114,15 +1152,15 @@ void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* t
 
 	char palettePath[1024];
 	sprintf(name, "pal%d", tPreferredPalette);
-	getMugenDefStringOrDefault(file, &script, "Files", name, "");
+	getMugenDefStringOrDefault(file, &script, "files", name, "");
 	int hasPalettePath = strcmp("", file);
 	sprintf(palettePath, "%s%s", path, file);
-	getMugenDefStringOrDefault(file, &script, "Files", "sprite", "");
+	getMugenDefStringOrDefault(file, &script, "files", "sprite", "");
 	sprintf(fullPath, "%s%s", path, file);
 
 	e.mSprites = loadMugenSpriteFile(fullPath, hasPalettePath, palettePath);
 
-	getMugenDefStringOrDefault(file, &script, "Files", "anim", "");
+	getMugenDefStringOrDefault(file, &script, "files", "anim", "");
 	sprintf(fullPath, "%s%s", path, file);
 	if (!isFile(fullPath)) {
 		logWarningFormat("Unable to load animation file %s from def file %s. Ignoring.", fullPath, tName);
@@ -1130,12 +1168,12 @@ void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* t
 	}
 	e.mAnimations = loadMugenAnimationFile(fullPath);
 
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 
 	tInstance->mStoryCharacters[tID] = e;
 
 	const auto z = DOLMEXICA_STORY_ANIMATION_BASE_Z + tID * 0.1;
-	initDolmexicaStoryAnimation(tInstance->mStoryCharacters[tID].mAnimation, tID, tAnimation, makePosition(tPosition.x, tPosition.y, z), &tInstance->mStoryCharacters[tID].mSprites, &tInstance->mStoryCharacters[tID].mAnimations);
+	initDolmexicaStoryAnimation(tInstance->mStoryCharacters[tID].mAnimation, tID, tAnimation, tPosition.xyz(z), &tInstance->mStoryCharacters[tID].mSprites, &tInstance->mStoryCharacters[tID].mAnimations);
 
 	if (isInDevelopMode()) {
 		addDebugDolmexicaStoryCharacterAnimation(e.mName.c_str(), tAnimation);
@@ -1175,7 +1213,7 @@ void setDolmexicaStoryCharacterShadow(StoryInstance* tInstance, int tID, double 
 	setDolmexicaStoryAnimationShadowInternal(e.mAnimation, tBasePositionY, &e.mSprites, &e.mAnimations);
 }
 
-int getDolmexicaStoryCharacterAnimation(StoryInstance * tInstance, int tID)
+int getDolmexicaStoryCharacterAnimation(StoryInstance* tInstance, int tID)
 {
 	StoryCharacter& e = tInstance->mStoryCharacters[tID];
 	return getMugenAnimationAnimationNumber(e.mAnimation.mAnimationElement);
@@ -1190,13 +1228,13 @@ void changeDolmexicaStoryCharacterAnimation(StoryInstance* tInstance, int tID, i
 	changeDolmexicaStoryAnimationInternal(e.mAnimation, tAnimation, &e.mAnimations);
 }
 
-double getDolmexicaStoryCharacterPositionX(StoryInstance * tInstance, int tID)
+double getDolmexicaStoryCharacterPositionX(StoryInstance* tInstance, int tID)
 {
 	StoryCharacter& e = tInstance->mStoryCharacters[tID];
 	return getDolmexicaStoryAnimationPositionXInternal(e.mAnimation);
 }
 
-double getDolmexicaStoryCharacterPositionY(StoryInstance * tInstance, int tID)
+double getDolmexicaStoryCharacterPositionY(StoryInstance* tInstance, int tID)
 {
 	StoryCharacter& e = tInstance->mStoryCharacters[tID];
 	return getDolmexicaStoryAnimationPositionYInternal(e.mAnimation);
@@ -1244,31 +1282,31 @@ void setDolmexicaStoryCharacterIsFacingRight(StoryInstance* tInstance, int tID, 
 	setDolmexicaStoryAnimationIsFacingRightInternal(e.mAnimation, tIsFacingRight);
 }
 
-void setDolmexicaStoryCharacterColor(StoryInstance * tInstance, int tID, const Vector3D& tColor)
+void setDolmexicaStoryCharacterColor(StoryInstance* tInstance, int tID, const Vector3D& tColor)
 {
 	StoryCharacter& e = tInstance->mStoryCharacters[tID];
 	setDolmexicaStoryAnimationColorInternal(e.mAnimation, tColor);
 }
 
-void setDolmexicaStoryCharacterOpacity(StoryInstance * tInstance, int tID, double tOpacity)
+void setDolmexicaStoryCharacterOpacity(StoryInstance* tInstance, int tID, double tOpacity)
 {
 	StoryCharacter& e = tInstance->mStoryCharacters[tID];
 	setDolmexicaStoryAnimationOpacityInternal(e.mAnimation, tOpacity);
 }
 
-void setDolmexicaStoryCharacterAngle(StoryInstance * tInstance, int tID, double tAngle)
+void setDolmexicaStoryCharacterAngle(StoryInstance* tInstance, int tID, double tAngle)
 {
 	StoryCharacter& e = tInstance->mStoryCharacters[tID];
 	setDolmexicaStoryAnimationAngleInternal(e.mAnimation, tAngle);
 }
 
-void addDolmexicaStoryCharacterAngle(StoryInstance * tInstance, int tID, double tAngle)
+void addDolmexicaStoryCharacterAngle(StoryInstance* tInstance, int tID, double tAngle)
 {
 	StoryCharacter& e = tInstance->mStoryCharacters[tID];
 	addDolmexicaStoryAnimationAngleInternal(e.mAnimation, tAngle);
 }
 
-int getDolmexicaStoryCharacterTimeLeft(StoryInstance * tInstance, int tID)
+int getDolmexicaStoryCharacterTimeLeft(StoryInstance* tInstance, int tID)
 {
 	if (!stl_map_contains(tInstance->mStoryCharacters, tID)) {
 		logWarningFormat("Querying time left for non-existing story animation %d. Defaulting to infinite.", tID);
@@ -1278,52 +1316,52 @@ int getDolmexicaStoryCharacterTimeLeft(StoryInstance * tInstance, int tID)
 	return getDolmexicaStoryAnimationTimeLeftInternal(e.mAnimation);
 }
 
-int getDolmexicaStoryIntegerVariable(StoryInstance * tInstance, int tID)
+int getDolmexicaStoryIntegerVariable(StoryInstance* tInstance, int tID)
 {
 	return tInstance->mIntVars[tID];
 }
 
-void setDolmexicaStoryIntegerVariable(StoryInstance * tInstance, int tID, int tValue)
+void setDolmexicaStoryIntegerVariable(StoryInstance* tInstance, int tID, int tValue)
 {
 	tInstance->mIntVars[tID] = tValue;
 }
 
-void addDolmexicaStoryIntegerVariable(StoryInstance * tInstance, int tID, int tValue)
+void addDolmexicaStoryIntegerVariable(StoryInstance* tInstance, int tID, int tValue)
 {
 	tInstance->mIntVars[tID] += tValue;
 }
 
-double getDolmexicaStoryFloatVariable(StoryInstance * tInstance, int tID)
+double getDolmexicaStoryFloatVariable(StoryInstance* tInstance, int tID)
 {
 	return tInstance->mFloatVars[tID];
 }
 
-void setDolmexicaStoryFloatVariable(StoryInstance * tInstance, int tID, double tValue)
+void setDolmexicaStoryFloatVariable(StoryInstance* tInstance, int tID, double tValue)
 {
 	tInstance->mFloatVars[tID] = tValue;
 }
 
-void addDolmexicaStoryFloatVariable(StoryInstance * tInstance, int tID, double tValue)
+void addDolmexicaStoryFloatVariable(StoryInstance* tInstance, int tID, double tValue)
 {
 	tInstance->mFloatVars[tID] += tValue;
 }
 
-std::string getDolmexicaStoryStringVariable(StoryInstance * tInstance, int tID)
+std::string getDolmexicaStoryStringVariable(StoryInstance* tInstance, int tID)
 {
 	return tInstance->mStringVars[tID];
 }
 
-void setDolmexicaStoryStringVariable(StoryInstance * tInstance, int tID, const std::string& tValue)
+void setDolmexicaStoryStringVariable(StoryInstance* tInstance, int tID, const std::string& tValue)
 {
 	tInstance->mStringVars[tID] = tValue;
 }
 
-void addDolmexicaStoryStringVariable(StoryInstance * tInstance, int tID, const std::string& tValue)
+void addDolmexicaStoryStringVariable(StoryInstance* tInstance, int tID, const std::string& tValue)
 {
 	tInstance->mStringVars[tID] = tInstance->mStringVars[tID] + tValue;
 }
 
-void addDolmexicaStoryStringVariable(StoryInstance * tInstance, int tID, int tValue)
+void addDolmexicaStoryStringVariable(StoryInstance* tInstance, int tID, int tValue)
 {
 	tInstance->mStringVars[tID][0] += (char)tValue;
 }
@@ -1333,7 +1371,7 @@ StoryInstance* getDolmexicaStoryRootInstance()
 	return &gDolmexicaStoryScreenData.mHelperInstances[-1];
 }
 
-StoryInstance* getDolmexicaStoryInstanceParent(StoryInstance * tInstance)
+StoryInstance* getDolmexicaStoryInstanceParent(StoryInstance* tInstance)
 {
 	return tInstance->mParent;
 }
@@ -1351,7 +1389,7 @@ void addDolmexicaStoryHelper(int tID, int tState, StoryInstance* tParent)
 	gDolmexicaStoryScreenData.mHelperInstances[tID].mParent = tParent;
 
 	changeDolmexicaStoryStateOutsideStateHandler(&gDolmexicaStoryScreenData.mHelperInstances[tID], tState);
-	updateDreamSingleStateMachineByID(gDolmexicaStoryScreenData.mHelperInstances[tID].mStateMachineID);
+	updateDreamSingleStateMachineByID(gDolmexicaStoryScreenData.mHelperInstances[tID].mRegisteredStateMachine);
 }
 
 int getDolmexicaStoryGetHelperAmount(int tID)
@@ -1365,12 +1403,12 @@ void removeDolmexicaStoryHelper(int tID)
 	gDolmexicaStoryScreenData.mHelperInstances.erase(tID);
 }
 
-void destroyDolmexicaStoryHelper(StoryInstance * tInstance)
+void destroyDolmexicaStoryHelper(StoryInstance* tInstance)
 {
 	tInstance->mIsScheduledForDeletion = 1;
 }
 
-int getDolmexicaStoryIDFromString(const char * tString, StoryInstance * tInstance)
+int getDolmexicaStoryIDFromString(const char * tString, StoryInstance* tInstance)
 {
 	int id;
 	if (!strcmp("", tString)) {

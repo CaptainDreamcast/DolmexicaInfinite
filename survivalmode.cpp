@@ -58,7 +58,7 @@ static void updateSurvivalResultIsShowingWinPose() {
 static void updateSurvivalEnemy() {
 	MugenDefScript script;
 	loadMugenDefScript(&script, getDolmexicaAssetFolder() + "data/select.def");
-	setCharacterRandom(&script, 1);
+	setCharacterRandomAndReturnIfSuccessful(&script, 1);
 }
 
 
@@ -77,17 +77,17 @@ static void fightFinishedCB() {
 }
 
 static void loadResultScreenFromScript(MugenDefScript* tScript) {
-	int isEnabled = getMugenDefIntegerOrDefault(tScript, "Survival Results Screen", "enabled", 0);
-	char* message = getAllocatedMugenDefStringOrDefault(tScript, "Survival Results Screen", "winstext.text", "Congratulations!");
+	int isEnabled = getMugenDefIntegerOrDefault(tScript, "survival results screen", "enabled", 0);
+	char* message = getAllocatedMugenDefStringOrDefault(tScript, "survival results screen", "winstext.text", "Congratulations!");
 	strcpy(gSurvivalModeData.mResultMessageFormat, message);
-	Vector3DI font = getMugenDefVectorIOrDefault(tScript, "Survival Results Screen", "winstext.font", makeVector3DI(2, 0, 0));
-	Position offset = getMugenDefVectorOrDefault(tScript, "Survival Results Screen", "winstext.offset", makePosition(0, 0, 0));
-	int displayTime = getMugenDefIntegerOrDefault(tScript, "Survival Results Screen", "winstext.displaytime", -1);
-	int layerNo = getMugenDefIntegerOrDefault(tScript, "Survival Results Screen", "winstext.layerno", 2);
-	int fadeInTime = getMugenDefIntegerOrDefault(tScript, "Survival Results Screen", "fadein.time", 30);
-	int poseTime = getMugenDefIntegerOrDefault(tScript, "Survival Results Screen", "pose.time", 300);
-	int fadeOutTime = getMugenDefIntegerOrDefault(tScript, "Survival Results Screen", "fadeout.time", 30);
-	gSurvivalModeData.mRoundsToWin = getMugenDefIntegerOrDefault(tScript, "Survival Results Screen", "roundstowin", 5);
+	Vector3DI font = getMugenDefVectorIOrDefault(tScript, "survival results screen", "winstext.font", Vector3DI(-1, 0, 0));
+	Position2D offset = getMugenDefVector2DOrDefault(tScript, "survival results screen", "winstext.offset", Vector2D(0, 0));
+	int displayTime = getMugenDefIntegerOrDefault(tScript, "survival results screen", "winstext.displaytime", -1);
+	int layerNo = getMugenDefIntegerOrDefault(tScript, "survival results screen", "winstext.layerno", 2);
+	int fadeInTime = getMugenDefIntegerOrDefault(tScript, "survival results screen", "fadein.time", 30);
+	int poseTime = getMugenDefIntegerOrDefault(tScript, "survival results screen", "pose.time", 300);
+	int fadeOutTime = getMugenDefIntegerOrDefault(tScript, "survival results screen", "fadeout.time", 30);
+	gSurvivalModeData.mRoundsToWin = getMugenDefIntegerOrDefault(tScript, "survival results screen", "roundstowin", 5);
 
 	setFightResultData(isEnabled, message, font, offset, displayTime, layerNo, fadeInTime, poseTime, fadeOutTime, 1);
 
@@ -104,7 +104,7 @@ static void loadSurvivalModeHeaderFromScript() {
 
 	loadResultScreenFromScript(&script);
 
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 }
 
 void startSurvivalMode()

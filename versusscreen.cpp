@@ -11,7 +11,7 @@
 #include <prism/clipboardhandler.h>
 
 #include "mugensound.h"
-#include "menubackground.h"
+#include "scriptbackground.h"
 #include "titlescreen.h"
 #include "playerdefinition.h"
 #include "config.h"
@@ -76,17 +76,17 @@ static void loadPlayerAnimationsAndName(int i) {
 
 	int preferredPalette = 0;
 	sprintf(name, "pal%d", preferredPalette + 1);
-	getMugenDefStringOrDefault(file, &script, "Files", name, "");
+	getMugenDefStringOrDefault(file, &script, "files", name, "");
 	int hasPalettePath = strcmp("", file);
 	sprintf(palettePath, "%s%s", path, file);
 
-	getMugenDefStringOrDefault(file, &script, "Files", "sprite", "");
+	getMugenDefStringOrDefault(file, &script, "files", "sprite", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
 	player->mSprites = loadMugenSpriteFilePortraits(scriptPath, hasPalettePath, palettePath);
-	player->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "Info", "displayname");
+	player->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "displayname");
 
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 
 	Position pos = player->mPosition;
 	pos.z = VERSUS_SCREEN_PLAYER_IMAGE_Z;
@@ -110,30 +110,30 @@ static void loadVersusPlayer(int i) {
 	char fullVariableName[200];
 
 	sprintf(fullVariableName, "%s.pos", playerName);
-	player->mPosition = getMugenDefVectorOrDefault(&gVersusScreenData.mScript, "VS Screen", fullVariableName, makePosition(0, 0, 0));
+	player->mPosition = getMugenDefVectorOrDefault(&gVersusScreenData.mScript, "vs screen", fullVariableName, Vector3D(0, 0, 0));
 
 	sprintf(fullVariableName, "%s.facing", playerName);
-	int faceDirection = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "VS Screen", fullVariableName, 1);
+	int faceDirection = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "vs screen", fullVariableName, 1);
 	player->mIsFacingRight = faceDirection == 1;
 
 	sprintf(fullVariableName, "%s.scale", playerName);
-	player->mScale = getMugenDefVectorOrDefault(&gVersusScreenData.mScript, "VS Screen", fullVariableName, makePosition(1, 1, 1));
+	player->mScale = getMugenDefVectorOrDefault(&gVersusScreenData.mScript, "vs screen", fullVariableName, Vector3D(1, 1, 1));
 
 	sprintf(fullVariableName, "%s.name.pos", playerName);
-	player->mNamePosition = getMugenDefVectorOrDefault(&gVersusScreenData.mScript, "VS Screen", fullVariableName, makePosition(0, 0, 0));
+	player->mNamePosition = getMugenDefVectorOrDefault(&gVersusScreenData.mScript, "vs screen", fullVariableName, Vector3D(0, 0, 0));
 
 	sprintf(fullVariableName, "%s.name.font", playerName);
-	player->mNameFont = getMugenDefVectorIOrDefault(&gVersusScreenData.mScript, "VS Screen", fullVariableName, makeVector3DI(1, 0, 0));
+	player->mNameFont = getMugenDefVectorIOrDefault(&gVersusScreenData.mScript, "vs screen", fullVariableName, Vector3DI(-1, 0, 0));
 
 
 	loadPlayerAnimationsAndName(i);
 }
 
 static void loadVersusHeader() {
-	gVersusScreenData.mHeader.mTime = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "VS Screen", "time", 60);
+	gVersusScreenData.mHeader.mTime = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "vs screen", "time", 60);
 
-	gVersusScreenData.mHeader.mFadeInTime = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "VS Screen", "fadein.time", 10);
-	gVersusScreenData.mHeader.mFadeOutTime = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "VS Screen", "fadeout.time", 10);
+	gVersusScreenData.mHeader.mFadeInTime = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "vs screen", "fadein.time", 10);
+	gVersusScreenData.mHeader.mFadeOutTime = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "vs screen", "fadeout.time", 10);
 
 	int i;
 	for (i = 0; i < 2; i++) {
@@ -158,18 +158,18 @@ static std::string parseMatchTextString(const std::string& tText) {
 static void loadMatchText() {
 	if (!gVersusScreenData.mHasMatchNumber) return;
 
-	const auto text = getSTLMugenDefStringOrDefault(&gVersusScreenData.mScript, "VS Screen", "match.text", "");
-	auto offset = getMugenDefVectorOrDefault(&gVersusScreenData.mScript, "VS Screen", "match.offset", makePosition(0, 0, 0));
+	const auto text = getSTLMugenDefStringOrDefault(&gVersusScreenData.mScript, "vs screen", "match.text", "");
+	auto offset = getMugenDefVectorOrDefault(&gVersusScreenData.mScript, "vs screen", "match.offset", Vector3D(0, 0, 0));
 	offset.z = VERSUS_SCREEN_MATCH_TEXT_Z;
-	const auto font = getMugenDefVectorIOrDefault(&gVersusScreenData.mScript, "VS Screen", "match.font", makeVector3DI(-1, 0, 0));
+	const auto font = getMugenDefVectorIOrDefault(&gVersusScreenData.mScript, "vs screen", "match.font", Vector3DI(-1, 0, 0));
 	const auto parsedText = parseMatchTextString(text);
 
 	gVersusScreenData.mMatchTextID = addMugenTextMugenStyle(parsedText.c_str(), offset, font);
 }
 
 static void loadVersusMusic() {
-	char* path = getAllocatedMugenDefStringOrDefault(&gVersusScreenData.mScript, "Music", "vs.bgm", " ");
-	int isLooping = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "Music", "vs.bgm.loop", 1);
+	char* path = getAllocatedMugenDefStringOrDefault(&gVersusScreenData.mScript, "music", "vs.bgm", " ");
+	int isLooping = getMugenDefIntegerOrDefault(&gVersusScreenData.mScript, "music", "vs.bgm.loop", 1);
 
 	if (isMugenBGMMusicPath(path)) {
 		playMugenBGMMusicPath(path, isLooping);
@@ -181,20 +181,18 @@ static void loadVersusMusic() {
 static void screenTimeFinishedCB(void* tCaller);
 
 static void loadVersusScreen() {
-	char folder[1024];
-	loadMugenDefScript(&gVersusScreenData.mScript, getDolmexicaAssetFolder() + getMotifPath());
-	gVersusScreenData.mAnimations = loadMugenAnimationFile(getDolmexicaAssetFolder() + getMotifPath());
-	getPathToFile(folder, (getDolmexicaAssetFolder() + getMotifPath()).c_str());
-	setWorkingDirectory(folder);
+	std::string folder;
+	const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
+	loadMugenDefScript(&gVersusScreenData.mScript, motifPath);
+	gVersusScreenData.mAnimations = loadMugenAnimationFile(motifPath);
+	getPathToFile(folder, motifPath.c_str());
 
-	char* text = getAllocatedMugenDefStringVariable(&gVersusScreenData.mScript, "Files", "spr");
+	auto text = getSTLMugenDefStringVariable(&gVersusScreenData.mScript, "files", "spr");
+	text = findMugenSystemOrFightFilePath(text, folder);
 	gVersusScreenData.mSprites = loadMugenSpriteFileWithoutPalette(text);
-	freeMemory(text);
-
-	setWorkingDirectory("/");
 
 	loadVersusHeader();
-	loadMenuBackground(&gVersusScreenData.mScript, &gVersusScreenData.mSprites, &gVersusScreenData.mAnimations, "VersusBGdef", "VersusBG");
+	loadScriptBackground(&gVersusScreenData.mScript, &gVersusScreenData.mSprites, &gVersusScreenData.mAnimations, "versusbgdef", "versusbg");
 	loadMatchText();
 	loadVersusMusic();
 
@@ -203,7 +201,7 @@ static void loadVersusScreen() {
 }
 
 static void unloadVersusScreen() {
-	unloadMugenDefScript(gVersusScreenData.mScript);
+	unloadMugenDefScript(&gVersusScreenData.mScript);
 	unloadMugenSpriteFile(&gVersusScreenData.mSprites);
 	unloadMugenAnimationFile(&gVersusScreenData.mAnimations);
 

@@ -3,39 +3,64 @@
 #include <prism/actorhandler.h>
 
 #include "mugenstatereader.h"
-#include "playerdefinition.h"
-#include "dolmexicastoryscreen.h"
+
+struct DreamPlayer;
+struct StoryInstance;
+
+struct RegisteredMugenStateMachine {
+	int mID;
+	DreamMugenStates* mStates;
+	int mIsUsingTemporaryOtherStateMachine;
+	DreamMugenStates* mTemporaryStates;
+
+	int mPreviousState;
+	int mState;
+	int mTimeInState;
+	DreamPlayer* mPlayer;
+
+	int mIsPaused;
+	int mIsInHelperMode;
+	int mIsInputControlDisabled;
+	int mIsDisabled;
+	int mWasUpdatedOutsideHandler;
+
+	int mCurrentJugglePoints;
+
+	double mTimeDilatationNow;
+	double mTimeDilatation;
+};
 
 ActorBlueprint getDreamMugenStateHandler();
 
-int registerDreamMugenStateMachine(DreamMugenStates* tStates, DreamPlayer* tPlayer);
-int registerDreamMugenStoryStateMachine(DreamMugenStates * tStates, StoryInstance* tInstance);
-void removeDreamRegisteredStateMachine(int tID);
-int getDreamRegisteredStateState(int tID);
-int getDreamRegisteredStatePreviousState(int tID);
-int isDreamRegisteredStateMachinePaused(int tID);
-void pauseDreamRegisteredStateMachine(int tID);
-void unpauseDreamRegisteredStateMachine(int tID);
-void setDreamRegisteredStateMachinePauseStatus(int tID, int tIsPaused);
-void disableDreamRegisteredStateMachine(int tID);
-int getDreamRegisteredStateJugglePoints(int tID);
+RegisteredMugenStateMachine* registerDreamMugenStateMachine(DreamMugenStates* tStates, DreamPlayer* tPlayer);
+RegisteredMugenStateMachine* registerDreamMugenStoryStateMachine(DreamMugenStates * tStates, StoryInstance* tInstance);
+void removeDreamRegisteredStateMachine(RegisteredMugenStateMachine* tRegisteredState);
+int isValidDreamRegisteredStateMachine(RegisteredMugenStateMachine* tRegisteredState);
+int getDreamRegisteredStateState(RegisteredMugenStateMachine* tRegisteredState);
+int getDreamRegisteredStatePreviousState(RegisteredMugenStateMachine* tRegisteredState);
+int isDreamRegisteredStateMachinePaused(RegisteredMugenStateMachine* tRegisteredState);
+void pauseDreamRegisteredStateMachine(RegisteredMugenStateMachine* tRegisteredState);
+void unpauseDreamRegisteredStateMachine(RegisteredMugenStateMachine* tRegisteredState);
+void setDreamRegisteredStateMachinePauseStatus(RegisteredMugenStateMachine* tRegisteredState, int tIsPaused);
+void disableDreamRegisteredStateMachine(RegisteredMugenStateMachine* tRegisteredState);
+int getDreamRegisteredStateJugglePoints(RegisteredMugenStateMachine* tRegisteredState);
 
-int getDreamRegisteredStateTimeInState(int tID);
-void setDreamRegisteredStateTimeInState(int tID, int tTime);
-void setDreamRegisteredStateToHelperMode(int tID);
-void setDreamRegisteredStateDisableCommandState(int tID);
+int getDreamRegisteredStateTimeInState(RegisteredMugenStateMachine* tRegisteredState);
+void setDreamRegisteredStateTimeInState(RegisteredMugenStateMachine* tRegisteredState, int tTime);
+void setDreamRegisteredStateToHelperMode(RegisteredMugenStateMachine* tRegisteredState);
+void setDreamRegisteredStateDisableCommandState(RegisteredMugenStateMachine* tRegisteredState);
 
-int hasDreamHandledStateMachineState(int tID, int tNewState);
-int hasDreamHandledStateMachineStateSelf(int tID, int tNewState);
-int isInOwnStateMachine(int tID);
-void changeDreamHandledStateMachineState(int tID, int tNewState);
-void changeDreamHandledStateMachineStateToOtherPlayerStateMachine(int tID, int tTemporaryID, int tNewState);
-void changeDreamHandledStateMachineStateToOwnStateMachine(int tID, int tNewState);
-void changeDreamHandledStateMachineStateToOwnStateMachineWithoutChangingState(int tID);
-void setDreamHandledStateMachineSpeed(int tID, double tSpeed);
+int hasDreamHandledStateMachineState(RegisteredMugenStateMachine* tRegisteredState, int tNewState);
+int hasDreamHandledStateMachineStateSelf(RegisteredMugenStateMachine* tRegisteredState, int tNewState);
+int isInOwnStateMachine(RegisteredMugenStateMachine* tRegisteredState);
+void changeDreamHandledStateMachineState(RegisteredMugenStateMachine* tRegisteredState, int tNewState);
+void changeDreamHandledStateMachineStateToOtherPlayerStateMachine(RegisteredMugenStateMachine* tRegisteredState, RegisteredMugenStateMachine* tBorrowState, int tNewState);
+void changeDreamHandledStateMachineStateToOwnStateMachine(RegisteredMugenStateMachine* tRegisteredState, int tNewState);
+void changeDreamHandledStateMachineStateToOwnStateMachineWithoutChangingState(RegisteredMugenStateMachine* tRegisteredState);
+void setDreamHandledStateMachineSpeed(RegisteredMugenStateMachine* tRegisteredState, double tSpeed);
 
-void updateDreamSingleStateMachineByID(int tID);
-void setDreamSingleStateMachineToUpdateAgainByID(int tID);
+void updateDreamSingleStateMachineByID(RegisteredMugenStateMachine* tRegisteredState);
+void setDreamSingleStateMachineToUpdateAgainByID(RegisteredMugenStateMachine* tRegisteredState);
 void setStateMachineHandlerToStory();
 void setStateMachineHandlerToFight();
 

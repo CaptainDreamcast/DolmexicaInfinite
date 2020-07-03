@@ -6,6 +6,7 @@
 #include <prism/screeneffect.h>
 #include <prism/animation.h>
 #include <prism/system.h>
+#include <prism/profiling.h>
 
 #include "playerdefinition.h"
 #include "gamelogic.h"
@@ -27,7 +28,7 @@ static struct {
 	int mIsEnabled;
 	char mMessage[100];
 	Vector3DI mFont; 
-	Position mOffset;
+	Position2D mOffset;
 	int mTextDisplayTime;
 	int mLayerNo; 
 	int mFadeInTime; 
@@ -95,7 +96,7 @@ void setFightResultActive(int tIsActive) {
 	gFightResultDisplayData.mIsDisplayUsed = tIsActive;
 }
 
-void setFightResultData(int tIsEnabled, char* tMessage, const Vector3DI& tFont, const Position& tOffset, int tTextDisplayTime, int tLayerNo, int tFadeInTime, int tShowTime, int tFadeOutTime, int tIsShowingWinPose) {
+void setFightResultData(int tIsEnabled, char* tMessage, const Vector3DI& tFont, const Position2D& tOffset, int tTextDisplayTime, int tLayerNo, int tFadeInTime, int tShowTime, int tFadeOutTime, int tIsShowingWinPose) {
 	gFightResultDisplayData.mIsEnabled = tIsEnabled;
 	sprintf(gFightResultDisplayData.mMessage, "%.99s", tMessage);
 	gFightResultDisplayData.mFont = tFont;
@@ -137,22 +138,23 @@ static void movePlayersOutOfScreen() {
 }
 
 static void fadeToResultFinishedCB(void* /*tData*/) {
-	gFightResultDisplayData.mBlackBGAnimationElement = playOneFrameAnimationLoop(makePosition(0, 0, BLACK_BG_Z), &gFightResultDisplayData.mWhiteTexture);
+	gFightResultDisplayData.mBlackBGAnimationElement = playOneFrameAnimationLoop(Vector3D(0, 0, BLACK_BG_Z), &gFightResultDisplayData.mWhiteTexture);
 	setAnimationColor(gFightResultDisplayData.mBlackBGAnimationElement, 0, 0, 0);
 	setAnimationTransparency(gFightResultDisplayData.mBlackBGAnimationElement, 0.6);
 	ScreenSize sz = getScreenSize();
-	setAnimationSize(gFightResultDisplayData.mBlackBGAnimationElement, makePosition(sz.x, sz.y, 1), makePosition(0, 0, 0));
+	setAnimationSize(gFightResultDisplayData.mBlackBGAnimationElement, Vector3D(sz.x, sz.y, 1), Vector3D(0, 0, 0));
 
+	double z;
 	if (gFightResultDisplayData.mLayerNo == 0) {
-		gFightResultDisplayData.mOffset.z = DISPLAY_TEXT_LOWEST_Z;
+		z = DISPLAY_TEXT_LOWEST_Z;
 	} 
 	else if (gFightResultDisplayData.mLayerNo == 1) {
-		gFightResultDisplayData.mOffset.z = DISPLAY_TEXT_MEDIUM_Z;
+		z = DISPLAY_TEXT_MEDIUM_Z;
 	}
 	else {
-		gFightResultDisplayData.mOffset.z = DISPLAY_TEXT_HIGHEST_Z;
+		z = DISPLAY_TEXT_HIGHEST_Z;
 	}
-	gFightResultDisplayData.mTextID = addMugenTextMugenStyle(gFightResultDisplayData.mMessage, gFightResultDisplayData.mOffset, gFightResultDisplayData.mFont);
+	gFightResultDisplayData.mTextID = addMugenTextMugenStyle(gFightResultDisplayData.mMessage, gFightResultDisplayData.mOffset.xyz(z), gFightResultDisplayData.mFont);
 	gFightResultDisplayData.mIsShowingText = 0;
 
 	movePlayersOutOfScreen();

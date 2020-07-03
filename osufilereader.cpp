@@ -45,20 +45,20 @@ static Buffer removeOsuComments(Buffer& b) {
 
 
 static void loadOsuFileGeneral(OsuFileGeneral* tDst, MugenDefScript* tScipt) {
-	tDst->mAudioFileName = getAllocatedMugenDefStringOrDefault(tScipt, "General", "audiofilename", "music.wav");
-	tDst->mAudioLeadIn = getMugenDefIntegerOrDefault(tScipt, "General", "audioleadin", 0);
-	tDst->mPreviewTime = getMugenDefIntegerOrDefault(tScipt, "General", "previewtime", 0);
-	tDst->mCountdown = getMugenDefIntegerOrDefault(tScipt, "General", "countdown", 0);
-	tDst->mStackLeniency = getMugenDefFloatOrDefault(tScipt, "General", "stackleniency", 0);
+	tDst->mAudioFileName = getAllocatedMugenDefStringOrDefault(tScipt, "general", "audiofilename", "music.wav");
+	tDst->mAudioLeadIn = getMugenDefIntegerOrDefault(tScipt, "general", "audioleadin", 0);
+	tDst->mPreviewTime = getMugenDefIntegerOrDefault(tScipt, "general", "previewtime", 0);
+	tDst->mCountdown = getMugenDefIntegerOrDefault(tScipt, "general", "countdown", 0);
+	tDst->mStackLeniency = getMugenDefFloatOrDefault(tScipt, "general", "stackleniency", 0);
 }
 
 static void loadOsuFileDifficulty(OsuFileDifficulty* tDst, MugenDefScript* tScipt) {
-	tDst->mHPDrainRate = getMugenDefIntegerOrDefault(tScipt, "Difficulty", "hpdrainrate", 0);	
-	tDst->mCircleSize = getMugenDefFloatOrDefault(tScipt, "Difficulty", "circlesize", 5);
-	tDst->mOverallDifficulty = getMugenDefIntegerOrDefault(tScipt, "Difficulty", "overalldifficulty", 5);
-	tDst->mApproachRate = getMugenDefFloatOrDefault(tScipt, "Difficulty", "approachrate", 5);
-	tDst->mSliderMultiplier = getMugenDefFloatOrDefault(tScipt, "Difficulty", "slidermultiplier", 0);
-	tDst->mSliderTickRate = getMugenDefIntegerOrDefault(tScipt, "Difficulty", "slidertickrate", 0);
+	tDst->mHPDrainRate = getMugenDefIntegerOrDefault(tScipt, "difficulty", "hpdrainrate", 0);	
+	tDst->mCircleSize = getMugenDefFloatOrDefault(tScipt, "difficulty", "circlesize", 5);
+	tDst->mOverallDifficulty = getMugenDefIntegerOrDefault(tScipt, "difficulty", "overalldifficulty", 5);
+	tDst->mApproachRate = getMugenDefFloatOrDefault(tScipt, "difficulty", "approachrate", 5);
+	tDst->mSliderMultiplier = getMugenDefFloatOrDefault(tScipt, "difficulty", "slidermultiplier", 0);
+	tDst->mSliderTickRate = getMugenDefIntegerOrDefault(tScipt, "difficulty", "slidertickrate", 0);
 }
 
 
@@ -93,7 +93,7 @@ static void loadSingleOsuEvent(void* tCaller, void* tData) {
 static void loadOsuFileEvent(OsuEvents* tDst, MugenDefScript* tScript) {
 	tDst->mBreaks = new_list();
 
-	MugenDefScriptGroup* group = &tScript->mGroups["Events"];
+	MugenDefScriptGroup* group = &tScript->mGroups["events"];
 	
 	OsuEventLoadCaller caller;
 	caller.mDst = tDst;
@@ -127,7 +127,7 @@ static void loadSingleOsuFileTimingPoint(void* tCaller, void* tData) {
 }
 
 static void loadOsuFileTimingPoints(OsuFile* tDst, MugenDefScript* tScript) {
-	MugenDefScriptGroup* group = &tScript->mGroups["TimingPoints"];
+	MugenDefScriptGroup* group = &tScript->mGroups["timingpoints"];
 
 	OsuFileTimingPointLoadCaller caller;
 	caller.mDst = tDst;
@@ -161,11 +161,11 @@ static void loadSingleOsuFileColor(void* tCaller, void* tData) {
 }
 
 static void loadOsuFileColors(OsuFile* tDst, MugenDefScript* tScript) {
-	if (tScript->mGroups.find("Colours") == tScript->mGroups.end()) {
+	if (tScript->mGroups.find("colours") == tScript->mGroups.end()) {
 		createAndAddOsuColor(tDst, 1, 1, 1);
 		return;
 	}
-	MugenDefScriptGroup* group = &tScript->mGroups["Colours"];
+	MugenDefScriptGroup* group = &tScript->mGroups["colours"];
 
 	OsuFileColorLoadCaller caller;
 	caller.mDst = tDst;
@@ -229,14 +229,14 @@ Vector3DI parseEndPositionFromPathString(char* tPathString) {
 	MugenStringVector vector = parseVectorString(tPathString, '|');
 	if (vector.mSize < 2) {
 		unloadMugenStringVector(&vector);
-		return makeVector3DI(-1, -1, 0);
+		return Vector3DI(-1, -1, 0);
 	}
 
 	char* positionString = vector.mElement[vector.mSize - 1];
 	char* sepPosition = strchr(positionString, ':');
 	if (!sepPosition) {
 		unloadMugenStringVector(&vector);
-		return makeVector3DI(-1, -1, 0);
+		return Vector3DI(-1, -1, 0);
 	}
 
 	*sepPosition = '\0';
@@ -247,7 +247,7 @@ Vector3DI parseEndPositionFromPathString(char* tPathString) {
 	int posY = atoi(posYString);
 
 	unloadMugenStringVector(&vector);
-	return makeVector3DI(posX, posY, 0);
+	return Vector3DI(posX, posY, 0);
 }
 
 static void loadSingleOsuFileHitObject(void* tCaller, void* tData) {
@@ -311,7 +311,7 @@ static void loadSingleOsuFileHitObject(void* tCaller, void* tData) {
 
 
 static void loadOsuFileHitObjects(OsuFile* tDst, MugenDefScript* tScript) {
-	MugenDefScriptGroup* group = &tScript->mGroups["HitObjects"];
+	MugenDefScriptGroup* group = &tScript->mGroups["hitobjects"];
 
 	OsuFileHitObjectLoadCaller caller;
 	caller.mDst = tDst;
@@ -335,6 +335,6 @@ OsuFile loadOsuFile(char * tPath)
 	MugenDefScript script; 
 	loadMugenDefScriptFromBufferAndFreeBuffer(&script, b);
 	loadOsuFileFromScript(&ret, &script);
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 	return ret;
 }

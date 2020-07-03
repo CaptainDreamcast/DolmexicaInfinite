@@ -860,6 +860,10 @@ code, tt {
 <dd>Base position to place text element. Default to 0 when omitted.</dd>
 <dt>text.offset = <em>off_x, off_y</em> (float, float)</dt>
 <dd>Offset for main text to be drawn.</dd>
+<dt>text.snd = <em>snd_grp, snd_item</em> (int, int)</dt>
+<dd>Optional sound to play while typewriter effect is active.</dd>
+<dt>text.snd.freq = <em>freq</em> (int)</dt>
+<dd>Frequency in frames how often the optional typewriter sound effect is played. Defaults to 7.</dd>
 <dt>bg.anim = <em>action_no</em> (int)</dt>
 <dd>Action number of background behind text. Use either this or bg.spr. When neither is set no background is drawn.</dd>
 <dt>bg.spr = <em>group, item</em> (int, int)</dt>
@@ -878,6 +882,8 @@ code, tt {
 <dd>Sprite element of continue. Use either this or continue.anim. When neither is set no continue is drawn.</dd>
 <dt>continue.offset = <em>off_x, off_y</em> (float, float)</dt>
 <dd>Offset for continue to be drawn.</dd>
+<dt>continue.snd = <em>snd_grp, snd_item</em> (int, int)</dt>
+<dd>Optional sound to play when text is finished and when typewriter effect is skipped.</dd>
 <dt>name = <em>name_text</em> (string)</dt>
 <dd>Name text to draw alongside regular text.</dd>
 <dt>name.font = <em>font_index, color, alignment</em> (int, int, int)</dt>

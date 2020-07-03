@@ -171,7 +171,7 @@ code, tt {
 </style>
 </head>
 <body>
-<div class="document" id="m-u-g-e-n-update-history">
+<div class="document" id="osu-mode">
 <h1 class="title">Osu mode</h1>
 
 <p>Osu mode refers to a special mode that uses beatmap files from the rhythm game Osu to turn Dolmexica Infinite into a mix of a rhythm and a fighting game. Player inputs are only valid when performed in accordance with the beat. Additionally, there are freestyle sections where input is freely available, which correspond to the original spinner sections from the Osu beatmap.</p>
@@ -185,8 +185,35 @@ code, tt {
 <li>Add the stage to the select.def as you would add a normal mugen stage</li>
 <p>Tip: You can use the existing stages/osu beatmaps from Project O as references.</p>
 <p>Osu Mode only has stages with .osu files selectable.</p>
-<p>Requires osu.sff, osu.air and osu.snd in the /data folder (come with Dolmexica Infinite).</p>
+<p>Requires osu.sff, osu.air and osu.snd (default files come with Dolmexica Infinite).</p>
 </ul>
+</div>
+<div class="section" id="fight-def">
+<h1>fight.def parameters</h1>
+<div class="section" id="files">
+<h2>[Files]</h1>
+The following parameters can be used to set the paths to the osu files used by Dolmexica Infinite. Osu file searching works just like with other files declared in the [Files] group.
+<ul class="simple">
+<li><tt class="docutils literal">osu.sff</tt> (<tt class="docutils literal">string</tt>): Sprite file. Defaults to osu.sff.</li>
+<li><tt class="docutils literal">osu.air</tt> (<tt class="docutils literal">string</tt>): Action file. Defaults to osu.air.</li>
+<li><tt class="docutils literal">osu.snd</tt> (<tt class="docutils literal">string</tt>): Sound effect file. Defaults to osu.snd.</li>
+</ul>
+</div>
+<div class="section" id="osu">
+<h2>[Osu]</h1>
+The Osu group can be used to set animations and sounds. The default values reflect the values used in Project O with the default files.
+<ul class="simple">
+<li><tt class="docutils literal">hitcircle.anim</tt> (<tt class="docutils literal">int</tt>): Animation used for hit circle. Should be white since it is colored by the combo color in the Osu beatmap. Defaults to 1000.</li>
+<li><tt class="docutils literal">approachcircle.anim</tt> (<tt class="docutils literal">int</tt>): Animation used for approach circle (the one that shrinks and indicates timing). Should be white since it is colored by the combo color in the Osu beatmap. Defaults to 1001.</li>
+<li><tt class="docutils literal">freestyle.pre.anim</tt> (<tt class="docutils literal">int</tt>): Animation shown before Freestyle (Spinner). Defaults to 2000.</li>
+<li><tt class="docutils literal">freestyle.during.anim</tt> (<tt class="docutils literal">int</tt>): Animation shown during Freestyle (Spinner). Defaults to 2001.</li>
+<li><tt class="docutils literal">freestyle.post.anim</tt> (<tt class="docutils literal">int</tt>): Animation shown after Freestyle (Spinner). Defaults to 2002.</li>
+<li><tt class="docutils literal">freestyle.pos</tt> (<tt class="docutils literal">int, int</tt>): Position of freestyle animation. Defaults to 160, 50</li>
+<li><tt class="docutils literal">hit.animbase</tt> (<tt class="docutils literal">int</tt>): Animation number where animations responding to successful and unsuccessful hits start. Defaults to 1500. For example, if this value is set to 1500, 1500 responds to Miss, 1501 responds to Good, 1502 responds to Great and 1503 responds to Hot.</li>
+<li><tt class="docutils literal">hit.snd</tt> (<tt class="docutils literal">int, int</tt>): Group and item of sound effect to play for successfully hitting a hit circle. Defaults to 1, 0.</li>
+</ul>
+</div>
+
 </div>
 </div>
 </body>
