@@ -1261,7 +1261,7 @@ static AssignmentReturnValue* evaluateComparisonAssignment(DreamMugenAssignment*
 		DreamMugenDependOnTwoAssignment* vectorAssignment = (DreamMugenDependOnTwoAssignment*)comparisonAssignment->a;
 		if (isPlayerAccessVectorAssignment(&vectorAssignment->a, tPlayer, tIsStatic)) {
 			DreamPlayer* target = getPlayerFromFirstVectorPartOrNullIfNonexistant(&vectorAssignment->a, tPlayer, tIsStatic);
-			if (!isPlayerTargetValid(target)) {
+			if (gVariableHandler.mType == MUGEN_ASSIGNMENT_EVALUATOR_TYPE_REGULAR && !isPlayerTargetValid(target)) {
 				logWarning("Accessed player was NULL. Defaulting to bottom.");
 				return makeBottomAssignmentReturn(); 
 			}
@@ -1665,7 +1665,7 @@ static AssignmentReturnValue* evaluateStringAssignment(DreamMugenAssignment** tA
 
 static AssignmentReturnValue* evaluatePlayerVectorAssignment(DreamMugenAssignment** tFirstValue, DreamMugenDependOnTwoAssignment* tVectorAssignment, DreamPlayer* tPlayer, int* tIsStatic) {
 	DreamPlayer* target = getPlayerFromFirstVectorPartOrNullIfNonexistant(tFirstValue, tPlayer, tIsStatic);
-	if (!isPlayerTargetValid(target)) {
+	if (gVariableHandler.mType == MUGEN_ASSIGNMENT_EVALUATOR_TYPE_REGULAR && !isPlayerTargetValid(target)) {
 		logWarning("Unable to evaluate player vector assignment with NULL. Defaulting to bottom.");
 		return makeBottomAssignmentReturn(); 
 	}
@@ -2940,6 +2940,30 @@ static AssignmentReturnValue* evaluateAnimPosYStoryArrayAssignment(AssignmentRet
 	return makeFloatAssignmentReturn(getDolmexicaStoryAnimationPositionY(tInstance, id));
 }
 
+static AssignmentReturnValue* evaluateAnimScreenPosXStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeFloatAssignmentReturn(getDolmexicaStoryAnimationScreenPositionX(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateAnimScreenPosYStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeFloatAssignmentReturn(getDolmexicaStoryAnimationScreenPositionY(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateAnimStagePosXStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeFloatAssignmentReturn(getDolmexicaStoryAnimationStagePositionX(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateAnimStagePosYStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeFloatAssignmentReturn(getDolmexicaStoryAnimationStagePositionY(tInstance, id));
+}
+
 static AssignmentReturnValue* evaluateCharPosXStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
 	int id = convertAssignmentReturnToNumber(tIndex);
 	*tIsStatic = 0;
@@ -2950,6 +2974,30 @@ static AssignmentReturnValue* evaluateCharPosYStoryArrayAssignment(AssignmentRet
 	int id = convertAssignmentReturnToNumber(tIndex);
 	*tIsStatic = 0;
 	return makeFloatAssignmentReturn(getDolmexicaStoryCharacterPositionY(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateCharScreenPosXStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeFloatAssignmentReturn(getDolmexicaStoryCharacterScreenPositionX(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateCharScreenPosYStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeFloatAssignmentReturn(getDolmexicaStoryCharacterScreenPositionY(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateCharStagePosXStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeFloatAssignmentReturn(getDolmexicaStoryCharacterStagePositionX(tInstance, id));
+}
+
+static AssignmentReturnValue* evaluateCharStagePosYStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
+	int id = convertAssignmentReturnToNumber(tIndex);
+	*tIsStatic = 0;
+	return makeFloatAssignmentReturn(getDolmexicaStoryCharacterStagePositionY(tInstance, id));
 }
 
 static AssignmentReturnValue* evaluateTextPosXStoryArrayAssignment(AssignmentReturnValue* tIndex, StoryInstance* tInstance, int* tIsStatic) {
@@ -3137,12 +3185,20 @@ static AssignmentReturnValue* parentAnimPosXStoryFunction(DreamMugenAssignment**
 static AssignmentReturnValue* parentAnimPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryInstanceParent((StoryInstance*)tPlayer), tIsStatic); }
 static AssignmentReturnValue* rootAnimPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryRootInstance(), tIsStatic); }
 static AssignmentReturnValue* rootAnimPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryRootInstance(), tIsStatic); }
+static AssignmentReturnValue* animScreenPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimScreenPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* animScreenPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimScreenPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* animStagePosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimStagePosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* animStagePosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimStagePosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* charPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* charPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* parentCharPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryInstanceParent((StoryInstance*)tPlayer), tIsStatic); }
 static AssignmentReturnValue* parentCharPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryInstanceParent((StoryInstance*)tPlayer), tIsStatic); }
 static AssignmentReturnValue* rootCharPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryRootInstance(), tIsStatic); }
 static AssignmentReturnValue* rootCharPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryRootInstance(), tIsStatic); }
+static AssignmentReturnValue* charScreenPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharScreenPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* charScreenPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharScreenPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* charStagePosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharStagePosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
+static AssignmentReturnValue* charStagePosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateCharStagePosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* textPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* textPosYStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextPosYStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* parentTextPosXStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateTextPosXStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), getDolmexicaStoryInstanceParent((StoryInstance*)tPlayer), tIsStatic); }
@@ -3198,12 +3254,20 @@ static void setupStoryArrayAssignments() {
 	gVariableHandler.mArrays["parenty"] = parentAnimPosYStoryFunction;
 	gVariableHandler.mArrays["rootx"] = rootAnimPosXStoryFunction;
 	gVariableHandler.mArrays["rooty"] = rootAnimPosYStoryFunction;
+	gVariableHandler.mArrays["screenx"] = animScreenPosXStoryFunction;
+	gVariableHandler.mArrays["screeny"] = animScreenPosYStoryFunction;
+	gVariableHandler.mArrays["stagex"] = animStagePosXStoryFunction;
+	gVariableHandler.mArrays["stagey"] = animStagePosYStoryFunction;
 	gVariableHandler.mArrays["charx"] = charPosXStoryFunction;
 	gVariableHandler.mArrays["chary"] = charPosYStoryFunction;
 	gVariableHandler.mArrays["parentcharx"] = parentCharPosXStoryFunction;
 	gVariableHandler.mArrays["parentchary"] = parentCharPosYStoryFunction;
 	gVariableHandler.mArrays["rootcharx"] = rootCharPosXStoryFunction;
 	gVariableHandler.mArrays["rootchary"] = rootCharPosYStoryFunction;
+	gVariableHandler.mArrays["screencharx"] = charScreenPosXStoryFunction;
+	gVariableHandler.mArrays["screenchary"] = charScreenPosYStoryFunction;
+	gVariableHandler.mArrays["stagecharx"] = charStagePosXStoryFunction;
+	gVariableHandler.mArrays["stagechary"] = charStagePosYStoryFunction;
 	gVariableHandler.mArrays["textx"] = textPosXStoryFunction;
 	gVariableHandler.mArrays["texty"] = textPosYStoryFunction;
 	gVariableHandler.mArrays["parenttextx"] = parentTextPosXStoryFunction;

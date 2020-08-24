@@ -1109,6 +1109,7 @@ static void updateSingleProjectilePreStateMachine(DreamPlayer* p) {
 	p->mTimeDilatationUpdates = (int)p->mTimeDilatationNow;
 	p->mTimeDilatationNow -= p->mTimeDilatationUpdates;
 	for (int currentUpdate = 0; currentUpdate < p->mTimeDilatationUpdates; currentUpdate++) {
+		if (!isValidPlayerOrProjectile(p)) break;
 		updatePlayerReceivedHits(p);
 	}
 }
@@ -2023,6 +2024,7 @@ static int isProjectileHitDisabledDueToPriority(DreamPlayer* tHitProjectile, Dre
 
 static void playerHitEval(DreamPlayer* p, PlayerHitData& tHitDataReference) {
 	setProfilingSectionMarkerCurrentFunction();
+	if (!isValidPlayerOrProjectile(p)) return;
 	void* hitData = (void*)&tHitDataReference;
 	DreamPlayer* otherPlayer = getReceivedHitDataPlayer(hitData);
 
@@ -2052,18 +2054,20 @@ static void playerHitEval(DreamPlayer* p, PlayerHitData& tHitDataReference) {
 		setEnvironmentShake(getActiveHitDataEnvironmentShakeTime(p), getActiveHitDataEnvironmentShakeFrequency(p), getActiveHitDataEnvironmentShakeAmplitude(p), getActiveHitDataEnvironmentShakePhase(p), getPlayerCoordinateP(p));
 	}
 
-	if (isPlayerProjectile(p)) {
-		handleProjectileHit(p, 0, isPlayerProjectile(otherPlayer));
-	}
-
+	const auto isOtherPlayerProjectile = isPlayerProjectile(otherPlayer);
 	if (isPlayerProjectile(otherPlayer) && (!isPlayerProjectile(p) || isProjectileHitDisabledDueToPriority(p, otherPlayer))) {
 		handleProjectileHit(otherPlayer, playerGuarding, isPlayerProjectile(p));
+	}
+
+	if (isPlayerProjectile(p)) {
+		handleProjectileHit(p, 0, isOtherPlayerProjectile);
 	}
 }
 
 static void updatePlayerReceivedHits(DreamPlayer* p) {
 	setProfilingSectionMarkerCurrentFunction();
-	stl_list_map(p->mReceivedHitData, playerHitEval, p);
+	auto hitListCopy = p->mReceivedHitData;
+	stl_list_map(hitListCopy, playerHitEval, p);
 }
 
 static void clearPlayerReceivedHits(DreamPlayer* p) {

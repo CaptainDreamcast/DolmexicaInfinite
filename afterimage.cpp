@@ -87,7 +87,7 @@ static void updateAddingSingleAfterImage(DreamPlayer* tPlayer) {
 	DreamPlayerAfterImage& afterImage = tPlayer->mAfterImage;
 	if (!afterImage.mIsActive) return;
 
-	static auto tick = getDreamGameTime();
+	const auto tick = getDreamGameTime();
 	if (tick % afterImage.mTimeGap) return;
 
 	addHistoryBufferElement(tPlayer);
@@ -97,7 +97,7 @@ static void updateRemovingAfterImage(DreamPlayer* tPlayer) {
 	DreamPlayerAfterImage& afterImage = tPlayer->mAfterImage;
 	if (afterImage.mHistoryBuffer.empty()) return;
 
-	static auto tick = getDreamGameTime();
+	const auto tick = getDreamGameTime();
 	if (tick % afterImage.mTimeGap) return;
 
 	if (!afterImage.mIsActive || int(afterImage.mHistoryBuffer.size()) > afterImage.mHistoryBufferLength) {

@@ -1,0 +1,19 @@
+﻿<Window x:Class="MakeYourOwnGameKitGuiDreamcast.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MakeYourOwnGameKitGuiDreamcast"
+        mc:Ignorable="d"
+        Title="Dolmexica Infinite Make-your-own-game kit for Dreamcast" Height="450" Width="800">
+    <Grid>
+        <TextBlock HorizontalAlignment="Left" Margin="41,24,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="165" Width="712"><Run Text="To mod the game, change the files in filesystem/assets just like you would with Mugen (only difference is that you must avoid minuses in file names)."/><LineBreak/><Run Text="If you want your own IP.BIN data, edit ip/ip.txt"/><LineBreak/><Run Text="If you want your own boot logo at the license screen, edit ip/INSERT.png (just remember you have to use a paletted 320x90 image with no more than 128 colors for that one)"/><LineBreak/><Run/><LineBreak/><Run Text="Uses cdi4dc by dreamcast legend SiZiOUS (http://sizious.com/), logotools by dreamcast legend "/><LineBreak/><Run Text="ADK/Napalm (http://napalm-x.thegypsy.com/andrewk/dc/) and makeip by dreamcast legend Marcus C. (http://mc.pp.se/dc/sw.html)"/><LineBreak/><Run Text="Feel free to read up on how these programs work, making your own dreamcast disc is always the most fun"/><LineBreak/><Run/></TextBlock>
+
+        <TextBox HorizontalAlignment="Left" Name="CDLabelName" Height="23" Margin="158,219,0,0" TextWrapping="Wrap" Text="DOLMEXICA_INFINITE_DEMO_X" MaxLength="30" VerticalAlignment="Top" Width="260"/>
+        <TextBlock HorizontalAlignment="Left" Margin="41,220,0,0" TextWrapping="Wrap" Text="CD Label name:" VerticalAlignment="Top"/>
+
+        <TextBox HorizontalAlignment="Left" Name="CDIName" Height="23" Margin="158,273,0,0" TextWrapping="Wrap" Text="DolmexicaInfiniteDemoX" VerticalAlignment="Top" Width="260"/>
+        <TextBlock HorizontalAlignment="Left" Margin="70,274,0,0" TextWrapping="Wrap" Text="CDI name:" VerticalAlignment="Top"/>
+        <Button Name="CreateCDIButton" Content="Create CDI" HorizontalAlignment="Left" Margin="343,325,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.151,0.473" Click="CreateCDIButton_Click"/>
+    </Grid>
+</Window>

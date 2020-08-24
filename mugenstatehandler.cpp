@@ -115,9 +115,9 @@ static void updateSingleState(RegisteredMugenStateMachine* tRegisteredState, int
 	}
 }
 
-static int updateSingleStateMachineByReference(RegisteredMugenStateMachine* tRegisteredState) {
+static void updateSingleStateMachineByReference(RegisteredMugenStateMachine* tRegisteredState) {
 	setProfilingSectionMarkerCurrentFunction();
-	if (tRegisteredState->mIsPaused) return 0;
+	if (tRegisteredState->mIsPaused) return;
 	assert(gMugenStateHandlerData.mIsInStoryMode || !isPlayerProjectile(tRegisteredState->mPlayer));
 
 	tRegisteredState->mTimeInState++;
@@ -131,11 +131,9 @@ static int updateSingleStateMachineByReference(RegisteredMugenStateMachine* tReg
 		updateSingleState(tRegisteredState, -1, 1);
 	}
 	updateSingleState(tRegisteredState, tRegisteredState->mState, 0);
-
-	return !gMugenStateHandlerData.mIsInStoryMode && tRegisteredState->mPlayer && isPlayerDestroyed(tRegisteredState->mPlayer);
 }
 
-static int updateSingleStateMachine(void* tCaller, RegisteredMugenStateMachine& tData) {
+static void updateSingleStateMachine(void* tCaller, RegisteredMugenStateMachine& tData) {
 	(void)tCaller;
 	setProfilingSectionMarkerCurrentFunction();
 	RegisteredMugenStateMachine* registeredState = &tData;
@@ -143,23 +141,19 @@ static int updateSingleStateMachine(void* tCaller, RegisteredMugenStateMachine& 
 	int updateAmount = (int)registeredState->mTimeDilatationNow;
 	registeredState->mTimeDilatationNow -= updateAmount;
 	while (updateAmount--) {
-		int ret;
 		if (!registeredState->mWasUpdatedOutsideHandler) {
-			ret = updateSingleStateMachineByReference(registeredState);
+			updateSingleStateMachineByReference(registeredState);
 		}
 		else {
 			registeredState->mWasUpdatedOutsideHandler = 0;
-			ret = 0;
 		}
-		if (ret) return 1;
 	}
-	return 0;
 }
 
 static void updateStateHandler(void* tData) {
 	(void)tData;
 	setProfilingSectionMarkerCurrentFunction();
-	stl_int_map_remove_predicate(gMugenStateHandlerData.mRegisteredStates, updateSingleStateMachine);
+	stl_int_map_map(gMugenStateHandlerData.mRegisteredStates, updateSingleStateMachine);
 }
 
 ActorBlueprint getDreamMugenStateHandler() {
@@ -199,6 +193,7 @@ RegisteredMugenStateMachine* registerDreamMugenStoryStateMachine(DreamMugenState
 
 void removeDreamRegisteredStateMachine(RegisteredMugenStateMachine* e)
 {
+	assert(stl_map_contains(gMugenStateHandlerData.mRegisteredStates, e->mID));
 	gMugenStateHandlerData.mRegisteredStates.erase(e->mID);
 }
 

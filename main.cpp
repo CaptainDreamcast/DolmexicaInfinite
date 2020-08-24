@@ -84,6 +84,7 @@ int main(int argc, char** argv) {
 	setMemoryHandlerCompressionActive();
 	initClipboardForGame();
 	setScreenEffectZ(99);
+	setMugenAnimationHandlerPixelCenter(Vector2D(0.0, 0.0));
 	setScreenAfterWrapperLogoScreen(getInitScreen());
 	
 #ifdef DEVELOP	

@@ -34,6 +34,11 @@ windows/Release/*
 windows/Debug/*
 windows/packages/*
 windows/Test/*
+tools/MakeYourOwnGameKitGui/MakeYourOwnGameKitGuiDreamcast/bin/*
+tools/MakeYourOwnGameKitGui/MakeYourOwnGameKitGuiDreamcast/obj/*
+tools/MakeYourOwnGameKitGui/MakeYourOwnGameKitGuiWeb/bin/*
+tools/MakeYourOwnGameKitGui/MakeYourOwnGameKitGuiWeb/obj/*
+tools/MakeYourOwnGameKitGui/.vs/*
 *.aps
 *.exe
 *.dll
