@@ -309,7 +309,7 @@ static void loadMugenStateDefinitionsFromScript(DreamMugenStates* tStates, Mugen
 	}
 }
 
-void loadDreamMugenStateDefinitionsFromFile(DreamMugenStates* tStates, char* tPath, int tIsOverwritable) {
+void loadDreamMugenStateDefinitionsFromFile(DreamMugenStates* tStates, const char* tPath, int tIsOverwritable) {
 	MugenDefScript script; 
 	loadMugenDefScript(&script, tPath);
 	loadMugenStateDefinitionsFromScript(tStates, &script, tIsOverwritable);
@@ -460,7 +460,7 @@ static void loadMugenConstantsFromScript(DreamMugenConstants* tConstants, MugenD
 	loadMugenConstantsPlayerVictoryQuote(&tConstants->mQuoteData);
 }
 
-DreamMugenConstants loadDreamMugenConstantsFile(char * tPath)
+DreamMugenConstants loadDreamMugenConstantsFile(const char * tPath)
 {
 	MugenDefScript script; 
 	loadMugenDefScript(&script, tPath);

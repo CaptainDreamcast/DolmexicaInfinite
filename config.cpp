@@ -17,6 +17,7 @@
 #include <prism/input.h>
 
 #include "fightdebug.h"
+#include "fightui.h"
 
 using namespace std;
 
@@ -317,13 +318,22 @@ void loadMugenSystemFonts() {
 void loadMugenFightFonts()
 {
 	const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
-	MugenDefScript script;
-	loadMugenDefScript(&script, motifPath);
 	std::string folder;
 	getPathToFile(folder, motifPath.c_str());
-	auto fightPath = getSTLMugenDefStringVariable(&script, "files", "fight");
-	fightPath = findMugenSystemOrFightFilePath(fightPath, folder);
-	unloadMugenDefScript(&script);
+
+	MugenDefScript script;
+	std::string fightPath;
+	if (hasCustomFightMotif())
+	{
+		fightPath = getCustomFightMotif();
+		fightPath = findMugenSystemOrFightFilePath(fightPath, folder);
+	}
+	else {
+		loadMugenDefScript(&script, motifPath);
+		fightPath = getSTLMugenDefStringVariable(&script, "files", "fight");
+		fightPath = findMugenSystemOrFightFilePath(fightPath, folder);
+		unloadMugenDefScript(&script);
+	}
 
 	loadMugenDefScript(&script, fightPath);
 	getPathToFile(folder, fightPath.c_str());

@@ -9,6 +9,7 @@ struct StoryInstance;
 
 struct RegisteredMugenStateMachine {
 	int mID;
+	int mIsInStoryMode;
 	DreamMugenStates* mStates;
 	int mIsUsingTemporaryOtherStateMachine;
 	DreamMugenStates* mTemporaryStates;
@@ -32,7 +33,7 @@ struct RegisteredMugenStateMachine {
 
 ActorBlueprint getDreamMugenStateHandler();
 
-RegisteredMugenStateMachine* registerDreamMugenStateMachine(DreamMugenStates* tStates, DreamPlayer* tPlayer);
+RegisteredMugenStateMachine* registerDreamMugenStateMachine(DreamMugenStates* tStates, DreamPlayer* tPlayer, int tIsInSotryMode = 0);
 RegisteredMugenStateMachine* registerDreamMugenStoryStateMachine(DreamMugenStates * tStates, StoryInstance* tInstance);
 void removeDreamRegisteredStateMachine(RegisteredMugenStateMachine* tRegisteredState);
 int isValidDreamRegisteredStateMachine(RegisteredMugenStateMachine* tRegisteredState);
@@ -61,8 +62,6 @@ void setDreamHandledStateMachineSpeed(RegisteredMugenStateMachine* tRegisteredSt
 
 void updateDreamSingleStateMachineByID(RegisteredMugenStateMachine* tRegisteredState);
 void setDreamSingleStateMachineToUpdateAgainByID(RegisteredMugenStateMachine* tRegisteredState);
-void setStateMachineHandlerToStory();
-void setStateMachineHandlerToFight();
 
 int getActiveStateMachineCoordinateP();
 void setActiveStateMachineCoordinateP(int tCoordinateP);

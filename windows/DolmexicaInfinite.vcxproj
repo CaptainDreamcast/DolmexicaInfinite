@@ -152,6 +152,7 @@
     <ClCompile Include="..\projectile.cpp" />
     <ClCompile Include="..\randomwatchmode.cpp" />
     <ClCompile Include="..\stage.cpp" />
+    <ClCompile Include="..\storyhelper.cpp" />
     <ClCompile Include="..\storymode.cpp" />
     <ClCompile Include="..\storyscreen.cpp" />
     <ClCompile Include="..\superwatchmode.cpp" />
@@ -208,6 +209,7 @@
     <ClInclude Include="..\projectile.h" />
     <ClInclude Include="..\randomwatchmode.h" />
     <ClInclude Include="..\stage.h" />
+    <ClInclude Include="..\storyhelper.h" />
     <ClInclude Include="..\storymode.h" />
     <ClInclude Include="..\storyscreen.h" />
     <ClInclude Include="..\superwatchmode.h" />

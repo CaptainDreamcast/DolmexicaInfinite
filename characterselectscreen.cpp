@@ -24,6 +24,7 @@
 #include "stage.h"
 #include "storymode.h"
 #include "config.h"
+#include "mugenassignmentevaluator.h"
 
 #define SELECTOR_Z 49
 
@@ -71,6 +72,7 @@ typedef struct {
 	Position2D mPosition;
 	int mIsShowingEmptyBoxes;
 	int mCanMoveOverEmptyBoxes;
+	int mIsShowingPortraits;
 
 	Vector2D mCellSize;
 	double mCellSpacing;
@@ -419,6 +421,7 @@ static void loadMenuHeader() {
 
 	gCharacterSelectScreenData.mHeader.mIsShowingEmptyBoxes = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "showemptyboxes", 1);
 	gCharacterSelectScreenData.mHeader.mCanMoveOverEmptyBoxes = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "moveoveremptyboxes", 1);
+	gCharacterSelectScreenData.mHeader.mIsShowingPortraits = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "portraits", 1);
 
 	gCharacterSelectScreenData.mHeader.mCellSize = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "cell.size", Vector2D(1, 1));
 	gCharacterSelectScreenData.mHeader.mCellSpacing = getMugenDefFloatOrDefault(&gCharacterSelectScreenData.mScript, "select info", "cell.spacing", 10);
@@ -475,23 +478,25 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 	MugenDefScript script;
 	loadMugenDefScript(&script, scriptPath);
 
-	getPathToFile(path, scriptPath);
+	if (gCharacterSelectScreenData.mHeader.mIsShowingPortraits) {
+		getPathToFile(path, scriptPath);
 
-	int preferredPalette = 0;
-	sprintf(name, "pal%d", preferredPalette + 1);
-	getMugenDefStringOrDefault(file, &script, "files", name, "");
-	int hasPalettePath = strcmp("", file);
-	sprintf(palettePath, "%s%s", path, file);
+		int preferredPalette = 0;
+		sprintf(name, "pal%d", preferredPalette + 1);
+		getMugenDefStringOrDefault(file, &script, "files", name, "");
+		int hasPalettePath = strcmp("", file);
+		sprintf(palettePath, "%s%s", path, file);
 
-	getMugenDefStringOrDefault(file, &script, "files", "sprite", "");
-	assert(strcmp("", file));
-	sprintf(scriptPath, "%s%s", path, file);
-	sprintf(scriptPathPreloaded, "%s.portraits.preloaded", scriptPath);
-	if (isFile(scriptPathPreloaded)) {
-		e->mSprites = loadMugenSpriteFilePortraits(scriptPathPreloaded, hasPalettePath, palettePath);
-	}
-	else {
-		e->mSprites = loadMugenSpriteFilePortraits(scriptPath, hasPalettePath, palettePath);
+		getMugenDefStringOrDefault(file, &script, "files", "sprite", "");
+		assert(strcmp("", file));
+		sprintf(scriptPath, "%s%s", path, file);
+		sprintf(scriptPathPreloaded, "%s.portraits.preloaded", scriptPath);
+		if (isFile(scriptPathPreloaded)) {
+			e->mSprites = loadMugenSpriteFilePortraits(scriptPathPreloaded, hasPalettePath, palettePath);
+		}
+		else {
+			e->mSprites = loadMugenSpriteFilePortraits(scriptPath, hasPalettePath, palettePath);
+		}
 	}
 
 	strcpy(e->mCharacterName, tCharacterName);
@@ -515,8 +520,10 @@ static Position2D getCellScreenPosition(const Vector2DI& tCellPosition) {
 
 static void showMenuSelectableAnimations(MenuCharacterLoadCaller* /*tCaller*/, SelectCharacter* e) {
 	auto pos = getCellScreenPosition(e->mCellPosition).xyz(40.0);
-	e->mPortraitAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mSmallPortraitAnimation, &e->mSprites, pos + gCharacterSelectScreenData.mHeader.mSmallPortraitOffset);
-	setMugenAnimationDrawScale(e->mPortraitAnimationElement, gCharacterSelectScreenData.mHeader.mSmallPortraitScale);
+	if (gCharacterSelectScreenData.mHeader.mIsShowingPortraits) {
+		e->mPortraitAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mSmallPortraitAnimation, &e->mSprites, pos + gCharacterSelectScreenData.mHeader.mSmallPortraitOffset);
+		setMugenAnimationDrawScale(e->mPortraitAnimationElement, gCharacterSelectScreenData.mHeader.mSmallPortraitScale);
+	}
 	if (!gCharacterSelectScreenData.mHeader.mIsShowingEmptyBoxes) {
 		pos.z = 30;
 		e->mBackgroundAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
@@ -540,17 +547,18 @@ static void loadSingleRealMenuCharacter(MenuCharacterLoadCaller* tCaller, const 
 	}
 
 	tCaller->i++;
+	
+	int doesIncludeStage = 1;
+	int isValid = 1;
+	parseOptionalCharacterSelectParameters(tVector, NULL, &doesIncludeStage, NULL, &isValid);
+	if (!isValid) {
+		return;
+	}
 	if (!loadMenuCharacterSpritesAndNameAndReturnWhetherExists(e, characterName)) {
 		return;
 	}
-
-	if (gCharacterSelectScreenData.mStageSelect.mIsUsing) {
-		int doesIncludeStage = 1;
-		parseOptionalCharacterSelectParameters(tVector, NULL, &doesIncludeStage, NULL);
-
-		if (doesIncludeStage) {
-			addSingleSelectStage(e->mStageName);
-		}
+	if (gCharacterSelectScreenData.mStageSelect.mIsUsing && doesIncludeStage) {
+		addSingleSelectStage(e->mStageName);
 	}
 
 	showMenuSelectableAnimations(tCaller, e);
@@ -782,9 +790,11 @@ static void loadSingleSelector(int i, int tOwner) {
 	setMugenAnimationDrawScale(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement, owner->mActiveCursorScale);
 	
 	SelectCharacter* character = getCellCharacter(findStartCellPosition(gCharacterSelectScreenData.mSelectors[i].mSelectedCharacter, 1, 1));
-	gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement = addMugenAnimation(player->mBigPortraitAnimation, &character->mSprites, player->mBigPortraitOffset.xyz(30.0));
-	setMugenAnimationFaceDirection(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, player->mBigPortraitIsFacingRight);
-	setMugenAnimationDrawScale(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, Vector2D(player->mBigPortraitScale.x, player->mBigPortraitScale.y));
+	if (gCharacterSelectScreenData.mHeader.mIsShowingPortraits) {
+		gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement = addMugenAnimation(player->mBigPortraitAnimation, &character->mSprites, player->mBigPortraitOffset.xyz(30.0));
+		setMugenAnimationFaceDirection(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, player->mBigPortraitIsFacingRight);
+		setMugenAnimationDrawScale(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, Vector2D(player->mBigPortraitScale.x, player->mBigPortraitScale.y));
+	}
 
 	gCharacterSelectScreenData.mSelectors[i].mNameTextID = addMugenText(character->mDisplayCharacterName, player->mNameOffset.xyz(40.0), player->mNameFont.x);
 	setMugenTextColor(gCharacterSelectScreenData.mSelectors[i].mNameTextID, getMugenTextColorFromMugenTextColorIndex(player->mNameFont.y));
@@ -802,7 +812,9 @@ static void loadSingleSelector(int i, int tOwner) {
 
 static void unloadSingleSelector(int i) {
 	removeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mSelectorAnimationElement);
-	removeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement);
+	if (gCharacterSelectScreenData.mHeader.mIsShowingPortraits) {
+		removeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement);
+	}
 	removeMugenText(gCharacterSelectScreenData.mSelectors[i].mNameTextID);
 
 	gCharacterSelectScreenData.mSelectors[i].mIsActive = 0;
@@ -862,6 +874,10 @@ static int isValidSelectPath(const std::string& path, std::string& oFinalSelectP
 		oFinalSelectPath = getDolmexicaAssetFolder() + "data/" + path;
 		return 1;
 	}
+	if (isFile(getDolmexicaAssetFolder() + path)) {
+		oFinalSelectPath = getDolmexicaAssetFolder() + path;
+		return 1;
+	}
 	if (isFile(path)) {
 		oFinalSelectPath = path;
 		return 1;
@@ -896,6 +912,8 @@ static int sanityCheck() {
 }
 
 static void loadCharacterSelectScreen() {
+	setupDreamGlobalAssignmentEvaluator();
+
 	std::string folder;
 	const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
 	loadMugenDefScript(&gCharacterSelectScreenData.mScript, motifPath);
@@ -977,7 +995,9 @@ static void unloadSingleSelectCharacter(void* tCaller, void* tData) {
 	(void)tCaller;
 	SelectCharacter* e = (SelectCharacter*)tData;
 	if (e->mType == SELECT_CHARACTER_TYPE_CHARACTER) {
-		unloadMugenSpriteFile(&e->mSprites);
+		if (gCharacterSelectScreenData.mHeader.mIsShowingPortraits) {
+			unloadMugenSpriteFile(&e->mSprites);
+		}
 		freeMemory(e->mDisplayCharacterName);
 		unloadMenuCharacterCredits(e);
 	}
@@ -1035,6 +1055,8 @@ static void unloadCharacterSelectScreen() {
 	unloadSelectStages();
 
 	resetSelectState();
+
+	shutdownDreamAssignmentEvaluator();
 }
 
 static void handleSingleWrapping(int* tPosition, int tSize) {
@@ -1101,13 +1123,17 @@ static void showSelectCharacterForSelector(int i, SelectCharacter* tCharacter) {
 	PlayerHeader* player = &gCharacterSelectScreenData.mHeader.mPlayers[i];
 
 	if (tCharacter->mType == SELECT_CHARACTER_TYPE_CHARACTER) {
-		setMugenAnimationBaseDrawScale(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, 1);
-		setMugenAnimationSprites(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, &tCharacter->mSprites);
-		changeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, player->mBigPortraitAnimation);
+		if (gCharacterSelectScreenData.mHeader.mIsShowingPortraits) {
+			setMugenAnimationBaseDrawScale(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, 1);
+			setMugenAnimationSprites(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, &tCharacter->mSprites);
+			changeMugenAnimation(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, player->mBigPortraitAnimation);
+		}
 		changeMugenText(gCharacterSelectScreenData.mSelectors[i].mNameTextID, tCharacter->mDisplayCharacterName);
 	}
 	else {
-		setMugenAnimationBaseDrawScale(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, 0);
+		if (gCharacterSelectScreenData.mHeader.mIsShowingPortraits) {
+			setMugenAnimationBaseDrawScale(gCharacterSelectScreenData.mSelectors[i].mBigPortraitAnimationElement, 0);
+		}
 		changeMugenText(gCharacterSelectScreenData.mSelectors[i].mNameTextID, " ");
 	}
 
@@ -1614,9 +1640,9 @@ static void parseOptionalParameterPaths(char* tParameter, char* oName, char* oVa
 	if (!parseSingleOptionalParameterPart(equalSign + 1, tParameter + strlen(tParameter) - 1, tParameter, oValue)) return;
 }
 
-static void parseSingleOptionalCharacterParameter(char* tParameter, int* oOrder, int* oDoesIncludeStage, char* oMusicPath) {
+static void parseSingleOptionalCharacterParameter(char* tParameter, int* oOrder, int* oDoesIncludeStage, char* oMusicPath, int* oIsValid) {
 	char name[100];
-	char value[100];
+	char value[1000];
 	parseOptionalParameterPaths(tParameter, name, value);
 	turnStringLowercase(name);
 
@@ -1629,12 +1655,19 @@ static void parseSingleOptionalCharacterParameter(char* tParameter, int* oOrder,
 	else if (!strcmp("includestage", name)) {
 		if (oDoesIncludeStage) *oDoesIncludeStage = atoi(value);
 	}
+	else if (!strcmp("dependency", name)) {
+		if (oIsValid) {
+			auto assignment = parseDreamMugenAssignmentFromString(value);
+			*oIsValid = evaluateDreamAssignment(&assignment, NULL);
+			destroyDreamMugenAssignment(assignment);
+		}
+	}
 }
 
-void parseOptionalCharacterSelectParameters(const MugenStringVector& tVector, int* oOrder, int* oDoesIncludeStage, char* oMusicPath) {
+void parseOptionalCharacterSelectParameters(const MugenStringVector& tVector, int* oOrder, int* oDoesIncludeStage, char* oMusicPath, int* oIsValid) {
 	int i;
 	for (i = 2; i < tVector.mSize; i++) {
-		parseSingleOptionalCharacterParameter(tVector.mElement[i], oOrder, oDoesIncludeStage, oMusicPath);
+		parseSingleOptionalCharacterParameter(tVector.mElement[i], oOrder, oDoesIncludeStage, oMusicPath, oIsValid);
 	}
 }
 

@@ -100,6 +100,7 @@ struct StoryInstance {
 };
 
 Screen* getDolmexicaStoryScreen();
+ActorBlueprint getDolmexicaStoryActor();
 
 void setDolmexicaStoryScreenFileAndPrepareScreen(const char* tPath);
 
@@ -216,6 +217,8 @@ void setDolmexicaStoryCharacterPositionY(StoryInstance* tInstance, int tID, doub
 void setDolmexicaStoryCharacterPositionZ(StoryInstance* tInstance, int tID, double tZ);
 void addDolmexicaStoryCharacterPositionX(StoryInstance* tInstance, int tID, double tX);
 void addDolmexicaStoryCharacterPositionY(StoryInstance* tInstance, int tID, double tY);
+void setDolmexicaStoryCharacterStagePositionX(StoryInstance* tInstance, int tID, double tX);
+void setDolmexicaStoryCharacterStagePositionY(StoryInstance* tInstance, int tID, double tY);
 void setDolmexicaStoryCharacterScaleX(StoryInstance* tInstance, int tID, double tX);
 void setDolmexicaStoryCharacterScaleY(StoryInstance* tInstance, int tID, double tY);
 void setDolmexicaStoryCharacterIsFacingRight(StoryInstance* tInstance, int tID, int tIsFacingRight);

@@ -906,11 +906,11 @@ void loadOsuParametersFromScript(MugenDefScript* tScript, const char* tFightPath
 	std::string folder;
 	getPathToFile(folder, tFightPath);
 
-	parameters.mSpriteFilePath = getSTLMugenDefStringOrDefault(tScript, "files", "osu.sff", "osu.sff");
+	parameters.mSpriteFilePath = getSTLMugenDefStringOrDefault(tScript, "files", "osu.sff", "data/osu.sff");
 	parameters.mSpriteFilePath = findMugenSystemOrFightFilePath(parameters.mSpriteFilePath, folder);
-	parameters.mAnimationFilePath = getSTLMugenDefStringOrDefault(tScript, "files", "osu.air", "osu.air");
+	parameters.mAnimationFilePath = getSTLMugenDefStringOrDefault(tScript, "files", "osu.air", "data/osu.air");
 	parameters.mAnimationFilePath = findMugenSystemOrFightFilePath(parameters.mAnimationFilePath, folder);
-	parameters.mSoundFilePath = getSTLMugenDefStringOrDefault(tScript, "files", "osu.snd", "osu.snd");
+	parameters.mSoundFilePath = getSTLMugenDefStringOrDefault(tScript, "files", "osu.snd", "data/osu.snd");
 	parameters.mSoundFilePath = findMugenSystemOrFightFilePath(parameters.mSoundFilePath, folder);
 
 	parameters.mHitCircleAnimation = getMugenDefIntegerOrDefault(tScript, "osu", "hitcircle.anim", 1000);

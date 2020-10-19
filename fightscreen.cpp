@@ -41,6 +41,8 @@
 #include "mugensound.h"
 #include "pausecontrollers.h"
 #include "trainingmodemenu.h"
+#include "storyhelper.h"
+#include "dolmexicastoryscreen.h"
 
 static struct {
 	void(*mWinCB)();
@@ -91,8 +93,6 @@ static void loadFightScreen() {
 	setupDreamAssignmentEvaluator();
 	setupDreamMugenStateControllerHandler(&gFightScreenData.mMemoryStack);
 	
-	setStateMachineHandlerToFight();
-	
 	logMemoryState();
 	logg("init custom handlers");
 
@@ -119,6 +119,10 @@ static void loadFightScreen() {
 
 	loadPlayers(&gFightScreenData.mMemoryStack);
 	
+	if (hasStoryHelper()) {
+		instantiateActor(getDolmexicaStoryActor());
+	}
+
 	instantiateActor(getDreamFightUIBP());
 	instantiateActor(getDreamGameLogic());
 

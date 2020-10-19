@@ -8,6 +8,10 @@
 
 #include "playerdefinition.h"
 
+void setCustomFightMotif(const std::string& tPath);
+int hasCustomFightMotif();
+const std::string& getCustomFightMotif();
+
 void playDreamHitSpark(const Position2D& tPosition, DreamPlayer* tPlayer, int tIsInPlayerFile, int tNumber, int tIsFacingRight, int tPositionCoordinateP);
 void addDreamDustCloud(const Position& tPositionCameraSpace, int tIsFacingRight);
 void setDreamLifeBarPercentage(DreamPlayer* tPlayer, double tPercentage);

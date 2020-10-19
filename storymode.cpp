@@ -17,13 +17,18 @@
 #include "stage.h"
 #include "fightresultdisplay.h"
 #include "config.h"
+#include "mugenassignmentevaluator.h"
+#include "storyhelper.h"
 
 using namespace std;
 
-static struct {
+struct ActiveStory {
 	char mStoryPath[1024];
 	int mCurrentState;
+};
 
+static struct {
+	std::vector<ActiveStory> mActiveStories;
 	int mNextStateAfterWin;
 	int mNextStateAfterLose;
 } gStoryModeData;
@@ -50,19 +55,20 @@ static int isMugenStoryboard(const char* tPath) {
 }
 
 static void mugenStoryScreenFinishedCB() {
-	storyModeOverCB(gStoryModeData.mCurrentState + 1);
+	storyModeOverCB(gStoryModeData.mActiveStories.back().mCurrentState + 1);
 }
 
 static void loadStoryboardGroup(MugenDefScriptGroup* tGroup) {
 	char path[1024];
 	char folder[1024];
 
-	getPathToFile(folder, gStoryModeData.mStoryPath);
-	char* file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "file");
+	getPathToFile(folder, gStoryModeData.mActiveStories.back().mStoryPath);
+	const auto file = evaluateMugenDefStringOrDefaultAsGroup(tGroup, "file", "");
 
-	sprintf(path, "%s%s%s", getDolmexicaAssetFolder().c_str(), folder, file);
+	sprintf(path, "%s%s%s", getDolmexicaAssetFolder().c_str(), folder, file.c_str());
 	if (!isFile(path)) {
 		logWarningFormat("Unable to open storyboard %s. Returning to title.", path);
+		gStoryModeData.mActiveStories.clear();
 		setNewScreen(getDreamTitleScreen());
 		return;
 	}
@@ -90,32 +96,30 @@ static void internCharacterSelectOverCB() {
 static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	char path[1024];
 	char folder[1024];
-	char* file;
+	std::string file;
 
-	getPathToFile(folder, gStoryModeData.mStoryPath);
+	getPathToFile(folder, gStoryModeData.mActiveStories.back().mStoryPath);
 
-	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "player1");
-	int isSelectingFirstCharacter = !strcmp("select", file);
+	file = evaluateMugenDefStringOrDefaultAsGroup(tGroup, "player1", "");
+	int isSelectingFirstCharacter = file == "select";
 	if (!isSelectingFirstCharacter) {
-		sprintf(path, "%schars/%s/%s.def", getDolmexicaAssetFolder().c_str(), file, file);
+		sprintf(path, "%schars/%s/%s.def", getDolmexicaAssetFolder().c_str(), file.c_str(), file.c_str());
 		setPlayerDefinitionPath(0, path);
 	}
-	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "player2");
-	sprintf(path, "%schars/%s/%s.def", getDolmexicaAssetFolder().c_str(), file, file);
+	file = evaluateMugenDefStringOrDefaultAsGroup(tGroup, "player2", "");
+	sprintf(path, "%schars/%s/%s.def", getDolmexicaAssetFolder().c_str(), file.c_str(), file.c_str());
 	setPlayerDefinitionPath(1, path);
 
-	file = getAllocatedMugenDefStringVariableAsGroup(tGroup, "stage");
-	sprintf(path, "%s%s", getDolmexicaAssetFolder().c_str(), file);
-	string musicPath;
+	file = evaluateMugenDefStringOrDefaultAsGroup(tGroup, "stage", "");
+	sprintf(path, "%s%s", getDolmexicaAssetFolder().c_str(), file.c_str());
+	string musicPath = "";
 	if (isMugenDefStringVariableAsGroup(tGroup, "bgm")) {
-		char* tempFile = getAllocatedMugenDefStringVariableAsGroup(tGroup, "bgm");
-		musicPath = tempFile;
-		freeMemory(tempFile);
+		musicPath = evaluateMugenDefStringOrDefaultAsGroup(tGroup, "bgm", "");
 	}
 	setDreamStageMugenDefinition(path, musicPath.data());
 
 
-	gStoryModeData.mNextStateAfterWin = getMugenDefIntegerOrDefaultAsGroup(tGroup, "win", gStoryModeData.mCurrentState + 1);
+	gStoryModeData.mNextStateAfterWin = evaluateMugenDefIntegerOrDefaultAsGroup(tGroup, "win", gStoryModeData.mActiveStories.back().mCurrentState + 1);
 	char* afterLoseState = getAllocatedMugenDefStringOrDefaultAsGroup(tGroup, "lose", "continue");
 	turnStringLowercase(afterLoseState);
 	if (!strcmp("continue", afterLoseState)) {
@@ -128,7 +132,7 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	}
 	freeMemory(afterLoseState);
 
-	const auto mode = getSTLMugenDefStringOrDefaultAsGroup(tGroup, "mode", "");
+	const auto mode = evaluateMugenDefStringOrDefaultAsGroup(tGroup, "mode", "");
 	if (mode == "osu") {
 		setGameModeOsu();
 	}
@@ -136,29 +140,47 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 		setGameModeStory();
 	}
 
-	int palette1 = getMugenDefIntegerOrDefaultAsGroup(tGroup, "palette1", 1);
+	const auto customMotif = evaluateMugenDefStringOrDefaultAsGroup(tGroup, "fight.motif", "");
+	if (!customMotif.empty()) {
+		setCustomFightMotif(customMotif);
+	}
+
+	const auto storyHelper = evaluateMugenDefStringOrDefaultAsGroup(tGroup, "storyhelper", "");
+	if (!storyHelper.empty()) {
+		setStoryHelperPath(storyHelper);
+	}
+
+	int palette1 = evaluateMugenDefIntegerOrDefaultAsGroup(tGroup, "palette1", 1);
 	setPlayerPreferredPalette(0, palette1);
-	int palette2 = getMugenDefIntegerOrDefaultAsGroup(tGroup, "palette2", 2);
+	int palette2 = evaluateMugenDefIntegerOrDefaultAsGroup(tGroup, "palette2", 2);
 	setPlayerPreferredPalette(1, palette2);
 
-	int ailevel = getMugenDefIntegerOrDefaultAsGroup(tGroup, "ailevel", getDifficulty());
+	int ailevel = evaluateMugenDefIntegerOrDefaultAsGroup(tGroup, "ailevel", getDifficulty());
 	setPlayerArtificial(1, ailevel);
 
-	const auto rounds = getMugenDefIntegerOrDefaultAsGroup(tGroup, "rounds", 0);
+	const auto startLife1 = evaluateMugenDefFloatOrDefaultAsGroup(tGroup, "life1", 1.0);
+	setPlayerStartLifePercentage(0, startLife1);
+	const auto startLife2 = evaluateMugenDefFloatOrDefaultAsGroup(tGroup, "life2", 1.0);
+	setPlayerStartLifePercentage(1, startLife2);
+
+	const auto rounds = evaluateMugenDefIntegerOrDefaultAsGroup(tGroup, "rounds", 0);
 	if (rounds > 0) {
 		setRoundsToWin(rounds);
 	}
 
-	const auto roundTime = getMugenDefIntegerOrDefaultAsGroup(tGroup, "round.time", 0);
+	const auto roundTime = evaluateMugenDefIntegerOrDefaultAsGroup(tGroup, "round.time", 0);
 	if (roundTime > 0) {
 		setTimerDuration(roundTime);
 	}
+	else if (roundTime == -1) {
+		setTimerInfinite();
+	}
 
 	if (isSelectingFirstCharacter) {
-		char* selectName = getAllocatedMugenDefStringOrDefaultAsGroup(tGroup, "selectname", "Select your fighter");
-		const auto selectFileName = getSTLMugenDefStringOrDefaultAsGroup(tGroup, "selectfile", "");
+		const auto selectName = evaluateMugenDefStringOrDefaultAsGroup(tGroup, "selectname", "Select your fighter");
+		const auto selectFileName = evaluateMugenDefStringOrDefaultAsGroup(tGroup, "selectfile", "");
 		setCharacterSelectCustomSelectFile(selectFileName);
-		setCharacterSelectScreenModeName(selectName);
+		setCharacterSelectScreenModeName(selectName.c_str());
 		setCharacterSelectOnePlayer();
 		setCharacterSelectStageInactive();
 		setCharacterSelectFinishedCB(internCharacterSelectOverCB);
@@ -170,7 +192,7 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 			stringstream ss;
 			ss << "p" << (i + 1) << ".name";
 			if (isMugenDefStringVariableAsGroup(tGroup, ss.str().c_str())) {
-				setCustomPlayerDisplayName(i, getSTLMugenDefStringOrDefaultAsGroup(tGroup, ss.str().c_str(), ""));
+				setCustomPlayerDisplayName(i, evaluateMugenDefStringOrDefaultAsGroup(tGroup, ss.str().c_str(), ""));
 			}
 		}
 
@@ -179,52 +201,101 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 }
 
 static void loadTitleGroup() {
+	gStoryModeData.mActiveStories.clear();
 	setNewScreen(getDreamTitleScreen());
 }
 
-static void loadStoryModeScreen() {
-	char path[1024];
-	sprintf(path, "%s%s", getDolmexicaAssetFolder().c_str(), gStoryModeData.mStoryPath);
-	MugenDefScript script; 
-	loadMugenDefScript(&script, path);
+static Screen* getStoryModeScreen();
 
-	MugenDefScriptGroup* group = getMugenDefStoryScriptGroupByIndex(&script, gStoryModeData.mCurrentState);
-	if (!group || !isMugenDefStringVariableAsGroup(group, "type")) {
-		logWarningFormat("Unable to read story state %d (from %s). Returning to title.", gStoryModeData.mCurrentState, gStoryModeData.mStoryPath);
+static void loadSubStoryGroup(MugenDefScriptGroup* tGroup) {
+	std::string folder;
+	getPathToFile(folder, gStoryModeData.mActiveStories.back().mStoryPath);
+	const auto file = evaluateMugenDefStringOrDefaultAsGroup(tGroup, "file", "");
+	auto path = folder + file;
+	if (!isFile(getDolmexicaAssetFolder() + path)) {
+		path = file;
+		if (!isFile(getDolmexicaAssetFolder() + path)) {
+			logWarningFormat("Unable to open sub story file %s. Returning to title.", file.c_str());
+			gStoryModeData.mActiveStories.clear();
+			setNewScreen(getDreamTitleScreen());
+			return;
+		}
+	}
+
+	gStoryModeData.mActiveStories.push_back(ActiveStory());
+	strcpy(gStoryModeData.mActiveStories.back().mStoryPath, path.c_str());
+	gStoryModeData.mActiveStories.back().mCurrentState = evaluateMugenDefIntegerOrDefaultAsGroup(tGroup, "startstate", 0);
+	setNewScreen(getStoryModeScreen());
+}
+
+static void loadReturnGroup(MugenDefScriptGroup* tGroup) {
+	gStoryModeData.mActiveStories.pop_back();
+	if (gStoryModeData.mActiveStories.empty()) {
 		setNewScreen(getDreamTitleScreen());
 		return;
 	}
 
-	char* type = getAllocatedMugenDefStringVariableAsGroup(group, "type");
-	if (!strcmp("storyboard", type)) {
+	gStoryModeData.mActiveStories.back().mCurrentState = evaluateMugenDefIntegerOrDefaultAsGroup(tGroup, "value", 0);
+	setNewScreen(getStoryModeScreen());
+}
+
+static void loadStoryModeScreen() {
+	setupDreamGlobalAssignmentEvaluator();
+
+	char path[1024];
+	sprintf(path, "%s%s", getDolmexicaAssetFolder().c_str(), gStoryModeData.mActiveStories.back().mStoryPath);
+	MugenDefScript script; 
+	loadMugenDefScript(&script, path);
+
+	MugenDefScriptGroup* group = getMugenDefStoryScriptGroupByIndex(&script, gStoryModeData.mActiveStories.back().mCurrentState);
+	if (!group || !isMugenDefStringVariableAsGroup(group, "type")) {
+		logWarningFormat("Unable to read story state %d (from %s). Returning to title.", gStoryModeData.mActiveStories.back().mCurrentState, gStoryModeData.mActiveStories.back().mStoryPath);
+		gStoryModeData.mActiveStories.clear();
+		setNewScreen(getDreamTitleScreen());
+		return;
+	}
+
+	auto type = evaluateMugenDefStringOrDefaultAsGroup(group, "type", "");
+	turnStringLowercase(type);
+	if (type == "storyboard") {
 		loadStoryboardGroup(group);
-	} else if (!strcmp("fight", type)) {
+	} else if (type == "fight") {
 		loadFightGroup(group);
-	} else if (!strcmp("title", type)) {
+	} else if (type == "title") {
 		loadTitleGroup();
 	}
+	else if (type == "substory") {
+		loadSubStoryGroup(group);
+	}
+	else if (type == "return") {
+		loadReturnGroup(group);
+	}
 	else {
-		logWarningFormat("Unable to read story state %d type %s (from %s). Returning to title.", gStoryModeData.mCurrentState, type, gStoryModeData.mStoryPath);
+		logWarningFormat("Unable to read story state %d type %s (from %s). Returning to title.", gStoryModeData.mActiveStories.back().mCurrentState, type.c_str(), gStoryModeData.mActiveStories.back().mStoryPath);
+		gStoryModeData.mActiveStories.clear();
 		setNewScreen(getDreamTitleScreen());
 	}
-	freeMemory(type);
+}
+
+static void unloadStoryModeScreen() {
+	shutdownDreamAssignmentEvaluator();
 }
 
 static Screen gStoryModeScreen;
 
 static Screen* getStoryModeScreen() {
-	gStoryModeScreen = makeScreen(loadStoryModeScreen);
+	gStoryModeScreen = makeScreen(loadStoryModeScreen, NULL, NULL, unloadStoryModeScreen);
 	return &gStoryModeScreen;
 };
 
 static void loadStoryHeader() {
 
 	char path[1024];
-	sprintf(path, "%s%s", getDolmexicaAssetFolder().c_str(), gStoryModeData.mStoryPath);
+	sprintf(path, "%s%s", getDolmexicaAssetFolder().c_str(), gStoryModeData.mActiveStories.back().mStoryPath);
 	MugenDefScript storyScript;
 	loadMugenDefScript(&storyScript, path);
 
-	gStoryModeData.mCurrentState = getMugenDefIntegerOrDefault(&storyScript, "info", "startstate", 0);
+	gStoryModeData.mActiveStories.back().mCurrentState = evaluateMugenDefIntegerOrDefault(&storyScript, "info", "startstate", 0);
 }
 
 static void startFirstStoryElement(MugenDefScriptGroup* tStories) {
@@ -251,12 +322,14 @@ void startStoryMode()
 	MugenDefScript selectScript; 
 	loadMugenDefScript(&selectScript, getDolmexicaAssetFolder() + "data/select.def");
 	if (!stl_string_map_contains_array(selectScript.mGroups, "stories")) {
+		gStoryModeData.mActiveStories.clear();
 		setNewScreen(getDreamTitleScreen());
 		return;
 	}
 	
 	MugenDefScriptGroup* stories = &selectScript.mGroups["stories"];
 	if (!list_size(&stories->mOrderedElementList)) {
+		gStoryModeData.mActiveStories.clear();
 		setNewScreen(getDreamTitleScreen());
 		return;
 	}
@@ -275,19 +348,23 @@ void startStoryMode()
 
 void storyModeOverCB(int tStep)
 {
-	gStoryModeData.mCurrentState = tStep;
+	gStoryModeData.mActiveStories.back().mCurrentState = tStep;
 	setNewScreen(getStoryModeScreen());
 }
 
 void setStoryModeStoryPath(const char * tPath)
 {
-	strcpy(gStoryModeData.mStoryPath, tPath);
+	if (gStoryModeData.mActiveStories.empty()) {
+		gStoryModeData.mActiveStories.push_back(ActiveStory());
+	}
+	strcpy(gStoryModeData.mActiveStories.back().mStoryPath, tPath);
+	gStoryModeData.mActiveStories.back().mCurrentState = 0;
 }
 
 void startStoryModeWithForcedStartState(const char * tPath, int tStartState)
 {
 	setStoryModeStoryPath(tPath);
 	loadStoryHeader();
-	gStoryModeData.mCurrentState = tStartState;
+	gStoryModeData.mActiveStories.back().mCurrentState = tStartState;
 	setNewScreen(getStoryModeScreen());
 }

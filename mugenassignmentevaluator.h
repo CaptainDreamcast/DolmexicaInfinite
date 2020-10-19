@@ -7,6 +7,7 @@
 
 void setupDreamAssignmentEvaluator();
 void setupDreamStoryAssignmentEvaluator();
+void setupDreamGlobalAssignmentEvaluator();
 void shutdownDreamAssignmentEvaluator();
 
 int evaluateDreamAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer);
@@ -27,3 +28,8 @@ void evaluateDreamAssignmentAndReturnAsOneIntegerWithDefaultValue(DreamMugenAssi
 void evaluateDreamAssignmentAndReturnAsTwoIntegersWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* v1, int* v2, int tDefault1, int tDefault2);
 void evaluateDreamAssignmentAndReturnAsThreeIntegersWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* v1, int* v2, int* v3, int tDefault1, int tDefault2, int tDefault3);
 void evaluateDreamAssignmentAndReturnAsFourIntegersWithDefaultValues(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* v1, int* v2, int* v3, int* v4, int tDefault1, int tDefault2, int tDefault3, int tDefault4);
+
+std::string evaluateMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName, const std::string& tDefault);
+double evaluateMugenDefFloatOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName, double tDefault);
+int evaluateMugenDefIntegerOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName, int tDefault);
+int evaluateMugenDefIntegerOrDefault(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName, int tDefault);

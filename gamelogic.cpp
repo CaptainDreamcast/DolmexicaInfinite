@@ -24,6 +24,7 @@
 #include "survivalmode.h"
 #include "victoryquotescreen.h"
 #include "stage.h"
+#include "storyhelper.h"
 
 typedef enum {
 	ROUND_STATE_FADE_IN = 0,
@@ -712,6 +713,7 @@ void setGameModeArcade() {
 	}
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
+	resetStoryHelper();
 
 	gGameLogicData.mMode = GAME_MODE_ARCADE;
 }
@@ -732,6 +734,7 @@ void setGameModeFreePlay()
 	setPlayerPreferredPalette(1, 2);
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
+	resetStoryHelper();
 
 	gGameLogicData.mMode = GAME_MODE_FREE_PLAY;
 }
@@ -752,6 +755,7 @@ void setGameModeVersus() {
 	setPlayerPreferredPalette(1, 2);
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
+	resetStoryHelper();
 
 	gGameLogicData.mMode = GAME_MODE_VERSUS;
 }
@@ -777,6 +781,7 @@ void setGameModeSurvival(double tLifePercentage, int tRound) {
 	}
 	setPlayerStartLifePercentage(0, tLifePercentage);
 	setPlayerStartLifePercentage(1, 1);
+	resetStoryHelper();
 
 	gGameLogicData.mMode = GAME_MODE_SURVIVAL;
 }
@@ -797,6 +802,7 @@ void setGameModeTraining() {
 	setPlayerPreferredPalette(1, 1);
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
+	resetStoryHelper();
 
 	gGameLogicData.mMode = GAME_MODE_TRAINING;
 }
@@ -818,6 +824,7 @@ void setGameModeWatch()
 	setPlayerPreferredPalette(1, 2);
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
+	resetStoryHelper();
 
 	gGameLogicData.mMode = GAME_MODE_WATCH;
 }
@@ -839,6 +846,7 @@ void setGameModeSuperWatch()
 	setPlayerPreferredPalette(1, 2);
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
+	resetStoryHelper();
 
 	gGameLogicData.mMode = GAME_MODE_SUPER_WATCH;
 }
@@ -860,6 +868,7 @@ void setGameModeExhibit(int tEndTime, int tIsDisplayingBars, int tIsDisplayingDe
 	setPlayerPreferredPalette(1, 2);
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
+	resetStoryHelper();
 	if (isMugenDebugActive() && tIsDisplayingDebug) {
 		setFightDebugToPlayerOneBeforeFight();
 	}
@@ -883,6 +892,7 @@ void setGameModeStory() {
 	setPlayerArtificial(1, getDifficulty());
 	setPlayerStartLifePercentage(0, 1);
 	setPlayerStartLifePercentage(1, 1);
+	resetStoryHelper();
 
 	gGameLogicData.mMode = GAME_MODE_STORY;
 }
@@ -903,6 +913,7 @@ void setGameModeOsu()
 	setPlayerPreferredPalette(1, 2);
 	setPlayerStartLifePercentage(0, 2);
 	setPlayerStartLifePercentage(1, 2);
+	resetStoryHelper();
 
 	gGameLogicData.mMode = GAME_MODE_OSU;
 }

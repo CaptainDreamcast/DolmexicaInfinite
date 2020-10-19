@@ -90,6 +90,7 @@ typedef AssignmentReturnValue*(*OrdinalFunction)(AssignmentReturnValue*, DreamPl
 enum MugenAssignmentEvaluatorType {
 	MUGEN_ASSIGNMENT_EVALUATOR_TYPE_REGULAR,
 	MUGEN_ASSIGNMENT_EVALUATOR_TYPE_STORY,
+	MUGEN_ASSIGNMENT_EVALUATOR_TYPE_GLOBAL,
 };
 
 static struct {
@@ -1851,6 +1852,7 @@ static AssignmentReturnValue* stateNoFunction(DreamPlayer* tPlayer) { return mak
 static AssignmentReturnValue* teamSideFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(tPlayer->mRootID + 1); }
 static AssignmentReturnValue* ticksPerSecondFunction(DreamPlayer* /*tPlayer*/) { return makeNumberAssignmentReturn(getDreamTicksPerSecond()); }
 static AssignmentReturnValue* timeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerTimeInState(tPlayer)); }
+static AssignmentReturnValue* timeStoryFunction(DreamPlayer* tPlayer);
 //static AssignmentReturnValue* timeModFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(0); }
 static AssignmentReturnValue* topEdgeFunction(DreamPlayer* /*tPlayer*/) { return makeFloatAssignmentReturn(getDreamStageTopEdgeY(getActiveStateMachineCoordinateP())); }
 static AssignmentReturnValue* uniqHitCountFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerUniqueHitCount(tPlayer)); }
@@ -2079,6 +2081,7 @@ static void setupVariableAssignments() {
 	gVariableHandler.mVariables["teamside"] = teamSideFunction;
 	gVariableHandler.mVariables["tickspersecond"] = ticksPerSecondFunction;
 	gVariableHandler.mVariables["time"] = timeFunction;
+	gVariableHandler.mVariables["timestory"] = timeStoryFunction;
 	gVariableHandler.mVariables["topedge"] = topEdgeFunction;
 
 	gVariableHandler.mVariables["uniqhitcount"] = uniqHitCountFunction;
@@ -3350,6 +3353,45 @@ void setupDreamStoryAssignmentEvaluator()
 	setupStoryComparisons();
 }
 
+static void setupGlobalArrayAssignments() {
+	gVariableHandler.mArrays.clear();
+
+	gVariableHandler.mArrays["globalvar"] = globalVarStoryFunction;
+	gVariableHandler.mArrays["globalfvar"] = globalFVarStoryFunction;
+	gVariableHandler.mArrays["globalsvar"] = globalSVarStoryFunction;
+	gVariableHandler.mArrays["ifelse"] = ifElseFunction;
+	gVariableHandler.mArrays["abs"] = absFunction;
+	gVariableHandler.mArrays["exp"] = expFunction;
+	gVariableHandler.mArrays["ln"] = lnFunction;
+	gVariableHandler.mArrays["log"] = logFunction;
+	gVariableHandler.mArrays["cos"] = cosFunction;
+	gVariableHandler.mArrays["acos"] = acosFunction;
+	gVariableHandler.mArrays["sin"] = sinFunction;
+	gVariableHandler.mArrays["asin"] = asinFunction;
+	gVariableHandler.mArrays["tan"] = tanFunction;
+	gVariableHandler.mArrays["atan"] = atanFunction;
+	gVariableHandler.mArrays["floor"] = floorFunction;
+	gVariableHandler.mArrays["ceil"] = ceilFunction;
+}
+
+static void setupGlobalVariableAssignments() {
+	gVariableHandler.mVariables.clear();
+
+	gVariableHandler.mVariables["e"] = eFunction;
+	gVariableHandler.mVariables["pi"] = piFunction;
+	gVariableHandler.mVariables["platform"] = platformFunction;
+	gVariableHandler.mVariables["random"] = randomFunction;
+	gVariableHandler.mVariables["time"] = timeStoryFunction;
+}
+
+void setupDreamGlobalAssignmentEvaluator()
+{
+	gVariableHandler.mType = MUGEN_ASSIGNMENT_EVALUATOR_TYPE_GLOBAL;
+	initEvaluationStack();
+	setupGlobalVariableAssignments();
+	setupGlobalArrayAssignments();
+}
+
 void shutdownDreamAssignmentEvaluator()
 {
 	gVariableHandler.mComparisons.clear();
@@ -4073,4 +4115,45 @@ void evaluateDreamAssignmentAndReturnAsFourIntegersWithDefaultValues(DreamMugenA
 	if (setAmount < 4) {
 		*v4 = tDefault4;
 	}
+}
+
+std::string evaluateMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName, const std::string& tDefault) {
+	DreamMugenAssignment* assignment;
+	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tVariableName, tGroup, &assignment)) {
+		return tDefault;
+	}
+
+	std::string ret;
+	evaluateDreamAssignmentAndReturnAsString(ret, &assignment, NULL);
+	destroyDreamMugenAssignment(assignment);
+	return ret;
+}
+
+double evaluateMugenDefFloatOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName, double tDefault) {
+	DreamMugenAssignment* assignment;
+	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tVariableName, tGroup, &assignment)) {
+		return tDefault;
+	}
+
+	const auto ret = evaluateDreamAssignmentAndReturnAsFloat(&assignment, NULL);
+	destroyDreamMugenAssignment(assignment);
+	return ret;
+}
+
+int evaluateMugenDefIntegerOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName, int tDefault) {
+	DreamMugenAssignment* assignment;
+	if (!fetchDreamAssignmentFromGroupAndReturnWhetherItExists(tVariableName, tGroup, &assignment)) {
+		return tDefault;
+	}
+
+	const auto ret = evaluateDreamAssignmentAndReturnAsInteger(&assignment, NULL);
+	destroyDreamMugenAssignment(assignment);
+	return ret;
+}
+
+int evaluateMugenDefIntegerOrDefault(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName, int tDefault) {
+	if (!hasMugenDefScriptGroup(tScript, tGroupName)) {
+		return tDefault;
+	}
+	return evaluateMugenDefIntegerOrDefaultAsGroup(getMugenDefScriptGroup(tScript, tGroupName), tVariableName, tDefault);
 }

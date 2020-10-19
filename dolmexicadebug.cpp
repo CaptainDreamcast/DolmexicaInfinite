@@ -353,9 +353,36 @@ static string roundamountCB(void* /*tCaller*/, const std::string& tCommand) {
 	return "";
 }
 
+static string readStoryAnimsCB(void* /*tCaller*/, const std::string& /*tCommand*/) {
+	auto b = fileToBuffer("debug/anims.txt");
+	auto p = getBufferPointer(b);
+
+	while (hasStringFromTextStreamBufferPointer(p)) {
+		const auto characterName = readStringFromTextStreamBufferPointer(&p);
+	
+		while (true) {
+			if (!hasStringFromTextStreamBufferPointer(p)) break;
+			const auto nextString = readStringFromTextStreamBufferPointer(&p);
+			if (nextString == "------------------") break;
+
+			const auto animValue = atoi(nextString.c_str());
+			gDolmexicaDebugData->mStoryCharAnimations[characterName].insert(animValue);
+		}
+	}
+	freeBuffer(b);
+
+	return "";
+}
+
 static string writeStoryAnimsCB(void* /*tCaller*/, const std::string& /*tCommand*/) {
 	stringstream ss;
 	
+	if (isFile("debug/anims.txt")) {
+		auto b = fileToBuffer("debug/anims.txt");
+		bufferToFile("debug/anims_old.txt", b);
+		freeBuffer(b);
+	}
+
 	for (const auto& it : gDolmexicaDebugData->mStoryCharAnimations) {
 		ss << it.first << std::endl << std::endl;
 		for (const auto val : it.second) {
@@ -620,6 +647,7 @@ void initDolmexicaDebug()
 	addPrismDebugConsoleCommand("randomwatch", randomwatchCB);
 	addPrismDebugConsoleCommand("speed", speedCB);
 	addPrismDebugConsoleCommand("roundamount", roundamountCB);
+	addPrismDebugConsoleCommand("readstoryanims", readStoryAnimsCB);
 	addPrismDebugConsoleCommand("writestoryanims", writeStoryAnimsCB);
 	addPrismDebugConsoleCommand("difficulty", difficultyCB);
 	addPrismDebugConsoleCommand("fullcharactertest", fullCharacterTestCB);

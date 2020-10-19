@@ -17,7 +17,6 @@ using namespace std;
 
 static struct {
 	map<int, RegisteredMugenStateMachine> mRegisteredStates;
-	int mIsInStoryMode;
 	int mActiveCoordinateP;
 } gMugenStateHandlerData;
 
@@ -52,7 +51,7 @@ static void updateSingleController(void* tCaller, void* tData) {
 	MugenStateControllerCaller* caller = (MugenStateControllerCaller*)tCaller;
 	DreamMugenStateController* controller = (DreamMugenStateController*)tData;
 	
-	if (!gMugenStateHandlerData.mIsInStoryMode && caller->mRegisteredState->mPlayer && isPlayerDestroyed(caller->mRegisteredState->mPlayer)) return;
+	if (!caller->mRegisteredState->mIsInStoryMode && caller->mRegisteredState->mPlayer && isPlayerDestroyed(caller->mRegisteredState->mPlayer)) return;
 	if (caller->mHasChangedState) return;
 	if (!evaluateTrigger(&controller->mTrigger, caller->mRegisteredState->mPlayer)) return;
 
@@ -79,13 +78,13 @@ static DreamMugenStates* getCurrentStateMachineStates(RegisteredMugenStateMachin
 
 static void updateSingleState(RegisteredMugenStateMachine* tRegisteredState, int tState, int tForceOwnStates) {
 	setProfilingSectionMarkerCurrentFunction();
-	if (!gMugenStateHandlerData.mIsInStoryMode && tRegisteredState->mPlayer && (!isPlayer(tRegisteredState->mPlayer) || isPlayerDestroyed(tRegisteredState->mPlayer))) return;
+	if (!tRegisteredState->mIsInStoryMode && tRegisteredState->mPlayer && (!isPlayer(tRegisteredState->mPlayer) || isPlayerDestroyed(tRegisteredState->mPlayer))) return;
 
 	set<int> visitedStates;
 	
 	int isEvaluating = 1;
 	while (isEvaluating) {
-		if (!gMugenStateHandlerData.mIsInStoryMode) {
+		if (!tRegisteredState->mIsInStoryMode) {
 			if (tRegisteredState->mIsUsingTemporaryOtherStateMachine && !tForceOwnStates) {
 				setActiveStateMachineCoordinateP(getPlayerCoordinateP(getPlayerOtherPlayer(tRegisteredState->mPlayer)));
 			}
@@ -118,7 +117,7 @@ static void updateSingleState(RegisteredMugenStateMachine* tRegisteredState, int
 static void updateSingleStateMachineByReference(RegisteredMugenStateMachine* tRegisteredState) {
 	setProfilingSectionMarkerCurrentFunction();
 	if (tRegisteredState->mIsPaused) return;
-	assert(gMugenStateHandlerData.mIsInStoryMode || !isPlayerProjectile(tRegisteredState->mPlayer));
+	assert(tRegisteredState->mIsInStoryMode || !isPlayerProjectile(tRegisteredState->mPlayer));
 
 	tRegisteredState->mTimeInState++;
 	if (!tRegisteredState->mIsInHelperMode) {
@@ -160,12 +159,13 @@ ActorBlueprint getDreamMugenStateHandler() {
 	return makeActorBlueprint(loadStateHandler, unloadStateHandler, updateStateHandler);
 }
 
-RegisteredMugenStateMachine* registerDreamMugenStateMachine(DreamMugenStates * tStates, DreamPlayer* tPlayer)
+RegisteredMugenStateMachine* registerDreamMugenStateMachine(DreamMugenStates * tStates, DreamPlayer* tPlayer, int tIsInStoryMode)
 {
 	auto id = stl_int_map_get_id();
 	assert(gMugenStateHandlerData.mRegisteredStates.find(id) == gMugenStateHandlerData.mRegisteredStates.end());
 	RegisteredMugenStateMachine& e = gMugenStateHandlerData.mRegisteredStates[id];
 	e.mID = id;
+	e.mIsInStoryMode = tIsInStoryMode;
 	e.mStates = tStates;
 	e.mIsUsingTemporaryOtherStateMachine = 0;
 	e.mPreviousState = 0;
@@ -185,7 +185,7 @@ RegisteredMugenStateMachine* registerDreamMugenStateMachine(DreamMugenStates * t
 
 RegisteredMugenStateMachine* registerDreamMugenStoryStateMachine(DreamMugenStates * tStates, StoryInstance* tInstance)
 {
-	auto e = registerDreamMugenStateMachine(tStates, (DreamPlayer*)tInstance);
+	auto e = registerDreamMugenStateMachine(tStates, (DreamPlayer*)tInstance, 1);
 	setDreamRegisteredStateToHelperMode(e);
 	setDreamRegisteredStateDisableCommandState(e);
 	return e;
@@ -312,7 +312,7 @@ void changeDreamHandledStateMachineState(RegisteredMugenStateMachine* e, int tNe
 	assert(stl_map_contains(gMugenStateHandlerData.mRegisteredStates, e->mID));
 	DreamMugenStates* states = getCurrentStateMachineStates(e);
 	if (!stl_map_contains(states->mStates, tNewState)) {
-		if (!e->mPlayer || gMugenStateHandlerData.mIsInStoryMode) {
+		if (!e->mPlayer || e->mIsInStoryMode) {
 			logWarningFormat("ID %d trying to change into nonexistant state %d. Ignoring.", e->mID, tNewState);
 		}
 		else {
@@ -331,7 +331,7 @@ void changeDreamHandledStateMachineState(RegisteredMugenStateMachine* e, int tNe
 	DreamMugenState* newState = &states->mStates[e->mState];
 	resetStateControllers(newState);
 	
-	if (!e->mPlayer || gMugenStateHandlerData.mIsInStoryMode) return;
+	if (!e->mPlayer || e->mIsInStoryMode) return;
 
 	resetPlayerMoveContactCounter(e->mPlayer);
 	setPlayerStateType(e->mPlayer, newState->mType);
@@ -425,16 +425,6 @@ void setDreamSingleStateMachineToUpdateAgainByID(RegisteredMugenStateMachine* e)
 	assert(stl_map_contains(gMugenStateHandlerData.mRegisteredStates, e->mID));
 	updateSingleStateMachineByReference(e);
 	e->mWasUpdatedOutsideHandler = 0;
-}
-
-void setStateMachineHandlerToStory()
-{
-	gMugenStateHandlerData.mIsInStoryMode = 1;
-}
-
-void setStateMachineHandlerToFight()
-{
-	gMugenStateHandlerData.mIsInStoryMode = 0;
 }
 
 int getActiveStateMachineCoordinateP()

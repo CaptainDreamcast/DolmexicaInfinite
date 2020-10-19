@@ -326,12 +326,11 @@ static void loadCredits() {
 	setAnimationSize(gTitleScreenData.mCreditBGAnimationElement, Vector3D(320, 20, 1), Vector3D(0, 0, 0));
 	setAnimationColor(gTitleScreenData.mCreditBGAnimationElement, 0, 0, 0.5);
 
-	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite Demo 16", Vector3D(0, 240, 51), -1);
+	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite 1.0", Vector3D(0, 240, 51), -1);
 	
-	gTitleScreenData.mRightCreditTextID = addMugenText("09/09/20 Presented by Dogma", Vector3D(320, 240, 51), -1);
+	gTitleScreenData.mRightCreditTextID = addMugenText("10/16/20 Presented by Dogma", Vector3D(320, 240, 51), -1);
 	setMugenTextAlignment(gTitleScreenData.mRightCreditTextID, MUGEN_TEXT_ALIGNMENT_RIGHT);
 }
-
 
 static void loadBoxCursor() {
 	if (gTitleScreenData.mHeader.mIsBoxCursorVisible) {

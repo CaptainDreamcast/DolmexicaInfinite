@@ -191,6 +191,8 @@ code, tt {
 <li><a class="reference internal" href="#step-types-story-fight" id="id8">Fight</a></li>
 <li><a class="reference internal" href="#step-types-story-storyboard" id="id9">Storyboard</a></li>
 <li><a class="reference internal" href="#step-types-story-title" id="id10">Title</a></li>
+<li><a class="reference internal" href="#step-types-story-substory" id="id10">SubStory</a></li>
+<li><a class="reference internal" href="#step-types-story-return" id="id10">Return</a></li>
 </ul>
 </li>
 </ul>
@@ -273,12 +275,16 @@ code, tt {
 <dd>Set palette for player 1. Defaults to 1.</dd>
 <dt>palette2 = <em>palette_no</em> (int)</dt>
 <dd>Set palette for player 2. Defaults to 2.</dd>
+<dt>life1 = <em>life_percentage</em> (float)</dt>
+<dd>Set start life percentage for player 1. Defaults to 1.0.</dd>
+<dt>life2 = <em>life_percentage</em> (float)</dt>
+<dd>Set start life percentage for player 2. Defaults to 1.0.</dd>
 <dt>ailevel = <em>round_amount</em> (int)</dt>
 <dd>Set AiLevel (from 0, no AI, to 8, hardest). Defaults to difficulty selected in options.</dd>
 <dt>rounds = <em>ai_level</em> (int)</dt>
 <dd>Set amount of rounds. Default is 2.</dd>
 <dt>round.time = <em>round_duration</em> (int)</dt>
-<dd>Set duration of round timer. Default is round duration set in options.</dd>
+<dd>Set duration of round timer. -1 is infinite time. Default is round duration set in options.</dd>
 <dt>selectname = <em>select_name</em> (string)</dt>
 <dd>If Select screen shown for player 1, adjust text shown on select screen. Otherwise "Select your fighter!" is used.</dd>
 <dt>selectfile = <em>path</em> (string)</dt>
@@ -307,6 +313,33 @@ code, tt {
 <dl class="docutils">
 <dt>Parameters:</dt>
 <dd>none</dd>
+</dl>
+</div>
+<div class="section" id="step-types-story-substory">
+<h3><a class="toc-backref" href="#id9">SubStory</a></h3>
+<p>This step starts a story mode file as a sub-story. You can return from the sub-story using the return type below.</p>
+<dl class="docutils">
+<dt>Parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>file = <em>path</em> (string)</dt>
+<dd>Path to story mode file. Can be relative or based on dolmexica root dir.</dd>
+</dl>
+<dt>Optional parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>startstate = <em>state_no</em> (int)</dt>
+<dd>Zero-indexed state to start in. Defaults to 0.</dd>
+</dl>
+</dl>
+</div>
+<div class="section" id="step-types-story-return">
+<h3><a class="toc-backref" href="#id10">Return</a></h3>
+<p>This step returns from a sub-story to the parent story. In case the current story is the root story, returns to the title screen.</p>
+<dl class="docutils">
+<dt>Parameters:</dt>
+<dd><dl class="first last docutils">
+<dt>value = <em>return_value</em> (int)</dt>
+<dd>Story state to enter when returning from current sub-story. Defaults to 0.</dd>
+</dl>
 </dl>
 </div>
 </div>

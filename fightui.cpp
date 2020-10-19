@@ -470,6 +470,8 @@ static struct {
 	EnvironmentShakeEffect mEnvironmentShake;
 
 	list<HitSpark> mHitSparks;
+
+	std::string mCustomFightMotifPath;
 } gFightUIData;
 
 static void loadFightDefScript(MugenDefScript* tScript, char* tDefPath) {
@@ -479,13 +481,22 @@ static void loadFightDefScript(MugenDefScript* tScript, char* tDefPath) {
 	}
 	else {
 		const auto motifPath = getDolmexicaAssetFolder() + getMotifPath();
-		MugenDefScript script;
-		loadMugenDefScript(&script, motifPath);
 		std::string folder;
 		getPathToFile(folder, motifPath.c_str());
-		auto fightPath = getSTLMugenDefStringVariable(&script, "files", "fight");
-		fightPath = findMugenSystemOrFightFilePath(fightPath, folder);
-		unloadMugenDefScript(&script);
+		std::string fightPath;
+		if (!gFightUIData.mCustomFightMotifPath.empty()) {
+			fightPath = gFightUIData.mCustomFightMotifPath;
+			fightPath = findMugenSystemOrFightFilePath(fightPath, folder);
+			gFightUIData.mCustomFightMotifPath = "";
+		}
+		else
+		{
+			MugenDefScript script;
+			loadMugenDefScript(&script, motifPath);
+			fightPath = getSTLMugenDefStringVariable(&script, "files", "fight");
+			fightPath = findMugenSystemOrFightFilePath(fightPath, folder);
+			unloadMugenDefScript(&script);
+		}
 
 		strcpy(tDefPath, fightPath.c_str());
 		gFightUIData.mFightFX.mCoordinateP = 320;
@@ -1749,6 +1760,21 @@ static void updateFightUI(void* tData) {
 ActorBlueprint getDreamFightUIBP() {
 	return makeActorBlueprint(loadFightUI, unloadFightUI, updateFightUI);
 };
+
+void setCustomFightMotif(const std::string& tPath)
+{
+	gFightUIData.mCustomFightMotifPath = tPath;
+}
+
+int hasCustomFightMotif()
+{
+	return gFightUIData.mCustomFightMotifPath != "";
+}
+
+const std::string& getCustomFightMotif()
+{
+	return gFightUIData.mCustomFightMotifPath;
+}
 
 void playDreamHitSpark(const Position2D& tPosition, DreamPlayer* tPlayer, int tIsInPlayerFile, int tNumber, int tIsFacingRight, int tPositionCoordinateP)
 {

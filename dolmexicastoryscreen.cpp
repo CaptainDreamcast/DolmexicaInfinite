@@ -26,6 +26,7 @@
 #include "mugensound.h"
 #include "dolmexicadebug.h"
 #include "config.h"
+#include "storyhelper.h"
 
 using namespace std;
 
@@ -148,9 +149,17 @@ static void unloadStoryInstance(StoryInstance& e) {
 	removeDreamRegisteredStateMachine(e.mRegisteredStateMachine);
 }
 
-static void loadStoryScreen() {
-	setStateMachineHandlerToStory();
+static void loadStoryHelperRootInstance() {
+	gDolmexicaStoryScreenData.mHelperInstances.clear();
+	StoryInstance root;
+	gDolmexicaStoryScreenData.mHelperInstances[-1] = root;
+	initStoryInstance(gDolmexicaStoryScreenData.mHelperInstances[-1]);
 
+	updateDreamSingleStateMachineByID(gDolmexicaStoryScreenData.mHelperInstances[-1].mRegisteredStateMachine);
+
+}
+
+static void loadStoryScreen() {
 	setupDreamStoryAssignmentEvaluator();
 	setupDreamMugenStoryStateControllerHandler();
 	instantiateActor(getDreamMugenStateHandler());
@@ -164,17 +173,12 @@ static void loadStoryScreen() {
 	loadStoryFilesFromScript(&script);
 	unloadMugenDefScript(&script);
 	
-	gDolmexicaStoryScreenData.mHelperInstances.clear();
-	StoryInstance root;
-	gDolmexicaStoryScreenData.mHelperInstances[-1] = root;
-	initStoryInstance(gDolmexicaStoryScreenData.mHelperInstances[-1]);
-
 	if (gDolmexicaStoryScreenData.mHasStage) {
 		instantiateActor(getDreamStageBP());
 		setDreamStageNoAutomaticCameraMovement();
 	}
 
-	updateDreamSingleStateMachineByID(gDolmexicaStoryScreenData.mHelperInstances[-1].mRegisteredStateMachine);
+	loadStoryHelperRootInstance();
 
 	if (gDolmexicaStoryScreenData.mHasMusic) {
 		playDreamStageMusic();
@@ -278,7 +282,26 @@ static Screen gDolmexicaStoryScreen;
 Screen* getDolmexicaStoryScreen() {
 	gDolmexicaStoryScreen = makeScreen(loadStoryScreen, updateStoryScreen, NULL, unloadStoryScreen);
 	return &gDolmexicaStoryScreen;
-};
+}
+
+static void loadDolmexicaStoryActor(void*) {
+	gDolmexicaStoryScreenData.mStoryStates = createEmptyMugenStates();
+	loadDreamMugenStateDefinitionsFromFile(&gDolmexicaStoryScreenData.mStoryStates, (getDolmexicaAssetFolder() + getStoryHelperPath()).c_str());
+	loadStoryHelperRootInstance();
+}
+
+static void unloadDolmexicaStoryActor(void*) {
+	gDolmexicaStoryScreenData.mHelperInstances.clear();
+}
+
+static void updateDolmexicaStoryActor(void*) {
+	updateStoryScreen();
+}
+
+ActorBlueprint getDolmexicaStoryActor()
+{
+	return makeActorBlueprint(loadDolmexicaStoryActor, unloadDolmexicaStoryActor, updateDolmexicaStoryActor);
+}
 
 static void setupFontTransition() {
 	MugenDefScript script;
@@ -1442,6 +1465,18 @@ void addDolmexicaStoryCharacterPositionY(StoryInstance* tInstance, int tID, doub
 {
 	StoryCharacter& e = tInstance->mStoryCharacters[tID];
 	addDolmexicaStoryAnimationPositionYInternal(e.mAnimation, tY);
+}
+
+void setDolmexicaStoryCharacterStagePositionX(StoryInstance* tInstance, int tID, double tX)
+{
+	StoryCharacter& e = tInstance->mStoryCharacters[tID];
+	setDolmexicaStoryAnimationStagePositionXInternal(e.mAnimation, tX);
+}
+
+void setDolmexicaStoryCharacterStagePositionY(StoryInstance* tInstance, int tID, double tY)
+{
+	StoryCharacter& e = tInstance->mStoryCharacters[tID];
+	setDolmexicaStoryAnimationStagePositionYInternal(e.mAnimation, tY);
 }
 
 void setDolmexicaStoryCharacterScaleX(StoryInstance* tInstance, int tID, double tX)

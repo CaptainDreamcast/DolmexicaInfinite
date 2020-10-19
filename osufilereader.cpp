@@ -112,13 +112,13 @@ static void loadSingleOsuFileTimingPoint(void* tCaller, void* tData) {
 
 	if (element->mType != MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) return;
 	MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)element->mData;
-	if (vectorElement->mVector.mSize < 5) return;
+	if (vectorElement->mVector.mSize < 2) return;
 
 	OsuTimingPoint* e = (OsuTimingPoint*)allocMemory(sizeof(OsuTimingPoint));
 	e->mOffset = atoi(vectorElement->mVector.mElement[0]);
 	e->mMillisecondsPerBeat = atof(vectorElement->mVector.mElement[1]);
-	e->mMeter = atoi(vectorElement->mVector.mElement[2]);
-	e->mSampleIndex = atoi(vectorElement->mVector.mElement[4]);
+	e->mMeter = (vectorElement->mVector.mSize >= 3) ? atoi(vectorElement->mVector.mElement[2]) : 4;
+	e->mSampleIndex = (vectorElement->mVector.mSize >= 5) ? atoi(vectorElement->mVector.mElement[4]) : 0;
 	e->mVolume = (vectorElement->mVector.mSize >= 6) ? atoi(vectorElement->mVector.mElement[5]) : 100;
 	e->mInherited = (vectorElement->mVector.mSize >= 7) ? atoi(vectorElement->mVector.mElement[6]) : 1;
 	e->mKiaiMode = (vectorElement->mVector.mSize >= 8) ? atoi(vectorElement->mVector.mElement[7]) : 0;

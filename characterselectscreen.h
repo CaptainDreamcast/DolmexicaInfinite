@@ -17,7 +17,7 @@ void setCharacterSelectCredits();
 void setCharacterSelectStory();
 void setCharacterSelectDisableReturnOneTime();
 
-void parseOptionalCharacterSelectParameters(const MugenStringVector& tVector, int* oOrder, int* oDoesIncludeStage, char* oMusicPath);
+void parseOptionalCharacterSelectParameters(const MugenStringVector& tVector, int* oOrder, int* oDoesIncludeStage, char* oMusicPath, int* oIsValid);
 void getCharacterSelectNamePath(const char* tName, char* oDst);
 
 int setCharacterRandomAndReturnIfSuccessful(MugenDefScript* tScript, int i);
