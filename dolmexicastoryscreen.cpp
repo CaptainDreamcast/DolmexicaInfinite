@@ -286,7 +286,7 @@ Screen* getDolmexicaStoryScreen() {
 
 static void loadDolmexicaStoryActor(void*) {
 	gDolmexicaStoryScreenData.mStoryStates = createEmptyMugenStates();
-	loadDreamMugenStateDefinitionsFromFile(&gDolmexicaStoryScreenData.mStoryStates, (getDolmexicaAssetFolder() + getStoryHelperPath()).c_str());
+	loadDreamMugenStateDefinitionsFromFile(&gDolmexicaStoryScreenData.mStoryStates, getStoryHelperPath().c_str());
 	loadStoryHelperRootInstance();
 }
 

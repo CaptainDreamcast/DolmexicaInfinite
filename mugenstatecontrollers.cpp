@@ -2594,6 +2594,26 @@ static void parseStateControllerPersistence(DreamMugenStateController* tControll
 	tController->mAccessAmount = 0;
 }
 
+static void parseStateControllerTarget(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
+	if (!isMugenDefStringVariableAsGroup(tGroup, "override.target"))
+	{
+		tController->mTarget = MUGEN_STATE_CONTROLLER_TARGET_DEFAULT;
+	}
+	else
+	{
+		const auto value = getSTLMugenDefStringVariableAsGroup(tGroup, "override.target");
+		if (value == "p1") {
+			tController->mTarget = MUGEN_STATE_CONTROLLER_TARGET_PLAYER1;
+		}
+		else if (value == "p2") {
+			tController->mTarget = MUGEN_STATE_CONTROLLER_TARGET_PLAYER2;
+		}
+		else {
+			tController->mTarget = MUGEN_STATE_CONTROLLER_TARGET_DEFAULT;
+		}
+	}
+}
+
 int gDebugStateControllerAmount;
 
 DreamMugenStateController * parseDreamMugenStateControllerFromGroup(MugenDefScriptGroup* tGroup)
@@ -2603,6 +2623,7 @@ DreamMugenStateController * parseDreamMugenStateControllerFromGroup(MugenDefScri
 	parseStateControllerType(ret, tGroup);
 	parseStateControllerTriggers(ret, tGroup);
 	parseStateControllerPersistence(ret, tGroup);
+	parseStateControllerTarget(ret, tGroup);
 
 	return ret;
 }

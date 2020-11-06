@@ -64,7 +64,20 @@ static void updateSingleController(void* tCaller, void* tData) {
 		if (testValue) return;
 	}
 
-	caller->mHasChangedState = handleDreamMugenStateControllerAndReturnWhetherStateChanged(controller, caller->mRegisteredState->mPlayer);
+	DreamPlayer* target;
+	switch (controller->mTarget)
+	{
+	case MUGEN_STATE_CONTROLLER_TARGET_PLAYER1:
+		target = getRootPlayer(0);
+		break;
+	case MUGEN_STATE_CONTROLLER_TARGET_PLAYER2:
+		target = getRootPlayer(1);
+		break;
+	default:
+		target = caller->mRegisteredState->mPlayer;
+	}
+
+	caller->mHasChangedState = handleDreamMugenStateControllerAndReturnWhetherStateChanged(controller, target);
 }
 
 static DreamMugenStates* getCurrentStateMachineStates(RegisteredMugenStateMachine* tRegisteredState) {

@@ -2886,8 +2886,8 @@ static AssignmentReturnValue* evaluateAssignmentStart(DreamMugenAssignment** tAs
 	return ret;
 }
 
-static AssignmentReturnValue* stateNoStoryFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getDolmexicaStoryStateNumber((StoryInstance*)tPlayer)); }
-static AssignmentReturnValue* timeStoryFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getDolmexicaStoryTimeInState((StoryInstance*)tPlayer)); }
+static AssignmentReturnValue* stateNoStoryFunction(DreamPlayer* /*tPlayer*/) { return makeNumberAssignmentReturn(getDolmexicaStoryStateNumber(getDolmexicaStoryRootInstance())); }
+static AssignmentReturnValue* timeStoryFunction(DreamPlayer* /*tPlayer*/) { return makeNumberAssignmentReturn(getDolmexicaStoryTimeInState(getDolmexicaStoryRootInstance())); }
 
 static void setupStoryVariableAssignments() {
 	gVariableHandler.mVariables.clear();

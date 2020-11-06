@@ -173,6 +173,12 @@ enum DreamMugenStoryStateControllerType : uint8_t {
 	MUGEN_STORY_STATE_CONTROLLER_TYPE_STOP_SOUND,
 };
 
+enum DreamMugenStateControllerTarget : uint8_t {
+	MUGEN_STATE_CONTROLLER_TARGET_DEFAULT,
+	MUGEN_STATE_CONTROLLER_TARGET_PLAYER1,
+	MUGEN_STATE_CONTROLLER_TARGET_PLAYER2,
+};
+
 typedef struct {
 	DreamMugenAssignment* mAssignment;
 
@@ -185,6 +191,7 @@ typedef struct {
 	int16_t mPersistence;
 	int16_t mAccessAmount;
 	uint8_t mType;
+	uint8_t mTarget;
 } DreamMugenStateController;
 
 typedef struct {

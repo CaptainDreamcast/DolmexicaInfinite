@@ -20,6 +20,7 @@
 #include "mugenbackgroundstatehandler.h"
 #include "mugensound.h"
 #include "config.h"
+#include "storyhelper.h"
 
 using namespace std;
 
@@ -105,9 +106,8 @@ typedef struct {
 } StageMusic;
 
 typedef struct {
-	char mSpritePath[1024];
+	std::string mSpritePath;
 	int mDebugBG;
-
 } StageBackgroundDefinition;
 
 typedef enum {
@@ -258,7 +258,7 @@ static void loadStageMusic(MugenDefScript* s) {
 	gStageData.mMusic.mBGVolume = getMugenDefIntegerOrDefault(s, "music", "bgvolume", 0);
 }
 
-static MugenDefScriptGroup* loadStageBackgroundDefinitionAndReturnGroup(MugenDefScript* s) {
+static MugenDefScriptGroup* loadStageBackgroundDefinitionAndReturnGroup(const char* tPath, MugenDefScript* s) {
 	MugenDefScriptGroup* bgdef;
 	char name[100];
 	if (stl_string_map_contains_array(s->mGroups, "bgdef")) {
@@ -272,8 +272,20 @@ static MugenDefScriptGroup* loadStageBackgroundDefinitionAndReturnGroup(MugenDef
 
 	bgdef = &s->mGroups[name];
 
-	getMugenDefStringOrDefault(gStageData.mBackgroundDefinition.mSpritePath, s, name, "spr", "");
+	gStageData.mBackgroundDefinition.mSpritePath = getSTLMugenDefStringOrDefault(s, name, "spr", "");
 	gStageData.mBackgroundDefinition.mDebugBG = getMugenDefIntegerOrDefault(s, name, "debugbg", 0);
+	const auto storyPath = getSTLMugenDefStringOrDefault(s, name, "story", "");
+	if (!hasStoryHelper() && !storyPath.empty()) {
+		char path[1024];
+		getPathToFile(path, tPath);
+		if (isFile(path + storyPath))
+		{
+			setStoryHelperPath(path + storyPath);
+		}
+		else {
+			setStoryHelperPath(getDolmexicaAssetFolder() + storyPath);
+		}
+	}
 
 	return bgdef;
 }
@@ -428,9 +440,9 @@ static void loadStageTextures(char* tPath) {
 	char path[1024];
 	getPathToFile(path, tPath);
 	char sffFile[1024];
-	sprintf(sffFile, "%s%s", path, gStageData.mBackgroundDefinition.mSpritePath);
+	sprintf(sffFile, "%s%s", path, gStageData.mBackgroundDefinition.mSpritePath.c_str());
 	if (!isFile(sffFile)) {
-		sprintf(sffFile, "%s%s", getDolmexicaAssetFolder().c_str(), gStageData.mBackgroundDefinition.mSpritePath);
+		sprintf(sffFile, "%s%s", getDolmexicaAssetFolder().c_str(), gStageData.mBackgroundDefinition.mSpritePath.c_str());
 	}
 
 	setMugenSpriteFileReaderToUsePalette(2);
@@ -438,8 +450,8 @@ static void loadStageTextures(char* tPath) {
 	setMugenSpriteFileReaderToNotUsePalette();
 }
 
-static void loadStageBackgroundElements(char* tPath, MugenDefScript* s) {
-	MugenDefScriptGroup* bgdef = loadStageBackgroundDefinitionAndReturnGroup(s);
+static void loadStageBackgroundDefinitionAndElements(char* tPath, MugenDefScript* s) {
+	MugenDefScriptGroup* bgdef = loadStageBackgroundDefinitionAndReturnGroup(tPath, s);
 	if (!bgdef) return;
 
 	loadStageTextures(tPath);
@@ -484,7 +496,7 @@ static void loadStage(void* tData)
 	setDreamMugenStageHandlerCameraCoordinates(Vector2DI(sz.x, sz.y));
 
 	setStageCamera();
-	loadStageBackgroundElements(gStageData.mDefinitionPath, &s);
+	loadStageBackgroundDefinitionAndElements(gStageData.mDefinitionPath, &s);
 	gStageData.mIsCameraManual = 0;
 
 	setBackgroundStatesFromScript(&s);

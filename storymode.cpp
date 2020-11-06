@@ -147,7 +147,7 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 
 	const auto storyHelper = evaluateMugenDefStringOrDefaultAsGroup(tGroup, "storyhelper", "");
 	if (!storyHelper.empty()) {
-		setStoryHelperPath(storyHelper);
+		setStoryHelperPath(getDolmexicaAssetFolder() + storyHelper);
 	}
 
 	int palette1 = evaluateMugenDefIntegerOrDefaultAsGroup(tGroup, "palette1", 1);

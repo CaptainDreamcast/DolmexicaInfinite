@@ -5,7 +5,7 @@ Area Symbols  : JUE
 Peripherals   : E000F10
 Product No    : T7451
 Version       : V1.000
-Release Date  : 20201016
+Release Date  : 20201106
 Boot Filename : 1ST_READ.BIN
 SW Maker Name : JOSH TARI
-Game Title    : DOLINF1.0
+Game Title    : DOLINF1.1
