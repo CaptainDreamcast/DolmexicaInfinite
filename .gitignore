@@ -20,6 +20,7 @@ dc-tool_*
 filesystem
 concept
 debug
+release
 
 web/*
 web2/*
@@ -28,10 +29,13 @@ web2/*
 *.data
 *.js
 
+vita/build/*
+
 windows/.vs/*
 windows/enc_temp_folder/*
 windows/Release/*
 windows/Debug/*
+windows/x64/*
 windows/packages/*
 windows/Test/*
 tools/MakeYourOwnGameKitGui/MakeYourOwnGameKitGuiDreamcast/bin/*

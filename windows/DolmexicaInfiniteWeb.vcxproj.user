@@ -6,7 +6,19 @@
     <LocalDebuggerDebuggerType>Script</LocalDebuggerDebuggerType>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerCommand>C:\Windows\SystemApps\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\MicrosoftEdge.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments>../web/index.html</LocalDebuggerCommandArguments>
+    <LocalDebuggerDebuggerType>Script</LocalDebuggerDebuggerType>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LocalDebuggerCommandArguments>$(ProjectDir) ..\web\index.html</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommand>C:\DEV\PROJECTS\addons\prism\web\run\emrunscript.bat</LocalDebuggerCommand>
+    <LocalDebuggerDebuggerType>Script</LocalDebuggerDebuggerType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommandArguments>$(ProjectDir) ..\web\index.html</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>C:\DEV\PROJECTS\addons\prism\web\run\emrunscript.bat</LocalDebuggerCommand>

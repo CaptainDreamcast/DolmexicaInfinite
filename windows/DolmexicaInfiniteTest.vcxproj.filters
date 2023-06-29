@@ -192,7 +192,13 @@
     <ClCompile Include="..\test\profilertest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\storyhelper.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\scriptbackground.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\main.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
   </ItemGroup>
@@ -363,6 +369,9 @@
       <Filter>Tests</Filter>
     </ClInclude>
     <ClInclude Include="..\scriptbackground.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\storyhelper.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

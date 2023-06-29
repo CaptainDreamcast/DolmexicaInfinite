@@ -198,6 +198,7 @@ code, tt {
 </ul>
 </li>
 <li><a class="reference internal" href="#missing-dreamcast-features" id="id13">Missing Dreamcast features</a></li>
+<li><a class="reference internal" href="#missing-vita-features" id="id13">Missing Vita features</a></li>
 <li><a class="reference internal" href="#missing-windows-features" id="id14">Missing Windows/Web features</a></li>
 </ul>
 </li>
@@ -209,13 +210,14 @@ code, tt {
 </div>
 <div class="section" id="additional-features">
 <h1><a class="toc-backref" href="#id1">Additional features</a></h1>
-<p>The core idea of Dolmexica Infinite was to be a M.U.G.E.N interpreter for Dreamcast, Web (HTML5) and Windows. Dolmexica Infinite includes features from WinMugen to M.U.G.E.N 1.1b. When there were irresolvable conflicts between M.U.G.E.N versions, the earlier version was preferred. The reason for that is the Dreamcast focus, which usually means a preference for older M.U.G.E.N characters due to memory constraints.</p>
+<p>The core idea of Dolmexica Infinite was to be a M.U.G.E.N interpreter for Dreamcast, Web (HTML5), Windows and Vita. Dolmexica Infinite includes features from WinMugen to M.U.G.E.N 1.1b. When there were irresolvable conflicts between M.U.G.E.N versions, the earlier version was preferred. The reason for that is the Dreamcast focus, which usually means a preference for older M.U.G.E.N characters due to memory constraints.</p>
 <div class="section" id="platforms">
 <h2><a class="toc-backref" href="#id2">Platforms</a></h2>
 <ul class="simple">
 <li>The Windows version acts the same way as M.U.G.E.N.</li>
 <li>The Dreamcast version can be made using the Dolmexica Infinite Make-your-own-game kit for Dreamcast. It is distributed as a CDI, which can be burnt to a CD-R using Padus Discjuggler.</li>
-<li>The Web version can be made using the Dolmexica Infinite Make-your-own-game kit for Web. It is distributed as a CDI, which can be burnt to a CD-R using Padus Discjuggler.</li>
+<li>The Web version can be made using the Dolmexica Infinite Make-your-own-game kit for Web. It is distributed as a zip file containing all the files of the web build, this should be the format expected by itch.io, newgrounds, etc.</li>
+<li>The Vita does not have a Make-your-own-game kit yet, it will be part of a future release. It is distributed as a VPK, which can be transferred to a jailbroken Vita. For info on how to do that, refer to the information in <a href="https://vita.hacks.guide" target="_blank">this guide</a>. In addition to that, libshacccg.suprx (a vita shader compiler needed by vitaGL) needs to be extracted on the device. For information on how to achieve that, please follow the information provided in <a href="https://cimmerian.gitbook.io/vita-troubleshooting-guide/shader-compiler/extract-libshacccg.suprx" target="_blank">this guide</a>. The Vita emulator Vita3K is not supported currently.</li>
 <li>Documentation on how to use the Make-your-own-game kits is distributed with the kits.</li>
 </ul>
 </div>
@@ -395,6 +397,17 @@ The continue is part of the fight.def in Dolmexica as the new group <tt class="d
 <li>Subtraction blend mode, due to technical limitations.</li>
 <li>Colored shadows, due to technical limitations.</li>
 <li>Color inversion palette effects and color strength palette effects, due to technical limitations.</li>
+</ul>
+</div>
+<div class="section" id="missing-vita-features">
+<h2><a class="toc-backref" href="#id13">Missing Vita features</a></h2>
+<ul class="simple">
+<li>The Vita port is still WIP, unlike the missing Dreamcast/Windows/Web features which have technical reasons, a good chunk of the missing Vita functionality is simply because it has not been implemented yet.</li>
+<li>Additive/Subtractive blending</li>
+<li>Performance during trigger parsing</li>
+<li>Display being stretched</li>
+<li>Sound</li>
+<li>Prone to crashing when starting/stopping fight</li>
 </ul>
 </div>
 <div class="section" id="missing-windows-features">

@@ -5,29 +5,51 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{81AEEB7B-D614-44FB-A88A-B0CD53EAEF10}</ProjectGuid>
     <RootNamespace>DolmexicaInfiniteTest</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -39,7 +61,13 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -50,8 +78,21 @@
     <OutDir>$(SolutionDir)..\</OutDir>
     <IntDir>Test\$(Configuration)\</IntDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PLATFORMS\WINDOWS\LIBS\googletest\googletest\include;C:\DEV\PROJECTS\addons\prism\include;..;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\DEV\PROJECTS\addons\prism\windows\vs17\LIB;$(LibraryPath)</LibraryPath>
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)..\</OutDir>
+    <IntDir>Test\$(Configuration)\</IntDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PROJECTS\addons\prism\include;..;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\DEV\PROJECTS\addons\prism\windows\vs17\LIB;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)..\</OutDir>
+    <IntDir>Test\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PLATFORMS\WINDOWS\LIBS\googletest\googletest\include;C:\DEV\PROJECTS\addons\prism\include;..;$(IncludePath)</IncludePath>
     <LibraryPath>C:\DEV\PROJECTS\addons\prism\windows\vs17\LIB;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\</OutDir>
     <IntDir>Test\$(Configuration)\</IntDir>
@@ -77,6 +118,27 @@
       <IgnoreSpecificDefaultLibraries>libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>Default</ConformanceMode>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <CallingConvention>Cdecl</CallingConvention>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;winmm.lib;version.lib;imm32.lib;libjpeg.lib;libpng16.lib;zlib.lib;libwebp.lib;OpenGL32.lib;glew32s.lib;freetype.lib;libzstd_static.lib;gtest.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <IgnoreSpecificDefaultLibraries>libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -93,6 +155,24 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;winmm.lib;version.lib;imm32.lib;libjpeg.lib;libpng16.lib;zlib.lib;libwebp.lib;OpenGL32.lib;glew32s.lib;freetype.lib;libzstd_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>Default</ConformanceMode>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;winmm.lib;version.lib;imm32.lib;libjpeg.lib;libpng16.lib;zlib.lib;libwebp.lib;OpenGL32.lib;glew32s.lib;freetype.lib;libzstd_static.lib;gtest.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -139,6 +219,7 @@
     <ClCompile Include="..\randomwatchmode.cpp" />
     <ClCompile Include="..\scriptbackground.cpp" />
     <ClCompile Include="..\stage.cpp" />
+    <ClCompile Include="..\storyhelper.cpp" />
     <ClCompile Include="..\storymode.cpp" />
     <ClCompile Include="..\storyscreen.cpp" />
     <ClCompile Include="..\superwatchmode.cpp" />
@@ -146,6 +227,7 @@
     <ClCompile Include="..\test\assets_test.cpp" />
     <ClCompile Include="..\test\commontestfunctionality.cpp" />
     <ClCompile Include="..\test\crashtest.cpp" />
+    <ClCompile Include="..\test\main.cpp" />
     <ClCompile Include="..\test\mugenassignmentevaluatortest.cpp" />
     <ClCompile Include="..\test\performancetest.cpp" />
     <ClCompile Include="..\test\profilertest.cpp" />
@@ -211,6 +293,7 @@
     <ClInclude Include="..\randomwatchmode.h" />
     <ClInclude Include="..\scriptbackground.h" />
     <ClInclude Include="..\stage.h" />
+    <ClInclude Include="..\storyhelper.h" />
     <ClInclude Include="..\storymode.h" />
     <ClInclude Include="..\storyscreen.h" />
     <ClInclude Include="..\superwatchmode.h" />

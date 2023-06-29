@@ -6,7 +6,19 @@
     <LocalDebuggerDebuggerType>Script</LocalDebuggerDebuggerType>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerCommand>C:\DEV\TOOLS\ubunturun.bat</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments>DolmexicaInfinite run</LocalDebuggerCommandArguments>
+    <LocalDebuggerDebuggerType>Script</LocalDebuggerDebuggerType>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LocalDebuggerCommandArguments>DolmexicaInfinite run</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommand>C:\DEV\TOOLS\ubunturun.bat</LocalDebuggerCommand>
+    <LocalDebuggerDebuggerType>Script</LocalDebuggerDebuggerType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommandArguments>DolmexicaInfinite run</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>C:\DEV\TOOLS\ubunturun.bat</LocalDebuggerCommand>

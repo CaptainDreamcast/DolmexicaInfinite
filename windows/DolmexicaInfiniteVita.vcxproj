@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{8CFB7282-D86E-4281-A8F8-86B463449870}</ProjectGuid>
+    <ProjectGuid>{E7128EB8-CC73-44E2-B955-D7E471DD9281}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -53,55 +53,56 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <NMakeBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web"</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita &amp;&amp; rm -r -f build &amp;&amp; cmake -S . -B build &amp;&amp; cd build &amp;&amp; make"</NMakeBuildCommandLine>
     <NMakeOutput>
     </NMakeOutput>
-    <NMakeCleanCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web clean"</NMakeCleanCommandLine>
-    <NMakeReBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web clean &amp;&amp; make -f Makefile.web"</NMakeReBuildCommandLine>
-    <NMakePreprocessorDefinitions>__EMSCRIPTEN__;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeCleanCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita/build &amp;&amp; make clean &amp;&amp; cd .. &amp;&amp; rm -r -f build"</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita &amp;&amp; rm -r -f build &amp;&amp; cmake -S . -B build &amp;&amp; cd build &amp;&amp; make"</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>VITA;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <NMakeBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web"</NMakeBuildCommandLine>
-    <NMakeOutput />
-    <NMakeCleanCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web clean"</NMakeCleanCommandLine>
-    <NMakeReBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web clean &amp;&amp; make -f Makefile.web"</NMakeReBuildCommandLine>
-    <NMakePreprocessorDefinitions>__EMSCRIPTEN__;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeBuildCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita &amp;&amp; rm -f build/DolmexicaInfinite &amp;&amp; cmake -S . -B build &amp;&amp; cd build &amp;&amp; make"</NMakeBuildCommandLine>
+    <NMakeOutput>
+    </NMakeOutput>
+    <NMakeCleanCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita/build &amp;&amp; make clean &amp;&amp; cd .. &amp;&amp; rm -r -f build"</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita &amp;&amp; rm -f build/DolmexicaInfinite &amp;&amp; cmake -S . -B build &amp;&amp; cd build &amp;&amp; make"</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>VITA;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <NMakeBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web"</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/kos &amp;&amp; . environ.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.dc"</NMakeBuildCommandLine>
     <NMakeOutput>
     </NMakeOutput>
-    <NMakeCleanCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web clean"</NMakeCleanCommandLine>
-    <NMakeReBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web clean &amp;&amp; make -f Makefile.web"</NMakeReBuildCommandLine>
-    <NMakePreprocessorDefinitions>__EMSCRIPTEN__;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeCleanCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita/build &amp;&amp; make clean &amp;&amp; cd .. &amp;&amp; rm -r -f build"</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita &amp;&amp; rm -r -f build &amp;&amp; cmake -S . -B build &amp;&amp; cd build &amp;&amp; make"</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>VITA;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <NMakeBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web"</NMakeBuildCommandLine>
-    <NMakeOutput />
-    <NMakeCleanCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web clean"</NMakeCleanCommandLine>
-    <NMakeReBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web clean &amp;&amp; make -f Makefile.web"</NMakeReBuildCommandLine>
-    <NMakePreprocessorDefinitions>__EMSCRIPTEN__;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeBuildCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita &amp;&amp; rm -r -f build &amp;&amp; cmake -S . -B build &amp;&amp; cd build &amp;&amp; make"</NMakeBuildCommandLine>
+    <NMakeOutput>
+    </NMakeOutput>
+    <NMakeCleanCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita/build &amp;&amp; make clean &amp;&amp; cd .. &amp;&amp; rm -r -f build"</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita &amp;&amp; rm -r -f build &amp;&amp; cmake -S . -B build &amp;&amp; cd build &amp;&amp; make"</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>VITA;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\Makefile.common" />
-    <None Include="..\Makefile.web" />
+    <None Include="..\vita\CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -68,7 +68,7 @@ static struct {
 } gAssignmentEvaluator;
 
 static void initEvaluationStack() {
-	gAssignmentEvaluator.mStackSize = REGULAR_STACK_SIZE;
+	gAssignmentEvaluator.mStackSize = isOnVita() ? 0 : REGULAR_STACK_SIZE; // TODO: fix regular stack on Vita
 	gAssignmentEvaluator.mEmergencyStack.clear();
 }
 
@@ -1753,6 +1753,7 @@ static void setupComparisons() {
 static const char* getPlatformString() {
 	if (isOnDreamcast()) return "dreamcast";
 	else if(isOnWeb()) return "web";
+	else if (isOnVita()) return "vita";
 	else return "windows";
 }
 
@@ -2879,10 +2880,9 @@ void setupDreamAssignmentEvaluator() {
 static AssignmentReturnValue* evaluateAssignmentStart(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* oIsStatic) {
 	setProfilingSectionMarkerCurrentFunction();
 	gAssignmentEvaluator.mFreePointer = 0;
+	if (!gAssignmentEvaluator.mEmergencyStack.empty()) gAssignmentEvaluator.mEmergencyStack.clear();
 
 	auto ret = evaluateAssignmentInternal(tAssignment, tPlayer, oIsStatic);
-
-	if(!gAssignmentEvaluator.mEmergencyStack.empty()) gAssignmentEvaluator.mEmergencyStack.clear();
 	return ret;
 }
 

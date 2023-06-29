@@ -405,7 +405,7 @@ static string difficultyCB(void* /*tCaller*/, const std::string& tCommand) {
 	return "";
 }
 
-#if !defined(NDEBUG) && defined (_WIN32)
+#if defined (_WIN32)
 #define Rectangle Rectangle2
 #include <Windows.h>
 #undef Rectangle

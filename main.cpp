@@ -27,7 +27,7 @@
 char romdisk_buffer[1];
 int romdisk_buffer_length;
 
-#define DEVELOP
+// #define DEVELOP
 
 #ifdef DREAMCAST
 KOS_INIT_FLAGS(INIT_DEFAULT);
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 
 #ifdef DEVELOP
 	setDevelopMode();
-	setMinimumLogType(isOnDreamcast() ? LOG_TYPE_NONE : LOG_TYPE_NORMAL);
+	setMinimumLogType((isOnDreamcast() || isOnVita()) ? LOG_TYPE_NONE : LOG_TYPE_NORMAL);
 #else
 	setMinimumLogType(LOG_TYPE_NONE);
 #endif
