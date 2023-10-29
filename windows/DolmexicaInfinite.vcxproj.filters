@@ -192,6 +192,15 @@
     <ClCompile Include="..\storyhelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\netplayscreen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\netplaylogic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fightnetplay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ai.h">
@@ -357,6 +366,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\storyhelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\netplayscreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\netplaylogic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fightnetplay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

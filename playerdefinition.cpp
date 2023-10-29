@@ -126,7 +126,7 @@ static int getPlayerRandomPaletteIndex(MugenDefScript* tScript) {
 		}
 	}
 	if (possibleValues.empty()) return 0;
-	else return possibleValues[randfromInteger(0, possibleValues.size() - 1)];
+	else return possibleValues[randfromInteger(0, int(possibleValues.size()) - 1)];
 }
 
 static int parsePlayerPreferredPalette(int tPalette, MugenDefScript* tScript) {
@@ -1371,7 +1371,6 @@ static int updateSinglePlayerPreStateMachine(DreamPlayer* p) {
 	int_map_map(&p->mProjectiles, updateSingleProjectilePreStateMachineCB, NULL);
 	return 0;
 }
-
 
 static void updatePlayersPreStateMachine(void* tData) {
 	(void)tData;
@@ -4160,16 +4159,18 @@ double getPlayerFallDefenseMultiplier(DreamPlayer* p)
 	return 100.0 / (f+100);
 }
 
-void setPlayerHuman(int i)
+void setPlayerHuman(int i, int tCustomControllerUsed)
 {
 	DreamPlayer* p = getRootPlayer(i);
 	p->mAILevel = 0;
+	setDreamCommandInputControllerUsed(i, ((tCustomControllerUsed == -1) ? i : tCustomControllerUsed));
 }
 
 void setPlayerArtificial(int i, int tValue)
 {
 	DreamPlayer* p = getRootPlayer(i);
 	p->mAILevel = tValue;
+	setDreamCommandInputControllerUsed(i, i);
 }
 
 int isPlayerHuman(DreamPlayer* p) {

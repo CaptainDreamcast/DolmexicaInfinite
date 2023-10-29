@@ -15,6 +15,7 @@
 #include <prism/clipboardhandler.h>
 #include <prism/screeneffect.h>
 #include <prism/timer.h>
+#include <prism/netplay.h>
 
 #include <prism/log.h>
 
@@ -38,6 +39,7 @@
 #include "freeplaymode.h"
 #include "intro.h"
 #include "config.h"
+#include "netplayscreen.h"
 
 typedef struct {
 	void(*mCB)();
@@ -152,6 +154,15 @@ static void gotoOptionsScreen(void* tCaller) {
 
 static void optionsCB() {
 	addFadeOut(gTitleScreenData.mHeader.mFadeOutTime, gotoOptionsScreen, NULL);
+}
+
+static void gotoNetplayScreen(void* tCaller) {
+	(void)tCaller;
+	startNetplayScreen();
+}
+
+static void netplayCB() {
+	addFadeOut(gTitleScreenData.mHeader.mFadeOutTime, gotoNetplayScreen, NULL);
 }
 
 static void gotoSurvivalMode(void* tCaller) {
@@ -326,9 +337,9 @@ static void loadCredits() {
 	setAnimationSize(gTitleScreenData.mCreditBGAnimationElement, Vector3D(320, 20, 1), Vector3D(0, 0, 0));
 	setAnimationColor(gTitleScreenData.mCreditBGAnimationElement, 0, 0, 0.5);
 
-	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite 1.2", Vector3D(0, 240, 51), -1);
+	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite 1.3", Vector3D(0, 240, 51), -1);
 	
-	gTitleScreenData.mRightCreditTextID = addMugenText("30/06/23 Presented by Dogma", Vector3D(320, 240, 51), -1);
+	gTitleScreenData.mRightCreditTextID = addMugenText("03/11/23 Presented by Dogma", Vector3D(320, 240, 51), -1);
 	setMugenTextAlignment(gTitleScreenData.mRightCreditTextID, MUGEN_TEXT_ALIGNMENT_RIGHT);
 }
 
@@ -347,6 +358,15 @@ static void loadTitleMusic() {
 	}
 
 	freeMemory(path);
+}
+
+
+static void resetGameStateFromNetplayIfNecessary() {
+	setDrawingFrameSkippingEnabled(false);
+	setInputDelay(0);
+	if (isNetplayActive()) {
+		shutdownNetplay();
+	}
 }
 
 static void updateMenuElementPositions();
@@ -381,6 +401,9 @@ static void loadTitleScreen() {
 	addMenuPoint("menu.itemname.arcade", arcadeCB);
 	addMenuPoint("menu.itemname.freeplay", freePlayCB);
 	addMenuPoint("menu.itemname.versus", versusCB);
+	if (isOnWindows()) {
+		addMenuPoint("menu.itemname.netplay", netplayCB);
+	}
 	addMenuPoint("menu.itemname.teamarcade", arcadeCB);
 	addMenuPoint("menu.itemname.teamversus", arcadeCB);
 	addMenuPoint("menu.itemname.teamcoop", arcadeCB);
@@ -407,6 +430,8 @@ static void loadTitleScreen() {
 	loadCredits();
 
 	loadTitleMusic();
+
+	resetGameStateFromNetplayIfNecessary();
 
 	addFadeIn(gTitleScreenData.mHeader.mFadeInTime, NULL, NULL);
 

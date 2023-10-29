@@ -21,25 +21,23 @@
 #include "config.h"
 #include "mugenstatehandler.h"
 
-using namespace std;
-
 typedef struct {
 	int mPreviousValue;
 	int* mValuePointer;
 } TrackedInteger;
 
 typedef struct {
-	map<std::string, TrackedInteger> mMap;
-	int mIsOverridingTimeDilatation = 0;
-	double mOverridingTimeDilatationSpeed = 1.0;
+	std::map<std::string, TrackedInteger> mMap;
+	int mIsOverridingTimeDilatation;
+	double mOverridingTimeDilatationSpeed;
 
-	map<std::string, std::set<int>> mStoryCharAnimations;
+	std::map<std::string, std::set<int>> mStoryCharAnimations;
 } DolmexicaDebugData;
 
 static DolmexicaDebugData* gDolmexicaDebugData = nullptr;
 
-static vector<string> splitCommandString(string s) {
-	vector<string> ret;
+static std::vector<std::string> splitCommandString(std::string s) {
+	std::vector<std::string> ret;
 	int n = 0;
 	while (n < (int)s.size()) {
 		int next = (int)s.find(' ', n);
@@ -59,8 +57,8 @@ static void mockFightFinishedCB() {
 	setNewScreen(getDreamTitleScreen());
 }
 
-static string fightCB(void* /*tCaller*/, const std::string& tCommand) {
-	vector<string> words = splitCommandString(tCommand);
+static std::string fightCB(void* /*tCaller*/, const std::string& tCommand) {
+	std::vector<std::string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
 	
 	char path[1024];
@@ -105,9 +103,9 @@ static string fightCB(void* /*tCaller*/, const std::string& tCommand) {
 	return "";
 }
 
-static string stageCB(void* tCaller, const std::string& tCommand) {
+static std::string stageCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
-	vector<string> words = splitCommandString(tCommand);
+	std::vector<std::string> words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 
 	setPlayerDefinitionPath(0, (getDolmexicaAssetFolder() + "chars/kfm/kfm.def").c_str());
@@ -119,30 +117,30 @@ static string stageCB(void* tCaller, const std::string& tCommand) {
 	return "";
 }
 
-static string fightdebugCB(void* tCaller, const std::string& tCommand) {
+static std::string fightdebugCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
 	(void)tCommand;
 	switchFightDebugTextActivity();
 	return "";
 }
 
-static string fightcollisionCB(void* tCaller, const std::string& tCommand) {
+static std::string fightcollisionCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
 	(void)tCommand;
 	switchFightCollisionDebugActivity();
 	return "";
 }
 
-static string skipintroCB(void* tCaller, const std::string& tCommand) {
+static std::string skipintroCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
 	(void)tCommand;
 	skipFightIntroWithoutFading();
 	return "";
 }
 
-static string rootposCB(void* tCaller, const std::string& tCommand) {
+static std::string rootposCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
-	vector<string> words = splitCommandString(tCommand);
+	std::vector<std::string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
 
 	int id = atoi(words[1].data());
@@ -156,9 +154,9 @@ static string rootposCB(void* tCaller, const std::string& tCommand) {
 	return "";
 }
 
-static string rootposcloseCB(void* tCaller, const std::string& tCommand) {
+static std::string rootposcloseCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
-	vector<string> words = splitCommandString(tCommand);
+	std::vector<std::string> words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 
 	double dist = atof(words[1].data());
@@ -168,9 +166,9 @@ static string rootposcloseCB(void* tCaller, const std::string& tCommand) {
 	return "";
 }
 
-static string rootctrlCB(void* tCaller, const std::string& tCommand) {
+static std::string rootctrlCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
-	vector<string> words = splitCommandString(tCommand);
+	std::vector<std::string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
 
 	int id = atoi(words[1].data());
@@ -180,9 +178,9 @@ static string rootctrlCB(void* tCaller, const std::string& tCommand) {
 	return "";
 }
 
-static string fullpowerCB(void* tCaller, const std::string& tCommand) {
+static std::string fullpowerCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
-	vector<string> words = splitCommandString(tCommand);
+	std::vector<std::string> words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 
 	int id = atoi(words[1].data());
@@ -192,9 +190,9 @@ static string fullpowerCB(void* tCaller, const std::string& tCommand) {
 	return "";
 }
 
-static string commandCB(void* tCaller, const std::string& tCommand) {
+static std::string commandCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
-	vector<string> words = splitCommandString(tCommand);
+	std::vector<std::string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
 	
 	int id = atoi(words[1].data());
@@ -204,9 +202,9 @@ static string commandCB(void* tCaller, const std::string& tCommand) {
 	return "";
 }
 
-static string testcommandNumberCB(void* tCaller, const std::string& tCommand) {
+static std::string testcommandNumberCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
-	vector<string> words = splitCommandString(tCommand);
+	std::vector<std::string> words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 
 	int commandNumber = atoi(words[1].data());
@@ -221,31 +219,31 @@ static string testcommandNumberCB(void* tCaller, const std::string& tCommand) {
 	return result ? "" : "Over command amount";
 }
 
-static string evalCB(void* tCaller, const std::string& tCommand) {
+static std::string evalCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
-	vector<string> words = splitCommandString(tCommand);
+	std::vector<std::string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
 	int id = atoi(words[1].data());
 	DreamPlayer* p = getRootPlayer(id);
 
-	int n = tCommand.find(' ', tCommand.find(' ') + 1) + 1;
-	string assignmentString = tCommand.substr(n);
+	auto n = tCommand.find(' ', tCommand.find(' ') + 1) + 1;
+	std::string assignmentString = tCommand.substr(n);
 	char buffer[1024];
 	strcpy(buffer, assignmentString.c_str());
 
 	setActiveStateMachineCoordinateP(getPlayerCoordinateP(p));
 
 	auto assignment = parseDreamMugenAssignmentFromString(buffer);
-	string result;
+	std::string result;
 	evaluateDreamAssignmentAndReturnAsString(result, &assignment, p);
 	destroyDreamMugenAssignment(assignment);
-	string ret = result;
+	std::string ret = result;
 	return ret;
 }
 
-static string evalhelperCB(void* tCaller, const std::string& tCommand) {
+static std::string evalhelperCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
-	vector<string> words = splitCommandString(tCommand);
+	std::vector<std::string> words = splitCommandString(tCommand);
 	if (words.size() < 4) return "Too few arguments";
 	int id = atoi(words[1].data());
 	int helper = atoi(words[2].data());
@@ -255,24 +253,24 @@ static string evalhelperCB(void* tCaller, const std::string& tCommand) {
 		return "No helper with that ID.";
 	}
 
-	int n = tCommand.find(' ', tCommand.find(' ', tCommand.find(' ') + 1) + 1) + 1;
-	string assignmentString = tCommand.substr(n);
+	auto n = tCommand.find(' ', tCommand.find(' ', tCommand.find(' ') + 1) + 1) + 1;
+	std::string assignmentString = tCommand.substr(n);
 	char buffer[1024];
 	strcpy(buffer, assignmentString.c_str());
 
 	setActiveStateMachineCoordinateP(getPlayerCoordinateP(p));
 
 	auto assignment = parseDreamMugenAssignmentFromString(buffer);
-	string result;
+	std::string result;
 	evaluateDreamAssignmentAndReturnAsString(result, &assignment, p);
 	destroyDreamMugenAssignment(assignment);
-	string ret = result;
+	std::string ret = result;
 	return ret;
 }
 
-static string trackvarCB(void* tCaller, const std::string& tCommand) {
+static std::string trackvarCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
-	vector<string> words = splitCommandString(tCommand);
+	std::vector<std::string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
 	int id = atoi(words[1].data());
 	int varNumber = atoi(words[2].data());
@@ -282,7 +280,7 @@ static string trackvarCB(void* tCaller, const std::string& tCommand) {
 	TrackedInteger e;
 	e.mValuePointer = getPlayerVariableReference(p, varNumber);
 	e.mPreviousValue = *e.mValuePointer;
-	ostringstream ss;
+	std::ostringstream ss;
 	ss << "player " << id << "; var " << varNumber;
 	gDolmexicaDebugData->mMap[ss.str()] = e;
 	
@@ -291,22 +289,22 @@ static string trackvarCB(void* tCaller, const std::string& tCommand) {
 	return ss.str();
 }
 
-static string untrackvarCB(void* tCaller, const std::string& tCommand) {
+static std::string untrackvarCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
-	vector<string> words = splitCommandString(tCommand);
+	std::vector<std::string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
 	int id = atoi(words[1].data());
 	int varNumber = atoi(words[2].data());
 
-	ostringstream ss;
+	std::ostringstream ss;
 	ss << "player " << id << "; var " << varNumber;
 	gDolmexicaDebugData->mMap.erase(ss.str());
 	return "";
 }
 
-static string stateCB(void* tCaller, const std::string& tCommand) {
+static std::string stateCB(void* tCaller, const std::string& tCommand) {
 	(void)tCaller;
-	vector<string> words = splitCommandString(tCommand);
+	std::vector<std::string> words = splitCommandString(tCommand);
 	if (words.size() < 3) return "Too few arguments";
 	int id = atoi(words[1].data());
 	int stateNumber = atoi(words[2].data());
@@ -316,7 +314,7 @@ static string stateCB(void* tCaller, const std::string& tCommand) {
 	return "";
 }
 
-static string storyCB(void* /*tCaller*/, const std::string& tCommand) {
+static std::string storyCB(void* /*tCaller*/, const std::string& tCommand) {
 	const auto words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 	const auto& name = words[1];
@@ -330,12 +328,12 @@ static string storyCB(void* /*tCaller*/, const std::string& tCommand) {
 	return "";
 }
 
-static string randomwatchCB(void* /*tCaller*/, const std::string& /*tCommand*/) {
+static std::string randomwatchCB(void* /*tCaller*/, const std::string& /*tCommand*/) {
 	startRandomWatchMode();
 	return "";
 }
 
-static string speedCB(void* /*tCaller*/, const std::string& tCommand) {
+static std::string speedCB(void* /*tCaller*/, const std::string& tCommand) {
 	const auto words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 	const auto speed = atof(words[1].c_str());
@@ -345,7 +343,7 @@ static string speedCB(void* /*tCaller*/, const std::string& tCommand) {
 	return "";
 }
 
-static string roundamountCB(void* /*tCaller*/, const std::string& tCommand) {
+static std::string roundamountCB(void* /*tCaller*/, const std::string& tCommand) {
 	const auto words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 	const auto rounds = atoi(words[1].c_str());
@@ -353,7 +351,7 @@ static string roundamountCB(void* /*tCaller*/, const std::string& tCommand) {
 	return "";
 }
 
-static string readStoryAnimsCB(void* /*tCaller*/, const std::string& /*tCommand*/) {
+static std::string readStoryAnimsCB(void* /*tCaller*/, const std::string& /*tCommand*/) {
 	auto b = fileToBuffer("debug/anims.txt");
 	auto p = getBufferPointer(b);
 
@@ -374,8 +372,8 @@ static string readStoryAnimsCB(void* /*tCaller*/, const std::string& /*tCommand*
 	return "";
 }
 
-static string writeStoryAnimsCB(void* /*tCaller*/, const std::string& /*tCommand*/) {
-	stringstream ss;
+static std::string writeStoryAnimsCB(void* /*tCaller*/, const std::string& /*tCommand*/) {
+	std::stringstream ss;
 	
 	if (isFile("debug/anims.txt")) {
 		auto b = fileToBuffer("debug/anims.txt");
@@ -392,12 +390,12 @@ static string writeStoryAnimsCB(void* /*tCaller*/, const std::string& /*tCommand
 
 	}
 
-	bufferToFile("debug/anims.txt", makeBuffer((void*)ss.str().c_str(), ss.str().size()));
+	bufferToFile("debug/anims.txt", makeBuffer((void*)ss.str().c_str(), uint32_t(ss.str().size())));
 
 	return "";
 }
 
-static string difficultyCB(void* /*tCaller*/, const std::string& tCommand) {
+static std::string difficultyCB(void* /*tCaller*/, const std::string& tCommand) {
 	const auto words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 	const auto difficulty = atoi(words[1].c_str());
@@ -405,10 +403,8 @@ static string difficultyCB(void* /*tCaller*/, const std::string& tCommand) {
 	return "";
 }
 
-#if defined (_WIN32)
-#define Rectangle Rectangle2
-#include <Windows.h>
-#undef Rectangle
+#if defined (_WIN32) || defined(VITA)
+#include <filesystem>
 
 static bool caseIndifferentManualTestNameSort (const std::string& lhs, const std::string& rhs) {
 	return std::lexicographical_compare(lhs.begin(), lhs.end(),
@@ -424,17 +420,10 @@ static struct {
 } gFullCharacterTestData;
 
 static void collectFullCharacterTestCharacters() {
-	const auto folderMask = "assets\\chars\\*";
-	WIN32_FIND_DATAA ffd;
-	HANDLE hFind = FindFirstFileA(folderMask, &ffd);
-	if (hFind != INVALID_HANDLE_VALUE) {
-		do {
-			if (strcmp(ffd.cFileName, ".") == 0 || strcmp(ffd.cFileName, "..") == 0) continue;
-			if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-				gFullCharacterTestData.mCharacters.insert(ffd.cFileName);
-			}
-		} while (FindNextFileA(hFind, &ffd) != 0);
-		FindClose(hFind);
+	std::filesystem::path folderMask = "assets/chars" ;
+	for (auto const& dir_entry : std::filesystem::directory_iterator{ folderMask })
+	{
+		gFullCharacterTestData.mCharacters.insert(dir_entry.path().stem().string());
 	}
 }
 
@@ -477,7 +466,7 @@ static void startNextFullCharacterTestFight() {
 	startFightScreen(fullManualTestFightFinishedCB);
 }
 
-static string fullCharacterTestCB(void* /*tCaller*/, const std::string& tCommand) {
+static std::string fullCharacterTestCB(void* /*tCaller*/, const std::string& tCommand) {
 	const auto words = splitCommandString(tCommand);
 	std::string startCharacter;
 	if (words.size() >= 2) {
@@ -515,26 +504,21 @@ static struct {
 } gFullStageTestData;
 
 static void collectFullStageTestStagesRecursive(const std::string& tSearchPath) {
-	const auto folderMask = tSearchPath + "*";
-	WIN32_FIND_DATAA ffd;
-	HANDLE hFind = FindFirstFileA(folderMask.c_str(), &ffd);
-	if (hFind != INVALID_HANDLE_VALUE) {
-		do {
-			if (strcmp(ffd.cFileName, ".") == 0 || strcmp(ffd.cFileName, "..") == 0) continue;
-			if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-				collectFullStageTestStagesRecursive(tSearchPath + ffd.cFileName + "/");
-			}
-			else {
-				if (!hasFileExtension(ffd.cFileName)) continue;
-				const auto extension = getFileExtension(ffd.cFileName);
-				if (strcmp(extension, "def")) continue;
-				auto filePath = tSearchPath + ffd.cFileName;
-				cleanPathSlashes(filePath);
-				gFullStageTestData.mStages.insert(filePath);
+	std::filesystem::path folderMask = tSearchPath;
+	for (auto const& dir_entry : std::filesystem::directory_iterator{ folderMask })
+	{
+		if (dir_entry.is_directory())
+		{
+			collectFullStageTestStagesRecursive(tSearchPath + dir_entry.path().stem().string() + "/");
+		}
+		else {
+			const auto extension = dir_entry.path().extension().string();
+			if (extension != ".def") continue;
+			auto filePath = tSearchPath + dir_entry.path().filename().string();
+			cleanPathSlashes(filePath);
+			gFullStageTestData.mStages.insert(filePath);
 
-			}
-		} while (FindNextFileA(hFind, &ffd) != 0);
-		FindClose(hFind);
+		}
 	}
 }
 
@@ -573,7 +557,7 @@ static void startNextFullStageTestFight() {
 	startFightScreen(fullManualTestFightFinishedCB);
 }
 
-static string fullStageTestCB(void* /*tCaller*/, const std::string& tCommand) {
+static std::string fullStageTestCB(void* /*tCaller*/, const std::string& tCommand) {
 	const auto words = splitCommandString(tCommand);
 	std::string startStage;
 	if (words.size() >= 2) {
@@ -607,7 +591,7 @@ static std::string fullStageTestCB(void*, const std::string&) {
 static void updateFullStageTest() {}
 #endif
 
-static string randomSeedCB(void* /*tCaller*/, const std::string& tCommand) {
+static std::string randomSeedCB(void* /*tCaller*/, const std::string& tCommand) {
 	const auto words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 	const auto seed = atoi(words[1].c_str());
@@ -615,7 +599,7 @@ static string randomSeedCB(void* /*tCaller*/, const std::string& tCommand) {
 	return "";
 }
 
-static string airJumpCB(void* /*tCaller*/, const std::string& tCommand) {
+static std::string airJumpCB(void* /*tCaller*/, const std::string& tCommand) {
 	const auto words = splitCommandString(tCommand);
 	if (words.size() < 2) return "Too few arguments";
 	const auto airJumpAmount = atoi(words[1].c_str());
@@ -626,6 +610,8 @@ static string airJumpCB(void* /*tCaller*/, const std::string& tCommand) {
 void initDolmexicaDebug()
 {
 	gDolmexicaDebugData = new DolmexicaDebugData();
+	gDolmexicaDebugData->mIsOverridingTimeDilatation = 0;
+	gDolmexicaDebugData->mOverridingTimeDilatationSpeed = 1.0;
 
 	addPrismDebugConsoleCommand("fight", fightCB);
 	addPrismDebugConsoleCommand("stage", stageCB);
@@ -666,7 +652,7 @@ static void updateSingleTrackedInteger(void* tCaller, const std::string& tKey, T
 	(void)tCaller;
 
 	if (*e.mValuePointer != e.mPreviousValue) {
-		ostringstream ss;
+		std::ostringstream ss;
 		ss << tKey << " changed to " << *e.mValuePointer;
 		submitToPrismDebugConsole(ss.str());
 	}
@@ -705,7 +691,7 @@ int isDebugOverridingTimeDilatation()
 void addDebugDolmexicaStoryCharacterAnimation(const char * tCharacter, int tAnimation)
 {
 	if (!gDolmexicaDebugData) return;
-	string name = tCharacter;
+	std::string name = tCharacter;
 	turnStringLowercase(name);
 	gDolmexicaDebugData->mStoryCharAnimations[name].insert(tAnimation);
 }

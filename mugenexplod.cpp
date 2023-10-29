@@ -46,7 +46,7 @@ typedef struct {
 	Acceleration mAcceleration;
 
 	Vector2DI mRandomOffset;
-	int mRemoveTime = -2;
+	int mRemoveTime;
 
 	int mSuperMoveTime;
 	int mPauseMoveTime;
@@ -95,6 +95,7 @@ int addExplod(DreamPlayer* tPlayer)
 {
 	int id = stl_int_map_push_back(gMugenExplod.mExplods, Explod());
 	Explod& e = gMugenExplod.mExplods[id];
+	e.mRemoveTime = -2;
 	e.mPlayer = tPlayer;
 	e.mInternalID = id;
 	return e.mInternalID;

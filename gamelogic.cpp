@@ -918,6 +918,27 @@ void setGameModeOsu()
 	gGameLogicData.mMode = GAME_MODE_OSU;
 }
 
+void setGameModeNetplay(int isHost)
+{
+	gGameLogicData.mRoundsToWin = 2;
+	gGameLogicData.mHasCustomRoundsToWinAmount = 0;
+	gGameLogicData.mHasCustomTimerDuration = 0;
+	gGameLogicData.mStartRound = 1;
+
+	setFightResultActive(0);
+	setTimerInfinite();
+	setPlayersToRealFightMode();
+	setPlayerHuman(0, isHost ? 0 : 1);
+	setPlayerHuman(1, isHost ? 1 : 0);
+	setPlayerPreferredPalette(0, 1);
+	setPlayerPreferredPalette(1, 2);
+	setPlayerStartLifePercentage(0, 1);
+	setPlayerStartLifePercentage(1, 1);
+	resetStoryHelper();
+
+	gGameLogicData.mMode = GAME_MODE_NETPLAY;
+}
+
 void resetGameMode()
 {
 	if (getGameMode() == GAME_MODE_OSU)

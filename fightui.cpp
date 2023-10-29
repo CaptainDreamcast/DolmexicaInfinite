@@ -1594,8 +1594,16 @@ static void updateTODisplay() {
 	updateTOFinish();
 }
 
+static int hasFightUIPressedStartFlankAny() {
+	return hasPressedStartFlankSingle(0) || hasPressedStartFlankSingle(1);
+}
+
+static int hasFightUIPressedAFlankAny() {
+	return hasPressedAFlankSingle(0) || hasPressedAFlankSingle(1);
+}
+
 static void updateWinDisplayFinish() {
-	if (gFightUIData.mWin.mNow >= (gFightUIData.mWin.mTime + gFightUIData.mWin.mDisplayTime) || hasPressedStartFlank()) {
+	if (gFightUIData.mWin.mNow >= (gFightUIData.mWin.mTime + gFightUIData.mWin.mDisplayTime) || hasFightUIPressedStartFlankAny()) {
 		removeDisplayedText(gFightUIData.mWin.mTextID);
 		gFightUIData.mWin.mCB();
 		gFightUIData.mWin.mIsDisplaying = 0;
@@ -1611,7 +1619,7 @@ static void updateWinDisplay() {
 }
 
 static void updateDrawDisplayFinish() {
-	if (gFightUIData.mDraw.mNow >= (gFightUIData.mWin.mTime + gFightUIData.mDraw.mDisplayTime) || hasPressedStartFlank()) {
+	if (gFightUIData.mDraw.mNow >= (gFightUIData.mWin.mTime + gFightUIData.mDraw.mDisplayTime) || hasFightUIPressedStartFlankAny()) {
 		removeDisplayedText(gFightUIData.mDraw.mTextID);
 		gFightUIData.mDraw.mCB();
 		gFightUIData.mDraw.mIsDisplaying = 0;
@@ -1690,14 +1698,14 @@ static void updateContinueDisplay() {
 	if (!gFightUIData.mContinue.mIsActive) return;
 
 	const auto isNotFirstFrameOfCheck = (gFightUIData.mContinue.mNow > 1 || gFightUIData.mContinue.mValue != gFightUIData.mContinue.mCounterStartValue);
-	if (hasPressedStartFlank() && isNotFirstFrameOfCheck) {
+	if (hasFightUIPressedStartFlankAny() && isNotFirstFrameOfCheck) {
 		setContinueInactive();
 		gFightUIData.mContinue.mPressedContinueCB();
 		return;
 	}
 	
 	gFightUIData.mContinue.mNow++;
-	if (gFightUIData.mContinue.mNow >= gFightUIData.mContinue.mDuration || hasPressedAFlank()) {
+	if (gFightUIData.mContinue.mNow >= gFightUIData.mContinue.mDuration || hasFightUIPressedAFlankAny()) {
 		gFightUIData.mContinue.mNow = 0;
 		if (!gFightUIData.mContinue.mValue) {
 			setContinueInactive();
@@ -1921,7 +1929,7 @@ double getDreamUIFightFXScale()
 static void parseRoundText(char* tDst, char* tSrc, int tRoundNumber) {
 
 	int i, o = 0;
-	int n = strlen(tSrc);
+	int n = int(strlen(tSrc));
 	for (i = 0; i < n; i++) {
 		if (tSrc[i] == '%' && i < n - 1 && tSrc[i + 1] == 'i') {
 			int len = sprintf(&tDst[o], "%d", tRoundNumber);
@@ -2006,7 +2014,7 @@ void playDreamTOAnimation(void(*tFunc)())
 static void parseWinText(char* tDst, char* tSrc, char* tName, Position* oDisplayPosition, const Position& tPosition) {
 	int i, o = 0;
 	int bonus = 0;
-	int n = strlen(tSrc);
+	int n = int(strlen(tSrc));
 	for (i = 0; i < n; i++) {
 		if (tSrc[i] == '%' && i < n - 1 && tSrc[i + 1] == 's') {
 			int len = sprintf(&tDst[o], "%s", tName);

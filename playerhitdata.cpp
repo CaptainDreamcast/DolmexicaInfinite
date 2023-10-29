@@ -1911,7 +1911,7 @@ void getMatchingHitOverrideStateNoAndForceAir(DreamPlayer* tPlayer, DreamPlayer*
 }
 
 std::string copyOverCleanHitDefAttributeFlag(const char* tSrc) {
-	int n = strlen(tSrc);
+	int n = int(strlen(tSrc));
 
 	std::string ret;
 	int i;

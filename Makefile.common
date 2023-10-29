@@ -1,11 +1,12 @@
 OBJS = main.o \
 afterimage.o ai.o arcademode.o boxcursorhandler.o characterselectscreen.o collision.o config.o \
 creditsmode.o dolmexicadebug.o dolmexicastoryscreen.o \
-exhibitmode.o fightdebug.o \
+exhibitmode.o fightdebug.o fightnetplay.o \
 fightresultdisplay.o fightscreen.o fightui.o freeplaymode.o \
 gamelogic.o initscreen.o intro.o mugenanimationutilities.o mugenassignment.o \
 mugenassignmentevaluator.o mugenbackgroundstatehandler.o mugencommandhandler.o mugencommandreader.o mugenexplod.o \
 mugensound.o mugenstagehandler.o mugenstatecontrollers.o mugenstatehandler.o mugenstatereader.o \
+netplaylogic.o netplayscreen.o \
 optionsscreen.o osufilereader.o osuhandler.o osumode.o pausecontrollers.o playerdefinition.o playerhitdata.o \
 projectile.o randomwatchmode.o scriptbackground.o stage.o storyhelper.o storymode.o storyscreen.o superwatchmode.o \
 survivalmode.o titlescreen.o trainingmode.o trainingmodemenu.o versusmode.o versusscreen.o victoryquotescreen.o \

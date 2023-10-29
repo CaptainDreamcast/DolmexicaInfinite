@@ -1,0 +1,24 @@
+﻿<Window x:Class="MakeYourOwnGameKitGuiDreamcast.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MakeYourOwnGameKitGuiDreamcast"
+        mc:Ignorable="d"
+        Title="Dolmexica Infinite Make-your-own-game kit for Vita" Height="450" Width="800">
+    <Grid>
+        <TextBlock HorizontalAlignment="Left" Margin="41,24,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="165" Width="712"><Run Text="Make sure the TitleID is 9 characters, you'll get Error 0xF0030000 while installing if it's not."/><LineBreak/><Run Text="To mod the game, change the files in the assets folder just like you would with Mugen."/><LineBreak/><Run Text="If you want to modify the appearance of the game in the Vita menu, modify the files in common/sce_sys/ before building."/><LineBreak/><Run/><Run Text="The output will be a .vpk file you can upload to your Vita and install there."/><LineBreak/><LineBreak/><Run Text="Temporary files created during the packaging are created in the build folder. If something goes wrong during packaging, these files might be helpful with debugging."/><LineBreak/><LineBreak/><Run Text="Uses mksfoex and pack-vpk from the vita sdk toolchain: https://github.com/vitasdk/vita-toolchain"/><LineBreak/><Run/></TextBlock>
+
+        <TextBox HorizontalAlignment="Left" Name="GameName" Height="23" Margin="186,220,0,0" TextWrapping="Wrap" Text="Dolmexica Infinite" MaxLength="30" VerticalAlignment="Top" Width="260"/>
+        <TextBlock HorizontalAlignment="Left" Margin="70,220,0,0" TextWrapping="Wrap" Text="Game name:" VerticalAlignment="Top"/>
+
+        <TextBox HorizontalAlignment="Left" Name="GameTitleID" Height="23" Margin="186,273,0,0" TextWrapping="Wrap" Text="DOLM00001" VerticalAlignment="Top" Width="260"/>
+        <TextBlock HorizontalAlignment="Left" Margin="70,274,0,0" TextWrapping="Wrap" Text="Title ID (9 chars):" VerticalAlignment="Top"/>
+
+        <TextBox HorizontalAlignment="Left" x:Name="GameVersion" Height="23" Margin="186,327,0,0" TextWrapping="Wrap" Text="01.00" VerticalAlignment="Top" Width="260"/>
+        <TextBlock HorizontalAlignment="Left" Margin="70,328,0,0" TextWrapping="Wrap" Text="Title ID (9 chars):" VerticalAlignment="Top"/>
+
+        <Button Name="CreateVPKButton" Content="Create VPK" HorizontalAlignment="Left" Margin="371,367,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.151,0.473" Click="CreateVPKButton_Click"/>
+
+    </Grid>
+</Window>

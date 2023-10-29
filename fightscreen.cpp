@@ -12,7 +12,7 @@
 #include <prism/clipboardhandler.h>
 #include <prism/memorystack.h>
 #include <prism/debug.h>
-
+#include <prism/netplay.h>
 #include <prism/log.h>
 
 #include "stage.h"
@@ -43,6 +43,7 @@
 #include "trainingmodemenu.h"
 #include "storyhelper.h"
 #include "dolmexicastoryscreen.h"
+#include "fightnetplay.h"
 
 static struct {
 	void(*mWinCB)();
@@ -103,6 +104,9 @@ static void loadFightScreen() {
 
 	instantiateActor(getDreamMugenCommandHandler());
 	instantiateActor(getPreStateMachinePlayersBlueprint());
+	if (getGameMode() == GAME_MODE_NETPLAY) {
+		instantiateActor(getFightNetplayBlueprint());
+	}
 	instantiateActor(getDreamMugenStateHandler());
 	if (isMugenDebugActive()) {
 		int actorID = instantiateActor(getFightDebug());
@@ -161,6 +165,8 @@ static void loadFightScreen() {
 	changePlayerState(getRootPlayer(1), 5900);
 	setPlayerStatemachineToUpdateAgain(getRootPlayer(0));
 	setPlayerStatemachineToUpdateAgain(getRootPlayer(1));
+
+	
 
 	logMemoryState();
 

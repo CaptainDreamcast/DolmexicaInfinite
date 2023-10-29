@@ -27,12 +27,12 @@ set(VITA_APP_NAME "Dolmexica Infinite")
 # unique string of developer and Y = a unique number for this app
 set(VITA_TITLEID  "DOLM00001")
 # Optional version string to show in LiveArea's more info screen
-set(VITA_VERSION  "01.02")
+set(VITA_VERSION  "01.03")
 
 ## Flags and includes for building
 # Note that we make sure not to overwrite previous flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVITA -std=c++14 -Wl,-q -O2 -g -mtune=cortex-a9 -mfpu=neon -ftree-vectorize")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVITA -std=c++17 -Wl,-q -O2 -g -mtune=cortex-a9 -mfpu=neon -ftree-vectorize")
 # Optional. You can specify more param.sfo flags this way.
 set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 
@@ -62,6 +62,7 @@ add_executable(${PROJECT_NAME}
   ../dolmexicastoryscreen.cpp
   ../exhibitmode.cpp
   ../fightdebug.cpp
+  ../fightnetplay.cpp
   ../fightresultdisplay.cpp
   ../fightscreen.cpp
   ../fightui.cpp
@@ -81,6 +82,8 @@ add_executable(${PROJECT_NAME}
   ../mugenstatecontrollers.cpp
   ../mugenstatehandler.cpp
   ../mugenstatereader.cpp
+  ../netplaylogic.cpp
+  ../netplayscreen.cpp
   ../optionsscreen.cpp
   ../osufilereader.cpp
   ../osuhandler.cpp
@@ -127,6 +130,7 @@ target_link_libraries(${PROJECT_NAME}
   pthread
   z
   zstd
+  drakonsound
   SceLibKernel_stub
   SceShaccCg_stub
   SceShaccCgExt
@@ -166,5 +170,5 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} ${PROJECT_NAME}.self
   FILE sce_sys/livearea/contents/startup.png sce_sys/livearea/contents/startup.png
   FILE sce_sys/livearea/contents/template.xml sce_sys/livearea/contents/template.xml
   FILE ../assets assets
-  FILE ../debug/user.cfg debug/user.cfg
+  FILE ../debug debug
 )

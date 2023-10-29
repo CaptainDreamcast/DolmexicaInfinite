@@ -223,6 +223,7 @@ static struct {
 	Vector mRealSelectCharacters; // vector of SelectCharacter of type character
 	int mSelectorAmount;
 	Selector mSelectors[2];
+	int mControllerUsed[2];
 
 	StageSelectData mStageSelect;
 	SelectCredits mCredits;
@@ -385,10 +386,21 @@ static void loadExtraStages() {
 	}
 }
 
+static void loadStageSelectRandomStage() {
+	if (gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
+
+	SelectStage* e = (SelectStage*)allocMemory(sizeof(SelectStage));
+	e->mName = (char*)allocMemory(sizeof("Random") + 2);
+	strcpy(e->mName, "Random");
+	vector_push_back_owned(&gCharacterSelectScreenData.mSelectStages, e);
+}
+
 static void loadStageSelectStages() {
 	if (!gCharacterSelectScreenData.mStageSelect.mIsUsing) return;
 
 	gCharacterSelectScreenData.mSelectStages = new_vector();
+
+	loadStageSelectRandomStage();
 }
 
 
@@ -829,7 +841,7 @@ static void loadSelectors() {
 
 	gCharacterSelectScreenData.mSelectorAmount = gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_TWO_PLAYER_MODE ? 2 : 1;
 	for (i = 0; i < gCharacterSelectScreenData.mSelectorAmount; i++) {
-		loadSingleSelector(i, i);
+		loadSingleSelector(i, gCharacterSelectScreenData.mControllerUsed[i]);
 	}
 }
 
@@ -892,7 +904,8 @@ static int checkIfCharactersSane() {
 
 static int checkIfStagesSane() {
 	if (!gCharacterSelectScreenData.mStageSelect.mIsUsing) return 1;
-	return vector_size(&gCharacterSelectScreenData.mSelectStages);
+	else if (gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return vector_size(&gCharacterSelectScreenData.mSelectStages);
+	else return vector_size(&gCharacterSelectScreenData.mSelectStages) >= 2;
 }
 
 static void setStageSelectorSane() {
@@ -1260,7 +1273,7 @@ static int updateCreditStageSelectionAndReturnIfStageSelectionOver(int i) {
 static void updateSingleStageSelection(int i) {
 	if (!gCharacterSelectScreenData.mSelectors[i].mIsActive && gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
 	if (!gCharacterSelectScreenData.mSelectors[i].mIsDone && gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
-	if (gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING && i == 1) return;
+	if ((gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING || gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_CREDITS) && i == 1) return;
 	if (!gCharacterSelectScreenData.mStageSelect.mIsUsing) return;
 	if (!gCharacterSelectScreenData.mStageSelect.mIsActive) return;
 	if (gCharacterSelectScreenData.mStageSelect.mIsDone) return;
@@ -1284,8 +1297,8 @@ static void updateSingleStageSelection(int i) {
 static void updateSelections() {
 	int i;
 	for (i = 0; i < 2; i++) {
+		updateSingleStageSelection(i); // doing this after character selection update breaks due to input flanks
 		updateSingleSelection(i);
-		updateSingleStageSelection(i);
 	}
 }
 
@@ -1345,11 +1358,28 @@ static void updateStageCredit(SelectStage* tStage) {
 	changeMugenText(gCharacterSelectScreenData.mCredits.mVersionDateID, text);
 }
 
+static bool isSelectedStageRandomStage(int tIndex) {
+	return gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS && tIndex == 0;
+}
+
 static void updateStageSelection(int i, int tNewStage, int tDoesPlaySound) {
 	SelectStage* stage = (SelectStage*)vector_get(&gCharacterSelectScreenData.mSelectStages, tNewStage);
 
 	char newText[200];
-	sprintf(newText, "Stage %d: %s", tNewStage + 1, stage->mName);
+	if (isSelectedStageRandomStage(tNewStage))
+	{
+		sprintf(newText, "Stage: %s", stage->mName);
+	}
+	else
+	{
+		if (gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) {
+			sprintf(newText, "Stage %d: %s", tNewStage, stage->mName);
+		}
+		else
+		{
+			sprintf(newText, "Stage %d: %s", tNewStage + 1, stage->mName);
+		}
+	}
 	changeMugenText(gCharacterSelectScreenData.mStageSelect.mTextID, newText);
 	updateStageCredit(stage);
 
@@ -1456,7 +1486,14 @@ static void setStageSelectionFinished(int i) {
 
 	tryPlayMugenSoundAdvanced(&gCharacterSelectScreenData.mSounds, gCharacterSelectScreenData.mHeader.mPlayers[i].mCursorDoneSound.x, gCharacterSelectScreenData.mHeader.mPlayers[i].mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 
-	SelectStage* stage = (SelectStage*)vector_get(&gCharacterSelectScreenData.mSelectStages, gCharacterSelectScreenData.mStageSelect.mSelectedStage);
+	SelectStage* stage;
+	if (isSelectedStageRandomStage(gCharacterSelectScreenData.mStageSelect.mSelectedStage)) {
+		const auto stageAmount = vector_size(&gCharacterSelectScreenData.mSelectStages);
+		stage = (SelectStage*)vector_get(&gCharacterSelectScreenData.mSelectStages, randfromInteger(1, stageAmount - 1));
+	}
+	else {
+		stage = (SelectStage*)vector_get(&gCharacterSelectScreenData.mSelectStages, gCharacterSelectScreenData.mStageSelect.mSelectedStage);
+	}
 	char dummyMusicPath[2];
 	*dummyMusicPath = '\0';
 	setDreamStageMugenDefinition(stage->mPath, dummyMusicPath);
@@ -1581,33 +1618,62 @@ void setCharacterSelectStageInactive()
 
 void setCharacterSelectOnePlayer()
 {
+	for (int i = 0; i < 2; i++) {
+		gCharacterSelectScreenData.mControllerUsed[i] = i;
+	}
 	gCharacterSelectScreenData.mSelectScreenType = CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_MODE;
 }
 
 void setCharacterSelectOnePlayerSelectAll()
 {
+	for (int i = 0; i < 2; i++) {
+		gCharacterSelectScreenData.mControllerUsed[i] = i;
+	}
 	gCharacterSelectScreenData.mSelectScreenType = CHARACTER_SELECT_SCREEN_TYPE_ONE_PLAYER_SELECTS_EVERYTHING;
 }
 
 void setCharacterSelectTwoPlayers()
 {
+	for (int i = 0; i < 2; i++) {
+		gCharacterSelectScreenData.mControllerUsed[i] = i;
+	}
 	gCharacterSelectScreenData.mSelectScreenType = CHARACTER_SELECT_SCREEN_TYPE_TWO_PLAYER_MODE;
 
 }
 
+void setCharacterSelectNetplay(int isHost)
+{
+	gCharacterSelectScreenData.mControllerUsed[0] = isHost ? 0 : 1;
+	gCharacterSelectScreenData.mControllerUsed[1] = isHost ? 1 : 0;
+	gCharacterSelectScreenData.mSelectScreenType = CHARACTER_SELECT_SCREEN_TYPE_TWO_PLAYER_MODE;
+}
+
 void setCharacterSelectCredits()
 {
+	for (int i = 0; i < 2; i++) {
+		gCharacterSelectScreenData.mControllerUsed[i] = i;
+	}
 	gCharacterSelectScreenData.mSelectScreenType = CHARACTER_SELECT_SCREEN_TYPE_CREDITS;
 }
 
 void setCharacterSelectStory()
 {
+	for (int i = 0; i < 2; i++) {
+		gCharacterSelectScreenData.mControllerUsed[i] = i;
+	}
 	gCharacterSelectScreenData.mSelectScreenType = CHARACTER_SELECT_SCREEN_TYPE_STORY;
 }
 
 void setCharacterSelectDisableReturnOneTime()
 {
 	gCharacterSelectScreenData.mIsReturnDisabled = 1;
+}
+
+void resetCharacterSelectSelectors()
+{
+	for (int i = 0; i < 2; i++) {
+		gCharacterSelectScreenData.mSelectors[i].mHasBeenLoadedBefore = 0;
+	}
 }
 
 static char* removeEmptyParameterSpace(char* p, int delta, char* startChar) {
@@ -1620,7 +1686,7 @@ static int parseSingleOptionalParameterPart(char* tStart, char* tEnd, char* tPar
 	tStart = removeEmptyParameterSpace(tStart, 1, tParameter);
 	tEnd = removeEmptyParameterSpace(tEnd, -1, tParameter);
 
-	int length = tEnd - tStart + 1;
+	auto length = tEnd - tStart + 1;
 	if (length <= 0) return 0;
 
 	strcpy(oDst, tStart);

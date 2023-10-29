@@ -185,21 +185,22 @@ code, tt {
 <li><a class="reference internal" href="#credits-mode" id="id4">Credits mode</a></li>
 <li><a class="reference internal" href="#osu-mode" id="id5">Osu mode</a></li>
 <li><a class="reference internal" href="#freeplay-mode" id="id6">Freeplay mode</a></li>
-<li><a class="reference internal" href="#continue" id="id7">Continue</a></li>
-<li><a class="reference internal" href="#misc" id="id8">Misc</a></li>
+<li><a class="reference internal" href="#netplay" id="id7">Netplay</a></li>
+<li><a class="reference internal" href="#continue" id="id8">Continue</a></li>
+<li><a class="reference internal" href="#misc" id="id9">Misc</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#missing-features" id="id9">Missing features</a>
+<li><a class="reference internal" href="#missing-features" id="id10">Missing features</a>
 <ul>
-<li><a class="reference internal" href="#missing-overall-features" id="id10">Missing overall features</a>
+<li><a class="reference internal" href="#missing-overall-features" id="id11">Missing overall features</a>
 <ul>
-<li><a class="reference internal" href="#missing-cns-features" id="id11">Missing CNS features</a></li>
-<li><a class="reference internal" href="#missing-cfg-features" id="id12">Missing mugen.cfg/dolmexica.cfg features</a></li>
+<li><a class="reference internal" href="#missing-cns-features" id="id12">Missing CNS features</a></li>
+<li><a class="reference internal" href="#missing-cfg-features" id="id13">Missing mugen.cfg/dolmexica.cfg features</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#missing-dreamcast-features" id="id13">Missing Dreamcast features</a></li>
-<li><a class="reference internal" href="#missing-vita-features" id="id13">Missing Vita features</a></li>
-<li><a class="reference internal" href="#missing-windows-features" id="id14">Missing Windows/Web features</a></li>
+<li><a class="reference internal" href="#missing-dreamcast-features" id="id14">Missing Dreamcast features</a></li>
+<li><a class="reference internal" href="#missing-vita-features" id="id15">Missing Vita features</a></li>
+<li><a class="reference internal" href="#missing-windows-features" id="id16">Missing Windows/Web features</a></li>
 </ul>
 </li>
 </ul>
@@ -217,7 +218,7 @@ code, tt {
 <li>The Windows version acts the same way as M.U.G.E.N.</li>
 <li>The Dreamcast version can be made using the Dolmexica Infinite Make-your-own-game kit for Dreamcast. It is distributed as a CDI, which can be burnt to a CD-R using Padus Discjuggler.</li>
 <li>The Web version can be made using the Dolmexica Infinite Make-your-own-game kit for Web. It is distributed as a zip file containing all the files of the web build, this should be the format expected by itch.io, newgrounds, etc.</li>
-<li>The Vita does not have a Make-your-own-game kit yet, it will be part of a future release. It is distributed as a VPK, which can be transferred to a jailbroken Vita. For info on how to do that, refer to the information in <a href="https://vita.hacks.guide" target="_blank">this guide</a>. In addition to that, libshacccg.suprx (a vita shader compiler needed by vitaGL) needs to be extracted on the device. For information on how to achieve that, please follow the information provided in <a href="https://cimmerian.gitbook.io/vita-troubleshooting-guide/shader-compiler/extract-libshacccg.suprx" target="_blank">this guide</a>. The Vita emulator Vita3K is not supported currently.</li>
+<li>The Vita version can be made using the Dolmexica Infinite Make-your-own-game kit for Vita. It is distributed as a VPK, which can be transferred to a jailbroken Vita. For info on how to do that, refer to the information in <a href="https://vita.hacks.guide" target="_blank">this guide</a>. In addition to that, libshacccg.suprx (a vita shader compiler needed by vitaGL) needs to be extracted on the device. For information on how to achieve that, please follow the information provided in <a href="https://cimmerian.gitbook.io/vita-troubleshooting-guide/shader-compiler/extract-libshacccg.suprx" target="_blank">this guide</a>. The Vita emulator Vita3K is not supported currently.</li>
 <li>Documentation on how to use the Make-your-own-game kits is distributed with the kits.</li>
 </ul>
 </div>
@@ -260,8 +261,20 @@ Freeplay mode is a 1-on-1 fight against the CPU. It uses the difficulty set in t
 <li>Freeplay mode is set in system.def with the <tt class="docutils literal">menu.itemname.freeplay</tt> item in the <tt class="docutils literal">[Title Info]</tt> group</li>
 </ul>
 </div>
+<div class="section" id="netplay">
+<h2><a class="toc-backref" href="#id7">Netplay</a></h2>
+Experimental netplay mode that allows you to play a versus match with other players online. Connection is peer-to-peer via the IPv4 address of the host. This mode is explained in more detail in <a class="reference external" href="netplay.html">netplay.html</a>.
+<ul class="simple">
+<li>Netplay is Windows-only. Netplay is currently not planned for other platforms, due to technical limitations.</li>
+<li>Netplay is set in system.def with the <tt class="docutils literal">menu.itemname.netplay</tt> item in the <tt class="docutils literal">[Title Info]</tt> group</li>
+<li>The connect screen can be modified in system.def. Documentation on those parameters is in <a class="reference external" href="netplay.html">netplay.html</a>.</li>
+<li>Nothing about this mode is final and may change fundamentally and incompatibly in future version.</li>
+<li>It is very much in the early stages, please expect desyncs (irrecoverable difference in game state between both players), black screens and missing inputs when trying it out.</li>
+<li>During netplay, a special netplay log file will be written to <tt class="docutils literal">debug/netplay_log.txt</tt>. If you encounter desyncs or other issues, it would be great if you could send me this netplay log (it logs local and received keyboard inputs per frame during netplay, as well as what unified frame count both player games have decided on.). This log helps find out where/why exactly the players desynced.</li>
+</ul>
+</div>
 <div class="section" id="continue">
-<h2><a class="toc-backref" href="#id7">Continue</a></h2>
+<h2><a class="toc-backref" href="#id8">Continue</a></h2>
 Continue is shown in Arcade, Osu and (optionally) in Story Mode after the player character has lost. In Dolmexica, it is shown as part of the fight screen, to avoid unnecessary loading times. <br />
 The continue is part of the fight.def in Dolmexica as the new group <tt class="docutils literal">[Continue]</tt> with the following parameters:
 <ul class="simple">
@@ -274,7 +287,7 @@ The continue is part of the fight.def in Dolmexica as the new group <tt class="d
 </div>
 </div>
 <div class="section" id="misc">
-<h2><a class="toc-backref" href="#id8">Misc</a></h2>
+<h2><a class="toc-backref" href="#id9">Misc</a></h2>
 <ul class="simple">
 <li>To use 480p / Mugen 1.0 lifebars, add a folder called 480p in data and put your 480p fight.def etc there.</li>
 <li>In mugen.cfg/dolmexica.cfg, <tt class="docutils literal">[Config]</tt> <tt class="docutils literal">staticassignments</tt> (<tt class="docutils literal">boolean</tt>): If 1, use static assignment caching to speed up state machine evaluations, will result in additional memory usage during runtime though. Default is 0.</li>
@@ -291,10 +304,10 @@ The continue is part of the fight.def in Dolmexica as the new group <tt class="d
 </div>
 
 <div class="section" id="missing-features">
-<h1><a class="toc-backref" href="#id9">Missing features</a></h1>
+<h1><a class="toc-backref" href="#id10">Missing features</a></h1>
 <p>Due to technical issues or general disinterest, certain features have been removed or changed from M.U.G.E.N:</p>
 <div class="section" id="missing-overall-features">
-<h2><a class="toc-backref" href="#id10">Missing overall features</a></h2>
+<h2><a class="toc-backref" href="#id11">Missing overall features</a></h2>
 <ul>
 <li>
 <p>Teams and all team-related triggers and state controller elements have been removed.</p>
@@ -318,13 +331,13 @@ The continue is part of the fight.def in Dolmexica as the new group <tt class="d
 </li>
 </ul>
 <div class="section" id="missing-cns-features">
-<h3><a class="toc-backref" href="#id11">Missing CNS features</a></h3>
+<h3><a class="toc-backref" href="#id12">Missing CNS features</a></h3>
 <ul class="simple">
 <li><tt class="docutils literal">data.ko.echo</tt> was removed due to technical limitations.</li>
 </ul>
 </div>
 <div class="section" id="missing-cfg-features">
-<h3><a class="toc-backref" href="#id12">Missing mugen.cfg/dolmexica.cfg features</a></h3>
+<h3><a class="toc-backref" href="#id13">Missing mugen.cfg/dolmexica.cfg features</a></h3>
 <ul class="simple">
 <li>
 <tt class="docutils literal">[Options]</tt>
@@ -391,7 +404,7 @@ The continue is part of the fight.def in Dolmexica as the new group <tt class="d
 </div>
 </div>
 <div class="section" id="missing-dreamcast-features">
-<h2><a class="toc-backref" href="#id13">Missing Dreamcast features</a></h2>
+<h2><a class="toc-backref" href="#id14">Missing Dreamcast features</a></h2>
 <ul class="simple">
 <li>After images, due to performance reasons.</li>
 <li>Subtraction blend mode, due to technical limitations.</li>
@@ -400,18 +413,18 @@ The continue is part of the fight.def in Dolmexica as the new group <tt class="d
 </ul>
 </div>
 <div class="section" id="missing-vita-features">
-<h2><a class="toc-backref" href="#id13">Missing Vita features</a></h2>
+<h2><a class="toc-backref" href="#id15">Missing Vita features</a></h2>
 <ul class="simple">
 <li>The Vita port is still WIP, unlike the missing Dreamcast/Windows/Web features which have technical reasons, a good chunk of the missing Vita functionality is simply because it has not been implemented yet.</li>
-<li>Additive/Subtractive blending</li>
+<li>Subtractive blending</li>
 <li>Performance during trigger parsing</li>
+<li>Graphical performance</li>
 <li>Display being stretched</li>
-<li>Sound</li>
-<li>Prone to crashing when starting/stopping fight</li>
+<li>Sound effects</li>
 </ul>
 </div>
 <div class="section" id="missing-windows-features">
-<h2><a class="toc-backref" href="#id14">Missing Windows/Web features</a></h2>
+<h2><a class="toc-backref" href="#id16">Missing Windows/Web features</a></h2>
 <ul class="simple">
 <li>Frequency multiplier for sound effects, due to technical limitations.</li>
 </ul>

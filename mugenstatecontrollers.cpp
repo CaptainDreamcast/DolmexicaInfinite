@@ -1353,7 +1353,7 @@ static void readMugenDefStringVector(MugenStringVector* tDst, MugenDefScriptGrou
 			char* text = getAllocatedMugenDefStringVariableAsElement(elem);
 			tDst->mSize = 1;
 			tDst->mElement = (char**)allocMemoryOnMemoryStackOrMemory(sizeof(char*));
-			tDst->mElement[0] = (char*)allocMemoryOnMemoryStackOrMemory(strlen(text) + 10);
+			tDst->mElement[0] = (char*)allocMemoryOnMemoryStackOrMemory(uint32_t(strlen(text) + 10));
 			strcpy(tDst->mElement[0], text);
 			freeMemory(text);
 		}

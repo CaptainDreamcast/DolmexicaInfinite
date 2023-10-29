@@ -201,6 +201,15 @@
     <ClCompile Include="..\test\main.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\fightnetplay.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\netplaylogic.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\netplayscreen.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.DolmexicaInfiniteTest.config" />
@@ -372,6 +381,15 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="..\storyhelper.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fightnetplay.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\netplaylogic.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\netplayscreen.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

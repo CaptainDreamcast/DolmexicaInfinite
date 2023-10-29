@@ -30,3 +30,7 @@ void setDreamButtonXActiveForPlayer(int tControllerIndex);
 void setDreamButtonYActiveForPlayer(int tControllerIndex);
 void setDreamButtonZActiveForPlayer(int tControllerIndex);
 void setDreamButtonStartActiveForPlayer(int tControllerIndex);
+
+void updateCommandNetplayReceive(int tID);
+void updateCommandNetplaySend(int tID);
+void setDreamCommandInputControllerUsed(int i, int tControllerIndex);

@@ -202,7 +202,7 @@ static MugenStringVector parseVectorString(char* tText, char tSeparator) {
 		while (temp[offset] == ' ') offset++;
 		char* start = temp + offset;
 
-		vector.mElement[i] = (char*)allocMemory(strlen(start) + 3);
+		vector.mElement[i] = (char*)allocMemory(int(strlen(start)) + 3);
 		strcpy(vector.mElement[i], start);
 
 		i++;

@@ -56,7 +56,7 @@ static void unloadAIHandler(void* tData) {
 }
 
 static void setRandomPlayerCommandActive(PlayerAI* e) {
-	int i = randfromInteger(0, e->mCommandNames.size() - 1);
+	int i = randfromInteger(0, int(e->mCommandNames.size()) - 1);
 
 	const string& name = e->mCommandNames[i];
 
@@ -64,7 +64,7 @@ static void setRandomPlayerCommandActive(PlayerAI* e) {
 }
 
 static int setRandomPlayerCommandActiveIfTimePossible(PlayerAI* e) {
-	int i = randfromInteger(0, e->mCommandNames.size() - 1);
+	int i = randfromInteger(0, int(e->mCommandNames.size()) - 1);
 	const string& name = e->mCommandNames[i];
 	const auto duration = getDreamCommandMinimumDuration(e->mPlayer->mCommandID, name.data());
 	if (duration < e->mRandomInputNow) {

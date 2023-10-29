@@ -249,7 +249,7 @@ DreamMugenAssignment* makeDreamStringMugenAssignment(const char * tVal)
 {
 	DreamMugenStringAssignment* s = (DreamMugenStringAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenStringAssignment));
 	gDebugAssignmentAmount++;
-	s->mValue = (char*)allocMemoryOnMemoryStackOrMemory(strlen(tVal) + 2);
+	s->mValue = (char*)allocMemoryOnMemoryStackOrMemory(uint32_t(strlen(tVal) + 2));
 	strcpy(s->mValue, tVal);
 	s->mType = MUGEN_ASSIGNMENT_TYPE_STRING;
 
@@ -313,7 +313,7 @@ static int isBinaryOperator(const char* tText, int tPosition) {
 
 	if (!poss) return 0;
 
-	int n = strlen(tText);
+	int n = int(strlen(tText));
 	p = tPosition + 1;
 	poss = 0;
 	while (p < n) {
@@ -329,8 +329,8 @@ static int isBinaryOperator(const char* tText, int tPosition) {
 }
 
 static int isOnHighestLevelWithStartPositionGoingLeftToRight(char* tText, const char* tPattern, int* tOptionalPosition, int tStart, int isBinary) {
-	int n = strlen(tText);
-	int m = strlen(tPattern);
+	int n = int(strlen(tText));
+	int m = int(strlen(tPattern));
 
 	int depth1 = 0;
 	int depth2 = 0;
@@ -366,7 +366,7 @@ static int isOnHighestLevelWithStartPositionGoingLeftToRight(char* tText, const 
 
 // start is first position in string that can hold end of pattern, e.g. strlen(tText) - 1
 static int isOnHighestLevelWithStartPositionGoingRightToLeft(char* tText, const char* tPattern, int* tOptionalPosition, int tStart, int isBinary) {
-	int m = strlen(tPattern);
+	int m = int(strlen(tPattern));
 
 	int depth1 = 0;
 	int depth2 = 0;
@@ -402,7 +402,7 @@ static int isOnHighestLevelWithStartPositionGoingRightToLeft(char* tText, const 
 }
 
 static int isOnHighestLevelMultipleWithStartPositionGoingRightToLeft(const char* tText, const std::vector<std::tuple<int(*)(const char*, int, int), DreamMugenAssignmentType, std::string>>& tPatterns, int tPatternSize, int* tOptionalPosition, int* tOptionalFoundIndex, int tStart, int tIsBinary) {
-	int n = strlen(tText);
+	int n = int(strlen(tText));
 	int m = tPatternSize;
 
 	int depth1 = 0;
@@ -443,19 +443,19 @@ static int isOnHighestLevelLeftToRight(char* tText, const char* tPattern, int* t
 }
 
 static int isOnHighestLevelRightToLeft(char* tText, const char* tPattern, int* tOptionalPosition) {
-	return isOnHighestLevelWithStartPositionGoingRightToLeft(tText, tPattern, tOptionalPosition, strlen(tText) - 1, 0);
+	return isOnHighestLevelWithStartPositionGoingRightToLeft(tText, tPattern, tOptionalPosition, int(strlen(tText)) - 1, 0);
 }
 
 static int isOnHighestLevelBinaryRightToLeft(char* tText, const char* tPattern, int* tOptionalPosition) {
-	return isOnHighestLevelWithStartPositionGoingRightToLeft(tText, tPattern, tOptionalPosition, strlen(tText) - 1, 1);
+	return isOnHighestLevelWithStartPositionGoingRightToLeft(tText, tPattern, tOptionalPosition, int(strlen(tText)) - 1, 1);
 }
 
 static int isOnHighestLevelMultipleRightToLeft(const char* tText, const std::vector<std::tuple<int(*)(const char*, int, int), DreamMugenAssignmentType, std::string>>& tPatterns, int tPatternSize, int* tOptionalPosition, int* tOptionalFoundIndex) {
-	return isOnHighestLevelMultipleWithStartPositionGoingRightToLeft(tText, tPatterns, tPatternSize, tOptionalPosition, tOptionalFoundIndex, strlen(tText) - 1, 0);
+	return isOnHighestLevelMultipleWithStartPositionGoingRightToLeft(tText, tPatterns, tPatternSize, tOptionalPosition, tOptionalFoundIndex, int(strlen(tText)) - 1, 0);
 }
 
 static int isOnHighestLevelBinaryMultipleRightToLeft(const char* tText, const std::vector<std::tuple<int(*)(const char*, int, int), DreamMugenAssignmentType, std::string>>& tPatterns, int tPatternSize, int* tOptionalPosition, int* tOptionalFoundIndex) {
-	return isOnHighestLevelMultipleWithStartPositionGoingRightToLeft(tText, tPatterns, tPatternSize, tOptionalPosition, tOptionalFoundIndex, strlen(tText) - 1, 1);
+	return isOnHighestLevelMultipleWithStartPositionGoingRightToLeft(tText, tPatterns, tPatternSize, tOptionalPosition, tOptionalFoundIndex, int(strlen(tText)) - 1, 1);
 }
 
 static DreamMugenAssignment* parseOneElementMugenAssignmentFromString(char* tText, DreamMugenAssignmentType tType) {
@@ -466,8 +466,8 @@ static DreamMugenAssignment* parseOneElementMugenAssignmentFromString(char* tTex
 }
 
 static DreamMugenAssignment* parseTwoElementMugenAssignmentFromStringWithFixedPosition(char* tText, DreamMugenAssignmentType tType, const char* tPattern, int tPosition) {
-	int n = strlen(tText);
-	int m = strlen(tPattern);
+	int n = int(strlen(tText));
+	int m = int(strlen(tPattern));
 
 	assert(tPosition != -1);
 	if (tPosition >= n - m) {
@@ -532,7 +532,7 @@ static DreamMugenAssignment* parseMugenNullFromString() {
 }
 
 static int isInBraces(char* tText) {
-	int n = strlen(tText);
+	int n = int(strlen(tText));
 	if (tText[0] != '(' || tText[n - 1] != ')') return 0;
 
 	int depth = 0;
@@ -548,7 +548,7 @@ static int isInBraces(char* tText) {
 }
 
 static DreamMugenAssignment* parseMugenAssignmentStringInBraces(char* tText) {
-	int n = strlen(tText);
+	int n = int(strlen(tText));
 	tText[n - 1] = '\0';
 	tText++;
 
@@ -583,7 +583,7 @@ static DreamMugenAssignment* parseMugenUnaryMinusFromString(char* tText) {
 }
 
 static int isRange(char* tText) {
-	int n = strlen(tText);
+	int n = int(strlen(tText));
 	if ((tText[0] != '[' && tText[0] != '(') || (tText[n - 1] != ']' && tText[n - 1] != ')')) return 0;
 
 	int depth = 0;
@@ -601,7 +601,7 @@ static int isRange(char* tText) {
 static DreamMugenAssignment* parseMugenRangeFromString(char* tText) {
 	DreamMugenRangeAssignment* e = (DreamMugenRangeAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenRangeAssignment));
 	gDebugAssignmentAmount++;
-	int n = strlen(tText);
+	int n = int(strlen(tText));
 	e->mExcludeLeft = tText[0] == '(';
 	e->mExcludeRight = tText[n - 1] == ')';
 	
@@ -757,7 +757,7 @@ static DreamMugenAssignment* parseMugenExponentiationFromString(char* tText) {
 static int isAddition(char* tText) {
 	int plusPosition;
 	if(!isOnHighestLevelRightToLeft(tText, "+", &plusPosition)) return 0;
-	int len = strlen(tText);
+	int len = int(strlen(tText));
 	return plusPosition < len -1;
 }
 
@@ -808,7 +808,7 @@ static DreamMugenAssignment* parseMugenMultiplicativeGroupFromString(char* tText
 static int isNumericalConstant(char* tText) {
 	if (*tText == '-') tText++;
 
-	int n = strlen(tText);
+	int n = int(strlen(tText));
 	if (n == 0) return 0;
 
 	int mPointAmount = 0;
@@ -831,7 +831,7 @@ static DreamMugenAssignment* parseNumericalConstantFromString(char* tText) {
 static int isFloatConstant(char* tText) {
 	if (*tText == '-') tText++;
 
-	int n = strlen(tText);
+	int n = int(strlen(tText));
 	if (n == 0) return 0;
 
 	int mPointAmount = 0;
@@ -852,7 +852,7 @@ static DreamMugenAssignment* parseFloatConstantFromString(char* tText) {
 }
 
 static int isStringConstant(char* tText) {
-	int n = strlen(tText);
+	int n = int(strlen(tText));
 	if (n == 0) return 0;
 	return tText[0] == '"' && tText[n - 1] == '"';
 }
@@ -868,7 +868,7 @@ static DreamMugenAssignment* parseStringConstantFromString(char* tText) {
 
 	DreamMugenStringAssignment* s = (DreamMugenStringAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenStringAssignment));
 	gDebugAssignmentAmount++;
-	s->mValue = (char*)allocMemoryOnMemoryStackOrMemory(strlen(tText + 1) + 10);
+	s->mValue = (char*)allocMemoryOnMemoryStackOrMemory(int(strlen(tText + 1)) + 10);
 	strcpy(s->mValue, tText+1);
 	s->mValue[strlen(s->mValue) - 1] = '\0';
 
@@ -877,8 +877,8 @@ static DreamMugenAssignment* parseStringConstantFromString(char* tText) {
 }
 
 int doDreamAssignmentStringsBeginsWithPattern(const char* tPattern, char* tText) {
-	int n = strlen(tPattern);
-	int m = strlen(tText);
+	int n = int(strlen(tPattern));
+	int m = int(strlen(tText));
 	if (m < n) return 0;
 
 	int i;
@@ -892,7 +892,7 @@ int doDreamAssignmentStringsBeginsWithPattern(const char* tPattern, char* tText)
 extern std::map<std::string, AssignmentReturnValue*(*)(DreamPlayer*)>& getActiveMugenAssignmentVariableMap();
 
 static int isMugenVariable(char* tText) {
-	char* text = (char*)allocMemory(strlen(tText) + 2);
+	char* text = (char*)allocMemory(int(strlen(tText)) + 2);
 	strcpy(text, tText);
 	turnStringLowercase(text);
 
@@ -905,7 +905,7 @@ static int isMugenVariable(char* tText) {
 }
 
 static DreamMugenAssignment* parseMugenVariableFromString(char* tText) {
-	char* text = (char*)allocMemory(strlen(tText) + 2);
+	char* text = (char*)allocMemory(int(strlen(tText)) + 2);
 	strcpy(text, tText);
 	turnStringLowercase(text);
 	
@@ -921,7 +921,7 @@ static DreamMugenAssignment* parseMugenVariableFromString(char* tText) {
 static DreamMugenAssignment* parseMugenRawVariableFromString(char* tText) {
 	DreamMugenRawVariableAssignment* data = (DreamMugenRawVariableAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenRawVariableAssignment));
 	gDebugAssignmentAmount++;
-	data->mName = (char*)allocMemoryOnMemoryStackOrMemory(strlen(tText) + 2);
+	data->mName = (char*)allocMemoryOnMemoryStackOrMemory(int(strlen(tText)) + 2);
 	strcpy(data->mName, tText);
 	turnStringLowercase(data->mName);
 	data->mType = MUGEN_ASSIGNMENT_TYPE_RAW_VARIABLE;
@@ -929,7 +929,7 @@ static DreamMugenAssignment* parseMugenRawVariableFromString(char* tText) {
 }
 
 static void sanitizeTextFront(char** tText) {
-	int n = strlen(*tText);
+	int n = int(strlen(*tText));
 	int i;
 	for (i = 0; i < n; i++) {
 		if (**tText != ' ' && **tText != '\t') {
@@ -941,7 +941,7 @@ static void sanitizeTextFront(char** tText) {
 }
 
 static void sanitizeTextBack(char* tText) {
-	int n = strlen(tText);
+	int n = int(strlen(tText));
 
 	int i;
 	for (i = n - 1; i >= 0; i--) {
@@ -959,7 +959,7 @@ static void sanitizeText(char** tText) {
 
 static int isArray(char* tText) {
 
-	int n = strlen(tText);
+	int n = int(strlen(tText));
 	char* open = strchr(tText, '(');
 	char* close = strrchr(tText, ')');
 
@@ -968,7 +968,7 @@ static int isArray(char* tText) {
 
 static DreamMugenAssignment* parseArrayFromString(char* tText) {
 	int posOpen = -1;
-	posOpen = strchr(tText, '(') - tText;
+	posOpen = int(strchr(tText, '(') - tText);
 	assert(posOpen >= 0);
 	assert((strrchr(tText, ')') - tText) >= 0);
 
@@ -1010,7 +1010,7 @@ static int isVectorAssignment(char* tText, int tPotentialCommaPosition) {
 	if (isEmptyCharacter(tText[startPosition])) startPosition++;
 
 	const char* textArea = tText + startPosition;
-	char* text = (char*)allocMemory(strlen(textArea) + 2);
+	char* text = (char*)allocMemory(int(strlen(textArea)) + 2);
 	strcpy(text, textArea);
 	turnStringLowercase(text);
 
@@ -1025,7 +1025,7 @@ static int isVectorAssignment(char* tText, int tPotentialCommaPosition) {
 }
 
 static int isVectorTarget(char* tText) {
-	char* text = (char*)allocMemory(strlen(tText) + 2);
+	char* text = (char*)allocMemory(int(strlen(tText)) + 2);
 	strcpy(text, tText);
 	turnStringLowercase(text);
 
@@ -1070,7 +1070,7 @@ static int isCommaContextFree(char* tText, int tPosition) {
 	assert(tPosition >= -1);
 	int start = tPosition + 1;
 
-	char* prevWord = (char*)allocMemory(strlen(&tText[start]) + 2);
+	char* prevWord = (char*)allocMemory(int(strlen(&tText[start]) + 2));
 	strcpy(prevWord, &tText[start]);
 	int length = end - start;
 	prevWord[length] = '\0';

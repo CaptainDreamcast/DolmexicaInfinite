@@ -13,6 +13,7 @@
 #include <prism/stlutil.h>
 
 #include "gamelogic.h"
+#include "fightnetplay.h"
 
 using namespace std;
 
@@ -62,6 +63,7 @@ static struct {
 	uint32_t mOverrideMask[2];
 
 	int mOsuInputAllowedFlag[2];
+	int mControllerUsed[2];
 } gMugenCommandHandler;
 
 #define MAXIMUM_REGISTERED_COMMAND_AMOUNT 2
@@ -77,6 +79,7 @@ static void loadMugenCommandHandler(void* tData) {
 		int i;
 		for (i = 0; i < 2; i++) {
 			gMugenCommandHandler.mOsuInputAllowedFlag[i] = 0;
+			gMugenCommandHandler.mControllerUsed[i] = i;
 		}
 	}
 }
@@ -105,7 +108,7 @@ static void addSingleMugenCommandState(RegisteredMugenCommand* tCaller, const st
 	MugenCommandState e;
 	e.mName = tKey;
 	e.mIsActive = 0;
-	e.mLookupID = s->tStates.mStateLookup.size();
+	e.mLookupID = int(s->tStates.mStateLookup.size());
 	s->tStates.mStates[tKey] = e;
 	s->tStates.mStateLookup.push_back(&s->tStates.mStates[tKey]);
 
@@ -213,7 +216,7 @@ int setDreamPlayerCommandNumberActiveForDebug(int tID, int tCommandNumber)
 int getDreamPlayerCommandAmount(int tID)
 {
 	RegisteredMugenCommand* e = &gMugenCommandHandler.mRegisteredCommands[tID];
-	return e->tCommands->mCommands.size();
+	return int(e->tCommands->mCommands.size());
 }
 
 void setDreamMugenCommandFaceDirection(int tID, FaceDirection tDirection)
@@ -613,19 +616,19 @@ static void updateInputMaskGeneral(int i, int tButtonPrecondition) {
 	gMugenCommandHandler.mPreviousHeldMask[i] = gMugenCommandHandler.mHeldMask[i];
 	gMugenCommandHandler.mHeldMask[i] = 0;
 
-	updateSingleInputMaskEntry(i, MASK_A, tButtonPrecondition && hasPressedASingle(i));
-	updateSingleInputMaskEntry(i, MASK_B, tButtonPrecondition && hasPressedBSingle(i));
-	updateSingleInputMaskEntry(i, MASK_C, tButtonPrecondition && hasPressedRSingle(i));
-	updateSingleInputMaskEntry(i, MASK_X, tButtonPrecondition && hasPressedXSingle(i));
-	updateSingleInputMaskEntry(i, MASK_Y, tButtonPrecondition && hasPressedYSingle(i));
-	updateSingleInputMaskEntry(i, MASK_Z, tButtonPrecondition && hasPressedLSingle(i));
+	updateSingleInputMaskEntry(i, MASK_A, tButtonPrecondition && hasPressedASingle(gMugenCommandHandler.mControllerUsed[i]));
+	updateSingleInputMaskEntry(i, MASK_B, tButtonPrecondition && hasPressedBSingle(gMugenCommandHandler.mControllerUsed[i]));
+	updateSingleInputMaskEntry(i, MASK_C, tButtonPrecondition && hasPressedRSingle(gMugenCommandHandler.mControllerUsed[i]));
+	updateSingleInputMaskEntry(i, MASK_X, tButtonPrecondition && hasPressedXSingle(gMugenCommandHandler.mControllerUsed[i]));
+	updateSingleInputMaskEntry(i, MASK_Y, tButtonPrecondition && hasPressedYSingle(gMugenCommandHandler.mControllerUsed[i]));
+	updateSingleInputMaskEntry(i, MASK_Z, tButtonPrecondition && hasPressedLSingle(gMugenCommandHandler.mControllerUsed[i]));
 
-	updateSingleInputMaskEntry(i, MASK_START, tButtonPrecondition && hasPressedStartSingle(i));
+	updateSingleInputMaskEntry(i, MASK_START, tButtonPrecondition && hasPressedStartSingle(gMugenCommandHandler.mControllerUsed[i]));
 
-	updateSingleInputMaskEntry(i, MASK_LEFT, hasPressedLeftSingle(i));
-	updateSingleInputMaskEntry(i, MASK_RIGHT, hasPressedRightSingle(i));
-	updateSingleInputMaskEntry(i, MASK_UP, hasPressedUpSingle(i));
-	updateSingleInputMaskEntry(i, MASK_DOWN, hasPressedDownSingle(i));
+	updateSingleInputMaskEntry(i, MASK_LEFT, hasPressedLeftSingle(gMugenCommandHandler.mControllerUsed[i]));
+	updateSingleInputMaskEntry(i, MASK_RIGHT, hasPressedRightSingle(gMugenCommandHandler.mControllerUsed[i]));
+	updateSingleInputMaskEntry(i, MASK_UP, hasPressedUpSingle(gMugenCommandHandler.mControllerUsed[i]));
+	updateSingleInputMaskEntry(i, MASK_DOWN, hasPressedDownSingle(gMugenCommandHandler.mControllerUsed[i]));
 
 	gMugenCommandHandler.mHeldMask[i] |= gMugenCommandHandler.mOverrideMask[i];
 	gMugenCommandHandler.mOverrideMask[i] = 0;
@@ -695,4 +698,51 @@ void setDreamButtonZActiveForPlayer(int tControllerIndex)
 void setDreamButtonStartActiveForPlayer(int tControllerIndex)
 {
 	gMugenCommandHandler.mOverrideMask[tControllerIndex] |= MASK_START;
+}
+
+void setDreamCommandInputControllerUsed(int i, int tControllerIndex)
+{
+	gMugenCommandHandler.mControllerUsed[i] = tControllerIndex;
+}
+
+void updateCommandNetplaySend(int tID) {
+	assert(getGameMode() == GAME_MODE_NETPLAY);
+
+	RegisteredMugenCommand* e = &gMugenCommandHandler.mRegisteredCommands[tID];
+	Buffer b = makeBufferEmptyOwned();
+
+	appendBufferUint32(&b, uint32_t(e->tStates.mStateLookup.size()));
+	for (size_t i = 0; i < e->tStates.mStateLookup.size(); i++)
+	{
+		const auto state = e->tStates.mStateLookup[i];
+
+		appendBufferUint32(&b, uint32_t(state->mName.size()));
+		appendBufferString(&b, state->mName.c_str(), state->mName.size());
+		appendBufferUint32(&b, state->mIsActive);
+		appendBufferUint32(&b, state->mNow);
+		appendBufferUint32(&b, state->mBufferTime);
+	}
+
+	sendFightNetplayData(b);
+	freeBuffer(b);
+}
+
+void updateCommandNetplayReceive(int tID)
+{
+	assert(getGameMode() == GAME_MODE_NETPLAY);
+	if (!hasNewFightNetplayReceivedData()) return;
+
+	RegisteredMugenCommand* e = &gMugenCommandHandler.mRegisteredCommands[tID];
+	const auto newNetplayData = popFightNetplayReceivedData();
+	assert(e->tStates.mStateLookup.size() == newNetplayData.mCommandStatus.size());
+
+	for (size_t i = 0; i < e->tStates.mStateLookup.size(); i++) {
+		auto& state = e->tStates.mStateLookup[i];
+		const auto& receivedState = newNetplayData.mCommandStatus[i];
+
+		assert(state->mName == receivedState.mName);
+		state->mIsActive = receivedState.mIsActive;
+		state->mNow = receivedState.mNow - 1;
+		state->mBufferTime = receivedState.mBufferTime;
+	}
 }

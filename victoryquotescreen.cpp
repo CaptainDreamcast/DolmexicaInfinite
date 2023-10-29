@@ -123,7 +123,7 @@ static int loadRandomQuoteAndReturnIfSuccessful(MugenDefScript* tScript, std::st
 		return 0;
 	}
 
-	oQuote = quotes[randfromInteger(0, quotes.size() - 1)];
+	oQuote = quotes[randfromInteger(0, int(quotes.size()) - 1)];
 	return 1;
 }
 

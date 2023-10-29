@@ -33,7 +33,7 @@ static void updateSurvivalResultMessage() {
 
 	int srcI;
 	char* dst = message;
-	int len = strlen(gSurvivalModeData.mResultMessageFormat);
+	int len = int(strlen(gSurvivalModeData.mResultMessageFormat));
 	for (srcI = 0; srcI < len; srcI++) {
 		if (gSurvivalModeData.mResultMessageFormat[srcI] == '%' && gSurvivalModeData.mResultMessageFormat[srcI + 1] == 'i') {
 			sprintf(dst, "%d", gSurvivalModeData.mCurrentEnemy);
