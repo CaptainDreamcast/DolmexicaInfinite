@@ -270,6 +270,7 @@ int getActiveHitDataCoordinateP(DreamPlayer* tPlayer);
 
 void* getPlayerHitDataReference(DreamPlayer* tPlayer);
 DreamPlayer* getReceivedHitDataPlayer(void* tHitData);
+DreamPlayer* getActiveHitDataPlayer(DreamPlayer* tPlayer);
 
 DreamMugenStateType getHitDataType(DreamPlayer* tPlayer);
 void setHitDataType(DreamPlayer* tPlayer, DreamMugenStateType tType);
@@ -309,6 +310,7 @@ int getHitDataPlayer2PauseTime(DreamPlayer* tPlayer);
 void setHitDataPauseTime(DreamPlayer* tPlayer, int tPlayer1PauseTime, int tPlayer2PauseTime);
 
 void setHitDataGuardPauseTime(DreamPlayer* tPlayer, int tPlayer1PauseTime, int tPlayer2PauseTime);
+int getActiveHitDataPlayerHitShakeTime(DreamPlayer* tPlayer);
 
 int isActiveHitDataSparkInPlayerFile(DreamPlayer* tPlayer);
 int isActiveHitDataGuardSparkInPlayerFile(DreamPlayer* tPlayer);

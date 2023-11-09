@@ -296,7 +296,7 @@ static void loadControllerType(BackgroundState* e, MugenDefScriptGroup* tGroup) 
 	} else if (!strcmp("visible", text)) {
 		loadSingleValueController(e, BACKGROUND_STATE_CONTROLLER_VISIBLE, tGroup);
 	}
-	else if (!strcmp("enabled", text)) {
+	else if (!strncmp("enable", text, (sizeof("enable") - 1))) {
 		loadSingleValueController(e, BACKGROUND_STATE_CONTROLLER_ENABLED, tGroup);
 	}
 	else if (!strcmp("velset", text)) {

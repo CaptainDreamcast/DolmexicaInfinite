@@ -308,6 +308,8 @@ static void updateIPText()
 
 static void tryJoinIP()
 {
+	if (isNetplayActive()) return;
+
 	if (tryDolmexicaNetplayJoin(gNetplayScreenData.mJoin.mIPString, peerJoinedCB))
 	{
 		logFormat("Join successful to %s", gNetplayScreenData.mJoin.mIPString.c_str());

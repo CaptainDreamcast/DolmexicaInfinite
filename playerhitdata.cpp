@@ -141,6 +141,13 @@ DreamPlayer* getReceivedHitDataPlayer(void * tHitData)
 	return passive->mPlayer;
 }
 
+DreamPlayer* getActiveHitDataPlayer(DreamPlayer* tPlayer) 
+{
+	assert(isGeneralPlayer(tPlayer));
+	PlayerHitData* e = &tPlayer->mActiveHitData;
+	return e->mPlayer;
+}
+
 DreamMugenStateType getHitDataType(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
@@ -370,6 +377,12 @@ void setHitDataGuardPauseTime(DreamPlayer* tPlayer, int tPlayer1PauseTime, int t
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mGuardPlayer1PauseTime = tPlayer1PauseTime;
 	e->mGuardPlayer2ShakeTime = tPlayer2PauseTime;
+}
+
+int getActiveHitDataPlayerHitShakeTime(DreamPlayer* tPlayer) {
+	const auto hitDataPlayer = getActiveHitDataPlayer(tPlayer);
+	if (!isGeneralPlayer(hitDataPlayer)) return 0;
+	else return getPlayerTimeLeftInHitPause(hitDataPlayer);
 }
 
 int isActiveHitDataSparkInPlayerFile(DreamPlayer* tPlayer)

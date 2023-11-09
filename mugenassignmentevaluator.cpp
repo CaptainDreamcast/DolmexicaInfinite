@@ -1968,7 +1968,7 @@ static AssignmentReturnValue* getHitVarFallEnvshakeFreqFunction(DreamPlayer* tPl
 static AssignmentReturnValue* getHitVarFallEnvshakeAmplFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getActiveHitDataFallEnvironmentShakeAmplitude(tPlayer)); }
 static AssignmentReturnValue* getHitVarFallEnvshakePhaseFunction(DreamPlayer* tPlayer) { return makeFloatAssignmentReturn(getActiveHitDataFallEnvironmentShakePhase(tPlayer)); }
 static AssignmentReturnValue* getHitVarSlidetimeFunction(DreamPlayer* tPlayer) {	return makeBooleanAssignmentReturn(getPlayerSlideTime(tPlayer));}
-static AssignmentReturnValue* getHitVarHitshaketimeFunction(DreamPlayer* tPlayer) { return makeBooleanAssignmentReturn(getActiveHitDataPlayer2PauseTime(tPlayer));}
+static AssignmentReturnValue* getHitVarHitshaketimeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getActiveHitDataPlayerHitShakeTime(tPlayer)); }
 static AssignmentReturnValue* getHitVarHitTimeFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getPlayerHitTime(tPlayer));}
 static AssignmentReturnValue* getHitVarHitcountFunction(DreamPlayer* tPlayer) {	return makeNumberAssignmentReturn(getPlayerHitCount(tPlayer));}
 static AssignmentReturnValue* getHitVarDamageFunction(DreamPlayer* tPlayer) {return makeNumberAssignmentReturn(getActiveHitDataDamage(tPlayer));}
@@ -2886,8 +2886,8 @@ static AssignmentReturnValue* evaluateAssignmentStart(DreamMugenAssignment** tAs
 	return ret;
 }
 
-static AssignmentReturnValue* stateNoStoryFunction(DreamPlayer* /*tPlayer*/) { return makeNumberAssignmentReturn(getDolmexicaStoryStateNumber(getDolmexicaStoryRootInstance())); }
-static AssignmentReturnValue* timeStoryFunction(DreamPlayer* /*tPlayer*/) { return makeNumberAssignmentReturn(getDolmexicaStoryTimeInState(getDolmexicaStoryRootInstance())); }
+static AssignmentReturnValue* stateNoStoryFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getDolmexicaStoryStateNumber((StoryInstance*)tPlayer)); }
+static AssignmentReturnValue* timeStoryFunction(DreamPlayer* tPlayer) { return makeNumberAssignmentReturn(getDolmexicaStoryTimeInState((StoryInstance*)tPlayer)); }
 
 static void setupStoryVariableAssignments() {
 	gVariableHandler.mVariables.clear();

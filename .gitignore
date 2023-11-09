@@ -1,4 +1,5 @@
 .git_*
+.tmp.driveupload/*
 
 assets/*
 assets_normal/*

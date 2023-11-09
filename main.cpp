@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 
 #ifdef DEVELOP
 	setDevelopMode();
-	setMinimumLogType((isOnDreamcast() || isOnVita()) ? LOG_TYPE_NONE : LOG_TYPE_NORMAL);
+	setMinimumLogType((isOnDreamcast() || isOnVita()) ? LOG_TYPE_NORMAL : LOG_TYPE_NORMAL);
 #else
 	setMinimumLogType(LOG_TYPE_NONE);
 #endif
@@ -88,8 +88,8 @@ int main(int argc, char** argv) {
 	setScreenAfterWrapperLogoScreen(getInitScreen());
 	
 #ifdef DEVELOP	
-	setUnscaledGameWavVolume(0);
-	setUnscaledGameMidiVolume(0);
+	//setUnscaledGameWavVolume(0);
+	//setUnscaledGameMidiVolume(0);
 	// setDisplayedScreenSize(320, 240);
 	disableWrapperErrorRecovery();
 	initDolmexicaDebug();
