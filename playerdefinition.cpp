@@ -42,6 +42,8 @@
 
 using namespace std;
 
+#define SPRITE_PRIORITY_MIN -10
+#define SPRITE_PRIORITY_MAX 10
 #define SHADOW_Z 32
 #define REFLECTION_Z 33
 #define DUST_Z 47
@@ -119,9 +121,8 @@ static int getPlayerRandomPaletteIndex(MugenDefScript* tScript) {
 	std::vector<int> possibleValues;
 	static const auto MAXIMUM_PALETTE_AMOUNT = 16;
 	for (int i = 0; i <= MAXIMUM_PALETTE_AMOUNT; i++) {
-		std::stringstream ss;
-		ss << "pal" << i;
-		if (isMugenDefStringVariable(tScript, "files", ss.str().c_str())) {
+		const auto str = std::string("pal").append(std::to_string(i));
+		if (isMugenDefStringVariable(tScript, "files", str.c_str())) {
 			possibleValues.push_back(i);
 		}
 	}
@@ -3084,6 +3085,7 @@ int getPlayerAnimationTimeWhenStepStarts(DreamPlayer* p, int tStep) {
 
 double calculateSpriteZFromSpritePriority(int tPriority, int tRootID, int tIsExplod)
 {
+	tPriority = clamp(tPriority, SPRITE_PRIORITY_MIN, SPRITE_PRIORITY_MAX);
 	return PLAYER_Z + tPriority * PLAYER_Z_PRIORITY_DELTA + tRootID * PLAYER_Z_PLAYER_2_OFFSET - tIsExplod * EXPLOD_SPRITE_Z_OFFSET;
 }
 

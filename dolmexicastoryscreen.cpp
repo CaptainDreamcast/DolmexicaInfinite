@@ -55,6 +55,43 @@ static struct {
 	map<int, StoryInstance> mHelperInstances;
 } gDolmexicaStoryScreenData;
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+void imguiStoryScreen()
+{
+	if (!isImguiPrismActive()) return;
+
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Screen", "General", &isWindowShown);
+	if (isWindowShown)
+	{
+		ImGui::Begin("General", &isWindowShown);
+		ImGui::Text("Path = %s", gDolmexicaStoryScreenData.mPath);
+		imguiMugenSpriteFile(gDolmexicaStoryScreenData.mSprites, "Sprites");
+		//imguiMugenAnimationFile(gDolmexicaStoryScreenData.mAnimations, "Animations");
+		//imguiMugenSounds(gDolmexicaStoryScreenData.mSounds);
+
+		ImGui::Text("HasCommands = %d", gDolmexicaStoryScreenData.mHasCommands);
+		ImGui::Text("CommandID = %d", gDolmexicaStoryScreenData.mCommandID);
+		//imguiMugenCommands(gDolmexicaStoryScreenData.mCommands);
+
+		imguiMugenStates("StoryStates", gDolmexicaStoryScreenData.mStoryStates, gDolmexicaStoryScreenData.mPath);
+
+
+		ImGui::Text("HasStage = %d", gDolmexicaStoryScreenData.mHasStage);
+		ImGui::Text("HasMusic = %d", gDolmexicaStoryScreenData.mHasMusic);
+		ImGui::Text("HasFonts = %d", gDolmexicaStoryScreenData.mHasFonts);
+
+		//imguiStoryInstances();
+
+		ImGui::End();
+
+	}
+}
+#endif
+
 static void loadSystemFonts(void*) {
 	unloadMugenFonts();
 	loadMugenSystemFonts();
@@ -280,7 +317,11 @@ static void updateStoryScreen() {
 static Screen gDolmexicaStoryScreen;
 
 Screen* getDolmexicaStoryScreen() {
-	gDolmexicaStoryScreen = makeScreen(loadStoryScreen, updateStoryScreen, NULL, unloadStoryScreen);
+	gDolmexicaStoryScreen = makeScreen(loadStoryScreen, updateStoryScreen, NULL, unloadStoryScreen, NULL
+#ifdef _WIN32
+		, imguiStoryScreen
+#endif
+	);
 	return &gDolmexicaStoryScreen;
 }
 

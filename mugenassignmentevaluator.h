@@ -33,3 +33,5 @@ std::string evaluateMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup* tGroup, 
 double evaluateMugenDefFloatOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName, double tDefault);
 int evaluateMugenDefIntegerOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName, int tDefault);
 int evaluateMugenDefIntegerOrDefault(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName, int tDefault);
+
+void imguiDreamAssignment(const std::string_view& tName, DreamMugenAssignment** tAssignment, const std::string_view& tScriptPath = "", const std::string_view& tGroupName = "", size_t tGroupOffset = 0);

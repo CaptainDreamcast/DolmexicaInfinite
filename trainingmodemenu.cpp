@@ -273,9 +273,7 @@ static void setCooperativeModeActive() {
 }
 
 static std::string getAILevelText() {
-	std::stringstream ss;
-	ss << getPlayerAILevel(getRootPlayer(1));
-	return ss.str();
+	return std::to_string(getPlayerAILevel(getRootPlayer(1)));
 }
 
 static void setAIModeActive() {

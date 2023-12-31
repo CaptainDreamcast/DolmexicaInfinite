@@ -30,11 +30,12 @@ namespace MakeYourOwnGameKitGuiDreamcast
         {
             var command = "make_cdi.bat " + CDLabelName.Text + " " + CDIName.Text;
             var processInfo = new ProcessStartInfo("cmd.exe", "/c " + command);
+            processInfo.WorkingDirectory = "dreamcast";
             var process = Process.Start(processInfo);
             process.WaitForExit();
             process.Close();
 
-            MessageBox.Show("CDI creation complete. Output path is: \n\n" + System.IO.Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory) + "\\" + CDIName.Text + ".cdi",
+            MessageBox.Show("CDI creation complete. Output path is: \n\n" + System.IO.Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory) + "\\dreamcast\\" + CDIName.Text + ".cdi",
                                           "Process Complete",
                                           MessageBoxButton.OK,
                                           MessageBoxImage.Information);

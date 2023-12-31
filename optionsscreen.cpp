@@ -731,12 +731,11 @@ static void setDreamcastFreeBlocksText() {
 
 	const auto freeSize = getAvailableSizeForSaveSlot(gOptionsScreenData.mDreamcastSave.mSelectedVMU);
 	const auto blockAmount = freeSize / 512;
-	std::stringstream ss;
-	ss << "Free blocks: " << blockAmount;
+	auto s = std::string("Free blocks: ").append(std::to_string(blockAmount));
 	if (gOptionsScreenData.mDreamcastSave.mHasSave) {
-		ss << " (save exists)";
+		s = s.append(" (save exists)");
 	}
-	changeMugenText(gOptionsScreenData.mDreamcastSave.mFreeBlocksTextID, ss.str().c_str());
+	changeMugenText(gOptionsScreenData.mDreamcastSave.mFreeBlocksTextID, s.c_str());
 }
 
 static void setDreamcastSaveSaveSizeText() {
@@ -749,9 +748,8 @@ static void setDreamcastSaveSaveSizeText() {
 	}
 
 	const auto blockAmount = saveSize / 512;
-	std::stringstream ss;
-	ss << "Save blocks: " << blockAmount;
-	changeMugenText(gOptionsScreenData.mDreamcastSave.mSaveSizeBlocksTextID, ss.str().c_str());
+	const auto s = std::string("Save blocks: ").append(std::to_string(blockAmount));
+	changeMugenText(gOptionsScreenData.mDreamcastSave.mSaveSizeBlocksTextID, s.c_str());
 }
 
 static void setSelectedDreamcastSaveOptionInactive() {

@@ -30,6 +30,7 @@ namespace MakeYourOwnGameKitGuiWeb
         {
             var command = "make_web.bat " + GameName.Text;
             var processInfo = new ProcessStartInfo("cmd.exe", "/c " + command);
+            processInfo.WorkingDirectory = "web";
             var process = Process.Start(processInfo);
             process.WaitForExit();
             process.Close();

@@ -6,6 +6,7 @@ assets_normal/*
 assets_*/*
 webbuild.bat
 webrun.bat
+imgui.ini
 
 *.o
 *.BIN
@@ -41,6 +42,8 @@ windows/packages/*
 windows/Test/*
 tools/MakeYourOwnGameKitGui/MakeYourOwnGameKitGuiDreamcast/bin/*
 tools/MakeYourOwnGameKitGui/MakeYourOwnGameKitGuiDreamcast/obj/*
+tools/MakeYourOwnGameKitGui/MakeYourOwnGameKitGuiVita/bin/*
+tools/MakeYourOwnGameKitGui/MakeYourOwnGameKitGuiVita/obj/*
 tools/MakeYourOwnGameKitGui/MakeYourOwnGameKitGuiWeb/bin/*
 tools/MakeYourOwnGameKitGui/MakeYourOwnGameKitGuiWeb/obj/*
 tools/MakeYourOwnGameKitGui/.vs/*

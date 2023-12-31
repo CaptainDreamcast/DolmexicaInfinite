@@ -451,6 +451,7 @@ static void resetRoundData(void* /*tCaller*/) {
 	resetDreamMugenStageHandlerCameraPosition();
 	resetStageForRound();
 	resetDreamTimer();
+	stopKOAndWinAnimation();
 	changePlayerState(getRootPlayer(0), 0);
 	changePlayerState(getRootPlayer(1), 0);
 	startRound();

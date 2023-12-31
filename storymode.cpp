@@ -189,10 +189,9 @@ static void loadFightGroup(MugenDefScriptGroup* tGroup) {
 	}
 	else {
 		for (int i = 0; i < 2; i++) {
-			stringstream ss;
-			ss << "p" << (i + 1) << ".name";
-			if (isMugenDefStringVariableAsGroup(tGroup, ss.str().c_str())) {
-				setCustomPlayerDisplayName(i, evaluateMugenDefStringOrDefaultAsGroup(tGroup, ss.str().c_str(), ""));
+			const auto s = std::string("p").append(std::to_string(i + 1)).append(".name");
+			if (isMugenDefStringVariableAsGroup(tGroup, s.c_str())) {
+				setCustomPlayerDisplayName(i, evaluateMugenDefStringOrDefaultAsGroup(tGroup, s.c_str(), ""));
 			}
 		}
 

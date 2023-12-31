@@ -213,10 +213,9 @@ static void saveDolmexicaScreenshot() {
 	std::string title = getGameTitle();
 	removeInvalidFileNameElementsFromString(title);
 	for (int i = 1; i < 1000; i++) {
-		std::stringstream ss;
-		ss << title << "_" << i << ".png";
-		if (!isFile(ss.str().c_str())) {
-			saveScreenShot(ss.str().c_str());
+		const auto s = title.append("_").append(std::to_string(i)).append(".png");
+		if (!isFile(s.c_str())) {
+			saveScreenShot(s.c_str());
 			break;
 		}
 	}

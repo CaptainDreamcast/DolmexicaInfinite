@@ -99,25 +99,23 @@ static void loadVictoryQuoteScreenHeader(MugenDefScript* tSystemScript) {
 }
 
 static int loadVictoryQuoteWithIndexAndReturnIfSuccessful(MugenDefScript* tScript, int tIndex, std::string& oQuote) {
-	std::stringstream ss;
-	ss << "victory" << tIndex;
-	if (!isMugenDefStringVariable(tScript, "quotes", ss.str().c_str())) {
+	const auto s = std::string("victory").append(std::to_string(tIndex));
+	if (!isMugenDefStringVariable(tScript, "quotes", s.c_str())) {
 		return 0;
 	}
-	oQuote = getSTLMugenDefStringVariable(tScript, "quotes", ss.str().c_str());
+	oQuote = getSTLMugenDefStringVariable(tScript, "quotes", s.c_str());
 	return 1;
 }
 
 static int loadRandomQuoteAndReturnIfSuccessful(MugenDefScript* tScript, std::string& oQuote) {
 	std::vector<std::string> quotes;
 	for (int i = 0; i <= 99; i++) {
-		std::stringstream ss;
-		ss << "victory" << i;
-		if (!isMugenDefStringVariable(tScript, "quotes", ss.str().c_str())) {
+		const auto s = std::string("victory").append(std::to_string(i));
+		if (!isMugenDefStringVariable(tScript, "quotes", s.c_str())) {
 			if (i >= 1) break;
 			else continue;
 		}
-		quotes.push_back(getSTLMugenDefStringVariable(tScript, "quotes", ss.str().c_str()));
+		quotes.push_back(getSTLMugenDefStringVariable(tScript, "quotes", s.c_str()));
 	}
 	if (!quotes.size()) {
 		return 0;

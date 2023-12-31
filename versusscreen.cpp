@@ -142,17 +142,17 @@ static void loadVersusHeader() {
 }
 
 static std::string parseMatchTextString(const std::string& tText) {
-	std::stringstream ss;
+	std::string s;
 	for (size_t i = 0; i < tText.size(); i++) {
 		if (tText[i] == '%' && i != tText.size() - 1 && tText[i + 1] == 'i') {
-			ss << gVersusScreenData.mMatchNumber;
+			s = s.append(std::to_string(gVersusScreenData.mMatchNumber));
 			i++;
 		}
 		else {
-			ss << tText[i];
+			s.push_back(tText[i]);
 		}
 	}
-	return ss.str();
+	return s;
 }
 
 static void loadMatchText() {

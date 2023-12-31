@@ -8128,3 +8128,121 @@ void shutdownDreamMugenStateControllerHandler()
 	gMugenStateControllerVariableHandler.mStateControllerUnloaders.clear();
 	gMugenStateControllerVariableHandler.mMemoryStack = NULL;
 }
+
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+static const char* MUGEN_STORY_STATE_CONTROLLER_NAMES[] = { 
+	"Null", 
+	"CreateAnim", 
+	"RemoveAnim", 
+	"ChangeAnim",
+	"CreateText",
+	"RemoveText",
+	"ChangeText",
+	"LockText",
+	"TextPosSet",
+	"TextPosAdd",
+	"NameID",
+	"ChangeState",
+	"ChangeStateParent",
+	"ChangeStateRoot",
+	"FadeIn",
+	"FadeOut",
+	"GoToStoryStep",
+	"GoToIntro",
+	"GoToTitle",
+	"AnimPosSet",
+	"AnimPosAdd",
+	"AnimStagePosSet",
+	"AnimScaleSet",
+	"AnimSetFacing",
+	"AnimSetAngle",
+	"AnimAddAngle",
+	"AnimSetColor",
+	"AnimSetOpacity",
+	"EndStoryboard",
+	"MoveStage",
+	"CreateChar",
+	"RemoveChar",
+	"CharChangeAnim",
+	"CharPosSet",
+	"CharPosAdd",
+	"CharStagePosSet",
+	"CharScaleSet",
+	"CharSetFacing",
+	"CharSetColor",
+	"CharSetOpacity",
+	"CharSetAngle",
+	"CharAddAngle",
+	"CreateHelper",
+	"RemoveHelper",
+	"VarSet",
+	"VarAdd",
+	"ParentVarSet",
+	"ParentVarAdd",
+	"GlobalVarSet",
+	"GlobalVarAdd",
+	"PlayMusic",
+	"StopMusic",	
+	"PauseMusic",
+	"ResumeMusic",
+	"DestroySelf",
+	"CameraFocus",
+	"CameraZoom",
+	"PlaySnd",
+	"SndPan",
+	"StopSnd",
+};
+
+static const char* MUGEN_STATE_CONTROLLER_TARGETS[] = {
+	"Default",
+	"Player1",
+	"Player2",
+};
+
+static void imguiMugenStoryStateControllerChangeText(void* tData, const std::string_view& tScriptPath, const std::string_view& tGroupName, size_t tGroupOffset)
+{
+	auto e = (ChangeTextStoryController*)tData;
+	ImGui::Text("DoesChangeText = %d", e->mDoesChangeText);
+	if (e->mDoesChangeText)
+	{
+		imguiDreamAssignment("Text", &e->mText, tScriptPath, tGroupName, tGroupOffset);
+	}
+}
+
+static void imguiMugenStoryStateControllerData(DreamMugenStateControllerType tType, void* tData, const std::string_view& tScriptPath, const std::string_view& tGroupName, size_t tGroupOffset)
+{
+	if (tType == MUGEN_STORY_STATE_CONTROLLER_TYPE_NULL)
+	{
+		return;
+	}
+	else if (tType == MUGEN_STORY_STATE_CONTROLLER_TYPE_CHANGE_TEXT)
+	{
+		imguiMugenStoryStateControllerChangeText(tData, tScriptPath, tGroupName, tGroupOffset);
+	}
+}
+
+void imguiMugenStateController(int tIndex, void* tData, const std::string_view& tScriptPath, const std::string_view& tGroupName)
+{
+	auto controllerBase = (DreamMugenStateController*)tData;
+	if (ImGui::TreeNode((std::to_string(tIndex) + " - " + MUGEN_STORY_STATE_CONTROLLER_NAMES[int(controllerBase->mType)]).c_str()))
+	{
+		int type = int(controllerBase->mType);
+		ImGui::Combo("Type", &type, MUGEN_STORY_STATE_CONTROLLER_NAMES, IM_ARRAYSIZE(MUGEN_STORY_STATE_CONTROLLER_NAMES));
+		controllerBase->mType = uint8_t(type);
+		int target = int(controllerBase->mTarget);
+		ImGui::Combo("Target", &target, MUGEN_STATE_CONTROLLER_TARGETS, IM_ARRAYSIZE(MUGEN_STATE_CONTROLLER_TARGETS));
+		controllerBase->mTarget = uint8_t(target);
+		ImGui::Text("Persistence = %d", controllerBase->mPersistence);
+		ImGui::Text("AccessAmount = %d", controllerBase->mAccessAmount);
+
+		imguiDreamAssignment("Trigger", &controllerBase->mTrigger.mAssignment);
+
+		imguiMugenStoryStateControllerData(DreamMugenStateControllerType(controllerBase->mType), controllerBase->mData, tScriptPath, tGroupName, size_t(tIndex));
+
+		ImGui::TreePop();
+	}
+}
+#endif

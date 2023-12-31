@@ -14,3 +14,7 @@ int handleDreamMugenStateControllerAndReturnWhetherStateChanged(DreamMugenStateC
 void setupDreamMugenStateControllerHandler(MemoryStack* tMemoryStack);
 void setupDreamMugenStoryStateControllerHandler();
 void shutdownDreamMugenStateControllerHandler();
+
+#ifdef _WIN32
+void imguiMugenStateController(int tIndex, void* tData, const std::string_view& tScriptPath, const std::string_view& tGroupName);
+#endif

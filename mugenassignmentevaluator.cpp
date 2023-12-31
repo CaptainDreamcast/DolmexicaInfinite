@@ -160,21 +160,17 @@ static AssignmentReturnValue* makeBooleanAssignmentReturn(int tValue);
 static void convertAssignmentReturnToString(string& ret, AssignmentReturnValue* tAssignmentReturn);
 
 static void convertVectorAssignmentReturnToString(std::string& ret, AssignmentReturnValue* tAssignmentReturn) {
-	stringstream ss;
 	string valueVA, valueVB;
 	convertAssignmentReturnToString(valueVA, getVectorAssignmentReturnFirstDependency(tAssignmentReturn));
 	convertAssignmentReturnToString(valueVB, getVectorAssignmentReturnSecondDependency(tAssignmentReturn));
-	ss << valueVA << " , " << valueVB;
-	ret = ss.str();
+	ret = valueVA.append(" , ").append(valueVB);
 }
 
 static void convertRangeAssignmentReturnToString(std::string& ret, AssignmentReturnValue* tAssignmentReturn) {
-	stringstream ss;
 	string valueVA, valueVB;
 	convertAssignmentReturnToString(valueVA, getVectorAssignmentReturnFirstDependency(tAssignmentReturn));
 	convertAssignmentReturnToString(valueVB, getVectorAssignmentReturnSecondDependency(tAssignmentReturn));
-	ss << "[ " << valueVA << " , " << valueVB << " ]";
-	ret = ss.str();
+	ret = std::string("[ ").append(valueVA).append(" , ").append(valueVB).append(" ]");
 }
 
 static void convertAssignmentReturnToString(string& ret, AssignmentReturnValue* tAssignmentReturn) {
@@ -1568,9 +1564,8 @@ static AssignmentReturnValue* evaluateAdditionSparkFile(AssignmentReturnValue* a
 		return makeBottomAssignmentReturn();
 	}
 
-	std::stringstream ss;
-	ss << firstW << " " << val1 + val2;
-	return makeStringAssignmentReturn(ss.str().c_str());
+	const auto str = std::string(firstW).append(" ").append(std::to_string(val1 + val2));
+	return makeStringAssignmentReturn(str.c_str());
 }
 
 static AssignmentReturnValue* evaluateAdditionIntegers(AssignmentReturnValue* a, AssignmentReturnValue* b) {
@@ -2230,9 +2225,8 @@ static int isIsInOtherFileVariable(char* tName) {
 }
 
 static AssignmentReturnValue* makeExternalFileAssignmentReturn(char tIdentifierCharacter, const char* tValueString) {
-	std::stringstream ss;
-	ss << "isinotherfile" << tIdentifierCharacter << " " << tValueString;
-	return makeStringAssignmentReturn(ss.str().c_str());
+	const auto str = (std::string("isinotherfile") + tIdentifierCharacter).append(" ").append(tValueString);
+	return makeStringAssignmentReturn(str.c_str());
 }
 
 static AssignmentReturnValue* evaluateVariableAssignment(DreamMugenAssignment** tAssignment, DreamPlayer* tPlayer, int* tIsStatic) {
@@ -2547,9 +2541,8 @@ static AssignmentReturnValue* evaluateIsHelperArrayAssignment(AssignmentReturnVa
 static AssignmentReturnValue* evaluateTargetArrayAssignment(AssignmentReturnValue* tIndex, const char* tTargetName) {
 	int id = convertAssignmentReturnToNumber(tIndex);
 
-	std::stringstream ss;
-	ss << tTargetName << " " << id;
-	return makeStringAssignmentReturn(ss.str().c_str());
+	const auto str = std::string(tTargetName).append(" ").append(std::to_string(id));
+	return makeStringAssignmentReturn(str.c_str());
 }
 
 static AssignmentReturnValue* evaluatePlayerIDExistArrayAssignment(AssignmentReturnValue* tIndex, DreamPlayer* tPlayer, int* tIsStatic) {
@@ -3175,6 +3168,20 @@ static AssignmentReturnValue* evaluateHelperStateNoStoryArrayAssignment(Assignme
 	return makeNumberAssignmentReturn(getDolmexicaStoryStateNumber(helper));
 }
 
+static AssignmentReturnValue* evaluateConcatenateStoryArrayAssignment(AssignmentReturnValue* tIndex) {
+	if (tIndex->mType != MUGEN_ASSIGNMENT_RETURN_TYPE_VECTOR)
+	{
+		return makeBottomAssignmentReturn();
+	}
+
+	auto vec = (AssignmentReturnVector*)tIndex;
+	std::string a, b;
+	convertAssignmentReturnToString(a, vec->a);
+	convertAssignmentReturnToString(b, vec->b);
+
+	return makeStringAssignmentReturn((a + b).c_str());
+}
+
 static AssignmentReturnValue* animStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* animLoopStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimLoopStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* animStageStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateAnimStageStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
@@ -3240,6 +3247,7 @@ static AssignmentReturnValue* numHelperStoryFunction(DreamMugenAssignment** tInd
 static AssignmentReturnValue* nameIDStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateNameIDStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), (StoryInstance*)tPlayer, tIsStatic); }
 static AssignmentReturnValue* helperStoryFunction(DreamMugenAssignment** /*tIndexAssignment*/, DreamPlayer* /*tPlayer*/, int* /*tIsStatic*/) { return evaluateHelperStoryArrayAssignment(); }
 static AssignmentReturnValue* helperStateNoStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateHelperStateNoStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic), tIsStatic); }
+static AssignmentReturnValue* concatenateStoryFunction(DreamMugenAssignment** tIndexAssignment, DreamPlayer* tPlayer, int* tIsStatic) { return evaluateConcatenateStoryArrayAssignment(evaluateAssignmentDependency(tIndexAssignment, tPlayer, tIsStatic)); }
 
 static void setupStoryArrayAssignments() {
 	gVariableHandler.mArrays.clear();
@@ -3322,6 +3330,7 @@ static void setupStoryArrayAssignments() {
 	gVariableHandler.mArrays["atan"] = atanFunction;
 	gVariableHandler.mArrays["floor"] = floorFunction;
 	gVariableHandler.mArrays["ceil"] = ceilFunction;
+	gVariableHandler.mArrays["concatenate"] = concatenateStoryFunction;
 }
 
 static AssignmentReturnValue* evaluateStoryCommandAssignment(AssignmentReturnValue* tCommand, int* tIsStatic) {
@@ -4157,3 +4166,268 @@ int evaluateMugenDefIntegerOrDefault(MugenDefScript* tScript, const char* tGroup
 	}
 	return evaluateMugenDefIntegerOrDefaultAsGroup(getMugenDefScriptGroup(tScript, tGroupName), tVariableName, tDefault);
 }
+
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#include "prism/mugendefwriter.h"
+
+static std::string imguiDebugStringFromAssignment(DreamMugenAssignment* tAssignment);
+
+static std::string imguiDebugStringFromNumberAssignment(DreamMugenAssignment* tAssignment) {
+	auto numberAssignment = (DreamMugenNumberAssignment*)tAssignment;
+	return std::to_string(numberAssignment->mValue);
+}
+
+static std::string imguiDebugStringFromFloatAssignment(DreamMugenAssignment* tAssignment) {
+	auto floatAssignment = (DreamMugenFloatAssignment*)tAssignment;
+	return std::to_string(floatAssignment->mValue);
+}
+
+static std::string imguiDebugStringFromStringAssignment(DreamMugenAssignment* tAssignment) {
+	auto stringAssignment = (DreamMugenStringAssignment*)tAssignment;
+	return std::string("\"") + std::string(stringAssignment->mValue) + "\"";
+}
+
+static std::string imguiDebugStringFromVariableAssignment(DreamMugenAssignment* tAssignment) {
+	auto variable = (DreamMugenVariableAssignment*)tAssignment;
+	for (auto& func : gVariableHandler.mVariables)
+	{
+		if (func.second == variable->mFunc) return func.first;
+	}
+	return "unfound";
+}
+
+static std::string imguiDebugStringFromRawVariableAssignment(DreamMugenAssignment* tAssignment) {
+	auto rawVariable = (DreamMugenRawVariableAssignment*)tAssignment;
+	return std::string(rawVariable->mName);
+}
+
+static std::string imguiDebugStringFromFixedBooleanAssignment(DreamMugenAssignment* tAssignment) {
+	auto boolean = (DreamMugenFixedBooleanAssignment*)tAssignment;
+	return std::to_string(boolean->mValue);
+}
+
+static std::string imguiDebugStringFromRangeAssignment(DreamMugenAssignment* tAssignment) {
+	auto range = (DreamMugenRangeAssignment*)tAssignment;
+	std::string leftOperator = range->mExcludeLeft ? "(" : "[";
+	std::string rightOperator = range->mExcludeRight ? ")" : "]";
+	return leftOperator + imguiDebugStringFromAssignment(range->a) + rightOperator;
+}
+
+static bool isMugenDependOnTwoAssignment(DreamMugenAssignmentType type)
+{
+	switch (type) {
+	case MUGEN_ASSIGNMENT_TYPE_AND:
+	case MUGEN_ASSIGNMENT_TYPE_OR:
+	case MUGEN_ASSIGNMENT_TYPE_COMPARISON:
+	case MUGEN_ASSIGNMENT_TYPE_INEQUALITY:
+	case MUGEN_ASSIGNMENT_TYPE_LESS_OR_EQUAL:
+	case MUGEN_ASSIGNMENT_TYPE_GREATER_OR_EQUAL:
+	case MUGEN_ASSIGNMENT_TYPE_SET_VARIABLE:
+	case MUGEN_ASSIGNMENT_TYPE_EXPONENTIATION:
+	case MUGEN_ASSIGNMENT_TYPE_BITWISE_AND:
+	case MUGEN_ASSIGNMENT_TYPE_BITWISE_OR:
+	case MUGEN_ASSIGNMENT_TYPE_LESS:
+	case MUGEN_ASSIGNMENT_TYPE_GREATER:
+	case MUGEN_ASSIGNMENT_TYPE_ADDITION:
+	case MUGEN_ASSIGNMENT_TYPE_MULTIPLICATION:
+	case MUGEN_ASSIGNMENT_TYPE_MODULO:
+	case MUGEN_ASSIGNMENT_TYPE_SUBTRACTION:
+	case MUGEN_ASSIGNMENT_TYPE_DIVISION:
+	case MUGEN_ASSIGNMENT_TYPE_VECTOR:
+	case MUGEN_ASSIGNMENT_TYPE_OPERATOR_ARGUMENT:
+		return true;
+	default:
+		return false;
+	}
+}
+
+static std::string imguiDebugStringFromDependOnTwoAssignment(DreamMugenAssignment* tAssignment, const std::string& tOperator) {
+	auto dependOnTwo = (DreamMugenDependOnTwoAssignment*)tAssignment;
+	std::string leftOpen = isMugenDependOnTwoAssignment(DreamMugenAssignmentType(dependOnTwo->a->mType)) ? "(" : "";
+	std::string leftClose = isMugenDependOnTwoAssignment(DreamMugenAssignmentType(dependOnTwo->a->mType)) ? ")" : "";
+	std::string rightOpen = isMugenDependOnTwoAssignment(DreamMugenAssignmentType(dependOnTwo->b->mType)) ? "(" : "";
+	std::string rightClose = isMugenDependOnTwoAssignment(DreamMugenAssignmentType(dependOnTwo->b->mType)) ? ")" : "";
+	return leftOpen + imguiDebugStringFromAssignment(dependOnTwo->a) + leftClose + " " + tOperator + " " + rightOpen + imguiDebugStringFromAssignment(dependOnTwo->b) + rightClose;
+}
+
+static std::string imguiDebugStringFromDependOnOneAssignment(DreamMugenAssignment* tAssignment, const std::string& tOperator) {
+	auto dependOnOne = (DreamMugenDependOnOneAssignment*)tAssignment;
+	return tOperator + imguiDebugStringFromAssignment(dependOnOne->a);
+}
+
+static std::string getMugenAssignmentArrayFuncString(void* tFunc)
+{
+	for (auto& func : gVariableHandler.mArrays)
+	{
+		if (func.second == tFunc) return func.first;
+	}
+	return "unfound";
+}
+
+static std::string imguiDebugStringFromArrayAssignment(DreamMugenAssignment* tAssignment) {
+	auto array = (DreamMugenArrayAssignment*)tAssignment;
+	std::string func = getMugenAssignmentArrayFuncString(array->mFunc);
+	return func + "(" + imguiDebugStringFromAssignment(array->mIndex) + ")";
+}
+
+static std::string imguiDebugStringFromAssignment(DreamMugenAssignment* tAssignment) {
+	if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_FIXED_BOOLEAN)
+	{
+		return imguiDebugStringFromFixedBooleanAssignment(tAssignment);
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_AND)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, "&&");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_XOR)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, "^^");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_OR)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, "||");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_COMPARISON)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, "=");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_INEQUALITY)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, "!=");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_LESS_OR_EQUAL)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, "<=");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_GREATER_OR_EQUAL)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, ">=");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_VECTOR)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, ",");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_RANGE)
+	{
+		return imguiDebugStringFromRangeAssignment(tAssignment);
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_NULL)
+	{
+		return "";
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_NEGATION)
+	{
+		return imguiDebugStringFromDependOnOneAssignment(tAssignment, "!");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE)
+	{
+		return imguiDebugStringFromVariableAssignment(tAssignment);
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_RAW_VARIABLE)
+	{
+		return imguiDebugStringFromRawVariableAssignment(tAssignment);
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_NUMBER)
+	{
+		return imguiDebugStringFromNumberAssignment(tAssignment);
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_FLOAT)
+	{
+		return imguiDebugStringFromFloatAssignment(tAssignment);
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_STRING)
+	{
+		return imguiDebugStringFromStringAssignment(tAssignment);
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_ARRAY)
+	{
+		return imguiDebugStringFromArrayAssignment(tAssignment);
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_LESS)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, "<");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_GREATER)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, ">");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_ADDITION)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, "+");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_MULTIPLICATION)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, "*");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_MODULO)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, "%");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_SUBTRACTION)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, "-");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_SET_VARIABLE)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, ":=");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_DIVISION)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, "/");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_EXPONENTIATION)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, "**");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_BITWISE_INVERSION)
+	{
+		return imguiDebugStringFromDependOnOneAssignment(tAssignment, "~");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_UNARY_MINUS)
+	{
+		return imguiDebugStringFromDependOnOneAssignment(tAssignment, "-");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_OPERATOR_ARGUMENT)
+	{
+		return imguiDebugStringFromDependOnTwoAssignment(tAssignment, "$$");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_BITWISE_AND)
+	{
+		return imguiDebugStringFromDependOnOneAssignment(tAssignment, "&");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_BITWISE_XOR)
+	{
+		return imguiDebugStringFromDependOnOneAssignment(tAssignment, "^");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_BITWISE_OR)
+	{
+		return imguiDebugStringFromDependOnOneAssignment(tAssignment, "|");
+	}
+	else if (tAssignment->mType == MUGEN_ASSIGNMENT_TYPE_STATIC)
+	{
+		return "static";
+	}
+	else
+	{
+		return "";
+	}
+}
+
+void imguiDreamAssignment(const std::string_view& tName, DreamMugenAssignment** tAssignment, const std::string_view& tScriptPath, const std::string_view& tGroupName, size_t tGroupOffset)
+{
+	std::string assignmentString = imguiDebugStringFromAssignment(*tAssignment);
+	char assignmentBuffer[1024];
+	strcpy(assignmentBuffer, assignmentString.data());
+	ImGui::InputText(tName.data(), assignmentBuffer, 1024);
+	if (strcmp(assignmentBuffer, assignmentString.data()) && ImGui::IsItemDeactivatedAfterEdit())
+	{
+		*tAssignment = parseDreamMugenAssignmentFromString(assignmentBuffer);
+		if (tScriptPath != "")
+		{
+			saveMugenDefString(tScriptPath.data(), tGroupName.data(), tGroupOffset, tName.data(), assignmentBuffer);
+		}
+	}
+}
+#endif

@@ -30,11 +30,12 @@ namespace MakeYourOwnGameKitGuiDreamcast
         {
             var command = "make_vita.bat \"" + GameName.Text + "\" " + GameTitleID.Text + " " + GameVersion.Text;
             var processInfo = new ProcessStartInfo("cmd.exe", "/c " + command);
+            processInfo.WorkingDirectory = "vita";
             var process = Process.Start(processInfo);
             process.WaitForExit();
             process.Close();
 
-            MessageBox.Show("VPK creation complete. In case of success, output path is: \n\n" + System.IO.Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory) + "\\" + GameTitleID.Text + ".vpk",
+            MessageBox.Show("VPK creation complete. In case of success, output path is: \n\n" + System.IO.Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory) + "\\vita\\" + GameTitleID.Text + ".vpk",
                                           "Process Complete",
                                           MessageBoxButton.OK,
                                           MessageBoxImage.Information);

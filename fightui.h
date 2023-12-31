@@ -59,6 +59,7 @@ void addTeammateWinIcon(int tPlayer, int tIsPerfect);
 
 void removeAllWinIcons();
 void stopFightAndRoundAnimation();
+void stopKOAndWinAnimation();
 
 void setUIFaces();
 void setComboUIDisplay(int i, int tAmount);

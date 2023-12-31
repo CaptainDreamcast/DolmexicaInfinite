@@ -174,20 +174,20 @@ code, tt {
 <div class="document" id="m-u-g-e-n-update-history">
 <h1 class="title">Make-your-own-game for Vita documentation</h1>
 
-<p>Toolkit to make your own Dolmexica Infinite game for Vita. It is a downloadable toolkit separate from base Dolmexica Infinite. It contains a .bat file that is used as a command line tool as well as a program that serves as a graphical interface for it.</p>
+<p>Toolkit to make your own Dolmexica Infinite game for Vita. Part of this kit are a .bat file that is used as a command line tool as well as a program that serves as a graphical interface for it. The program is contained in the root folder, the .bat file can be found inside the vita folder.</p>
 <div class="section" id="usage">
 <h3>GUI</h3>
 <p>Open "Dolmexica Infinite Make-your-own-game kit for Vita.exe"</p>
 <h3>Batch script command</h3>
 <em>make_vita.bat GameName TitleID Version</em>
 <h3>Example</h3>
-<em>make_web.bat "Dolmexica Infinite" DOLM00001 01.00</em>
+<em>make_vita.bat "Dolmexica Infinite" DOLM00001 01.00</em>
 <h3>How to use</h3>
 <p>To mod the game, change the files in the assets folder just like you would with Mugen. <br />
-If you want to modify the appearance of the game in the Vita menu, modify the files in common/sce_sys/ before building. <br />
+If you want to modify the appearance of the game in the Vita menu, modify the files in vita/common/sce_sys/ before building. <br />
 The output will be a .vpk file you can upload to your Vita and install there.<br />
 <br />
-Temporary files created during the packaging are created in the build folder. If something goes wrong during packaging, these files might be helpful with debugging.</p>
+Temporary files created during the packaging are created in the vita/build folder. If something goes wrong during packaging, these files might be helpful with debugging.</p>
 <h3>Known issues</h3>
 <ul class="simple">
 <li>Make sure the TitleID is 9 characters, you'll get Error 0xF0030000 while installing if it's not.</li>

@@ -433,7 +433,7 @@ static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement
 		for (i = 0; i < amountX; i++) {
 			addSingleMugenStageHandlerBackgroundElementTile(e, tSprites, tBlendType, tAlpha, tZoomDelta, offset);
 			offset.x += size.x + e->mTileSpacing.x;
-			offset.z += 0.0001;
+			offset.z -= 0.00001; // larger diff values will overflow and cause visual artifacts in the midway/2.def test stage
 		}
 		offset.y += size.y + e->mTileSpacing.y;
 	}

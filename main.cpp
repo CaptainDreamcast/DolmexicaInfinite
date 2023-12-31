@@ -27,13 +27,10 @@
 char romdisk_buffer[1];
 int romdisk_buffer_length;
 
-// #define DEVELOP
+//#define DEVELOP
 
 #ifdef DREAMCAST
-KOS_INIT_FLAGS(INIT_DEFAULT);
-
-extern uint8 romdisk[];
-KOS_INIT_ROMDISK(romdisk);
+KOS_INIT_FLAGS(INIT_DEFAULT | INIT_MALLOCSTATS);
 
 #endif
 
@@ -90,7 +87,14 @@ int main(int argc, char** argv) {
 #ifdef DEVELOP	
 	//setUnscaledGameWavVolume(0);
 	//setUnscaledGameMidiVolume(0);
-	// setDisplayedScreenSize(320, 240);
+
+	if (isOnWindows())
+	{
+		//setDisplayedScreenSize(1356, 1017);
+		//setDisplayedScreenSize(320, 240);
+		//setScreenPosition(0, -1080); // TODO: move to user cfg
+	}
+
 	disableWrapperErrorRecovery();
 	initDolmexicaDebug();
 	setDebugMinusCheckEnabled(1);

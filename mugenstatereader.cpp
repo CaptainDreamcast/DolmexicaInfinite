@@ -537,3 +537,38 @@ DreamMugenStateTypeFlags convertDreamMugenStateTypeToFlag(DreamMugenStateType tT
 		return MUGEN_STATE_TYPE_NO_FLAG;
 	}
 }
+
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+struct ImguiMugenStateCaller
+{
+	std::string mScriptPath;
+};
+
+static void imguiMugenState(DreamMugenState& tState, ImguiMugenStateCaller& tCaller)
+{
+	ImGui::Text("ID = %d", tState.mID);
+	ImGui::Text("Type = %d", tState.mType);
+	ImGui::Text("MoveType = %d", tState.mMoveType);
+	ImGui::Text("Physics = %d", tState.mPhysics);
+	ImGui::Text("Flags = %d", tState.mFlags);
+	if (ImGui::TreeNode("Controllers"))
+	{
+		for (size_t i = 0; i < vector_size(&tState.mControllers); i++)
+		{
+			auto controller = vector_get(&tState.mControllers, int(i));
+			imguiMugenStateController(int(i), controller, tCaller.mScriptPath, std::string("statedef ") + std::to_string(tState.mID));
+		}
+		ImGui::TreePop();
+	}
+}
+
+void imguiMugenStates(const std::string_view& tName, DreamMugenStates& tStates, const std::string_view& tScriptPath)
+{
+	ImguiMugenStateCaller caller;
+	caller.mScriptPath = tScriptPath;
+	imguiIntMap(tName, tStates.mStates, imguiMugenState, caller);
+}
+#endif

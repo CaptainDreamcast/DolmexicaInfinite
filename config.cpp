@@ -169,14 +169,17 @@ static void loadConfigSound(MugenDefScript* tScript) {
 
 static void loadWindowTitle(MugenDefScript* tScript) {
 	if (isOnDreamcast()) return;
-	if (!isMugenDefStringVariable(tScript, "misc", "title")) return;
+	if (isMugenDefStringVariable(tScript, "misc", "title")) {
+		gConfigData.mMisc.mTitle = getSTLMugenDefStringOrDefault(tScript, "misc", "title", "DOLMEXICA INFINITE");
+		updateGameName(gConfigData.mMisc.mTitle.c_str());
+	}
 
-	gConfigData.mMisc.mTitle = getSTLMugenDefStringOrDefault(tScript, "misc", "title", "DOLMEXICA INFINITE");
-	updateGameName(gConfigData.mMisc.mTitle.c_str());
-
-	string iconPath = getSTLMugenDefStringOrDefault(tScript, "misc", "icon", "");
-	if (isFile(getDolmexicaAssetFolder() + "data/" + iconPath)) {
-		setIcon((getDolmexicaAssetFolder() + "data/" + iconPath).c_str());
+	if (isMugenDefStringVariable(tScript, "misc", "icon"))
+	{
+		string iconPath = getSTLMugenDefStringOrDefault(tScript, "misc", "icon", "");
+		if (isFile(getDolmexicaAssetFolder() + "data/" + iconPath)) {
+			setIcon((getDolmexicaAssetFolder() + "data/" + iconPath).c_str());
+		}
 	}
 }
 
@@ -191,9 +194,7 @@ static void loadConfigArcade(MugenDefScript* tScript) {
 }
 
 static void loadConfigKeysSinglePlayer(MugenDefScript* tScript, int tIndex) {
-	std::stringstream ss;
-	ss << "p" << (tIndex + 1) << " keys dolmexica";
-	const auto groupName = ss.str();
+	const auto groupName = std::string("p").append(std::to_string(tIndex + 1)).append(" keys dolmexica");
 	auto key = getMugenDefIntegerOrDefault(tScript, groupName.c_str(), "jump", int(getButtonForKeyboard(tIndex, CONTROLLER_UP_PRISM)));
 	setButtonForKeyboard(tIndex, CONTROLLER_UP_PRISM, KeyboardKeyPrism(key));
 	key = getMugenDefIntegerOrDefault(tScript, groupName.c_str(), "crouch", int(getButtonForKeyboard(tIndex, CONTROLLER_DOWN_PRISM)));

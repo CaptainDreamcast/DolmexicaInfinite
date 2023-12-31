@@ -379,3 +379,7 @@ void loadDreamMugenStateDefinitionsFromFile(DreamMugenStates* tStates, const cha
 DreamMugenStates createEmptyMugenStates();
 
 DreamMugenStateTypeFlags convertDreamMugenStateTypeToFlag(DreamMugenStateType tType);
+
+#ifdef _WIN32
+void imguiMugenStates(const std::string_view& tName, DreamMugenStates& tStates, const std::string_view& tScriptPath);
+#endif

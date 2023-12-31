@@ -58,7 +58,6 @@ typedef struct {
 	Vector3DI mActiveFont1;
 	Vector3DI mActiveFont2;
 	Vector3DI mDoneFont;
-
 } StageSelectHeader;
 
 typedef struct {
@@ -218,9 +217,9 @@ static struct {
 	void(*mCB)();
 
 	int mCharacterAmount;
-	Vector mSelectCharacters; // vector of vectors of SelectCharacter
+	std::list<std::list<SelectCharacter>> mSelectCharacters;
 	Vector mSelectStages; // vector of SelectStage
-	Vector mRealSelectCharacters; // vector of SelectCharacter of type character
+	std::vector<SelectCharacter*> mRealSelectCharacters;
 	int mSelectorAmount;
 	Selector mSelectors[2];
 	int mControllerUsed[2];
@@ -465,15 +464,15 @@ typedef struct {
 
 } MenuCharacterLoadCaller;
 
-static void loadMenuCharacterCredits(SelectCharacter* e, MugenDefScript* tScript) {
+static void loadMenuCharacterCredits(SelectCharacter& e, MugenDefScript* tScript) {
 	if (gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
 
-	e->mCredits.mName = getAllocatedMugenDefStringOrDefault(tScript, "info", "name", e->mDisplayCharacterName);
-	e->mCredits.mAuthorName = getAllocatedMugenDefStringOrDefault(tScript, "info", "author", "N/A");
-	e->mCredits.mVersionDate = getAllocatedMugenDefStringOrDefault(tScript, "info", "versiondate", "N/A");
+	e.mCredits.mName = getAllocatedMugenDefStringOrDefault(tScript, "info", "name", e.mDisplayCharacterName);
+	e.mCredits.mAuthorName = getAllocatedMugenDefStringOrDefault(tScript, "info", "author", "N/A");
+	e.mCredits.mVersionDate = getAllocatedMugenDefStringOrDefault(tScript, "info", "versiondate", "N/A");
 }
 
-static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter* e, char* tCharacterName) {
+static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter& e, char* tCharacterName) {
 	
 	char file[200];
 	char path[1024];
@@ -504,23 +503,23 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 		sprintf(scriptPath, "%s%s", path, file);
 		sprintf(scriptPathPreloaded, "%s.portraits.preloaded", scriptPath);
 		if (isFile(scriptPathPreloaded)) {
-			e->mSprites = loadMugenSpriteFilePortraits(scriptPathPreloaded, hasPalettePath, palettePath);
+			e.mSprites = loadMugenSpriteFilePortraits(scriptPathPreloaded, hasPalettePath, palettePath);
 		}
 		else {
-			e->mSprites = loadMugenSpriteFilePortraits(scriptPath, hasPalettePath, palettePath);
+			e.mSprites = loadMugenSpriteFilePortraits(scriptPath, hasPalettePath, palettePath);
 		}
 	}
 
-	strcpy(e->mCharacterName, tCharacterName);
-	e->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "displayname");
+	strcpy(e.mCharacterName, tCharacterName);
+	e.mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "displayname");
 
-	e->mType = SELECT_CHARACTER_TYPE_CHARACTER;
+	e.mType = SELECT_CHARACTER_TYPE_CHARACTER;
 	
 	loadMenuCharacterCredits(e, &script);
 	
 	unloadMugenDefScript(&script);
 	
-	vector_push_back(&gCharacterSelectScreenData.mRealSelectCharacters, e);
+	gCharacterSelectScreenData.mRealSelectCharacters.push_back(&e);
 	return 1;
 }
 
@@ -530,16 +529,16 @@ static Position2D getCellScreenPosition(const Vector2DI& tCellPosition) {
 	return gCharacterSelectScreenData.mHeader.mPosition + Vector2D(dx, dy);
 }
 
-static void showMenuSelectableAnimations(MenuCharacterLoadCaller* /*tCaller*/, SelectCharacter* e) {
-	auto pos = getCellScreenPosition(e->mCellPosition).xyz(40.0);
+static void showMenuSelectableAnimations(MenuCharacterLoadCaller* /*tCaller*/, SelectCharacter& e) {
+	auto pos = getCellScreenPosition(e.mCellPosition).xyz(40.0);
 	if (gCharacterSelectScreenData.mHeader.mIsShowingPortraits) {
-		e->mPortraitAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mSmallPortraitAnimation, &e->mSprites, pos + gCharacterSelectScreenData.mHeader.mSmallPortraitOffset);
-		setMugenAnimationDrawScale(e->mPortraitAnimationElement, gCharacterSelectScreenData.mHeader.mSmallPortraitScale);
+		e.mPortraitAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mSmallPortraitAnimation, &e.mSprites, pos + gCharacterSelectScreenData.mHeader.mSmallPortraitOffset);
+		setMugenAnimationDrawScale(e.mPortraitAnimationElement, gCharacterSelectScreenData.mHeader.mSmallPortraitScale);
 	}
 	if (!gCharacterSelectScreenData.mHeader.mIsShowingEmptyBoxes) {
 		pos.z = 30;
-		e->mBackgroundAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
-		setMugenAnimationDrawScale(e->mBackgroundAnimationElement, gCharacterSelectScreenData.mHeader.mCellBackgroundScale);
+		e.mBackgroundAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
+		setMugenAnimationDrawScale(e.mBackgroundAnimationElement, gCharacterSelectScreenData.mHeader.mCellBackgroundScale);
 	}
 }
 
@@ -550,12 +549,13 @@ static void loadSingleRealMenuCharacter(MenuCharacterLoadCaller* tCaller, const 
 	int row = tCaller->i / gCharacterSelectScreenData.mHeader.mColumns;
 	int column = tCaller->i % gCharacterSelectScreenData.mHeader.mColumns;
 
-	SelectCharacter* e = (SelectCharacter*)vector_get((Vector*)vector_get(&gCharacterSelectScreenData.mSelectCharacters, row), column);
+	
+	auto& e = stl_list_at(stl_list_at(gCharacterSelectScreenData.mSelectCharacters, row), column);
 	if (tVector.mSize >= 2)	{
-		strcpy(e->mStageName, tVector.mElement[1]);
+		strcpy(e.mStageName, tVector.mElement[1]);
 	}
 	else {
-		strcpy(e->mStageName, "random");
+		strcpy(e.mStageName, "random");
 	}
 
 	tCaller->i++;
@@ -570,7 +570,7 @@ static void loadSingleRealMenuCharacter(MenuCharacterLoadCaller* tCaller, const 
 		return;
 	}
 	if (gCharacterSelectScreenData.mStageSelect.mIsUsing && doesIncludeStage) {
-		addSingleSelectStage(e->mStageName);
+		addSingleSelectStage(e.mStageName);
 	}
 
 	showMenuSelectableAnimations(tCaller, e);
@@ -580,17 +580,16 @@ static void loadSingleRandomMenuCharacter(MenuCharacterLoadCaller* tCaller) {
 	int row = tCaller->i / gCharacterSelectScreenData.mHeader.mColumns;
 	int column = tCaller->i % gCharacterSelectScreenData.mHeader.mColumns;
 
-	SelectCharacter* e = (SelectCharacter*)vector_get((Vector*)vector_get(&gCharacterSelectScreenData.mSelectCharacters, row), column);
+	auto& e = stl_list_at(stl_list_at(gCharacterSelectScreenData.mSelectCharacters, row), column);
+	e.mType = SELECT_CHARACTER_TYPE_RANDOM;
 
-	e->mType = SELECT_CHARACTER_TYPE_RANDOM;
-
-	auto pos = getCellScreenPosition(e->mCellPosition).xyz(40.0);
-	e->mPortraitAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mRandomSelectionAnimation, &gCharacterSelectScreenData.mSprites, pos + gCharacterSelectScreenData.mHeader.mSmallPortraitOffset);
-	setMugenAnimationDrawScale(e->mPortraitAnimationElement, gCharacterSelectScreenData.mHeader.mRandomSelectionScale);
+	auto pos = getCellScreenPosition(e.mCellPosition).xyz(40.0);
+	e.mPortraitAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mRandomSelectionAnimation, &gCharacterSelectScreenData.mSprites, pos + gCharacterSelectScreenData.mHeader.mSmallPortraitOffset);
+	setMugenAnimationDrawScale(e.mPortraitAnimationElement, gCharacterSelectScreenData.mHeader.mRandomSelectionScale);
 	if (!gCharacterSelectScreenData.mHeader.mIsShowingEmptyBoxes) {
 		pos.z = 30;
-		e->mBackgroundAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
-		setMugenAnimationDrawScale(e->mBackgroundAnimationElement, gCharacterSelectScreenData.mHeader.mCellBackgroundScale);
+		e.mBackgroundAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
+		setMugenAnimationDrawScale(e.mBackgroundAnimationElement, gCharacterSelectScreenData.mHeader.mCellBackgroundScale);
 	}
 
 	tCaller->i++;
@@ -630,7 +629,7 @@ static void loadMenuCharacters() {
 	gCharacterSelectScreenData.mCharacterAmount = caller.i;
 }
 
-static int loadSingleStoryFileAndReturnWhetherItExists(SelectCharacter* e, char* tPath) {
+static int loadSingleStoryFileAndReturnWhetherItExists(SelectCharacter& e, char* tPath) {
 	char file[200];
 	char path[1024];
 	char scriptPath[1024];
@@ -647,16 +646,16 @@ static int loadSingleStoryFileAndReturnWhetherItExists(SelectCharacter* e, char*
 	getMugenDefStringOrDefault(file, &script, "info", "select.spr", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
-	e->mSprites = loadMugenSpriteFileWithoutPalette(scriptPath);
+	e.mSprites = loadMugenSpriteFileWithoutPalette(scriptPath);
 
-	strcpy(e->mCharacterName, tPath);
-	e->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "name");
+	strcpy(e.mCharacterName, tPath);
+	e.mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "name");
 
-	e->mType = SELECT_CHARACTER_TYPE_CHARACTER;
+	e.mType = SELECT_CHARACTER_TYPE_CHARACTER;
 
 	unloadMugenDefScript(&script);
 
-	vector_push_back(&gCharacterSelectScreenData.mRealSelectCharacters, e);
+	gCharacterSelectScreenData.mRealSelectCharacters.push_back(&e);
 	return 1;
 }
 
@@ -669,8 +668,8 @@ static void loadSingleStory(MenuCharacterLoadCaller* tCaller, char* tPath) {
 	int row = tCaller->i / gCharacterSelectScreenData.mHeader.mColumns;
 	int column = tCaller->i % gCharacterSelectScreenData.mHeader.mColumns;
 	tCaller->i++;
-	SelectCharacter* e = (SelectCharacter*)vector_get((Vector*)vector_get(&gCharacterSelectScreenData.mSelectCharacters, row), column);
-	strcpy(e->mStageName, "");
+	auto& e = stl_list_at(stl_list_at(gCharacterSelectScreenData.mSelectCharacters, row), column);
+	strcpy(e.mStageName, "");
 	if (!loadSingleStoryFileAndReturnWhetherItExists(e, tPath)) {
 		return;
 	}
@@ -712,28 +711,26 @@ static void loadMenuSelectables() {
 }
 
 static void loadSingleMenuCell(const Vector2DI& tCellPosition) {
-	SelectCharacter* e = (SelectCharacter*)allocMemory(sizeof(SelectCharacter));
-	e->mType = SELECT_CHARACTER_TYPE_EMPTY;
-	e->mCellPosition = tCellPosition;
+	SelectCharacter e;
+	e.mType = SELECT_CHARACTER_TYPE_EMPTY;
+	e.mCellPosition = tCellPosition;
 
 	if (gCharacterSelectScreenData.mHeader.mIsShowingEmptyBoxes) {
-		const auto pos = getCellScreenPosition(e->mCellPosition).xyz(30.0);
-		e->mBackgroundAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
-		setMugenAnimationDrawScale(e->mBackgroundAnimationElement, gCharacterSelectScreenData.mHeader.mCellBackgroundScale);
+		const auto pos = getCellScreenPosition(e.mCellPosition).xyz(30.0);
+		e.mBackgroundAnimationElement = addMugenAnimation(gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation, &gCharacterSelectScreenData.mSprites, pos);
+		setMugenAnimationDrawScale(e.mBackgroundAnimationElement, gCharacterSelectScreenData.mHeader.mCellBackgroundScale);
 	}
 
-	vector_push_back_owned((Vector*)vector_get(&gCharacterSelectScreenData.mSelectCharacters, tCellPosition.y), e);
+	stl_list_at(gCharacterSelectScreenData.mSelectCharacters, tCellPosition.y).push_back(e);
 }
 
 static void loadMenuCells() {
-	gCharacterSelectScreenData.mSelectCharacters = new_vector();
-	gCharacterSelectScreenData.mRealSelectCharacters = new_vector();
+	gCharacterSelectScreenData.mSelectCharacters.clear();
+	gCharacterSelectScreenData.mRealSelectCharacters.clear();
 	
 	int y, x;
 	for (y = 0; y < gCharacterSelectScreenData.mHeader.mRows; y++) {
-		Vector* v = (Vector*)allocMemory(sizeof(Vector));
-		*v = new_vector();
-		vector_push_back_owned(&gCharacterSelectScreenData.mSelectCharacters, v);
+		gCharacterSelectScreenData.mSelectCharacters.push_back(std::list<SelectCharacter>());
 
 		for (x = 0; x < gCharacterSelectScreenData.mHeader.mColumns; x++) {
 			loadSingleMenuCell(Vector2DI(x, y));
@@ -742,7 +739,7 @@ static void loadMenuCells() {
 }
 
 static SelectCharacter* getCellCharacter(const Vector2DI& tCellPosition) {
-	SelectCharacter* ret = (SelectCharacter*)vector_get((Vector*)vector_get(&gCharacterSelectScreenData.mSelectCharacters, tCellPosition.y), tCellPosition.x);
+	SelectCharacter* ret = &stl_list_at(stl_list_at(gCharacterSelectScreenData.mSelectCharacters, tCellPosition.y), tCellPosition.x);
 	return ret;
 }
 
@@ -899,7 +896,7 @@ static int isValidSelectPath(const std::string& path, std::string& oFinalSelectP
 }
 
 static int checkIfCharactersSane() {
-	return vector_size(&gCharacterSelectScreenData.mRealSelectCharacters);
+	return int(gCharacterSelectScreenData.mRealSelectCharacters.size());
 }
 
 static int checkIfStagesSane() {
@@ -996,38 +993,35 @@ static void unloadSelectStages() {
 	delete_vector(&gCharacterSelectScreenData.mSelectStages);
 }
 
-static void unloadMenuCharacterCredits(SelectCharacter* e) {
+static void unloadMenuCharacterCredits(SelectCharacter& e) {
 	if (gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
 
-	freeMemory(e->mCredits.mName); 
-	freeMemory(e->mCredits.mAuthorName);
-	freeMemory(e->mCredits.mVersionDate);
+	freeMemory(e.mCredits.mName); 
+	freeMemory(e.mCredits.mAuthorName);
+	freeMemory(e.mCredits.mVersionDate);
 }
 
-static void unloadSingleSelectCharacter(void* tCaller, void* tData) {
-	(void)tCaller;
-	SelectCharacter* e = (SelectCharacter*)tData;
-	if (e->mType == SELECT_CHARACTER_TYPE_CHARACTER) {
+static void unloadSingleSelectCharacter(SelectCharacter& e) {
+	if (e.mType == SELECT_CHARACTER_TYPE_CHARACTER) {
 		if (gCharacterSelectScreenData.mHeader.mIsShowingPortraits) {
-			unloadMugenSpriteFile(&e->mSprites);
+			unloadMugenSpriteFile(&e.mSprites);
 		}
-		freeMemory(e->mDisplayCharacterName);
+		freeMemory(e.mDisplayCharacterName);
 		unloadMenuCharacterCredits(e);
 	}
 }
 
-static void unloadSingleSelectCharacterRow(void* tCaller, void* tData) {
-	(void)tCaller;
-	Vector* e = (Vector*)tData;
-	vector_map(e, unloadSingleSelectCharacter, NULL);
-	delete_vector(e);
-}
-
-
 static void unloadSelectCharacters() {
-	delete_vector(&gCharacterSelectScreenData.mRealSelectCharacters);
-	vector_map(&gCharacterSelectScreenData.mSelectCharacters, unloadSingleSelectCharacterRow, NULL);
-	delete_vector(&gCharacterSelectScreenData.mSelectCharacters);
+	gCharacterSelectScreenData.mRealSelectCharacters.clear();
+
+	for (auto& row : gCharacterSelectScreenData.mSelectCharacters)
+	{
+		for (auto& character : row)
+		{
+			unloadSingleSelectCharacter(character);
+		}
+	}
+	gCharacterSelectScreenData.mSelectCharacters.clear();
 }
 
 static void resetSelectState() {
@@ -1217,7 +1211,7 @@ static void updateSingleSelectionInput(int i) {
 }
 
 static void showNewRandomSelectCharacter(int i) {
-	int amount = vector_size(&gCharacterSelectScreenData.mRealSelectCharacters);
+	int amount = int(gCharacterSelectScreenData.mRealSelectCharacters.size());
 	int newIndex = gCharacterSelectScreenData.mSelectors[i].mRandom.mCurrentCharacter;
 	if (amount > 1) {
 		while (newIndex == gCharacterSelectScreenData.mSelectors[i].mRandom.mCurrentCharacter) {
@@ -1229,7 +1223,7 @@ static void showNewRandomSelectCharacter(int i) {
 	}
 
 	gCharacterSelectScreenData.mSelectors[i].mRandom.mCurrentCharacter = newIndex;
-	SelectCharacter* e = (SelectCharacter*)vector_get(&gCharacterSelectScreenData.mRealSelectCharacters, gCharacterSelectScreenData.mSelectors[i].mRandom.mCurrentCharacter);
+	auto e = gCharacterSelectScreenData.mRealSelectCharacters[gCharacterSelectScreenData.mSelectors[i].mRandom.mCurrentCharacter];
 	showSelectCharacterForSelector(i, e);
 	gCharacterSelectScreenData.mSelectors[i].mRandom.mNow = 0;
 }
@@ -1459,7 +1453,7 @@ static void setCharacterSelectionFinished(int i) {
 	tryPlayMugenSoundAdvanced(&gCharacterSelectScreenData.mSounds, owner->mCursorDoneSound.x, owner->mCursorDoneSound.y, parseGameMidiVolumeToPrism(getGameMidiVolume()));
 
 	if (character->mType == SELECT_CHARACTER_TYPE_RANDOM) {
-		character = (SelectCharacter*)vector_get(&gCharacterSelectScreenData.mRealSelectCharacters, gCharacterSelectScreenData.mSelectors[i].mRandom.mCurrentCharacter);
+		character = gCharacterSelectScreenData.mRealSelectCharacters[gCharacterSelectScreenData.mSelectors[i].mRandom.mCurrentCharacter];
 	}
 
 	if (gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_STORY) {
