@@ -223,11 +223,17 @@ typedef struct {
 typedef struct {
 	int mTime;
 
+	int mIsAnimation;
 	Position mPosition;
 	int mOwnsAnimation;
 	MugenAnimation* mAnimation;
 	int mFaceDirection;
 	Vector2D mScale;
+
+	char mText[1024];
+	Vector3DI mFont;
+	int mDisplayTime;
+	int mTextID;
 
 	int mDisplayNow;
 	int mIsActive;
@@ -247,11 +253,16 @@ typedef struct {
 typedef struct {
 	int mTime;
 
+	int mIsAnimation;
 	Position mPosition;
 	int mOwnsAnimation;
 	MugenAnimation* mAnimation;
 	int mFaceDirection;
 	Vector2D mScale;
+
+	char mText[1024];
+	Vector3DI mFont;
+	int mTextID;
 
 	int mDisplayNow;
 	int mDisplayTime;
@@ -271,7 +282,14 @@ typedef struct {
 typedef struct {
 	int mTextID;
 
+	int mIsAnimation;
 	Position mPosition;
+	int mOwnsAnimation;
+	MugenAnimation* mAnimation;
+	int mFaceDirection;
+	Vector2D mScale;
+	MugenAnimationHandlerElement* mAnimationElement;
+
 	char mText[1024];
 	int mNow;
 	int mDisplayTime;
@@ -290,7 +308,14 @@ typedef struct {
 typedef struct {
 	int mTextID;
 
+	int mIsAnimation;
 	Position mPosition;
+	int mOwnsAnimation;
+	MugenAnimation* mAnimation;
+	int mFaceDirection;
+	Vector2D mScale;
+	MugenAnimationHandlerElement* mAnimationElement;
+
 	char mText[1024];
 	int mNow;
 	int mDisplayTime;
@@ -311,8 +336,15 @@ typedef struct {
 
 	int mTextID;
 	
-	Position mDisplayPosition;
+	int mIsAnimation;
 	Position mPosition;
+	int mOwnsAnimation;
+	MugenAnimation* mAnimation;
+	int mFaceDirection;
+	Vector2D mScale;
+	MugenAnimationHandlerElement* mAnimationElement;
+
+	Position mDisplayPosition;
 	char mText[1024];
 	char mDisplayedText[1024];
 	int mNow;
@@ -328,7 +360,14 @@ typedef struct {
 typedef struct {
 	int mTextID;
 
+	int mIsAnimation;
 	Position mPosition;
+	int mOwnsAnimation;
+	MugenAnimation* mAnimation;
+	int mFaceDirection;
+	Vector2D mScale;
+	MugenAnimationHandlerElement* mAnimationElement;
+
 	char mText[1024];
 	int mNow;
 	int mDisplayTime;
@@ -544,6 +583,16 @@ static void loadFightDefFilesFromScript(MugenDefScript* tScript, char* tDefPath)
 
 static void loadFightFX(MugenDefScript* tScript) {
 	gFightUIData.mFightFX.mScale = getMugenDefFloatOrDefault(tScript, "fightfx", "scale", 1.0);
+}
+
+static bool isSingleUIAnimComponent(MugenDefScript* tScript, const char* tGroupName, const char* tComponentName)
+{
+	char name[1024];
+	sprintf(name, "%s.anim", tComponentName);
+	if (isMugenDefStringVariable(tScript, tGroupName, name)) return 1;
+
+	sprintf(name, "%s.spr", tComponentName);
+	return (isMugenDefStringVariable(tScript, tGroupName, name));
 }
 
 static int loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(MugenDefScript* tScript, MugenAnimations* tAnimations, const Position& tBasePosition, const char* tGroupName, const char* tComponentName, double tZ, MugenAnimation** oAnimation, int* oOwnsAnimation, Position* oPosition, int* oFaceDirection, Vector2D* oScale, double tCoordinateScale) {
@@ -959,6 +1008,20 @@ static void loadRound(MugenDefScript* tScript) {
 	gFightUIData.mRound.mIsDisplayingRound = 0;
 }
 
+static int loadSingleUIDuplicateComponentWithFullComponentNameForStorage(MugenDefScript* tScript, MugenAnimations* tAnimations, const Position& tBasePosition, const char* tGroupName, const char* tComponentName, double tZ, int* oIsAnimation, MugenAnimation** oAnimation, int* oOwnsAnimation, Position* oPosition, int* oFaceDirection, Vector2D* oScale, int tIsReadingText, char* tText, Vector3DI* oFontData, double tCoordinateScale)
+{
+	*oIsAnimation = isSingleUIAnimComponent(tScript, tGroupName, tComponentName);
+	if(oIsAnimation)
+	{
+		return loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, tAnimations, tBasePosition, tGroupName, tComponentName, tZ, oAnimation, oOwnsAnimation, oPosition, oFaceDirection, oScale, tCoordinateScale);
+	}
+	else
+	{
+		loadSingleUITextWithFullComponentNameForStorage(tScript, tBasePosition, tGroupName, tComponentName, tZ, oPosition, tIsReadingText, tText, oFontData, tCoordinateScale);
+		return 1;
+	}
+}
+
 static void loadFight(MugenDefScript* tScript) {
 	const auto coordinateScale = getScreenSize().x / double(getDreamUICoordinateP());
 	Position basePosition;
@@ -966,8 +1029,9 @@ static void loadFight(MugenDefScript* tScript) {
 	basePosition *= coordinateScale;
 	basePosition.z = UI_BASE_Z;
 
-	loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gFightUIData.mFightAnimations, basePosition, "round", "fight", 1, &gFightUIData.mFight.mAnimation, &gFightUIData.mFight.mOwnsAnimation, &gFightUIData.mFight.mPosition, &gFightUIData.mFight.mFaceDirection, &gFightUIData.mFight.mScale, coordinateScale);
+	loadSingleUIDuplicateComponentWithFullComponentNameForStorage(tScript, &gFightUIData.mFightAnimations, basePosition, "round", "fight", 1, &gFightUIData.mFight.mIsAnimation, &gFightUIData.mFight.mAnimation, &gFightUIData.mFight.mOwnsAnimation, &gFightUIData.mFight.mPosition, &gFightUIData.mFight.mFaceDirection, &gFightUIData.mFight.mScale, 1, gFightUIData.mFight.mText, &gFightUIData.mFight.mFont, coordinateScale);
 	gFightUIData.mFight.mTime = getMugenDefIntegerOrDefault(tScript, "round", "fight.time", 0);
+	gFightUIData.mFight.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "round", "fight.displaytime", gFightUIData.mFight.mIsAnimation ? -1 : 0);
 	gFightUIData.mFight.mSoundTime = getMugenDefIntegerOrDefault(tScript, "round", "fight.sndtime", 0);
 	gFightUIData.mFight.mHasSound = isMugenDefVector2DIVariable(tScript, "round", "fight.snd");
 	if (gFightUIData.mFight.mHasSound) {
@@ -985,9 +1049,9 @@ static void loadKO(MugenDefScript* tScript) {
 	basePosition *= coordinateScale;
 	basePosition.z = UI_BASE_Z;
 
-	loadSingleUIComponentWithFullComponentNameForStorageAndReturnIfLegit(tScript, &gFightUIData.mFightAnimations, basePosition, "round", "ko", 1, &gFightUIData.mKO.mAnimation, &gFightUIData.mKO.mOwnsAnimation, &gFightUIData.mKO.mPosition, &gFightUIData.mKO.mFaceDirection, &gFightUIData.mKO.mScale, coordinateScale);
+	loadSingleUIDuplicateComponentWithFullComponentNameForStorage(tScript, &gFightUIData.mFightAnimations, basePosition, "round", "ko", 1, &gFightUIData.mKO.mIsAnimation, &gFightUIData.mKO.mAnimation, &gFightUIData.mKO.mOwnsAnimation, &gFightUIData.mKO.mPosition, &gFightUIData.mKO.mFaceDirection, &gFightUIData.mKO.mScale, 1, gFightUIData.mKO.mText, &gFightUIData.mKO.mFont, coordinateScale);
 	gFightUIData.mKO.mTime = getMugenDefIntegerOrDefault(tScript, "round", "ko.time", 0);
-	gFightUIData.mKO.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "round", "ko.displaytime", -1);
+	gFightUIData.mKO.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "round", "ko.displaytime", gFightUIData.mKO.mIsAnimation ? -1 : 0);
 	gFightUIData.mKO.mSoundTime = getMugenDefIntegerOrDefault(tScript, "round", "ko.sndtime", 0);
 	gFightUIData.mKO.mHasSound = isMugenDefVector2DIVariable(tScript, "round", "ko.snd");
 	if (gFightUIData.mKO.mHasSound) {
@@ -1004,9 +1068,9 @@ static void loadDKO(MugenDefScript* tScript) {
 	basePosition *= coordinateScale;
 	basePosition.z = UI_BASE_Z;
 
-	loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "round", "dko", 1, &gFightUIData.mDKO.mPosition, 1, gFightUIData.mDKO.mText, &gFightUIData.mDKO.mFont, coordinateScale);
+	loadSingleUIDuplicateComponentWithFullComponentNameForStorage(tScript, &gFightUIData.mFightAnimations, basePosition, "round", "dko", 1, &gFightUIData.mDKO.mIsAnimation, &gFightUIData.mDKO.mAnimation, &gFightUIData.mDKO.mOwnsAnimation, &gFightUIData.mDKO.mPosition, &gFightUIData.mDKO.mFaceDirection, &gFightUIData.mDKO.mScale, 1, gFightUIData.mDKO.mText, &gFightUIData.mDKO.mFont, coordinateScale);
 
-	gFightUIData.mDKO.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "round", "dko.displaytime", 0);
+	gFightUIData.mDKO.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "round", "dko.displaytime", gFightUIData.mDKO.mIsAnimation ? -1 : 0);
 
 	gFightUIData.mDKO.mHasSound = isMugenDefVector2DIVariable(tScript, "round", "dko.snd");
 	if (gFightUIData.mDKO.mHasSound) {
@@ -1024,9 +1088,9 @@ static void loadTO(MugenDefScript* tScript) {
 	basePosition *= coordinateScale;
 	basePosition.z = UI_BASE_Z;
 
-	loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "round", "to", 1, &gFightUIData.mTO.mPosition, 1, gFightUIData.mTO.mText, &gFightUIData.mTO.mFont, coordinateScale);
+	loadSingleUIDuplicateComponentWithFullComponentNameForStorage(tScript, &gFightUIData.mFightAnimations, basePosition, "round", "to", 1, &gFightUIData.mTO.mIsAnimation, &gFightUIData.mTO.mAnimation, &gFightUIData.mTO.mOwnsAnimation, &gFightUIData.mTO.mPosition, &gFightUIData.mTO.mFaceDirection, &gFightUIData.mTO.mScale, 1, gFightUIData.mTO.mText, &gFightUIData.mTO.mFont, coordinateScale);
 
-	gFightUIData.mTO.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "round", "to.displaytime", 0);
+	gFightUIData.mTO.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "round", "to.displaytime", gFightUIData.mTO.mIsAnimation ? -1 : 0);
 
 	gFightUIData.mTO.mHasSound = isMugenDefVector2DIVariable(tScript, "round", "to.snd");
 	if (gFightUIData.mTO.mHasSound) {
@@ -1044,9 +1108,9 @@ static void loadWinDisplay(MugenDefScript* tScript) {
 	basePosition *= coordinateScale;
 	basePosition.z = UI_BASE_Z;
 
-	loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "round", "win", 1, &gFightUIData.mWin.mPosition, 1, gFightUIData.mWin.mText, &gFightUIData.mWin.mFont, coordinateScale);
+	loadSingleUIDuplicateComponentWithFullComponentNameForStorage(tScript, &gFightUIData.mFightAnimations, basePosition, "round", "win", 1, &gFightUIData.mWin.mIsAnimation, &gFightUIData.mWin.mAnimation, &gFightUIData.mWin.mOwnsAnimation, &gFightUIData.mWin.mPosition, &gFightUIData.mWin.mFaceDirection, &gFightUIData.mWin.mScale, 1, gFightUIData.mWin.mText, &gFightUIData.mWin.mFont, coordinateScale);
 	gFightUIData.mWin.mTime = getMugenDefIntegerOrDefault(tScript, "round", "win.time", 0);
-	gFightUIData.mWin.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "round", "win.displaytime", 0);
+	gFightUIData.mWin.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "round", "win.displaytime", gFightUIData.mWin.mIsAnimation ? -1 : 0);
 
 	gFightUIData.mWin.mIsActive = 0;
 	gFightUIData.mWin.mIsDisplaying = 0;
@@ -1059,9 +1123,9 @@ static void loadDrawDisplay(MugenDefScript* tScript) {
 	basePosition *= coordinateScale;
 	basePosition.z = UI_BASE_Z;
 
-	loadSingleUITextWithFullComponentNameForStorage(tScript, basePosition, "round", "draw", 1, &gFightUIData.mDraw.mPosition, 1, gFightUIData.mDraw.mText, &gFightUIData.mDraw.mFont, coordinateScale);
+	loadSingleUIDuplicateComponentWithFullComponentNameForStorage(tScript, &gFightUIData.mFightAnimations, basePosition, "round", "draw", 1, &gFightUIData.mDraw.mIsAnimation, &gFightUIData.mDraw.mAnimation, &gFightUIData.mDraw.mOwnsAnimation, &gFightUIData.mDraw.mPosition, &gFightUIData.mDraw.mFaceDirection, &gFightUIData.mDraw.mScale, 1, gFightUIData.mDraw.mText, &gFightUIData.mDraw.mFont, coordinateScale);
 
-	gFightUIData.mDraw.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "round", "draw.displaytime", 0);
+	gFightUIData.mDraw.mDisplayTime = getMugenDefIntegerOrDefault(tScript, "round", "draw.displaytime", gFightUIData.mDraw.mIsAnimation ? -1 : 0);
 
 	gFightUIData.mDraw.mIsActive = 0;
 	gFightUIData.mDraw.mIsDisplaying = 0;
@@ -1260,12 +1324,18 @@ static void unloadRound() {
 	}
 }
 
+static void unloadSingleUIComponentDuplicate(int tIsAnimation, MugenAnimation* tAnimation, int tOwnsAnimation)
+{
+	if (!tIsAnimation) return;
+	unloadSingleUIComponent(tAnimation, tOwnsAnimation);
+}
+
 static void unloadFight() {
-	unloadSingleUIComponent(gFightUIData.mFight.mAnimation, gFightUIData.mFight.mOwnsAnimation);
+	unloadSingleUIComponentDuplicate(gFightUIData.mFight.mIsAnimation, gFightUIData.mFight.mAnimation, gFightUIData.mFight.mOwnsAnimation);
 }
 
 static void unloadKO() {	
-	unloadSingleUIComponent(gFightUIData.mKO.mAnimation, gFightUIData.mKO.mOwnsAnimation);
+	unloadSingleUIComponentDuplicate(gFightUIData.mKO.mIsAnimation, gFightUIData.mKO.mAnimation, gFightUIData.mKO.mOwnsAnimation);
 }
 
 static void unloadHitSparks() {
@@ -1326,7 +1396,7 @@ static void setBarToPercentage(MugenAnimationHandlerElement* tAnimationElement, 
 		finalRange = Vector2D(posX + tRange.x, posX + tRange.x + newSize * coordinateScale * scaleFactor);
 	}
 	setMugenAnimationConstraintRectangle(tAnimationElement, GeoRectangle2D(std::min(finalRange.x, finalRange.y), -INF / 2, fabs(finalRange.x - finalRange.y), INF));
-	setMugenAnimationRectangleWidth(tAnimationElement, (tPercentage > 1e-3) ? fabs(fullSize) : 0); // getting rid of that final pixel when bar empty
+	setMugenAnimationRectangleWidth(tAnimationElement, int((tPercentage > 1e-3) ? fabs(fullSize) : 0)); // getting rid of that final pixel when bar empty
 }
 
 static void updateSingleHealthBar(int i) {
@@ -1534,13 +1604,45 @@ static void updateFightSound() {
 	}
 }
 
+static void updateDuplicateFinish(int tIsAnimation, MugenAnimationHandlerElement* tAnimationElement, int tTextID, int tDisplayNow, int tTime, int tDisplayTime, std::function<void()> tFinishFunc)
+{
+	if(tIsAnimation)
+	{
+		if (
+			(tDisplayTime == -1 && (!getMugenAnimationRemainingAnimationTime(tAnimationElement) || isMugenAnimationStepDurationInfinite(getMugenAnimationAnimationStepDuration(tAnimationElement)))) ||
+			(tDisplayTime != -1 && (tDisplayNow >= tTime + tDisplayTime))
+			) {
+			removeDisplayedAnimation(tAnimationElement);
+			tFinishFunc();
+		}
+	}
+	else{
+		if (tDisplayNow >= tTime + tDisplayTime) {
+			removeMugenText(tTextID);
+			tFinishFunc();
+		}
+	}
+	
+}
 
 static void updateFightFinish() {
-	if (!getMugenAnimationRemainingAnimationTime(gFightUIData.mFight.mAnimationElement) || isMugenAnimationStepDurationInfinite(getMugenAnimationAnimationStepDuration(gFightUIData.mFight.mAnimationElement))) {
-		removeDisplayedAnimation(gFightUIData.mFight.mAnimationElement);
-		gFightUIData.mFight.mCB();
-		gFightUIData.mFight.mIsDisplayingFight = 0;
-		gFightUIData.mFight.mIsActive = 0;
+	updateDuplicateFinish(gFightUIData.mFight.mIsAnimation, gFightUIData.mFight.mAnimationElement, gFightUIData.mFight.mTextID, gFightUIData.mFight.mDisplayNow, gFightUIData.mFight.mTime, gFightUIData.mFight.mDisplayTime, 
+	[](){
+			gFightUIData.mFight.mCB();
+			gFightUIData.mFight.mIsDisplayingFight = 0;
+			gFightUIData.mFight.mIsActive = 0;
+		}
+	);
+}
+
+static void updateDuplicateStart(int tIsAnimation, MugenAnimationHandlerElement* tAnimationElement, int tTextID, int tDisplayNow, int tTime) {
+	if(tIsAnimation)
+	{
+		updateAnimationStart(tAnimationElement, tDisplayNow, tTime);
+	}
+	else
+	{
+		updateTextStart(tTextID, tDisplayNow, tTime);
 	}
 }
 
@@ -1549,7 +1651,7 @@ static void updateFightDisplay() {
 
 	gFightUIData.mFight.mDisplayNow++;
 	updateFightSound();
-	updateAnimationStart(gFightUIData.mFight.mAnimationElement, gFightUIData.mFight.mDisplayNow, gFightUIData.mFight.mTime);
+	updateDuplicateStart(gFightUIData.mFight.mIsAnimation, gFightUIData.mFight.mAnimationElement, gFightUIData.mFight.mTextID, gFightUIData.mFight.mDisplayNow, gFightUIData.mFight.mTime);
 	updateFightFinish();
 }
 
@@ -1573,13 +1675,11 @@ static void updateKOFinishLogic() {
 
 static void updateKOFinishDisplay() {
 	if (!gFightUIData.mKO.mIsDisplaying) return;
-	if (
-		(gFightUIData.mKO.mDisplayTime == -1 && (!getMugenAnimationRemainingAnimationTime(gFightUIData.mKO.mAnimationElement) || isMugenAnimationStepDurationInfinite(getMugenAnimationAnimationStepDuration(gFightUIData.mKO.mAnimationElement)))) ||
-		(gFightUIData.mKO.mDisplayTime != -1 && (gFightUIData.mKO.mDisplayNow >= gFightUIData.mKO.mTime + gFightUIData.mKO.mDisplayTime))
-		) {
-		removeDisplayedAnimation(gFightUIData.mKO.mAnimationElement);
-		gFightUIData.mKO.mIsDisplaying = 0;
-	}
+	updateDuplicateFinish(gFightUIData.mKO.mIsAnimation, gFightUIData.mKO.mAnimationElement, gFightUIData.mKO.mTextID, gFightUIData.mKO.mDisplayNow, gFightUIData.mKO.mTime, gFightUIData.mKO.mDisplayTime, 
+	[](){
+			gFightUIData.mKO.mIsDisplaying = 0;
+		}
+	);
 }
 
 static void updateKODisplay() {
@@ -1587,7 +1687,7 @@ static void updateKODisplay() {
 
 	gFightUIData.mKO.mDisplayNow++;
 	updateKOSound();
-	updateAnimationStart(gFightUIData.mKO.mAnimationElement, gFightUIData.mKO.mDisplayNow, gFightUIData.mKO.mTime);
+	updateDuplicateStart(gFightUIData.mKO.mIsAnimation, gFightUIData.mKO.mAnimationElement, gFightUIData.mKO.mTextID, gFightUIData.mKO.mDisplayNow, gFightUIData.mKO.mTime);
 	updateKOFinishLogic();
 	updateKOFinishDisplay();
 }
@@ -1603,12 +1703,13 @@ static void updateDKOSound() {
 }
 
 static void updateDKOFinish() {
-	if (gFightUIData.mDKO.mNow >= gFightUIData.mKO.mTime + gFightUIData.mDKO.mDisplayTime) {
-		removeMugenText(gFightUIData.mDKO.mTextID);
-		gFightUIData.mDKO.mCB();
-		gFightUIData.mDKO.mIsDisplaying = 0;
-		gFightUIData.mDKO.mIsActive = 0;
-	}
+	updateDuplicateFinish(gFightUIData.mDKO.mIsAnimation, gFightUIData.mDKO.mAnimationElement, gFightUIData.mDKO.mTextID, gFightUIData.mDKO.mNow, gFightUIData.mKO.mTime, gFightUIData.mDKO.mDisplayTime, 
+	[](){
+			gFightUIData.mDKO.mCB();
+			gFightUIData.mDKO.mIsDisplaying = 0;
+			gFightUIData.mDKO.mIsActive = 0;
+		}
+	);
 }
 
 static void updateDKODisplay() {
@@ -1616,7 +1717,7 @@ static void updateDKODisplay() {
 
 	gFightUIData.mDKO.mNow++;
 	updateDKOSound();
-	updateTextStart(gFightUIData.mDKO.mTextID, gFightUIData.mDKO.mNow, gFightUIData.mKO.mTime);
+	updateDuplicateStart(gFightUIData.mDKO.mIsAnimation, gFightUIData.mDKO.mAnimationElement, gFightUIData.mDKO.mTextID, gFightUIData.mDKO.mNow, gFightUIData.mKO.mTime);
 	updateDKOFinish();
 }
 
@@ -1631,12 +1732,13 @@ static void updateTOSound() {
 }
 
 static void updateTOFinish() {
-	if (gFightUIData.mTO.mNow >= gFightUIData.mKO.mTime + gFightUIData.mTO.mDisplayTime) {
-		removeMugenText(gFightUIData.mTO.mTextID);
-		gFightUIData.mTO.mCB();
-		gFightUIData.mTO.mIsDisplaying = 0;
-		gFightUIData.mTO.mIsActive = 0;
-	}
+	updateDuplicateFinish(gFightUIData.mTO.mIsAnimation, gFightUIData.mTO.mAnimationElement, gFightUIData.mTO.mTextID, gFightUIData.mTO.mNow, gFightUIData.mKO.mTime, gFightUIData.mTO.mDisplayTime, 
+	[](){
+			gFightUIData.mTO.mCB();
+			gFightUIData.mTO.mIsDisplaying = 0;
+			gFightUIData.mTO.mIsActive = 0;
+		}
+	);
 }
 
 static void updateTODisplay() {
@@ -1644,7 +1746,7 @@ static void updateTODisplay() {
 
 	gFightUIData.mTO.mNow++;
 	updateTOSound();
-	updateTextStart(gFightUIData.mTO.mTextID, gFightUIData.mTO.mNow, gFightUIData.mKO.mTime);
+	updateDuplicateStart(gFightUIData.mTO.mIsAnimation, gFightUIData.mTO.mAnimationElement, gFightUIData.mTO.mTextID, gFightUIData.mTO.mNow, gFightUIData.mKO.mTime);
 	updateTOFinish();
 }
 
@@ -1656,37 +1758,59 @@ static int hasFightUIPressedAFlankAny() {
 	return hasPressedAFlankSingle(0) || hasPressedAFlankSingle(1);
 }
 
-static void updateWinDisplayFinish() {
-	if (gFightUIData.mWin.mNow >= (gFightUIData.mWin.mTime + gFightUIData.mWin.mDisplayTime) || hasFightUIPressedStartFlankAny()) {
-		removeDisplayedText(gFightUIData.mWin.mTextID);
-		gFightUIData.mWin.mCB();
-		gFightUIData.mWin.mIsDisplaying = 0;
-		gFightUIData.mWin.mIsActive = 0;
+static void updateWinDisplayFinishGeneral(int tIsAnimation, MugenAnimationHandlerElement* tAnimationElement, int tTextID, int tDisplayNow, int tTime, int tDisplayTime, std::function<void()> tFinishFunc) {
+	if(tIsAnimation)
+	{
+		if ((hasFightUIPressedStartFlankAny()) ||
+			(tDisplayTime == -1 && (!getMugenAnimationRemainingAnimationTime(tAnimationElement) || isMugenAnimationStepDurationInfinite(getMugenAnimationAnimationStepDuration(tAnimationElement)))) ||
+			(tDisplayTime != -1 && (tDisplayNow >= tTime + tDisplayTime))
+			) {
+			removeDisplayedAnimation(tAnimationElement);
+			tFinishFunc();
+		}
 	}
+	else{
+		if (tDisplayNow >= (tTime + tDisplayTime) || hasFightUIPressedStartFlankAny()) {
+			removeMugenText(tTextID);
+			tFinishFunc();
+		}
+	}
+}
+
+static void updateWinDisplayFinish()
+{
+	updateWinDisplayFinishGeneral(gFightUIData.mWin.mIsAnimation, gFightUIData.mWin.mAnimationElement, gFightUIData.mWin.mTextID, gFightUIData.mWin.mNow, gFightUIData.mWin.mTime, gFightUIData.mWin.mDisplayTime, 
+	[](){
+			gFightUIData.mWin.mCB();
+			gFightUIData.mWin.mIsDisplaying = 0;
+			gFightUIData.mWin.mIsActive = 0;
+		}
+	);
 }
 
 static void updateWinDisplay() {
 	if (!gFightUIData.mWin.mIsDisplaying && !gFightUIData.mWin.mIsActive) return;
 
 	gFightUIData.mWin.mNow++;
-	updateTextStart(gFightUIData.mWin.mTextID, gFightUIData.mWin.mNow, gFightUIData.mWin.mTime);
+	updateDuplicateStart(gFightUIData.mWin.mIsAnimation, gFightUIData.mWin.mAnimationElement, gFightUIData.mWin.mTextID, gFightUIData.mWin.mNow, gFightUIData.mWin.mTime);
 	updateWinDisplayFinish();
 }
 
 static void updateDrawDisplayFinish() {
-	if (gFightUIData.mDraw.mNow >= (gFightUIData.mWin.mTime + gFightUIData.mDraw.mDisplayTime) || hasFightUIPressedStartFlankAny()) {
-		removeDisplayedText(gFightUIData.mDraw.mTextID);
-		gFightUIData.mDraw.mCB();
-		gFightUIData.mDraw.mIsDisplaying = 0;
-		gFightUIData.mDraw.mIsActive = 0;
-	}
+	updateWinDisplayFinishGeneral(gFightUIData.mDraw.mIsAnimation, gFightUIData.mDraw.mAnimationElement, gFightUIData.mDraw.mTextID, gFightUIData.mDraw.mNow, gFightUIData.mWin.mTime, gFightUIData.mDraw.mDisplayTime, 
+	[](){
+			gFightUIData.mDraw.mCB();
+			gFightUIData.mDraw.mIsDisplaying = 0;
+			gFightUIData.mDraw.mIsActive = 0;
+		}
+	);
 }
 
 static void updateDrawDisplay() {
 	if (!gFightUIData.mDraw.mIsDisplaying && !gFightUIData.mDraw.mIsActive) return;
 
 	gFightUIData.mDraw.mNow++;
-	updateTextStart(gFightUIData.mDraw.mTextID, gFightUIData.mDraw.mNow, gFightUIData.mWin.mTime);
+	updateDuplicateStart(gFightUIData.mDraw.mIsAnimation, gFightUIData.mDraw.mAnimationElement, gFightUIData.mDraw.mTextID, gFightUIData.mDraw.mNow, gFightUIData.mWin.mTime);
 	updateDrawDisplayFinish();
 }
 
@@ -2027,9 +2151,21 @@ void playDreamRoundAnimation(int tRound, void(*tFunc)())
 	gFightUIData.mRound.mIsActive = 1;
 }
 
+static void playDisplayDuplicate(int tIsAnimation, MugenAnimationHandlerElement** oAnimationElement, MugenAnimation* tAnimation, Position* tBasePosition, int tFaceDirection, const Vector2D& tScale, int tStartTime, int* oTextID, const char* tText, const Vector3DI& tFont)
+{
+	if(tIsAnimation)
+	{
+		playDisplayAnimation(oAnimationElement, tAnimation, tBasePosition, tFaceDirection, tScale, tStartTime);
+	}
+	else
+	{
+		playDisplayText(oTextID, tText, *tBasePosition, tFont, tStartTime);
+	}
+}
+
 void playDreamFightAnimation(void(*tFunc)())
 {
-	playDisplayAnimation(&gFightUIData.mFight.mAnimationElement, gFightUIData.mFight.mAnimation, &gFightUIData.mFight.mPosition, gFightUIData.mFight.mFaceDirection, gFightUIData.mFight.mScale, gFightUIData.mFight.mTime);
+	playDisplayDuplicate(gFightUIData.mFight.mIsAnimation, &gFightUIData.mFight.mAnimationElement, gFightUIData.mFight.mAnimation, &gFightUIData.mFight.mPosition, gFightUIData.mFight.mFaceDirection, gFightUIData.mFight.mScale, gFightUIData.mFight.mTime, &gFightUIData.mFight.mTextID, gFightUIData.mFight.mText, gFightUIData.mFight.mFont);
 
 	gFightUIData.mFight.mCB = tFunc;
 	gFightUIData.mFight.mDisplayNow = 0;
@@ -2041,7 +2177,7 @@ void playDreamFightAnimation(void(*tFunc)())
 
 void playDreamKOAnimation(void(*tFunc)())
 {
-	playDisplayAnimation(&gFightUIData.mKO.mAnimationElement, gFightUIData.mKO.mAnimation, &gFightUIData.mKO.mPosition, gFightUIData.mKO.mFaceDirection, gFightUIData.mKO.mScale, gFightUIData.mKO.mTime);
+	playDisplayDuplicate(gFightUIData.mKO.mIsAnimation, &gFightUIData.mKO.mAnimationElement, gFightUIData.mKO.mAnimation, &gFightUIData.mKO.mPosition, gFightUIData.mKO.mFaceDirection, gFightUIData.mKO.mScale, gFightUIData.mKO.mTime, &gFightUIData.mKO.mTextID, gFightUIData.mKO.mText, gFightUIData.mKO.mFont);
 
 	gFightUIData.mKO.mDisplayNow = 0;
 	gFightUIData.mKO.mHasPlayedSound = 0;
@@ -2052,7 +2188,7 @@ void playDreamKOAnimation(void(*tFunc)())
 
 void playDreamDKOAnimation(void(*tFunc)())
 {
-	playDisplayText(&gFightUIData.mDKO.mTextID, gFightUIData.mDKO.mText, gFightUIData.mDKO.mPosition, gFightUIData.mDKO.mFont, gFightUIData.mKO.mTime);
+	playDisplayDuplicate(gFightUIData.mDKO.mIsAnimation, &gFightUIData.mDKO.mAnimationElement, gFightUIData.mDKO.mAnimation, &gFightUIData.mDKO.mPosition, gFightUIData.mDKO.mFaceDirection, gFightUIData.mDKO.mScale, gFightUIData.mKO.mTime, &gFightUIData.mDKO.mTextID, gFightUIData.mDKO.mText, gFightUIData.mDKO.mFont);
 
 	gFightUIData.mDKO.mNow = 0;
 	gFightUIData.mDKO.mHasPlayedSound = 0;
@@ -2063,7 +2199,7 @@ void playDreamDKOAnimation(void(*tFunc)())
 
 void playDreamTOAnimation(void(*tFunc)())
 {
-	playDisplayText(&gFightUIData.mTO.mTextID, gFightUIData.mTO.mText, gFightUIData.mTO.mPosition, gFightUIData.mTO.mFont, gFightUIData.mKO.mTime);
+	playDisplayDuplicate(gFightUIData.mTO.mIsAnimation, &gFightUIData.mTO.mAnimationElement, gFightUIData.mTO.mAnimation, &gFightUIData.mTO.mPosition, gFightUIData.mTO.mFaceDirection, gFightUIData.mTO.mScale, gFightUIData.mKO.mTime, &gFightUIData.mTO.mTextID, gFightUIData.mTO.mText, gFightUIData.mTO.mFont);
 
 	gFightUIData.mTO.mNow = 0;
 	gFightUIData.mTO.mHasPlayedSound = 0;
@@ -2095,8 +2231,15 @@ static void parseWinText(char* tDst, char* tSrc, char* tName, Position* oDisplay
 
 void playDreamWinAnimation(char * tName, void(*tFunc)())
 {
-	parseWinText(gFightUIData.mWin.mDisplayedText, gFightUIData.mWin.mText, tName, &gFightUIData.mWin.mDisplayPosition, gFightUIData.mWin.mPosition);
-	playDisplayText(&gFightUIData.mWin.mTextID, gFightUIData.mWin.mDisplayedText, gFightUIData.mWin.mDisplayPosition, gFightUIData.mWin.mFont, gFightUIData.mWin.mTime);
+	if(gFightUIData.mWin.mIsAnimation)
+	{
+		playDisplayAnimation(&gFightUIData.mWin.mAnimationElement, gFightUIData.mWin.mAnimation, &gFightUIData.mWin.mPosition, gFightUIData.mWin.mFaceDirection, gFightUIData.mWin.mScale, gFightUIData.mWin.mTime);
+	}
+	else
+	{
+		parseWinText(gFightUIData.mWin.mDisplayedText, gFightUIData.mWin.mText, tName, &gFightUIData.mWin.mDisplayPosition, gFightUIData.mWin.mPosition);
+		playDisplayText(&gFightUIData.mWin.mTextID, gFightUIData.mWin.mDisplayedText, gFightUIData.mWin.mDisplayPosition, gFightUIData.mWin.mFont, gFightUIData.mWin.mTime);
+	}
 	
 	gFightUIData.mWin.mNow = 0;
 	gFightUIData.mWin.mCB = tFunc;
@@ -2106,7 +2249,7 @@ void playDreamWinAnimation(char * tName, void(*tFunc)())
 
 void playDreamDrawAnimation(void(*tFunc)())
 {
-	playDisplayText(&gFightUIData.mDraw.mTextID, gFightUIData.mDraw.mText, gFightUIData.mDraw.mPosition, gFightUIData.mDraw.mFont, gFightUIData.mWin.mTime);
+	playDisplayDuplicate(gFightUIData.mDraw.mIsAnimation, &gFightUIData.mDraw.mAnimationElement, gFightUIData.mDraw.mAnimation, &gFightUIData.mDraw.mPosition, gFightUIData.mDraw.mFaceDirection, gFightUIData.mDraw.mScale, gFightUIData.mWin.mTime, &gFightUIData.mDraw.mTextID, gFightUIData.mDraw.mText, gFightUIData.mDraw.mFont);
 
 	gFightUIData.mDraw.mNow = 0;
 	gFightUIData.mDraw.mCB = tFunc;
@@ -2353,6 +2496,18 @@ void removeAllWinIcons()
 
 }
 
+static void removeDisplayedDuplicate(int tIsAnimation, MugenAnimationHandlerElement* tAnimationElement, int tTextID)
+{
+	if(tIsAnimation)
+	{
+		removeDisplayedAnimation(tAnimationElement);
+	}
+	else
+	{
+		removeMugenText(tTextID);
+	}
+}
+
 void stopFightAndRoundAnimation()
 {
 	if (gFightUIData.mRound.mIsDisplayingRound) {
@@ -2362,7 +2517,7 @@ void stopFightAndRoundAnimation()
 	gFightUIData.mRound.mIsActive = 0;
 
 	if (gFightUIData.mFight.mIsDisplayingFight) {
-		removeDisplayedAnimation(gFightUIData.mFight.mAnimationElement);
+		removeDisplayedDuplicate(gFightUIData.mFight.mIsAnimation, gFightUIData.mFight.mAnimationElement, gFightUIData.mFight.mTextID);
 		gFightUIData.mFight.mIsDisplayingFight = 0;
 	}
 	gFightUIData.mFight.mIsActive = 0;
@@ -2373,28 +2528,35 @@ void stopFightAndRoundAnimation()
 void stopKOAndWinAnimation()
 {
 	if (gFightUIData.mKO.mIsDisplaying) {
-		removeDisplayedAnimation(gFightUIData.mKO.mAnimationElement);
+		removeDisplayedDuplicate(gFightUIData.mKO.mIsAnimation, gFightUIData.mKO.mAnimationElement, gFightUIData.mKO.mTextID);
 		gFightUIData.mKO.mIsDisplaying = 0;
 	}
 	gFightUIData.mKO.mIsActive = 0;
 
 	if (gFightUIData.mDKO.mIsDisplaying) {
-		removeMugenText(gFightUIData.mDKO.mTextID);
+		removeDisplayedDuplicate(gFightUIData.mDKO.mIsAnimation, gFightUIData.mDKO.mAnimationElement, gFightUIData.mDKO.mTextID);
 		gFightUIData.mDKO.mIsDisplaying = 0;
 	}
 	gFightUIData.mDKO.mIsActive = 0;
 
 	if (gFightUIData.mTO.mIsDisplaying) {
-		removeMugenText(gFightUIData.mTO.mTextID);
+		removeDisplayedDuplicate(gFightUIData.mTO.mIsAnimation, gFightUIData.mTO.mAnimationElement, gFightUIData.mTO.mTextID);
 		gFightUIData.mTO.mIsDisplaying = 0;
 	}
 	gFightUIData.mTO.mIsActive = 0;
 
 	if (gFightUIData.mWin.mIsDisplaying) {
-		removeMugenText(gFightUIData.mWin.mTextID);
+		removeDisplayedDuplicate(gFightUIData.mWin.mIsAnimation, gFightUIData.mWin.mAnimationElement, gFightUIData.mWin.mTextID);
 		gFightUIData.mWin.mIsDisplaying = 0;
 	}
 	gFightUIData.mWin.mIsActive = 0;
+
+	if(gFightUIData.mDraw.mIsDisplaying)
+	{
+		removeDisplayedDuplicate(gFightUIData.mDraw.mIsAnimation, gFightUIData.mDraw.mAnimationElement, gFightUIData.mDraw.mTextID);
+		gFightUIData.mDraw.mIsDisplaying = 0;
+	}
+	gFightUIData.mDraw.mIsActive = 0;
 }
 
 void setUIFaces() {

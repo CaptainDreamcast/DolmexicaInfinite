@@ -4,6 +4,8 @@
 
 #include <prism/actorhandler.h>
 
+using namespace prism;
+
 ActorBlueprint getProjectileHandler();
 
 void addAdditionalProjectileData(DreamPlayer* tProjectile);

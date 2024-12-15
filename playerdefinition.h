@@ -13,7 +13,11 @@
 #include "afterimage.h"
 #include "mugenstatehandler.h"
 
-struct PhysicsHandlerElement;
+using namespace prism;
+
+namespace prism {
+	struct PhysicsHandlerElement;
+}
 
 typedef enum {
 	PLAYER_BIND_POSITION_TYPE_AXIS,

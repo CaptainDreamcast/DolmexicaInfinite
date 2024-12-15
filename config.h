@@ -6,6 +6,8 @@
 #include <prism/geometry.h>
 #include <prism/saveload.h>
 
+using namespace prism;
+
 void loadMugenConfig();
 void loadMugenSystemFonts();
 void loadMugenFightFonts();

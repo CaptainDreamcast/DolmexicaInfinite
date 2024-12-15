@@ -6,6 +6,7 @@
 #include "mugenassignment.h"
 #include "playerdefinition.h"
 
+using namespace prism;
 
 DreamMugenStateController* parseDreamMugenStateControllerFromGroup(MugenDefScriptGroup* tGroup);
 void unloadDreamMugenStateController(DreamMugenStateController* tController);

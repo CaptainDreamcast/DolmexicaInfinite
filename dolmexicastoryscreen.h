@@ -7,6 +7,8 @@
 #include <prism/mugenanimationhandler.h>
 #include <prism/mugensoundfilereader.h>
 
+using namespace prism;
+
 #define DOLMEXICA_STORY_TEXT_BACKGROUND_DEFAULT_Z_DELTA		-2
 #define DOLMEXICA_STORY_TEXT_FACE_DEFAULT_Z_DELTA			-1
 #define DOLMEXICA_STORY_TEXT_CONTINUE_DEFAULT_Z_DELTA			-1

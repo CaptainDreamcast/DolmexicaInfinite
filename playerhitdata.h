@@ -5,6 +5,8 @@
 #include "mugenstatereader.h"
 #include "mugensound.h"
 
+using namespace prism;
+
 struct DreamPlayer;
 
 typedef enum {

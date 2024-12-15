@@ -3,6 +3,8 @@
 #include <prism/mugenanimationhandler.h>
 #include <prism/stlutil.h>
 
+using namespace prism;
+
 struct DreamPlayer;
 
 struct AfterImageHistoryBufferEntry {

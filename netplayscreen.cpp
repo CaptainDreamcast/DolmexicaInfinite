@@ -226,18 +226,6 @@ static void netplayFightFinishedCB()
 	setNewScreen(getDreamTitleScreen());
 }
 
-static void startNetplayFight()
-{
-	char path[1024];
-	getCharacterSelectNamePath("kfm", path);
-	setPlayerDefinitionPath(0, path);
-	getCharacterSelectNamePath("kfm", path);
-	setPlayerDefinitionPath(1, path);
-	setGameModeNetplay(isDolmexicaNetplayHost());
-	setDreamStageMugenDefinition((getDolmexicaAssetFolder() + "stages/kfm.def").c_str(), "");
-	startFightScreen(netplayFightFinishedCB);
-}
-
 static void netplayCharacterSelectFinishedCB() {
 	setGameModeNetplay(isDolmexicaNetplayHost());
 	startFightScreen(netplayFightFinishedCB);
@@ -384,7 +372,7 @@ static void loadJoinNetplayScreen()
 		gNetplayScreenData.mJoin.mIPString = "192.168.178.46"; // DEBUG
 		gNetplayScreenData.mJoin.mIsIPStringInitialized = true;
 	}
-	gNetplayScreenData.mJoin.mPointerPosition = gNetplayScreenData.mJoin.mIPString.size();
+	gNetplayScreenData.mJoin.mPointerPosition = int(gNetplayScreenData.mJoin.mIPString.size());
 
 	gNetplayScreenData.mJoin.mConsolePointerAnimationElement = playOneFrameAnimationLoop(Vector3D(20, 90, 45), getEmptyWhiteTextureReference());
 	setAnimationSize(gNetplayScreenData.mJoin.mConsolePointerAnimationElement, Vector3D(6, 1, 1), Vector3D(0, 0, 0));

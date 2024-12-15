@@ -2569,7 +2569,13 @@ static void unloadVictoryQuoteController(DreamMugenStateController* tController)
 }
 
 static void parseStateControllerType(DreamMugenStateController* tController, MugenDefScriptGroup* tGroup) {
-	assert(stl_string_map_contains_array(tGroup->mElements, "type"));
+	if(!stl_string_map_contains_array(tGroup->mElements, "type"))
+	{
+		logWarning("[MugenStateControllers] State controller does not contain type. Defaulting to null.");
+		parseNullController(tController, MUGEN_STATE_CONTROLLER_TYPE_NULL);
+		return;
+	}
+	
 	MugenDefScriptGroupElement* e = &tGroup->mElements["type"];
 	tController->mData = NULL;
 

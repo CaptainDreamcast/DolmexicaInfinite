@@ -2,7 +2,11 @@
 
 #include "playerdefinition.h"
 
-struct CollisionListData;
+using namespace prism;
+
+namespace prism {
+	struct CollisionListData;
+}
 
 void setupDreamGameCollisions();
 CollisionListData* getDreamPlayerPassiveCollisionList(DreamPlayer* p);

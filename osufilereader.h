@@ -5,6 +5,8 @@
 #include <prism/datastructures.h>
 #include <prism/geometry.h>
 
+using namespace prism;
+
 typedef int OsuMilliSecond;
 
 typedef struct {

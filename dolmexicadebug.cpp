@@ -280,13 +280,11 @@ static std::string trackvarCB(void* tCaller, const std::string& tCommand) {
 	TrackedInteger e;
 	e.mValuePointer = getPlayerVariableReference(p, varNumber);
 	e.mPreviousValue = *e.mValuePointer;
-	std::ostringstream ss;
-	ss << "player " << id << "; var " << varNumber;
-	gDolmexicaDebugData->mMap[ss.str()] = e;
+	const auto s = std::string("player ").append(std::to_string(id)).append("; var ").append(std::to_string(varNumber));
+	gDolmexicaDebugData->mMap[s] = e;
 	
-	ss.clear();
-	ss << " value: " << *e.mValuePointer;
-	return ss.str();
+	const auto ret = std::string(" value: ").append(std::to_string(*e.mValuePointer));
+	return ret;
 }
 
 static std::string untrackvarCB(void* tCaller, const std::string& tCommand) {
@@ -296,9 +294,8 @@ static std::string untrackvarCB(void* tCaller, const std::string& tCommand) {
 	int id = atoi(words[1].data());
 	int varNumber = atoi(words[2].data());
 
-	std::ostringstream ss;
-	ss << "player " << id << "; var " << varNumber;
-	gDolmexicaDebugData->mMap.erase(ss.str());
+	const auto s = std::string("player ").append(std::to_string(id)).append("; var ").append(std::to_string(varNumber));
+	gDolmexicaDebugData->mMap.erase(s);
 	return "";
 }
 

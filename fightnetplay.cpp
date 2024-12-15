@@ -14,8 +14,6 @@ static struct {
 	FightNetplayData mCachedReceivedNetplayData;
 } gFightNetplayData;
 
-static void fightNetplayReceiveCB(void* tCaller, const Buffer& tData);
-
 struct FightSyncCheckData {
 	int mLife1;
 	int mLife2;

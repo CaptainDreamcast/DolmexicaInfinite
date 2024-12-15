@@ -6,6 +6,8 @@
 #include "mugencommandreader.h"
 #include "playerdefinition.h"
 
+using namespace prism;
+
 int registerDreamMugenCommands(int tControllerID, DreamMugenCommands* tCommands);
 
 int isDreamCommandActive(int tID, const char* tCommandName);

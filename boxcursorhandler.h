@@ -3,6 +3,8 @@
 #include <prism/actorhandler.h>
 #include <prism/geometry.h>
 
+using namespace prism;
+
 ActorBlueprint getBoxCursorHandler();
 
 int addBoxCursor(const Position& tStartPosition, const Position& tOffset, const GeoRectangle2D& tRectangle);

@@ -3,7 +3,11 @@
 #include <prism/actorhandler.h>
 #include <prism/geometry.h>
 
-struct MugenAnimationHandlerElement;
+using namespace prism;
+
+namespace prism {
+	struct MugenAnimationHandlerElement;
+}
 
 ActorBlueprint getMugenAnimationUtilityHandler();
 

@@ -6,6 +6,8 @@
 #include <prism/datastructures.h>
 #include <prism/animation.h>
 
+using namespace prism;
+
 typedef enum {
 	MUGEN_COMMAND_INPUT_STEP_TYPE_PRESS,
 	MUGEN_COMMAND_INPUT_STEP_TYPE_MULTIPLE,

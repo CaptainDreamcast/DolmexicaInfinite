@@ -8,9 +8,13 @@
 #include <prism/datastructures.h>
 #include <prism/stlutil.h>
 
+using namespace prism;
+
 #define BACKGROUND_UPPER_BASE_Z 52
 
-struct MugenAnimationHandlerElement;
+namespace prism {
+	struct MugenAnimationHandlerElement;
+}
 
 typedef struct {
 	MugenAnimationHandlerElement* mElement;

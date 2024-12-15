@@ -229,7 +229,19 @@ static void loadStageStageInfo(MugenDefScript* s) {
 	}
 	gStageData.mStageInfo.mAutoturn = getMugenDefIntegerOrDefault(s, "stageinfo", "autoturn", 1);
 	gStageData.mStageInfo.mResetBG = getMugenDefIntegerOrDefault(s, "stageinfo", "resetbg", 0);
-	gStageData.mStageInfo.mLocalCoordinates = getMugenDefVector2DIOrDefault(s, "stageinfo", "localcoord", Vector2DI(320, 240));
+
+	gStageData.mStageInfo.mLocalCoordinates = Vector2DI(320, 240);
+	if(isMugenDefVector2DIVariable(s, "stageinfo", "localcoord")) {
+		gStageData.mStageInfo.mLocalCoordinates = getMugenDefVector2DIOrDefault(s, "stageinfo", "localcoord", Vector2DI(320, 240));
+	}
+	else if (isMugenDefVariable(s, "stageinfo", "hires")) {
+		const auto isHires = getMugenDefIntegerOrDefault(s, "stageinfo", "hires", 0);
+		if(isHires)
+		{
+			gStageData.mStageInfo.mLocalCoordinates = Vector2DI(640, 480);
+			gStageData.mStageInfo.mZOffset *= 2; // based on tekken vs street fighter sfxtk stages among others
+		}
+	}
 
 	gStageData.mStageInfo.mScale.x = getMugenDefFloatOrDefault(s, "stageinfo", "xscale", 1);
 	gStageData.mStageInfo.mScale.y = getMugenDefFloatOrDefault(s, "stageinfo", "yscale", 1);
@@ -468,8 +480,7 @@ static void loadStageBackgroundDefinitionAndElements(char* tPath, MugenDefScript
 static void setStageCamera() {
 	double sizeX = gStageData.mCamera.mBoundRight - gStageData.mCamera.mBoundLeft;
 	double sizeY = gStageData.mCamera.mBoundLow - gStageData.mCamera.mBoundHigh;
-	double scale = gStageData.mStageInfo.mLocalCoordinates.x / double(getDreamMugenStageHandlerCameraCoordinateP());
-	setDreamMugenStageHandlerCameraRange(GeoRectangle2D(gStageData.mCamera.mBoundLeft, gStageData.mCamera.mBoundHigh, sizeX, sizeY) * scale);
+	setDreamMugenStageHandlerCameraRange(GeoRectangle2D(gStageData.mCamera.mBoundLeft, gStageData.mCamera.mBoundHigh, sizeX, sizeY));
 }
 
 static void loadStage(void* tData)
@@ -768,6 +779,21 @@ Vector3DI transformDreamCoordinatesVectorI(const Vector3DI& tVal, int tSrcP, int
 {
 	if (tSrcP == tDstP) return tVal;
 	return vecScaleI(tVal, (tDstP / (double)tSrcP));
+}
+
+Vector3D transformDreamCoordinatesVectorXY(const Vector3D& tVal, int tSrcP, int tDstP)
+{
+	if (tSrcP == tDstP) return tVal;
+	return transformDreamCoordinatesVector2D(tVal.xy(), tSrcP, tDstP).xyz(tVal.z);
+}
+
+GeoRectangle2D transformDreamCoordinatesGeoRectangle2D(const GeoRectangle2D& tVal, int tSrcP, int tDstP)
+{
+	if (tSrcP == tDstP) return tVal;
+	GeoRectangle2D ret;
+	ret.mTopLeft = transformDreamCoordinatesVector2D(tVal.mTopLeft, tSrcP, tDstP);
+	ret.mBottomRight = transformDreamCoordinatesVector2D(tVal.mBottomRight, tSrcP, tDstP);
+	return ret;
 }
 
 double getDreamStageTopOfScreenBasedOnPlayer(int tCoordinateP)

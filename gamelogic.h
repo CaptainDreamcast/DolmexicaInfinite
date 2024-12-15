@@ -3,6 +3,8 @@
 #include <prism/actorhandler.h>
 #include <prism/wrapper.h>
 
+using namespace prism;
+
 typedef enum {
 	GAME_MODE_ARCADE,
 	GAME_MODE_FREE_PLAY,

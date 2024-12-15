@@ -72,6 +72,7 @@ typedef struct {
 	int mIsShowingEmptyBoxes;
 	int mCanMoveOverEmptyBoxes;
 	int mIsShowingPortraits;
+	int mIsSkippingCharScriptLoading;
 
 	Vector2D mCellSize;
 	double mCellSpacing;
@@ -208,6 +209,7 @@ static struct {
 	MugenSounds mSounds;
 	MugenAnimations mAnimations;
 
+	Vector2DI mLocalCoord;
 
 	SelectScreenHeader mHeader;
 	ModeText mModeText;
@@ -260,12 +262,14 @@ static void loadMenuPlayerHeader(const char* tPlayerName, PlayerHeader* tHeader)
 
 	sprintf(fullVariableName, "%s.cursor.active.scale", tPlayerName);
 	tHeader->mActiveCursorScale = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2D(1.0, 1.0));
+	tHeader->mActiveCursorScale = transformDreamCoordinatesVector2D(tHeader->mActiveCursorScale, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 
 	sprintf(fullVariableName, "%s.cursor.done", tPlayerName);
 	tHeader->mDoneCursorAnimation = getMugenDefMenuAnimationOrSprite(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, tHeader->mIsDoneCursorAnimationOwned);
 
 	sprintf(fullVariableName, "%s.cursor.done.scale", tPlayerName);
 	tHeader->mDoneCursorScale = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2D(1.0, 1.0));
+	tHeader->mDoneCursorScale = transformDreamCoordinatesVector2D(tHeader->mDoneCursorScale, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 
 	sprintf(fullVariableName, "%s.face.spr", tPlayerName);
 	const auto bigPortraitSprite = getMugenDefVector2DIOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2DI(9000, 1));
@@ -273,6 +277,7 @@ static void loadMenuPlayerHeader(const char* tPlayerName, PlayerHeader* tHeader)
 
 	sprintf(fullVariableName, "%s.face.offset", tPlayerName);
 	tHeader->mBigPortraitOffset = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2D(0, 0));
+	tHeader->mBigPortraitOffset = transformDreamCoordinatesVector2D(tHeader->mBigPortraitOffset, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 
 	sprintf(fullVariableName, "%s.face.scale", tPlayerName);
 	tHeader->mBigPortraitScale = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2D(0, 0));
@@ -283,12 +288,14 @@ static void loadMenuPlayerHeader(const char* tPlayerName, PlayerHeader* tHeader)
 
 	sprintf(fullVariableName, "%s.name.offset", tPlayerName);
 	tHeader->mNameOffset = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2D(0, 0));
+	tHeader->mNameOffset = transformDreamCoordinatesVector2D(tHeader->mNameOffset, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 
 	sprintf(fullVariableName, "%s.name.font", tPlayerName);
 	tHeader->mNameFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector3DI(-1, 0, 0));
 
 	sprintf(fullVariableName, "%s.name.width", tPlayerName);
 	tHeader->mNameWidth = getMugenDefFloatOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, INF);
+	tHeader->mNameWidth = transformDreamCoordinates(tHeader->mNameWidth, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 
 	sprintf(fullVariableName, "%s.cursor.move.snd", tPlayerName);
 	tHeader->mCursorMoveSound = getMugenDefVector2DIOrDefault(&gCharacterSelectScreenData.mScript, "select info", fullVariableName, Vector2DI(0, 0));
@@ -302,6 +309,7 @@ static void loadMenuPlayerHeader(const char* tPlayerName, PlayerHeader* tHeader)
 
 static void loadStageSelectHeader() {
 	gCharacterSelectScreenData.mHeader.mStageSelect.mPosition = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "stage.pos", Vector2D(0, 0));
+	gCharacterSelectScreenData.mHeader.mStageSelect.mPosition = transformDreamCoordinatesVector2D(gCharacterSelectScreenData.mHeader.mStageSelect.mPosition, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 	gCharacterSelectScreenData.mHeader.mStageSelect.mActiveFont1 = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "stage.active.font", Vector3DI(-1, 0, 0));
 	gCharacterSelectScreenData.mHeader.mStageSelect.mActiveFont2 = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "stage.active2.font", gCharacterSelectScreenData.mHeader.mStageSelect.mActiveFont1);
 	gCharacterSelectScreenData.mHeader.mStageSelect.mDoneFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "stage.done.font", Vector3DI(-1, 0, 0));
@@ -406,17 +414,21 @@ static void loadStageSelectStages() {
 static void loadCreditsHeader() {
 	if (gCharacterSelectScreenData.mSelectScreenType != CHARACTER_SELECT_SCREEN_TYPE_CREDITS) return;
 
-	const auto basePosition = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.position", Vector2D(0, 0)).xyz(40.0);
+	auto basePosition = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.position", Vector2D(0, 0)).xyz(40.0);
+	basePosition = transformDreamCoordinatesVectorXY(basePosition, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 
 	auto offset = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.name.offset", Vector2D(0, 0));
+	offset = transformDreamCoordinatesVector2D(offset, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 	gCharacterSelectScreenData.mCredits.mNamePosition = basePosition + offset;
 	gCharacterSelectScreenData.mCredits.mNameFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.name.font", Vector3DI(-1, 0, 0));
 
 	offset = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.author.offset", Vector2D(0, 0));
+	offset = transformDreamCoordinatesVector2D(offset, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 	gCharacterSelectScreenData.mCredits.mAuthorNamePosition = basePosition + offset;
 	gCharacterSelectScreenData.mCredits.mAuthorNameFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.author.font", Vector3DI(-1, 0, 0));
 
 	offset = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.versiondate.offset", Vector2D(0, 0));
+	offset = transformDreamCoordinatesVector2D(offset, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 	gCharacterSelectScreenData.mCredits.mVersionDatePosition = basePosition + offset;
 	gCharacterSelectScreenData.mCredits.mVersionDateFont = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "credits.versiondate.font", Vector3DI(-1, 0, 0));
 }
@@ -429,18 +441,25 @@ static void loadMenuHeader() {
 	gCharacterSelectScreenData.mHeader.mColumns = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "columns", 1);
 	gCharacterSelectScreenData.mHeader.mIsWrapping = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "wrapping", 0);
 	gCharacterSelectScreenData.mHeader.mPosition = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "pos", Vector2D(0, 0));
+	gCharacterSelectScreenData.mHeader.mPosition = transformDreamCoordinatesVector2D(gCharacterSelectScreenData.mHeader.mPosition, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 
 	gCharacterSelectScreenData.mHeader.mIsShowingEmptyBoxes = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "showemptyboxes", 1);
 	gCharacterSelectScreenData.mHeader.mCanMoveOverEmptyBoxes = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "moveoveremptyboxes", 1);
 	gCharacterSelectScreenData.mHeader.mIsShowingPortraits = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "portraits", 1);
+	gCharacterSelectScreenData.mHeader.mIsSkippingCharScriptLoading = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "skipcharscriptloading", 0);
+	if(gCharacterSelectScreenData.mSelectScreenType == CHARACTER_SELECT_SCREEN_TYPE_CREDITS || gCharacterSelectScreenData.mHeader.mIsShowingPortraits) gCharacterSelectScreenData.mHeader.mIsSkippingCharScriptLoading = 0;
 
 	gCharacterSelectScreenData.mHeader.mCellSize = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "cell.size", Vector2D(1, 1));
+	gCharacterSelectScreenData.mHeader.mCellSize = transformDreamCoordinatesVector2D(gCharacterSelectScreenData.mHeader.mCellSize, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 	gCharacterSelectScreenData.mHeader.mCellSpacing = getMugenDefFloatOrDefault(&gCharacterSelectScreenData.mScript, "select info", "cell.spacing", 10);
+	gCharacterSelectScreenData.mHeader.mCellSpacing = transformDreamCoordinates(gCharacterSelectScreenData.mHeader.mCellSpacing, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 
 	gCharacterSelectScreenData.mHeader.mCellBackgroundAnimation = getMugenDefMenuAnimationOrSprite(&gCharacterSelectScreenData.mScript, "select info", "cell.bg", gCharacterSelectScreenData.mHeader.mIsCellBackgroundAnimationOwned);
 	gCharacterSelectScreenData.mHeader.mCellBackgroundScale = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "cell.bg.scale", Vector2D(1.0, 1.0));
+	gCharacterSelectScreenData.mHeader.mCellBackgroundScale = transformDreamCoordinatesVector2D(gCharacterSelectScreenData.mHeader.mCellBackgroundScale, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 	gCharacterSelectScreenData.mHeader.mRandomSelectionAnimation = getMugenDefMenuAnimationOrSprite(&gCharacterSelectScreenData.mScript, "select info", "cell.random", gCharacterSelectScreenData.mHeader.mIsRandomSelectionAnimationOwned);
 	gCharacterSelectScreenData.mHeader.mRandomSelectionScale = getMugenDefVector2DOrDefault(&gCharacterSelectScreenData.mScript, "select info", "cell.random.scale", Vector2D(1.0, 1.0));
+	gCharacterSelectScreenData.mHeader.mRandomSelectionScale = transformDreamCoordinatesVector2D(gCharacterSelectScreenData.mHeader.mRandomSelectionScale, gCharacterSelectScreenData.mLocalCoord.x, getScreenSize().x);
 	gCharacterSelectScreenData.mHeader.mRandomPortraitSwitchTime = getMugenDefIntegerOrDefault(&gCharacterSelectScreenData.mScript, "select info", "cell.random.switchtime", 1);
 
 	const auto sprite = getMugenDefVector2DIOrDefault(&gCharacterSelectScreenData.mScript, "select info", "portrait.spr", Vector2DI(9000, 0));
@@ -472,7 +491,7 @@ static void loadMenuCharacterCredits(SelectCharacter& e, MugenDefScript* tScript
 	e.mCredits.mVersionDate = getAllocatedMugenDefStringOrDefault(tScript, "info", "versiondate", "N/A");
 }
 
-static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter& e, char* tCharacterName) {
+static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter& e, const char* tCharacterName, const char* tOptionalDisplayName) {
 	
 	char file[200];
 	char path[1024];
@@ -481,44 +500,61 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 	char name[100];
 	char palettePath[1024];
 
+	string sanitizedCharacterName = std::string(tCharacterName);
+	std::replace(sanitizedCharacterName.begin(), sanitizedCharacterName.end(), '\\', '/');
 
-	getCharacterSelectNamePath(tCharacterName, scriptPath);
+	getCharacterSelectNamePath(sanitizedCharacterName.c_str(), scriptPath);
 	if (!isFile(scriptPath)) {
 		return 0;
 	}
-	MugenDefScript script;
-	loadMugenDefScript(&script, scriptPath);
 
-	if (gCharacterSelectScreenData.mHeader.mIsShowingPortraits) {
-		getPathToFile(path, scriptPath);
+	e.mDisplayCharacterName = nullptr;
 
-		int preferredPalette = 0;
-		sprintf(name, "pal%d", preferredPalette + 1);
-		getMugenDefStringOrDefault(file, &script, "files", name, "");
-		int hasPalettePath = strcmp("", file);
-		sprintf(palettePath, "%s%s", path, file);
+	if(!gCharacterSelectScreenData.mHeader.mIsSkippingCharScriptLoading)
+	{
+		MugenDefScript script;
+		loadMugenDefScript(&script, scriptPath);
 
-		getMugenDefStringOrDefault(file, &script, "files", "sprite", "");
-		assert(strcmp("", file));
-		sprintf(scriptPath, "%s%s", path, file);
-		sprintf(scriptPathPreloaded, "%s.portraits.preloaded", scriptPath);
-		if (isFile(scriptPathPreloaded)) {
-			e.mSprites = loadMugenSpriteFilePortraits(scriptPathPreloaded, hasPalettePath, palettePath);
+		if (gCharacterSelectScreenData.mHeader.mIsShowingPortraits) {
+			getPathToFile(path, scriptPath);
+
+			int preferredPalette = 0;
+			sprintf(name, "pal%d", preferredPalette + 1);
+			getMugenDefStringOrDefault(file, &script, "files", name, "");
+			int hasPalettePath = strcmp("", file);
+			sprintf(palettePath, "%s%s", path, file);
+
+			getMugenDefStringOrDefault(file, &script, "files", "sprite", "");
+			assert(strcmp("", file));
+			sprintf(scriptPath, "%s%s", path, file);
+			sprintf(scriptPathPreloaded, "%s.portraits.preloaded", scriptPath);
+			if (isFile(scriptPathPreloaded)) {
+				e.mSprites = loadMugenSpriteFilePortraits(scriptPathPreloaded, hasPalettePath, palettePath);
+			}
+			else {
+				e.mSprites = loadMugenSpriteFilePortraits(scriptPath, hasPalettePath, palettePath);
+			}
 		}
-		else {
-			e.mSprites = loadMugenSpriteFilePortraits(scriptPath, hasPalettePath, palettePath);
-		}
+
+		e.mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "displayname");
+
+		loadMenuCharacterCredits(e, &script);
+		
+		unloadMugenDefScript(&script);
 	}
 
-	strcpy(e.mCharacterName, tCharacterName);
-	e.mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "displayname");
-
+	strcpy(e.mCharacterName, sanitizedCharacterName.c_str());
 	e.mType = SELECT_CHARACTER_TYPE_CHARACTER;
-	
-	loadMenuCharacterCredits(e, &script);
-	
-	unloadMugenDefScript(&script);
-	
+
+	if(tOptionalDisplayName && tOptionalDisplayName[0] != '\0') {
+		if(e.mDisplayCharacterName) freeMemory(e.mDisplayCharacterName);
+		e.mDisplayCharacterName = (char*)allocMemory(strlen(tOptionalDisplayName) + 10u);
+		strcpy(e.mDisplayCharacterName, tOptionalDisplayName);
+	} else if (gCharacterSelectScreenData.mHeader.mIsSkippingCharScriptLoading) {
+		e.mDisplayCharacterName = (char*)allocMemory(strlen(e.mCharacterName) + 10u);
+		strcpy(e.mDisplayCharacterName, e.mCharacterName);
+	}
+
 	gCharacterSelectScreenData.mRealSelectCharacters.push_back(&e);
 	return 1;
 }
@@ -560,13 +596,15 @@ static void loadSingleRealMenuCharacter(MenuCharacterLoadCaller* tCaller, const 
 
 	tCaller->i++;
 	
+	char displayName[100];
+	displayName[0] = '\0';
 	int doesIncludeStage = 1;
 	int isValid = 1;
-	parseOptionalCharacterSelectParameters(tVector, NULL, &doesIncludeStage, NULL, &isValid);
+	parseOptionalCharacterSelectParameters(tVector, NULL, &doesIncludeStage, NULL, &isValid, displayName);
 	if (!isValid) {
 		return;
 	}
-	if (!loadMenuCharacterSpritesAndNameAndReturnWhetherExists(e, characterName)) {
+	if (!loadMenuCharacterSpritesAndNameAndReturnWhetherExists(e, characterName, displayName)) {
 		return;
 	}
 	if (gCharacterSelectScreenData.mStageSelect.mIsUsing && doesIncludeStage) {
@@ -948,8 +986,10 @@ static void loadCharacterSelectScreen() {
 	text = findMugenSystemOrFightFilePath(text, folder);
 	gCharacterSelectScreenData.mSounds = loadMugenSoundFile(text.c_str());
 
+	gCharacterSelectScreenData.mLocalCoord = getMugenDefVectorIOrDefault(&gCharacterSelectScreenData.mScript, "info", "localcoord", Vector3DI(320, 240, 0)).xy();
+
 	loadMenuHeader();
-	loadScriptBackground(&gCharacterSelectScreenData.mScript, &gCharacterSelectScreenData.mSprites, &gCharacterSelectScreenData.mAnimations, "selectbgdef", "selectbg");
+	loadScriptBackground(&gCharacterSelectScreenData.mScript, &gCharacterSelectScreenData.mSprites, &gCharacterSelectScreenData.mAnimations, "selectbgdef", "selectbg", gCharacterSelectScreenData.mLocalCoord);
 
 	loadStageSelectStages();
 	loadMenuCells();
@@ -1700,7 +1740,7 @@ static void parseOptionalParameterPaths(char* tParameter, char* oName, char* oVa
 	if (!parseSingleOptionalParameterPart(equalSign + 1, tParameter + strlen(tParameter) - 1, tParameter, oValue)) return;
 }
 
-static void parseSingleOptionalCharacterParameter(char* tParameter, int* oOrder, int* oDoesIncludeStage, char* oMusicPath, int* oIsValid) {
+static void parseSingleOptionalCharacterParameter(char* tParameter, int* oOrder, int* oDoesIncludeStage, char* oMusicPath, int* oIsValid, char* oDisplayName) {
 	char name[100];
 	char value[1000];
 	parseOptionalParameterPaths(tParameter, name, value);
@@ -1722,12 +1762,15 @@ static void parseSingleOptionalCharacterParameter(char* tParameter, int* oOrder,
 			destroyDreamMugenAssignment(assignment);
 		}
 	}
+	else if (!strcmp("displayname", name)) {
+		if (oDisplayName) strcpy(oDisplayName, value);
+	}
 }
 
-void parseOptionalCharacterSelectParameters(const MugenStringVector& tVector, int* oOrder, int* oDoesIncludeStage, char* oMusicPath, int* oIsValid) {
+void parseOptionalCharacterSelectParameters(const MugenStringVector& tVector, int* oOrder, int* oDoesIncludeStage, char* oMusicPath, int* oIsValid, char* oDisplayName) {
 	int i;
 	for (i = 2; i < tVector.mSize; i++) {
-		parseSingleOptionalCharacterParameter(tVector.mElement[i], oOrder, oDoesIncludeStage, oMusicPath, oIsValid);
+		parseSingleOptionalCharacterParameter(tVector.mElement[i], oOrder, oDoesIncludeStage, oMusicPath, oIsValid, oDisplayName);
 	}
 }
 

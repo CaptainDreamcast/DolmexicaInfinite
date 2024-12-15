@@ -2,6 +2,8 @@
 
 #include <prism/wrapper.h>
 
+using namespace prism;
+
 Screen* getStoryScreen();
 
 void setStoryDefinitionFileAndPrepareScreen(const char* tPath);

@@ -59,6 +59,8 @@ DreamMugenSound makeDreamMugenSound(int tGroup, int tItem)
 
 void setNoMusicFlag()
 {
+	if (getGameMode() == GAME_MODE_OSU) return;
+
 	pauseMusic();
 	gDolmexicaMugenSoundData.mIsPausedFlag = 1;
 }

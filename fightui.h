@@ -8,6 +8,8 @@
 
 #include "playerdefinition.h"
 
+using namespace prism;
+
 void setCustomFightMotif(const std::string& tPath);
 int hasCustomFightMotif();
 const std::string& getCustomFightMotif();

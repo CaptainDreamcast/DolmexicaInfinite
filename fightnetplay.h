@@ -6,6 +6,8 @@
 #include <prism/file.h>
 #include <prism/actorhandler.h>
 
+using namespace prism;
+
 struct FightNetplaySingleCommandSent{
 	std::string mName;
 	int mIsActive;

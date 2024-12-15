@@ -3,6 +3,8 @@
 #include <prism/actorhandler.h>
 #include <prism/geometry.h>
 
+using namespace prism;
+
 extern ActorBlueprint getFightResultDisplay();
 
 void setFightResultActive(int tIsActive);

@@ -6,6 +6,8 @@
 #include <prism/memorystack.h>
 #include <prism/stlutil.h>
 
+using namespace prism;
+
 typedef enum {
 	MUGEN_ASSIGNMENT_RETURN_TYPE_STRING,
 	MUGEN_ASSIGNMENT_RETURN_TYPE_NUMBER,

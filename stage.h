@@ -9,6 +9,8 @@
 #include <prism/mugendefreader.h>
 #include <prism/physicshandler.h>
 
+using namespace prism;
+
 // documentation at http://www.elecbyte.com/mugendocs-11b1/bgs.html
 
 void loadBackgroundElementGroup(MugenDefScriptGroup* tGroup, int i, MugenSpriteFile* tSprites, MugenAnimations* tAnimations, const Vector2DI& tLocalCoordinates, const Vector2D& tGlobalScale);
@@ -46,6 +48,8 @@ Vector2D transformDreamCoordinatesVector2D(const Vector2D& tVal, int tSrcP, int 
 Vector3D transformDreamCoordinatesVector(const Vector3D& tVal, int tSrcP, int tDstP);
 Vector2DI transformDreamCoordinatesVector2DI(const Vector2DI& tVal, int tSrcP, int tDstP);
 Vector3DI transformDreamCoordinatesVectorI(const Vector3DI& tVal, int tSrcP, int tDstP);
+Vector3D transformDreamCoordinatesVectorXY(const Vector3D& tVal, int tSrcP, int tDstP);
+GeoRectangle2D transformDreamCoordinatesGeoRectangle2D(const GeoRectangle2D& tVal, int tSrcP, int tDstP);
 
 double getDreamStageTopOfScreenBasedOnPlayer(int tCoordinateP);
 double getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(int tCoordinateP);

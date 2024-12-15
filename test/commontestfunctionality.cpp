@@ -1,8 +1,6 @@
 #include "commontestfunctionality.h"
 
-#define Rectangle Rectangle2
 #include <Windows.h>
-#undef Rectangle
 
 #include <prism/wrapper.h>
 #include <prism/mugentexthandler.h>

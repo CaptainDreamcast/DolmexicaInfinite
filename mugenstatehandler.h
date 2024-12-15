@@ -4,6 +4,8 @@
 
 #include "mugenstatereader.h"
 
+using namespace prism;
+
 struct DreamPlayer;
 struct StoryInstance;
 

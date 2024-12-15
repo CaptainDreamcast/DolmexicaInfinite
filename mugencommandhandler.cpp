@@ -717,7 +717,7 @@ void updateCommandNetplaySend(int tID) {
 		const auto state = e->tStates.mStateLookup[i];
 
 		appendBufferUint32(&b, uint32_t(state->mName.size()));
-		appendBufferString(&b, state->mName.c_str(), state->mName.size());
+		appendBufferString(&b, state->mName.c_str(), int(state->mName.size()));
 		appendBufferUint32(&b, state->mIsActive);
 		appendBufferUint32(&b, state->mNow);
 		appendBufferUint32(&b, state->mBufferTime);

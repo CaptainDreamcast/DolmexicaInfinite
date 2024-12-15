@@ -3,6 +3,8 @@
 #include <prism/actorhandler.h>
 #include <prism/mugendefreader.h>
 
+using namespace prism;
+
 ActorBlueprint getOsuHandler();
 
 int isOsuHandlerActive();

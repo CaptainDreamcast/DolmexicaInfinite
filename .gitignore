@@ -1,6 +1,8 @@
 .git_*
 .tmp.driveupload/*
 
+build/*
+build_dreamcast/*
 assets/*
 assets_normal/*
 assets_*/*

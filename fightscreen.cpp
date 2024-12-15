@@ -69,7 +69,9 @@ static void setFightScreenGameSpeed() {
 
 extern int gDebugAssignmentAmount;
 extern int gDebugStateControllerAmount;
-extern int gDebugStringMapAmount;
+namespace prism {
+	extern int gDebugStringMapAmount;
+}
 extern int gPruneAmount;
 
 static void exitFightScreenCB(void* tCaller);
@@ -197,7 +199,6 @@ static Screen* getDreamFightScreen() {
 
 static void loadFightFonts(void* tCaller) {
 	(void)tCaller;
-	unloadMugenFonts();
 	loadMugenFightFonts();
 }
 

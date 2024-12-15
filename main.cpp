@@ -27,7 +27,7 @@
 char romdisk_buffer[1];
 int romdisk_buffer_length;
 
-//#define DEVELOP
+#define DEVELOP
 
 #ifdef DREAMCAST
 KOS_INIT_FLAGS(INIT_DEFAULT | INIT_MALLOCSTATS);

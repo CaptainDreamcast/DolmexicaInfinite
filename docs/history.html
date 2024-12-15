@@ -174,6 +174,26 @@ code, tt {
 <div class="document" id="m-u-g-e-n-update-history">
 <h1 class="title">Dolmexica Infinite Update History</h1>
 <p>Updates shown are in order of most recent to least recent.</p>
+<div class="section" id="new-in-1-6">
+  <h1>New in 1.6</h1>
+  <p>27 December 2024</p>
+  <div class="section" id="general">
+  <h2>General updates</h2>
+  <ul class="simple">
+  <li>Feature: New character parameter in select.def called "displayname" that can be used to override name in select screen.</li>
+  <li>Feature: New system.def parameter in [Select info] called "skipcharscriptloading" that skips loading the character script (useful to reduce strain on Dreamcast disc reader). Does not work in Credits mode, nor when the "portraits" parameter is set to 1 (its default value).</li>
+  <li>Feature: localcoord parameter in [Info] group of system.def can be used to set coordinate system used in menus now.</li>
+  <li>Bugfix: [General] Hitbox definitions now also work with only clsn[]</li>
+  <li>Bugfix: [General] More robust with characters that have \ in their select.def name</li>
+  <li>Bugfix: [General] Fight fonts now only overwrite system fonts, system fonts that are not overwritten remain available for fight motif</li>
+  <li>Bugfix: [General] Commands defined after Statedef group are no longer ignored by command file reader</li>
+  <li>Bugfix: [General] Unclosed group definitions (no closing ]) are handled more gracefully</li>
+  <li>Bugfix: [General] State controllers without type default to Null controllers now</li>
+  <li>Bugfix: [General] Stages somewhat support hires parameter under stageinfo group (localcoord will still override it)</li>
+  <li>Bugfix: [Osu Mode] Characters can no longer pause the music</li>
+  </ul>
+  </div>
+  </div>
 <div class="section" id="new-in-1-5">
 <h1>New in 1.5</h1>
 <p>31 December 2023</p>

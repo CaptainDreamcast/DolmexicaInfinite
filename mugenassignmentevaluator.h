@@ -5,6 +5,8 @@
 #include "mugenassignment.h"
 #include "playerdefinition.h"
 
+using namespace prism;
+
 void setupDreamAssignmentEvaluator();
 void setupDreamStoryAssignmentEvaluator();
 void setupDreamGlobalAssignmentEvaluator();

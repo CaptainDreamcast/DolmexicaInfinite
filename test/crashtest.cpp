@@ -1,8 +1,6 @@
 #include <gtest/gtest.h>
 
-#define Rectangle Rectangle2
 #include <Windows.h>
-#undef Rectangle
 
 #include <prism/wrapper.h>
 #include <prism/file.h>

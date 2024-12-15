@@ -2,6 +2,8 @@
 
 #include <prism/actorhandler.h>
 
+using namespace prism;
+
 void initDolmexicaDebug();
 
 ActorBlueprint getDolmexicaDebug();

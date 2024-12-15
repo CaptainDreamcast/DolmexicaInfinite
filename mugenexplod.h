@@ -4,6 +4,8 @@
 
 #include "playerdefinition.h"
 
+using namespace prism;
+
 typedef enum {
 	EXPLOD_POSITION_TYPE_RELATIVE_TO_P1,
 	EXPLOD_POSITION_TYPE_RELATIVE_TO_P2,

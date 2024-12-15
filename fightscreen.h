@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <prism/wrapper.h>
 
+using namespace prism;
+
 void startFightScreen(void(*tWinCB)(), void(*tLoseCB)() = NULL);
 void reloadFightScreen();
 void stopFightScreenWin();

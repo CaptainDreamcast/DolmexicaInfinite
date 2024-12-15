@@ -40,6 +40,7 @@
 #include "intro.h"
 #include "config.h"
 #include "netplayscreen.h"
+#include "stage.h"
 
 typedef struct {
 	void(*mCB)();
@@ -93,6 +94,7 @@ static struct {
 
 	int mBoxCursorID;
 
+	Vector2DI mLocalCoord;
 	TextureData mWhiteTexture;
 	AnimationHandlerElement* mCreditBGAnimationElement;
 	int mLeftCreditTextID;
@@ -244,16 +246,20 @@ static void loadMenuHeader() {
 	gTitleScreenData.mHeader.mFadeOutTime = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "title info", "fadeout.time", 30);
 
 	gTitleScreenData.mHeader.mMenuPosition = getMugenDefVectorOrDefault(&gTitleScreenData.mScript, "title info", "menu.pos", Vector3D(0, 0, 0));
+	gTitleScreenData.mHeader.mMenuPosition = transformDreamCoordinatesVectorXY(gTitleScreenData.mHeader.mMenuPosition, gTitleScreenData.mLocalCoord.x, getScreenSize().x);
 	gTitleScreenData.mHeader.mItemFont = getMugenDefVectorIOrDefault(&gTitleScreenData.mScript, "title info", "menu.item.font", Vector3DI(-1, 0, 0));
 	gTitleScreenData.mHeader.mItemActiveFont = getMugenDefVectorIOrDefault(&gTitleScreenData.mScript, "title info", "menu.item.active.font", Vector3DI(-1, 0, 0));
 	gTitleScreenData.mHeader.mItemSpacing = getMugenDefVectorOrDefault(&gTitleScreenData.mScript, "title info", "menu.item.spacing", Vector3D(0, 0, 0));
+	gTitleScreenData.mHeader.mItemSpacing = transformDreamCoordinatesVectorXY(gTitleScreenData.mHeader.mItemSpacing, gTitleScreenData.mLocalCoord.x, getScreenSize().x);
 
 	gTitleScreenData.mHeader.mWindowMarginsY = getMugenDefVectorOrDefault(&gTitleScreenData.mScript, "title info", "menu.window.margins.y", Vector3D(0, 0, 0));
+	gTitleScreenData.mHeader.mWindowMarginsY = transformDreamCoordinatesVectorXY(gTitleScreenData.mHeader.mWindowMarginsY, gTitleScreenData.mLocalCoord.x, getScreenSize().x);
 
 	gTitleScreenData.mHeader.mVisibleItemAmount = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "title info", "menu.window.visibleitems", 10);
 	gTitleScreenData.mHeader.mIsBoxCursorVisible = getMugenDefIntegerOrDefault(&gTitleScreenData.mScript, "title info", "menu.boxcursor.visible", 1);
 
-	gTitleScreenData.mHeader.mMenuRectangle = GeoRectangle2D(-INF / 2, gTitleScreenData.mHeader.mMenuPosition.y - gTitleScreenData.mHeader.mWindowMarginsY.x, INF, gTitleScreenData.mHeader.mWindowMarginsY.x + gTitleScreenData.mHeader.mWindowMarginsY.y + gTitleScreenData.mHeader.mVisibleItemAmount*gTitleScreenData.mHeader.mItemSpacing.y);
+	const auto extraElementsVisible = gTitleScreenData.mLocalCoord.x == 320 ? 0 : 1;
+	gTitleScreenData.mHeader.mMenuRectangle = GeoRectangle2D(-INF / 2, gTitleScreenData.mHeader.mMenuPosition.y - gTitleScreenData.mHeader.mWindowMarginsY.x, INF, gTitleScreenData.mHeader.mWindowMarginsY.x + gTitleScreenData.mHeader.mWindowMarginsY.y + (gTitleScreenData.mHeader.mVisibleItemAmount + extraElementsVisible)*gTitleScreenData.mHeader.mItemSpacing.y);
 
 	if (isMugenDefStringVariable(&gTitleScreenData.mScript, "title info", "menu.boxcursor.coords")) {
 		const auto boxCoordinateVector = getMugenDefStringVectorVariable(&gTitleScreenData.mScript, "title info", "menu.boxcursor.coords");
@@ -262,6 +268,7 @@ static void loadMenuHeader() {
 		gTitleScreenData.mHeader.mBoxCursorCoordinates.mTopLeft.y = atof(boxCoordinateVector.mElement[1]);
 		gTitleScreenData.mHeader.mBoxCursorCoordinates.mBottomRight.x = atof(boxCoordinateVector.mElement[2]);
 		gTitleScreenData.mHeader.mBoxCursorCoordinates.mBottomRight.y = atof(boxCoordinateVector.mElement[3]);
+		gTitleScreenData.mHeader.mBoxCursorCoordinates = transformDreamCoordinatesGeoRectangle2D(gTitleScreenData.mHeader.mBoxCursorCoordinates, gTitleScreenData.mLocalCoord.x, getScreenSize().x);
 	}
 	else {
 		gTitleScreenData.mHeader.mBoxCursorCoordinates = GeoRectangle2D(0, 0, 0, 0);
@@ -292,7 +299,9 @@ static void addMenuPoint(const char* tVariableName, void(*tCB)()) {
 	e->mCB = tCB;
 	e->mOffset = Vector3D(gTitleScreenData.mHeader.mItemSpacing.x*index, gTitleScreenData.mHeader.mItemSpacing.y*index, 50);
 	Position position = vecAdd(gTitleScreenData.mHeader.mMenuPosition, e->mOffset);
+	position = transformDreamCoordinatesVectorXY(position, gTitleScreenData.mLocalCoord.x, getScreenSize().x);
 	e->mTextID = addMugenText(text, position, gTitleScreenData.mHeader.mItemFont.x);
+	setMugenTextScale(e->mTextID, transformDreamCoordinates(1, gTitleScreenData.mLocalCoord.x, getScreenSize().x));
 	setMugenTextColor(e->mTextID, getMugenTextColorFromMugenTextColorIndex(gTitleScreenData.mHeader.mItemFont.y));
 	setMugenTextAlignment(e->mTextID, getMugenTextAlignmentFromMugenAlignmentIndex(gTitleScreenData.mHeader.mItemFont.z));
 	setMugenTextRectangle(e->mTextID, gTitleScreenData.mHeader.mMenuRectangle);
@@ -337,9 +346,9 @@ static void loadCredits() {
 	setAnimationSize(gTitleScreenData.mCreditBGAnimationElement, Vector3D(320, 20, 1), Vector3D(0, 0, 0));
 	setAnimationColor(gTitleScreenData.mCreditBGAnimationElement, 0, 0, 0.5);
 
-	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite 1.5", Vector3D(0, 240, 51), -1);
+	gTitleScreenData.mLeftCreditTextID = addMugenText("Dolmexica Infinite 1.6", Vector3D(0, 240, 51), -1);
 	
-	gTitleScreenData.mRightCreditTextID = addMugenText("31/12/23 Presented by Dogma", Vector3D(320, 240, 51), -1);
+	gTitleScreenData.mRightCreditTextID = addMugenText("12/27/24 Presented by Dogma", Vector3D(320, 240, 51), -1);
 	setMugenTextAlignment(gTitleScreenData.mRightCreditTextID, MUGEN_TEXT_ALIGNMENT_RIGHT);
 }
 
@@ -392,9 +401,11 @@ static void loadTitleScreen() {
 	text = findMugenSystemOrFightFilePath(text, folder);
 	gTitleScreenData.mSounds = loadMugenSoundFile(text.c_str());
 	
+	gTitleScreenData.mLocalCoord = getMugenDefVectorIOrDefault(&gTitleScreenData.mScript, "info", "localcoord", Vector3DI(320, 240, 0)).xy();
+
 	loadMenuHeader();
 	loadDemoHeader();
-	loadScriptBackground(&gTitleScreenData.mScript, &gTitleScreenData.mSprites, &gTitleScreenData.mAnimations, "titlebgdef", "titlebg");
+	loadScriptBackground(&gTitleScreenData.mScript, &gTitleScreenData.mSprites, &gTitleScreenData.mAnimations, "titlebgdef", "titlebg", gTitleScreenData.mLocalCoord);
 
 	gTitleScreenData.mMenus = new_vector();
 	addMenuPoint("menu.itemname.story", storyCB);

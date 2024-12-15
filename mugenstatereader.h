@@ -6,6 +6,8 @@
 
 #include "mugenassignment.h"
 
+using namespace prism;
+
 enum DreamMugenStateControllerType : uint8_t{
 
 	MUGEN_STATE_CONTROLLER_TYPE_NOT_HIT_BY,

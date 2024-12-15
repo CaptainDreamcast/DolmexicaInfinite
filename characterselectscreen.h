@@ -3,6 +3,8 @@
 #include <prism/wrapper.h>
 #include <prism/mugendefreader.h>
 
+using namespace prism;
+
 Screen* getCharacterSelectScreen();
 
 void setCharacterSelectCustomSelectFile(const std::string& tFileName);
@@ -19,7 +21,7 @@ void setCharacterSelectStory();
 void setCharacterSelectDisableReturnOneTime();
 void resetCharacterSelectSelectors();
 
-void parseOptionalCharacterSelectParameters(const MugenStringVector& tVector, int* oOrder, int* oDoesIncludeStage, char* oMusicPath, int* oIsValid);
+void parseOptionalCharacterSelectParameters(const MugenStringVector& tVector, int* oOrder, int* oDoesIncludeStage, char* oMusicPath, int* oIsValid, char* oDisplayName);
 void getCharacterSelectNamePath(const char* tName, char* oDst);
 
 int setCharacterRandomAndReturnIfSuccessful(MugenDefScript* tScript, int i);

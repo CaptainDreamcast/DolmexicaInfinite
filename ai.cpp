@@ -11,7 +11,7 @@
 #include "config.h"
 #include "mugenstagehandler.h"
 
-using  namespace std;
+using namespace std;
 
 typedef struct {
 	DreamPlayer* mPlayer;

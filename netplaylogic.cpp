@@ -2,6 +2,8 @@
 
 #include <prism/netplay.h>
 
+using namespace prism;
+
 void initDolmexicaNetplay()
 {
 	initNetplay();

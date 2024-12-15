@@ -710,9 +710,7 @@ static void saveConfigOptionsWindows(ModifiableMugenDefScript* tScript) {
 }
 
 static void saveConfigKeysWindowSinglePlayer(ModifiableMugenDefScript* tScript, int tIndex) {
-	std::stringstream ss;
-	ss << "p" << (tIndex + 1) << " keys dolmexica";
-	const auto groupName = ss.str();
+	const auto groupName = std::string("p").append(std::to_string(tIndex + 1)).append(" keys dolmexica");
 	saveMugenDefInteger(tScript, groupName.c_str(), "jump", int(getButtonForKeyboard(tIndex, CONTROLLER_UP_PRISM)));
 	saveMugenDefInteger(tScript, groupName.c_str(), "crouch", int(getButtonForKeyboard(tIndex, CONTROLLER_DOWN_PRISM)));
 	saveMugenDefInteger(tScript, groupName.c_str(), "left", int(getButtonForKeyboard(tIndex, CONTROLLER_LEFT_PRISM)));
@@ -1014,25 +1012,19 @@ void loadGlobalVariables(PrismSaveSlot tSaveSlot)
 #ifdef _WIN32
 static void saveGlobalIntegerVariablesWindows(ModifiableMugenDefScript* tScript) {
 	for (const auto& keyValuePair : gConfigData.mGlobalVariables) {
-		stringstream ss;
-		ss << keyValuePair.first;
-		saveMugenDefInteger(tScript, "vars", ss.str().c_str(), keyValuePair.second);
+		saveMugenDefInteger(tScript, "vars", std::to_string(keyValuePair.first).c_str(), keyValuePair.second);
 	}
 }
 
 static void saveGlobalFloatVariablesWindows(ModifiableMugenDefScript* tScript) {
 	for (const auto& keyValuePair : gConfigData.mGlobalFVariables) {
-		stringstream ss;
-		ss << keyValuePair.first;
-		saveMugenDefFloat(tScript, "fvars", ss.str().c_str(), keyValuePair.second);
+		saveMugenDefFloat(tScript, "fvars", std::to_string(keyValuePair.first).c_str(), keyValuePair.second);
 	}
 }
 
 static void saveGlobalStringVariablesWindows(ModifiableMugenDefScript* tScript) {
 	for (const auto& keyValuePair : gConfigData.mGlobalStringVariables) {
-		stringstream ss;
-		ss << keyValuePair.first;
-		saveMugenDefString(tScript, "svars", ss.str().c_str(), "\"" + keyValuePair.second + "\"");
+		saveMugenDefString(tScript, "svars", std::to_string(keyValuePair.first).c_str(), "\"" + keyValuePair.second + "\"");
 	}
 }
 

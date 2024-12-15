@@ -4,6 +4,8 @@
 
 #include "playerdefinition.h"
 
+using namespace prism;
+
 void setDreamAIActive(DreamPlayer* p);
 void activateRandomAICommand(int tPlayerIndex);
 

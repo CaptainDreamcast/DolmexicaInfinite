@@ -121,7 +121,7 @@ static void addSingleEnemyToSelection(AddEnemyCaller* caller, const MugenStringV
 	*e->mMusicPath = '\0';
 
 	int isValid = 1;
-	parseOptionalCharacterSelectParameters(tStringVector, &e->mOrder, NULL, e->mMusicPath, &isValid);
+	parseOptionalCharacterSelectParameters(tStringVector, &e->mOrder, NULL, e->mMusicPath, &isValid, NULL);
 
 	if (!int_map_contains(&caller->mOrders, e->mOrder)) {
 		addNewEnemyOrderToCaller(caller, e->mOrder);

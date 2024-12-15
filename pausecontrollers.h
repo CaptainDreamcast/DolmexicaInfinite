@@ -5,6 +5,8 @@
 
 #include "playerdefinition.h"
 
+using namespace prism;
+
 ActorBlueprint getPauseControllerHandler();
 
 void setDreamSuperPauseTime(DreamPlayer* tPlayer, int tTime);

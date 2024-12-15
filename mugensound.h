@@ -2,6 +2,8 @@
 
 #include <prism/actorhandler.h>
 
+using namespace prism;
+
 typedef struct {
 	int mGroup;
 	int mItem;

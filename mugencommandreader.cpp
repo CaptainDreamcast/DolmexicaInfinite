@@ -362,11 +362,7 @@ static void handleCommand(DreamMugenCommands* tCommands, MugenDefScriptGroup* tG
 	addCallerToCommands(tCommands, &caller);	
 }
 
-static void handleStateDef(MugenDefScriptGroup** tCurrentGroup) {
-	while ((*tCurrentGroup)->mNext != NULL) {
-		(*tCurrentGroup) = (*tCurrentGroup)->mNext;
-	}
-}
+static void handleStateDef() { /* We handle those elsewhere */ }
 
 static void loadMugenCommandsFromDefScript(DreamMugenCommands* tCommands, MugenDefScript* tScript) {
 
@@ -382,7 +378,7 @@ static void loadMugenCommandsFromDefScript(DreamMugenCommands* tCommands, MugenD
 		if (isCommand(lowercase)) {
 			handleCommand(tCommands, current);
 		} else if (isStateDef(lowercase)) {
-			handleStateDef(&current);
+			handleStateDef();
 		} else if (isRemap(lowercase)) {
 			handleRemap();
 		}
