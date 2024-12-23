@@ -46,7 +46,7 @@ typedef struct {
 typedef struct {
 	DreamMugenCommands* tCommands;
 	MugenCommandStates tStates;
-	map<string, InternalMugenCommandState> mInternalStates;
+	unordered_map<string, InternalMugenCommandState> mInternalStates;
 
 	list<ActiveMugenCommand> mActiveCommands;
 

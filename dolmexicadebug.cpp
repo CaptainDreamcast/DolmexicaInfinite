@@ -27,11 +27,11 @@ typedef struct {
 } TrackedInteger;
 
 typedef struct {
-	std::map<std::string, TrackedInteger> mMap;
+	std::unordered_map<std::string, TrackedInteger> mMap;
 	int mIsOverridingTimeDilatation;
 	double mOverridingTimeDilatationSpeed;
 
-	std::map<std::string, std::set<int>> mStoryCharAnimations;
+	std::unordered_map<std::string, std::set<int>> mStoryCharAnimations;
 } DolmexicaDebugData;
 
 static DolmexicaDebugData* gDolmexicaDebugData = nullptr;

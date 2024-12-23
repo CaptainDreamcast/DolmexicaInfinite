@@ -45,9 +45,9 @@ typedef int(*StateControllerHandleFunction)(DreamMugenStateController*, DreamPla
 typedef void(*StateControllerUnloadFunction)(DreamMugenStateController*);
 
 static struct {
-	map<string, StateControllerParseFunction> mStateControllerParsers; 
-	map<int, StateControllerHandleFunction> mStateControllerHandlers;
-	map<int, StateControllerUnloadFunction> mStateControllerUnloaders; 
+	unordered_map<string, StateControllerParseFunction> mStateControllerParsers; 
+	unordered_map<int, StateControllerHandleFunction> mStateControllerHandlers;
+	unordered_map<int, StateControllerUnloadFunction> mStateControllerUnloaders; 
 	MemoryStack* mMemoryStack;
 } gMugenStateControllerVariableHandler;
 

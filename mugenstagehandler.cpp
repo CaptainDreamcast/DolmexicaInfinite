@@ -35,7 +35,7 @@ static struct {
 
 	Position2D mCameraShakeOffset;
 
-	map<int, StageElementIDList> mStageElementsFromID;
+	unordered_map<int, StageElementIDList> mStageElementsFromID;
 } gMugenStageHandlerData;
 
 static void loadMugenStageHandler(void* tData) {

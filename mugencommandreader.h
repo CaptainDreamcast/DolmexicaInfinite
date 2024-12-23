@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <string>
 
 #include <prism/datastructures.h>
@@ -71,7 +71,7 @@ typedef struct {
 } DreamMugenCommand;
 
 typedef struct {
-	std::map<std::string, DreamMugenCommand> mCommands;
+	std::unordered_map<std::string, DreamMugenCommand> mCommands;
 } DreamMugenCommands;
 
 DreamMugenCommands loadDreamMugenCommandFile(char* tPath);

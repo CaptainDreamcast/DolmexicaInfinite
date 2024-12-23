@@ -99,9 +99,9 @@ static struct {
 	ConfigMiscData mMisc;
 	ConfigArcadeData mArcade;
 
-	map<int, int> mGlobalVariables;
-	map<int, double> mGlobalFVariables;
-	map<int, std::string> mGlobalStringVariables;
+	unordered_map<int, int> mGlobalVariables;
+	unordered_map<int, double> mGlobalFVariables;
+	unordered_map<int, std::string> mGlobalStringVariables;
 	std::string mAssetFolder;
 } gConfigData;
 

@@ -287,7 +287,7 @@ static void updateDebugInputWindows() {
 	}
 }
 
-static void updateDebugInputDreamcast() {
+static void updateDebugInputConsole() {
 	int wasStartPressed = hasPressedStartFlank();
 
 	if (isMugenDebugAllowingDebugModeSwitch() && wasStartPressed && hasPressedR()) {
@@ -354,7 +354,7 @@ static void updateDebugInputDreamcast() {
 }
 
 static void updateDebugInput() {
-	if(isOnDreamcast()) updateDebugInputDreamcast();
+	if(isOnDreamcast() || isOnVita()) updateDebugInputConsole();
 	else updateDebugInputWindows();
 }
 

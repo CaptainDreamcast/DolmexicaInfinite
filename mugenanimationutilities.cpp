@@ -42,7 +42,7 @@ typedef struct {
 
 static struct {
 	IntMap mActiveVisibilityElements;
-	std::map<MugenAnimationHandlerElement*, ActivePaletteElement> mActivePaletteElements;
+	std::unordered_map<MugenAnimationHandlerElement*, ActivePaletteElement> mActivePaletteElements;
 } gMugenAnimationUtilityData;
 
 static void loadVisibilityUtility() {

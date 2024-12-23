@@ -1005,7 +1005,7 @@ static void loadCharacterSelectScreen() {
 	loadStageSelect();
 	loadSelectMusic();
 
-	gCharacterSelectScreenData.mWhiteTexture = createWhiteTexture();
+	gCharacterSelectScreenData.mWhiteTexture = getEmptyWhiteTexture();
 
 	gCharacterSelectScreenData.mIsFadingOut = 0;
 	addFadeIn(gCharacterSelectScreenData.mHeader.mFadeInTime, NULL, NULL);
@@ -1095,8 +1095,6 @@ static void unloadCharacterSelectScreen() {
 	}
 
 	destroyMugenAnimation(gCharacterSelectScreenData.mHeader.mSmallPortraitAnimation);
-
-	unloadTexture(gCharacterSelectScreenData.mWhiteTexture);
 
 	unloadSelectCharacters();
 	unloadSelectStages();

@@ -86,15 +86,15 @@ typedef struct {
 } StoryCharacter;
 
 struct StoryInstance {
-	std::map<int, StoryAnimation> mStoryAnimations;
-	std::map<int, StoryText> mStoryTexts;
-	std::map<int, StoryCharacter> mStoryCharacters;
+	std::unordered_map<int, StoryAnimation> mStoryAnimations;
+	std::unordered_map<int, StoryText> mStoryTexts;
+	std::unordered_map<int, StoryCharacter> mStoryCharacters;
 
-	std::map<int, int> mIntVars;
-	std::map<int, double> mFloatVars;
-	std::map<int, std::string> mStringVars;
+	std::unordered_map<int, int> mIntVars;
+	std::unordered_map<int, double> mFloatVars;
+	std::unordered_map<int, std::string> mStringVars;
 
-	std::map<std::string, int> mTextNames;
+	std::unordered_map<std::string, int> mTextNames;
 
 	RegisteredMugenStateMachine* mRegisteredStateMachine;
 	int mIsScheduledForDeletion;

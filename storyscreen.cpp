@@ -70,8 +70,8 @@ typedef struct {
 	GeoRectangle2D mWindow;
 	std::string mBGName;
 
-	std::map<int, Layer> mLayers;
-	std::map<int, StorySound> mSounds;
+	std::unordered_map<int, Layer> mLayers;
+	std::unordered_map<int, StorySound> mSounds;
 } Scene;
 
 static struct {

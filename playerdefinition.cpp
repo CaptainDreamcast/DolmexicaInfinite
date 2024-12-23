@@ -63,7 +63,7 @@ static struct {
 
 	List mAllPlayers; // contains DreamPlayer
 	std::set<DreamPlayer*> mAllProjectiles;
-	std::map<int, DreamPlayer> mHelperStore;
+	std::unordered_map<int, DreamPlayer> mHelperStore;
 } gPlayerDefinition;
 
 static void loadPlayerHeaderFromScript(DreamPlayerHeader* tHeader, MugenDefScript* tScript) {

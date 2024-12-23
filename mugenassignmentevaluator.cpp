@@ -68,7 +68,7 @@ static struct {
 } gAssignmentEvaluator;
 
 static void initEvaluationStack() {
-	gAssignmentEvaluator.mStackSize = isOnVita() ? 0 : REGULAR_STACK_SIZE; // TODO: fix regular stack on Vita
+	gAssignmentEvaluator.mStackSize = isOnVita() ? 0 : REGULAR_STACK_SIZE; // TODO: fix regular stack on Vita (still broken with vita2D, only on real hardware)
 	gAssignmentEvaluator.mEmergencyStack.clear();
 }
 
@@ -94,19 +94,19 @@ enum MugenAssignmentEvaluatorType {
 };
 
 static struct {
-	map<string, VariableFunction> mVariables;
-	map<string, ArrayFunction> mArrays;
-	map<string, ComparisonFunction> mComparisons;
-	map<string, OrdinalFunction> mOrdinals;
+	unordered_map<string, VariableFunction> mVariables;
+	unordered_map<string, ArrayFunction> mArrays;
+	unordered_map<string, ComparisonFunction> mComparisons;
+	unordered_map<string, OrdinalFunction> mOrdinals;
 
 	MugenAssignmentEvaluatorType mType;
 } gVariableHandler;
 
-std::map<string, AssignmentReturnValue*(*)(DreamPlayer*)>& getActiveMugenAssignmentVariableMap() {
+std::unordered_map<string, AssignmentReturnValue*(*)(DreamPlayer*)>& getActiveMugenAssignmentVariableMap() {
 	return gVariableHandler.mVariables;
 }
 
-std::map<string, AssignmentReturnValue*(*)(DreamMugenAssignment**, DreamPlayer*, int*)>& getActiveMugenAssignmentArrayMap() {
+std::unordered_map<string, AssignmentReturnValue*(*)(DreamMugenAssignment**, DreamPlayer*, int*)>& getActiveMugenAssignmentArrayMap() {
 	return gVariableHandler.mArrays;
 }
 

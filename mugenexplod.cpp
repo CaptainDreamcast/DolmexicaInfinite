@@ -76,7 +76,7 @@ typedef struct {
 
 
 static struct {
-	map<int, Explod> mExplods;
+	unordered_map<int, Explod> mExplods;
 } gMugenExplod;
 
 static void loadExplods(void* tData) {

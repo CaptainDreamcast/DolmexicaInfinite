@@ -12,6 +12,7 @@
 #include <prism/mugenanimationhandler.h>
 #include <prism/mugentexthandler.h>
 #include <prism/system.h>
+#include <prism/screeneffect.h>
 
 #include "stage.h"
 #include "playerdefinition.h"
@@ -1178,7 +1179,7 @@ static void loadContinue(MugenDefScript* tScript) {
 }
 
 static void loadEnvironmentColorEffects() {
-	gFightUIData.mEnvironmentEffects.mWhiteTexture = createWhiteTexture();
+	gFightUIData.mEnvironmentEffects.mWhiteTexture = getEmptyWhiteTexture();
 	gFightUIData.mEnvironmentEffects.mAnimationElement = playOneFrameAnimationLoop(Vector3D(0, 0, 0), &gFightUIData.mEnvironmentEffects.mWhiteTexture);
 	setAnimationScale(gFightUIData.mEnvironmentEffects.mAnimationElement, Vector3D(0, 0, 0), Vector3D(0, 0, 0));
 
@@ -1342,10 +1343,6 @@ static void unloadHitSparks() {
 	gFightUIData.mHitSparks.clear();
 }
 
-static void unloadEnvironmentColorEffects() {
-	unloadTexture(gFightUIData.mEnvironmentEffects.mWhiteTexture);
-}
-
 
 static void unloadFightUI(void* tData) {
 	(void)tData;
@@ -1359,7 +1356,6 @@ static void unloadFightUI(void* tData) {
 	unloadKO();
 
 	unloadHitSparks();
-	unloadEnvironmentColorEffects();
 }
 
 static int updateSingleHitSpark(void* tCaller, HitSpark& tData) {

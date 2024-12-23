@@ -183,6 +183,12 @@ code, tt {
   <li>Feature: New character parameter in select.def called "displayname" that can be used to override name in select screen.</li>
   <li>Feature: New system.def parameter in [Select info] called "skipcharscriptloading" that skips loading the character script (useful to reduce strain on Dreamcast disc reader). Does not work in Credits mode, nor when the "portraits" parameter is set to 1 (its default value).</li>
   <li>Feature: localcoord parameter in [Info] group of system.def can be used to set coordinate system used in menus now.</li>
+  <li>Feature: [Dreamcast] Loading screen changes.</li>
+  <li>Feature: [Vita] Removed vitaGL dependency in favor of vita2D/native Vita SDK functionality. In particular this results in:</li>
+  <li>Feature: [Vita] Much improved performance.</li>
+  <li>Feature: [Vita] Dolmexica no longer needs to have libshacccg.suprx (the vitaGL shader compiler) extracted on the Vita.</li>
+  <li>Feature: [Vita] Vita3K support (with heavy graphical glitches though, still neat for some pre-testing).</li>
+  <li>Bugfix: [Vita] Less random crashes.</li>
   <li>Bugfix: [General] Hitbox definitions now also work with only clsn[]</li>
   <li>Bugfix: [General] More robust with characters that have \ in their select.def name</li>
   <li>Bugfix: [General] Fight fonts now only overwrite system fonts, system fonts that are not overwritten remain available for fight motif</li>
@@ -190,6 +196,7 @@ code, tt {
   <li>Bugfix: [General] Unclosed group definitions (no closing ]) are handled more gracefully</li>
   <li>Bugfix: [General] State controllers without type default to Null controllers now</li>
   <li>Bugfix: [General] Stages somewhat support hires parameter under stageinfo group (localcoord will still override it)</li>
+  <li>Bugfix: [General] Dolmexica can run inside unicode folders now (e.g. where Dolmexica's root folder is located). You should NOT use unicode characters in Dolmexica folders though, those will still not work.</li>
   <li>Bugfix: [Osu Mode] Characters can no longer pause the music</li>
   </ul>
   </div>

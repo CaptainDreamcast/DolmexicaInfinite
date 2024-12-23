@@ -16,7 +16,7 @@
         <TextBlock HorizontalAlignment="Left" Margin="70,274,0,0" TextWrapping="Wrap" Text="Title ID (9 chars):" VerticalAlignment="Top"/>
 
         <TextBox HorizontalAlignment="Left" x:Name="GameVersion" Height="23" Margin="186,327,0,0" TextWrapping="Wrap" Text="01.00" VerticalAlignment="Top" Width="260"/>
-        <TextBlock HorizontalAlignment="Left" Margin="70,328,0,0" TextWrapping="Wrap" Text="Title ID (9 chars):" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="70,328,0,0" TextWrapping="Wrap" Text="Version (XX.YY):" VerticalAlignment="Top"/>
 
         <Button Name="CreateVPKButton" Content="Create VPK" HorizontalAlignment="Left" Margin="371,367,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.151,0.473" Click="CreateVPKButton_Click"/>
 
