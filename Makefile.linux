@@ -1,10 +1,9 @@
 include Makefile.common
 
 TARGET = Dolmexica_Infinite_Linux
-LIBPRISM_PATH = ../prism
+LIBPRISM_PATH = ./external/prism
 CXXFLAGS += -DNDEBUG -Iinclude -I$(LIBPRISM_PATH)/include -I$(LIBPRISM_PATH)/external/imgui/inc `sdl2-config --cflags` -std=c++17 -O2
 CXXLIBS += -L$(LIBPRISM_PATH) -lprism -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lSDL2main -lstdc++ -lm -lpng -lzstd -lpthread -lGL -lGLEW
-# -L$(LIBPRISM_PATH) -lprism -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lSDL2main -lstdc++ -lm -lpng -lzstd -lpthread -lGL -lGLEW
 
 OBJS += $(LIBPRISM_PATH)/external/imgui/src/imgui.o
 OBJS += $(LIBPRISM_PATH)/external/imgui/src/imgui_widgets.o
