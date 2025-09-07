@@ -13,6 +13,9 @@ OBJS += $(LIBPRISM_PATH)/external/imgui/src/imgui_tables.o
 OBJS += $(LIBPRISM_PATH)/linux/debugimgui_linux.o
 OBJS += $(LIBPRISM_PATH)/external/imgui/src/imgui_impl_opengl3.o
 
+ARCH  	 := $(shell uname -m)
+UNAME_S  := $(shell uname -s)
+
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
@@ -27,3 +30,6 @@ $(TARGET): $(OBJS)
 clean:
 	-rm -f *.o
 	-rm -rf linux/*.o
+
+zip:
+	zip -9 -r Dolmexica-Infinite-${UNAME_S}-${ARCH}.zip ${TARGET}
