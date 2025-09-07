@@ -1,5 +1,5 @@
-[![CI](https://github.com/humbertodias/DolmexicaInfinite/actions/workflows/ci.yml/badge.svg)](https://github.com/humbertodias/DolmexicaInfinite/actions/workflows/ci.yml)
-[![CD](https://github.com/humbertodias/DolmexicaInfinite/actions/workflows/cd.yml/badge.svg)](https://github.com/humbertodias/DolmexicaInfinite/actions/workflows/cd.yml)
+[![CI](https://github.com/CaptainDreamcast/DolmexicaInfinite/actions/workflows/ci.yml/badge.svg)](https://github.com/CaptainDreamcast/DolmexicaInfinite/actions/workflows/ci.yml)
+[![CD](https://github.com/CaptainDreamcast/DolmexicaInfinite/actions/workflows/cd.yml/badge.svg)](https://github.com/CaptainDreamcast/DolmexicaInfinite/actions/workflows/cd.yml)
 
 # Dolmexica Infinite
 Something resembling a Mugen port for Sega Dreamcast.
