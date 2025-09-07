@@ -17,7 +17,7 @@ jobs:
           submodules: true 
 
       - name: Install dependencies
-        run: sudo apt update -y && sudo apt install -y build-essential libreadline-dev libsdl2-dev libglew-dev
+        run: sudo apt update -y && sudo apt install -y build-essential libreadline-dev libsdl2-dev libglew-dev libpng-dev
 
       - name: External submodule (Prism)
         run: cd external/prism && make -f Makefile.linux
