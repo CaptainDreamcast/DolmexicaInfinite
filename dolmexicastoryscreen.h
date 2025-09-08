@@ -263,3 +263,5 @@ void setDolmexicaStoryCameraFocusY(double y);
 void setDolmexicaStoryCameraZoom(double tScale);
 
 int getDolmexicaStoryCoordinateP();
+
+void setDolmexicaStoryDebugStartState(int tFromState, int tDebugStartState);

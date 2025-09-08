@@ -20,6 +20,7 @@
 #include "randomwatchmode.h"
 #include "config.h"
 #include "mugenstatehandler.h"
+#include "dolmexicastoryscreen.h"
 
 typedef struct {
 	int mPreviousValue;
@@ -604,6 +605,26 @@ static std::string airJumpCB(void* /*tCaller*/, const std::string& tCommand) {
 	return "";
 }
 
+static std::string setDebugStateCB(void* /*tCaller*/, const std::string& tCommand) {
+	const auto words = splitCommandString(tCommand);
+	int debugStartState = 0;
+	int fromState = 0; 
+	if(words.size() >= 3)
+	{
+		fromState = atoi(words[2].c_str());
+	}
+	if (words.size() < 2) 
+	{
+		debugStartState = getDolmexicaStoryStateNumber(getDolmexicaStoryRootInstance());
+	}
+	else
+	{
+		debugStartState = atoi(words[1].c_str());
+	}
+	setDolmexicaStoryDebugStartState(fromState, debugStartState);
+	return "";
+}
+
 void initDolmexicaDebug()
 {
 	gDolmexicaDebugData = new DolmexicaDebugData();
@@ -637,6 +658,7 @@ void initDolmexicaDebug()
 	addPrismDebugConsoleCommand("fullstagetest", fullStageTestCB);
 	addPrismDebugConsoleCommand("randomseed", randomSeedCB);
 	addPrismDebugConsoleCommand("airjump", airJumpCB);
+	addPrismDebugConsoleCommand("setdebugstate", setDebugStateCB);
 }
 
 static void loadDolmexicaDebugHandler(void* tData) {

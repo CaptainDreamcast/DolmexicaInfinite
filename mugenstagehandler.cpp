@@ -234,7 +234,7 @@ static void updateSingleStaticStageElementBasePosition(StaticStageHandlerElement
 	else {
 		positionDelta = cameraOffset * e->mDelta;
 	}
-	const auto positionDeltaInElementSpace = positionDelta * e->mDrawScale * e->mParallaxScale;
+	const auto positionDeltaInElementSpace = transformDreamCoordinatesVector2D(positionDelta * e->mDrawScale * e->mParallaxScale, getDreamMugenStageHandlerCameraCoordinateP(), e->mCoordinates.x);
 	e->mTileBasePosition = (e->mStart + e->mSinOffset + e->mSinOffsetInternal + positionDeltaInElementSpace) - Vector2D(-e->mCoordinates.x / 2, 0);
 
 	const auto scaleDelta = cameraOffset * e->mScaleDelta;

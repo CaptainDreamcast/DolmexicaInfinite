@@ -221,6 +221,15 @@ static void loadStageBound(MugenDefScript* s) {
 	gStageData.mBound.mScreenRight = getMugenDefFloatOrDefault(s, "bound", "screenright", 0);
 }
 
+static void sanitizeLocalCoordinates()
+{
+	if ((gStageData.mStageInfo.mLocalCoordinates.y * 4) / 3 != gStageData.mStageInfo.mLocalCoordinates.x)
+	{
+		logWarningFormat("Unsupported coordinate system %d %d, adjusting width to 4:3 resolution", gStageData.mStageInfo.mLocalCoordinates.x, gStageData.mStageInfo.mLocalCoordinates.y);
+		gStageData.mStageInfo.mLocalCoordinates.x = (gStageData.mStageInfo.mLocalCoordinates.y * 4) / 3;
+	}
+}
+
 static void loadStageStageInfo(MugenDefScript* s) {
 	gStageData.mStageInfo.mZOffset = getMugenDefFloatOrDefault(s, "stageinfo", "zoffset", 0);
 	gStageData.mStageInfo.mHasZOffsetLink = isMugenDefNumberVariable(s, "stageinfo", "zoffsetlink");
@@ -242,6 +251,7 @@ static void loadStageStageInfo(MugenDefScript* s) {
 			gStageData.mStageInfo.mZOffset *= 2; // based on tekken vs street fighter sfxtk stages among others
 		}
 	}
+	sanitizeLocalCoordinates();
 
 	gStageData.mStageInfo.mScale.x = getMugenDefFloatOrDefault(s, "stageinfo", "xscale", 1);
 	gStageData.mStageInfo.mScale.y = getMugenDefFloatOrDefault(s, "stageinfo", "yscale", 1);
@@ -480,7 +490,7 @@ static void loadStageBackgroundDefinitionAndElements(char* tPath, MugenDefScript
 static void setStageCamera() {
 	double sizeX = gStageData.mCamera.mBoundRight - gStageData.mCamera.mBoundLeft;
 	double sizeY = gStageData.mCamera.mBoundLow - gStageData.mCamera.mBoundHigh;
-	setDreamMugenStageHandlerCameraRange(GeoRectangle2D(gStageData.mCamera.mBoundLeft, gStageData.mCamera.mBoundHigh, sizeX, sizeY));
+	setDreamMugenStageHandlerCameraRange(transformDreamCoordinatesGeoRectangle2D(GeoRectangle2D(gStageData.mCamera.mBoundLeft, gStageData.mCamera.mBoundHigh, sizeX, sizeY), gStageData.mStageInfo.mLocalCoordinates.x, getDreamMugenStageHandlerCameraCoordinateP()));
 }
 
 static void loadStage(void* tData)
@@ -566,10 +576,12 @@ static void updateCameraMovementX() {
 
 	if (lx <= 0 && rx > 0) {
 		double delta = min(rx, -lx);
+		delta = transformDreamCoordinates(delta, gStageData.mStageInfo.mLocalCoordinates.x, getDreamMugenStageHandlerCameraCoordinateP());
 		addDreamMugenStageHandlerCameraPositionX(delta);
 	}
 	else if (lx > 0 && rx <= 0) {
 		double delta = min(lx, -rx);
+		delta = transformDreamCoordinates(delta, gStageData.mStageInfo.mLocalCoordinates.x, getDreamMugenStageHandlerCameraCoordinateP());
 		addDreamMugenStageHandlerCameraPositionX(-delta);
 	}
 }
@@ -619,7 +631,9 @@ ActorBlueprint getDreamStageBP() {
 
 void setDreamStageMugenDefinition(const char * tPath, const char* tCustomMusicPath)
 {
-	strcpy(gStageData.mDefinitionPath, tPath);
+	std::string sanitizedPath = tPath ? tPath : "";
+	cleanPathSlashes(sanitizedPath);
+	strcpy(gStageData.mDefinitionPath, sanitizedPath.c_str());
 	strcpy(gStageData.mCustomMusicPath, tCustomMusicPath);
 }
 

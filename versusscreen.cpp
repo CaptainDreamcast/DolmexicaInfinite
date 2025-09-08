@@ -9,6 +9,7 @@
 #include <prism/timer.h>
 #include <prism/mugentexthandler.h>
 #include <prism/clipboardhandler.h>
+#include <prism/log.h>
 
 #include "mugensound.h"
 #include "scriptbackground.h"
@@ -82,12 +83,23 @@ static void loadPlayerAnimationsAndName(int i) {
 	getMugenDefStringOrDefault(file, &script, "files", name, "");
 	int hasPalettePath = strcmp("", file);
 	sprintf(palettePath, "%s%s", path, file);
+	if(!isFile(palettePath)){
+		logErrorFormat("Unable to find palette file %s. Ignoring.", palettePath);
+		hasPalettePath = 0;
+	}
 
 	getMugenDefStringOrDefault(file, &script, "files", "sprite", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);
 	player->mSprites = loadMugenSpriteFilePortraits(scriptPath, hasPalettePath, palettePath);
-	player->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "displayname");
+	if (isMugenDefStringVariable(&script, "info", "displayname"))
+	{
+		player->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "displayname");
+	}
+	else
+	{
+		player->mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "name");
+	}
 
 	unloadMugenDefScript(&script);
 

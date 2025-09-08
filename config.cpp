@@ -292,7 +292,16 @@ static std::string findFontPath(const std::string& tFile, const std::string& tFo
 }
 
 static void loadMugenFontsFromScript(MugenDefScript* tScript, const char* tGroupName, const std::string& tFolder) {
-	addMugenFont(-1, "font/f4x6.fnt");
+	auto hasDefaultFont = false;
+	const auto potentialDefaultFonts = { "font/f4x6.fnt", "font/f-4x6.fnt" };
+	for (auto& potentialDefaultFont : potentialDefaultFonts) {
+		const auto testPath = findFontPath(potentialDefaultFont, "");
+		if (isFile(testPath)) {
+			addMugenFont(-1, testPath.c_str());
+			hasDefaultFont = true;
+			break;
+		}
+	}
 
 	int i;
 	for (i = 0; i < 100; i++) {
@@ -302,6 +311,11 @@ static void loadMugenFontsFromScript(MugenDefScript* tScript, const char* tGroup
 			auto file = getSTLMugenDefStringVariable(tScript, tGroupName, name);
 			file = findFontPath(file, tFolder);
 			addMugenFont(i, file.c_str());
+			if(!hasDefaultFont)
+			{
+				addMugenFont(-1, file.c_str());
+				hasDefaultFont = true;
+			}
 		}
 	}
 }

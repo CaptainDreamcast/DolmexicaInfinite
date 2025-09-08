@@ -11,6 +11,7 @@
 #include <prism/mugentexthandler.h>
 #include <prism/input.h>
 #include <prism/geometry.h>
+#include <prism/log.h>
 
 #include "config.h"
 #include "playerdefinition.h"
@@ -157,12 +158,24 @@ static void loadPlayerAnimationsAndName(MugenDefScript* tPlayerScript, const cha
 	getMugenDefStringOrDefault(file, tPlayerScript, "files", name, "");
 	int hasPalettePath = strcmp("", file);
 	sprintf(palettePath, "%s%s", tPath, file);
-
+	if(!isFile(palettePath)){
+		logErrorFormat("Unable to find palette file %s. Ignoring.", palettePath);
+		hasPalettePath = 0;
+	}
+	
 	getMugenDefStringOrDefault(file, tPlayerScript, "files", "sprite", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", tPath, file);
 	gVictoryQuoteScreenData.mPlayer.mSprites = loadMugenSpriteFilePortraits(scriptPath, hasPalettePath, palettePath);
-	const auto playerName = getSTLMugenDefStringVariable(tPlayerScript, "info", "displayname");
+	std::string playerName;
+	if (isMugenDefStringVariable(tPlayerScript, "info", "displayname"))
+	{
+		playerName = getSTLMugenDefStringVariable(tPlayerScript, "info", "displayname");
+	}
+	else
+	{
+		playerName = getSTLMugenDefStringVariable(tPlayerScript, "info", "name");
+	}
 
 	auto pos = gVictoryQuoteScreenData.mHeader.mPlayer.mOffset;
 	pos.z = VICTORY_QUOTE_SCREEN_PLAYER_IMAGE_Z;

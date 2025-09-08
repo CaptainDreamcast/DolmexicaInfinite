@@ -17,7 +17,7 @@ tools\release\build_tools\dreamcast\scramble.exe 1ST_READ.BIN "build_dreamcast\f
 
 REM create cdi
 cd "build_dreamcast"
-call make_cdi.bat TEST test
+call make_cdi.bat TEST test 302
 
 REM run cdi
 C:\DEV\PLATFORMS\DREAMCAST\EMU2\flycast.exe test.cdi

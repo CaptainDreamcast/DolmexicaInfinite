@@ -203,6 +203,10 @@ static void loadPlayerFiles(char* tPath, DreamPlayer* tPlayer, MugenDefScript* t
 	getMugenDefStringOrDefault(file, tScript, "files", name, "");
 	int hasPalettePath = strcmp("", file);
 	sprintf(palettePath, "%s%s", path, file);
+	if(!isFile(palettePath)){
+		logErrorFormat("Unable to find palette file %s. Ignoring.", palettePath);
+		hasPalettePath = 0;
+	}
 	getMugenDefStringOrDefault(file, tScript, "files", "sprite", "");
 	assert(strcmp("", file));
 	sprintf(scriptPath, "%s%s", path, file);

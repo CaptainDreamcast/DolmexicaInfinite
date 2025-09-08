@@ -28,7 +28,9 @@ namespace MakeYourOwnGameKitGuiDreamcast
 
         private void CreateCDIButton_Click(object sender, RoutedEventArgs e)
         {
-            var command = "make_cdi.bat " + CDLabelName.Text + " " + CDIName.Text;
+            var byteCountAudio = UInt64.Parse(BufferSizeMb.Text) * 1024 * 1024;
+            var sectorsAudio = Math.Max((ulong)Math.Ceiling(byteCountAudio / 2352.0), 302u);
+            var command = "make_cdi.bat " + CDLabelName.Text + " " + CDIName.Text + " " + sectorsAudio.ToString();
             var processInfo = new ProcessStartInfo("cmd.exe", "/c " + command);
             processInfo.WorkingDirectory = "dreamcast";
             var process = Process.Start(processInfo);

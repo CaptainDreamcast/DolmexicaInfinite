@@ -174,6 +174,25 @@ code, tt {
 <div class="document" id="m-u-g-e-n-update-history">
 <h1 class="title">Dolmexica Infinite Update History</h1>
 <p>Updates shown are in order of most recent to least recent.</p>
+<div class="section" id="new-in-1-7">
+  <h1>New in 1.7</h1>
+  <p>09 September 2025</p>
+  <div class="section" id="general">
+  <h2>General updates</h2>
+  <ul class="simple">
+  <li>Feature: [Dreamcast] Set custom size for audio track in CDI generation (for padding).</li>
+  <li>Bugfix: [General] SFFv2 files will use the alpha in their palette entries when the first palette entry is not the palette's alpha entry.</li>
+  <li>Bugfix: [General] SFFv2 files with paletted PNG files and bit depth 8 will use the palettes from the SFF instead of the PNG palette now.</li>
+  <li>Bugfix: [General] Stages with coordinates that are not in 4:3 resolution will be adjusted to fit 4:3. For example, 1920x1080 will become 1440x1080. This makes widescreen stages work better.</li>
+  <li>Bugfix: [General] Scrolling in hi-res stages should work again now.</li>
+  <li>Bugfix: [General] font/f-4x6.fnt will be tried to be loaded as a default font if font/f4x6.fnt was not found (Just keep in mind Dreamcast games do not support minuses in their names). If neither is present, the first font in the system.def becomes the system font.</li>
+  <li>Bugfix: [General] Characters that do not define a displayname will fall back to their name parameter for that now.</li>
+  <li>Bugfix: [General] If characters try to use a palette file that does not exist, the palette file will be ignored.</li>
+  <li>Bugfix: [General] Backslashes in select.def stage paths are treated as forward slashes now and will no longer cause issues.</li>
+  <li>Bugfix: [General] Fix for rare potential crash with repeating group names plus group names with decreasing numbers at the end.</li>
+  </ul>
+  </div>
+  </div>
 <div class="section" id="new-in-1-6">
   <h1>New in 1.6</h1>
   <p>27 December 2024</p>

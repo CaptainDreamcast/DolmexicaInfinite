@@ -523,6 +523,10 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 			getMugenDefStringOrDefault(file, &script, "files", name, "");
 			int hasPalettePath = strcmp("", file);
 			sprintf(palettePath, "%s%s", path, file);
+			if(!isFile(palettePath)){
+				logErrorFormat("Unable to find palette file %s. Ignoring.", palettePath);
+				hasPalettePath = 0;
+			}
 
 			getMugenDefStringOrDefault(file, &script, "files", "sprite", "");
 			assert(strcmp("", file));
@@ -536,7 +540,14 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 			}
 		}
 
-		e.mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "displayname");
+		if (isMugenDefStringVariable(&script, "info", "displayname"))
+		{
+			e.mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "displayname");
+		}
+		else
+		{
+			e.mDisplayCharacterName = getAllocatedMugenDefStringVariable(&script, "info", "name");
+		}
 
 		loadMenuCharacterCredits(e, &script);
 		

@@ -53,6 +53,9 @@ static struct {
 	int mHasFonts;
 
 	map<int, StoryInstance> mHelperInstances;
+
+	int mDebugStartState;
+	int mDebugStartStateFrom;
 } gDolmexicaStoryScreenData;
 
 #ifdef _WIN32
@@ -1220,12 +1223,20 @@ int getDolmexicaStoryTextIDFromName(StoryInstance* tInstance, const std::string&
 
 void changeDolmexicaStoryState(StoryInstance* tInstance, int tNextState)
 {
+	if(gDolmexicaStoryScreenData.mDebugStartState && getDolmexicaStoryStateNumber(tInstance) == gDolmexicaStoryScreenData.mDebugStartStateFrom && tInstance == getDolmexicaStoryRootInstance())
+	{
+		tNextState = gDolmexicaStoryScreenData.mDebugStartState;
+	}
 	changeDreamHandledStateMachineState(tInstance->mRegisteredStateMachine, tNextState);
 	setDreamRegisteredStateTimeInState(tInstance->mRegisteredStateMachine, 0);
 }
 
 void changeDolmexicaStoryStateOutsideStateHandler(StoryInstance* tInstance, int tNextState)
 {
+	if(gDolmexicaStoryScreenData.mDebugStartState && getDolmexicaStoryStateNumber(tInstance) == gDolmexicaStoryScreenData.mDebugStartStateFrom && tInstance == getDolmexicaStoryRootInstance())
+	{
+		tNextState = gDolmexicaStoryScreenData.mDebugStartState;
+	}
 	changeDreamHandledStateMachineState(tInstance->mRegisteredStateMachine, tNextState);
 	setDreamRegisteredStateTimeInState(tInstance->mRegisteredStateMachine, -1);
 }
@@ -1351,7 +1362,7 @@ void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* t
 		removeDolmexicaStoryCharacter(tInstance, tID);
 	}
 
-	StoryCharacter e;
+	StoryCharacter& e = tInstance->mStoryCharacters[tID];
 	e.mName = tName;
 
 	char file[1024];
@@ -1369,6 +1380,10 @@ void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* t
 	getMugenDefStringOrDefault(file, &script, "files", name, "");
 	int hasPalettePath = strcmp("", file);
 	sprintf(palettePath, "%s%s", path, file);
+	if(!isFile(palettePath)){
+		logErrorFormat("Unable to find palette file %s. Ignoring.", palettePath);
+		hasPalettePath = 0;
+	}
 	getMugenDefStringOrDefault(file, &script, "files", "sprite", "");
 	sprintf(fullPath, "%s%s", path, file);
 
@@ -1378,13 +1393,12 @@ void addDolmexicaStoryCharacter(StoryInstance* tInstance, int tID, const char* t
 	sprintf(fullPath, "%s%s", path, file);
 	if (!isFile(fullPath)) {
 		logWarningFormat("Unable to load animation file %s from def file %s. Ignoring.", fullPath, tName);
+		tInstance->mStoryCharacters.erase(tID);
 		return;
 	}
 	e.mAnimations = loadMugenAnimationFile(fullPath);
 
 	unloadMugenDefScript(&script);
-
-	tInstance->mStoryCharacters[tID] = e;
 
 	const auto z = DOLMEXICA_STORY_ANIMATION_BASE_Z + tID * DOLMEXICA_STORY_ID_Z_FACTOR;
 	initDolmexicaStoryAnimation(tInstance->mStoryCharacters[tID].mAnimation, tID, tAnimation, tPosition.xyz(z), &tInstance->mStoryCharacters[tID].mSprites, &tInstance->mStoryCharacters[tID].mAnimations);
@@ -1723,4 +1737,10 @@ void setDolmexicaStoryCameraZoom(double tScale)
 int getDolmexicaStoryCoordinateP()
 {
 	return COORD_P;
+}
+
+void setDolmexicaStoryDebugStartState(int tFromState, int tDebugStartState)
+{
+	gDolmexicaStoryScreenData.mDebugStartStateFrom = tFromState;
+	gDolmexicaStoryScreenData.mDebugStartState = tDebugStartState;
 }
