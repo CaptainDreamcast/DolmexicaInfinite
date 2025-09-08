@@ -1,0 +1,35 @@
+include Makefile.common
+
+TARGET = Dolmexica_Infinite_Linux
+LIBPRISM_PATH = ./external/prism
+CXXFLAGS += -DNDEBUG -Iinclude -I$(LIBPRISM_PATH)/include -I$(LIBPRISM_PATH)/external/imgui/inc `sdl2-config --cflags` -std=c++17 -O2
+CXXLIBS += -L$(LIBPRISM_PATH) -lprism -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lSDL2main -lstdc++ -lm -lpng -lzstd -lpthread -lGL -lGLEW
+
+OBJS += $(LIBPRISM_PATH)/external/imgui/src/imgui.o
+OBJS += $(LIBPRISM_PATH)/external/imgui/src/imgui_widgets.o
+OBJS += $(LIBPRISM_PATH)/external/imgui/src/imgui_impl_sdl2.o
+OBJS += $(LIBPRISM_PATH)/external/imgui/src/imgui_draw.o
+OBJS += $(LIBPRISM_PATH)/external/imgui/src/imgui_tables.o
+OBJS += $(LIBPRISM_PATH)/linux/debugimgui_linux.o
+OBJS += $(LIBPRISM_PATH)/external/imgui/src/imgui_impl_opengl3.o
+
+ARCH  	 := $(shell uname -m)
+UNAME_S  := $(shell uname -s)
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) -o $(TARGET) $(OBJS) `sdl2-config --cflags` $(CXXLIBS)
+
+%.o : %.cpp
+	$(CC) -c $(CXXFLAGS) -o $@ $<
+
+%.o : %.c
+	$(CC) -c -o $@ $<
+
+clean:
+	-rm -f *.o
+	-rm -rf linux/*.o
+
+zip:
+	zip -9 -r Dolmexica-Infinite-${UNAME_S}-${ARCH}.zip ${TARGET}
