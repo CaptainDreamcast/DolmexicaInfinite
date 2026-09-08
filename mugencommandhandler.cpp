@@ -14,6 +14,7 @@
 
 #include "gamelogic.h"
 #include "fightnetplay.h"
+#include "fightdeterminism.h"
 
 using namespace std;
 
@@ -648,6 +649,7 @@ static void updateInputMasks() {
 	for (i = 0; i < 2; i++) {
 		updateInputMask(i);
 	}
+	updateFightDeterminismInputHook(gMugenCommandHandler.mHeldMask);
 }
 
 static void updateSingleRegisteredCommand(RegisteredMugenCommand& tData) {

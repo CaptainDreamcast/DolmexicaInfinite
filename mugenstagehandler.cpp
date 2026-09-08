@@ -30,8 +30,8 @@ static struct {
 	Position2D mCameraEffectPosition;
 	Position mCameraZoom;
 
-	double mTimeDilatationNow;
-	double mTimeDilatation;
+	float mTimeDilatationNow;
+	float mTimeDilatation;
 
 	Position2D mCameraShakeOffset;
 
@@ -87,7 +87,7 @@ typedef struct{
 	StaticStageHandlerElement* e;
 } updateStageTileCaller;
 
-static int getTileAmountSingleAxis(int tSize, int tScreenSize, double tDelta, double tInvertedMinimumWidthFactor) {
+static int getTileAmountSingleAxis(int tSize, int tScreenSize, float tDelta, float tInvertedMinimumWidthFactor) {
 	const auto length = (int)(((2 * tScreenSize) + (tSize * tInvertedMinimumWidthFactor)) * (1 / tDelta));
 	return int(length / (tSize * (1.0 / tInvertedMinimumWidthFactor)) + 1);
 }
@@ -104,7 +104,7 @@ static void updateSingleStaticStageElementTileTiling(StaticStageHandlerElement* 
 	const auto amount = getTileAmount(e);
 	auto offset = getAnimationFirstElementSpriteOffset(e->mAnimation, e->mSprites);
 	if (e->mIsParallax) {
-		offset.x = getAnimationFirstElementSpriteSize(e->mAnimation, e->mSprites).x / 2.0;
+		offset.x = getAnimationFirstElementSpriteSize(e->mAnimation, e->mSprites).x / 2.0f;
 	}
 
 	int totalSizeX, totalSizeY;
@@ -120,11 +120,11 @@ static void updateSingleStaticStageElementTileTiling(StaticStageHandlerElement* 
 
 	const auto sz = getScreenSize();
 	if (e->mTile.x == 1) {
-		const auto right = tSingleAnimation->mReferencePosition.x * (1.0 / tTotalScale.x) + e->mTileSize.x - offset.x + std::max(0.0, getMugenAnimationShearLowerOffsetX(tSingleAnimation->mElement));
+		const auto right = tSingleAnimation->mReferencePosition.x * (1.0 / tTotalScale.x) + e->mTileSize.x - offset.x + std::max(0.0f, getMugenAnimationShearLowerOffsetX(tSingleAnimation->mElement));
 		if (right < 0) {
 			tSingleAnimation->mOffset.x += amount.x*totalSizeX;
 		}
-		const auto left = tSingleAnimation->mReferencePosition.x * (1.0 / tTotalScale.x) - offset.x + std::min(0.0, getMugenAnimationShearLowerOffsetX(tSingleAnimation->mElement));
+		const auto left = tSingleAnimation->mReferencePosition.x * (1.0 / tTotalScale.x) - offset.x + std::min(0.0f, getMugenAnimationShearLowerOffsetX(tSingleAnimation->mElement));
 		if (left > sz.x) {
 			tSingleAnimation->mOffset.x -= amount.x*totalSizeX;
 		}
@@ -160,10 +160,10 @@ static void updateSingleStaticStageElementTilePositionAndScale(StaticStageHandle
 		bottomPosition.x -= (-e->mCoordinates.x / 2);
 		bottomPosition = vecAdd(bottomPosition, tSingleAnimation->mOffset);
 		bottomPosition = vecScale2D(bottomPosition, e->mGlobalScale * e->mParallaxScale);
-		double shearOffsetToFitTiling;
+		float shearOffsetToFitTiling;
 		if (e->mAnimationReferences.size() > 1) {
-			const auto centerOffset = (e->mCoordinates.x / 2) - tSingleAnimation->mReferencePosition.x * (1.0 / oTotalScale.x);
-			shearOffsetToFitTiling = centerOffset * (1.0 - e->mWidth.y);
+			const auto centerOffset = (e->mCoordinates.x / 2) - tSingleAnimation->mReferencePosition.x * (1.0f / oTotalScale.x);
+			shearOffsetToFitTiling = centerOffset * (1.0f - e->mWidth.y);
 		}
 		else {
 			shearOffsetToFitTiling = 0;
@@ -172,11 +172,15 @@ static void updateSingleStaticStageElementTilePositionAndScale(StaticStageHandle
 	}
 }
 
+static GeoRectangle2D getStaticStageElementConstraintRectangleInScreenSpace(StaticStageHandlerElement* e, const Position2D& tWindowDelta) {
+	return scaleGeoRectangleByFactor2D(tWindowDelta + e->mConstraintRectangle, e->mGlobalScale);
+}
+
 static void updateSingleStaticStageElementTileConstraintRectangle(StaticStageHandlerElement* e, StageElementAnimationReference* tSingleAnimation) {
 	if (e->mConstraintRectangleDelta.x == 0.0 && e->mConstraintRectangleDelta.y == 0.0) return;
-	const auto windowDelta = (Position2D(getDreamCameraPositionX(getDreamMugenStageHandlerCameraCoordinateP()), getDreamCameraPositionY(getDreamMugenStageHandlerCameraCoordinateP())) * -1.0) * e->mConstraintRectangleDelta;
-	const auto movedConstraintRectangle = e->mConstraintRectangle + windowDelta;
-	setMugenAnimationConstraintRectangle(tSingleAnimation->mElement, movedConstraintRectangle);
+	const auto cameraOffset = Position2D(getDreamCameraPositionX(getDreamMugenStageHandlerCameraCoordinateP()), getDreamCameraPositionY(getDreamMugenStageHandlerCameraCoordinateP())) * -1.0;
+	const auto windowDelta = transformDreamCoordinatesVector2D(cameraOffset * e->mConstraintRectangleDelta, getDreamMugenStageHandlerCameraCoordinateP(), e->mCoordinates.x);
+	setMugenAnimationConstraintRectangle(tSingleAnimation->mElement, getStaticStageElementConstraintRectangleInScreenSpace(e, windowDelta));
 }
 
 static void updateSingleStaticStageElementTileVisibility(StaticStageHandlerElement* e, StageElementAnimationReference* tSingleAnimation) { 
@@ -203,7 +207,7 @@ static void updateSingleStaticStageElementVisibilityFlag(StaticStageHandlerEleme
 	e->mInvisibleFlag = 0;
 }
 
-static void updateSingleStaticStageElementSingleSin(StaticStageHandlerElement* e, double& oTarget, const Vector3D& tSin) {
+static void updateSingleStaticStageElementSingleSin(StaticStageHandlerElement* e, float& oTarget, const Vector3D& tSin) {
 	if (!tSin.x) return;
 	oTarget = calculateStageElementSinOffset(e->mSinTime, tSin.x, tSin.y, tSin.z);
 }
@@ -262,7 +266,7 @@ static void updateSingleStaticStageElementCB(void* tCaller, StaticStageHandlerEl
 static void updateCamera() {
 	const auto delta = gMugenStageHandlerData.mCameraTargetPosition - gMugenStageHandlerData.mCameraPositionPreEffects;
 
-	gMugenStageHandlerData.mCameraPositionPreEffects = gMugenStageHandlerData.mCameraPositionPreEffects + (delta * 0.95);
+	gMugenStageHandlerData.mCameraPositionPreEffects = gMugenStageHandlerData.mCameraPositionPreEffects + (delta * 0.95f);
 	gMugenStageHandlerData.mCameraPosition = (gMugenStageHandlerData.mCameraPositionPreEffects + gMugenStageHandlerData.mCameraShakeOffset).xyz(0.0);
 }
 
@@ -304,12 +308,17 @@ void setDreamMugenStageHandlerCameraRange(const GeoRectangle2D& tRect)
 	gMugenStageHandlerData.mCameraRange = tRect;
 }
 
+GeoRectangle2D getDreamMugenStageHandlerCameraRange()
+{
+	return gMugenStageHandlerData.mCameraRange;
+}
+
 void setDreamMugenStageHandlerCameraPosition(const Position2D& p)
 {
 	gMugenStageHandlerData.mCameraTargetPosition = p;
 }
 
-void addDreamMugenStageHandlerCameraPositionX(double tX)
+void addDreamMugenStageHandlerCameraPositionX(float tX)
 {
 	gMugenStageHandlerData.mCameraTargetPosition.x += tX;
 	gMugenStageHandlerData.mCameraTargetPosition = clampPositionToGeoRectangle(gMugenStageHandlerData.mCameraTargetPosition, gMugenStageHandlerData.mCameraRange);
@@ -317,20 +326,20 @@ void addDreamMugenStageHandlerCameraPositionX(double tX)
 
 }
 
-void setDreamMugenStageHandlerCameraPositionX(double tX)
+void setDreamMugenStageHandlerCameraPositionX(float tX)
 {
 	gMugenStageHandlerData.mCameraTargetPosition.x = tX;
 	gMugenStageHandlerData.mCameraTargetPosition = clampPositionToGeoRectangle(gMugenStageHandlerData.mCameraTargetPosition, gMugenStageHandlerData.mCameraRange);
 	gMugenStageHandlerData.mCameraPositionPreEffects.x = gMugenStageHandlerData.mCameraTargetPosition.x;
 }
 
-void addDreamMugenStageHandlerCameraPositionY(double tY) {
+void addDreamMugenStageHandlerCameraPositionY(float tY) {
 	gMugenStageHandlerData.mCameraTargetPosition.y += tY;
 	gMugenStageHandlerData.mCameraTargetPosition = clampPositionToGeoRectangle(gMugenStageHandlerData.mCameraTargetPosition, gMugenStageHandlerData.mCameraRange);
 	gMugenStageHandlerData.mCameraPositionPreEffects.y = gMugenStageHandlerData.mCameraTargetPosition.y;
 }
 
-void setDreamMugenStageHandlerCameraPositionY(double tY)
+void setDreamMugenStageHandlerCameraPositionY(float tY)
 {
 	gMugenStageHandlerData.mCameraTargetPosition.y = tY;
 	gMugenStageHandlerData.mCameraTargetPosition = clampPositionToGeoRectangle(gMugenStageHandlerData.mCameraTargetPosition, gMugenStageHandlerData.mCameraRange);
@@ -345,8 +354,9 @@ void setDreamMugenStageHandlerScreenShake(const Position2D& tScreenShake)
 void resetDreamMugenStageHandlerCameraPosition()
 {
 	const auto startPos = getDreamCameraStartPosition(getDreamStageCoordinateP());
-	gMugenStageHandlerData.mCameraPosition.x = gMugenStageHandlerData.mCameraPositionPreEffects.x = gMugenStageHandlerData.mCameraTargetPosition.x = startPos.x;
-	gMugenStageHandlerData.mCameraPosition.y = gMugenStageHandlerData.mCameraPositionPreEffects.y = gMugenStageHandlerData.mCameraTargetPosition.y = startPos.y;
+	const auto clampedStartPos = clampPositionToGeoRectangle(startPos, gMugenStageHandlerData.mCameraRange);
+	gMugenStageHandlerData.mCameraPosition.x = gMugenStageHandlerData.mCameraPositionPreEffects.x = gMugenStageHandlerData.mCameraTargetPosition.x = clampedStartPos.x;
+	gMugenStageHandlerData.mCameraPosition.y = gMugenStageHandlerData.mCameraPositionPreEffects.y = gMugenStageHandlerData.mCameraTargetPosition.y = clampedStartPos.y;
 }
 
 void resetDreamMugenStageHandler()
@@ -374,7 +384,7 @@ void clearDreamMugenStageHandler() {
 	unloadMugenStageHandler();
 }
 
-static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, int tSpacing, int tCoordinates, double tDelta, double tInvertedMinimumWidthFactor) {
+static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, int tSpacing, int tCoordinates, float tDelta, float tInvertedMinimumWidthFactor) {
 	if (!tTile) {
 		*tStart = 0;
 		*tAmount = 1;
@@ -389,7 +399,7 @@ static void handleSingleTile(int tTile, int* tStart, int* tAmount, int tSize, in
 	}
 }
 
-static void addSingleMugenStageHandlerBackgroundElementTile(StaticStageHandlerElement* e, MugenSpriteFile* tSprites, BlendType tBlendType, const Vector2D& tAlpha, double tZoomDelta, const Vector3D& tOffset) {
+static void addSingleMugenStageHandlerBackgroundElementTile(StaticStageHandlerElement* e, MugenSpriteFile* tSprites, BlendType tBlendType, const Vector2D& tAlpha, float tZoomDelta, const Vector3D& tOffset) {
 	e->mAnimationReferences.push_back(StageElementAnimationReference());
 	StageElementAnimationReference& newAnimation = e->mAnimationReferences.back();
 	newAnimation.mElement = addMugenAnimation(e->mAnimation, tSprites, Vector3D(0, 0, 0));
@@ -398,7 +408,7 @@ static void addSingleMugenStageHandlerBackgroundElementTile(StaticStageHandlerEl
 	setMugenAnimationBlendType(newAnimation.mElement, tBlendType);
 	setMugenAnimationTransparency(newAnimation.mElement, tAlpha.x);
 	setMugenAnimationDestinationTransparency(newAnimation.mElement, tAlpha.y);
-	setMugenAnimationConstraintRectangle(newAnimation.mElement, e->mConstraintRectangle);
+	setMugenAnimationConstraintRectangle(newAnimation.mElement, getStaticStageElementConstraintRectangleInScreenSpace(e, Vector2D(0.0, 0.0)));
 	setMugenAnimationDrawScale(newAnimation.mElement, e->mDrawScale * e->mGlobalScale * Vector2D(1, e->mScaleStartY) * e->mParallaxScale);
 	setMugenAnimationIsSpriteOffsetForcedToCenter(newAnimation.mElement, e->mIsParallax);
 	setMugenAnimationCameraEffectPositionReference(newAnimation.mElement, getDreamMugenStageHandlerCameraEffectPositionReference());
@@ -406,7 +416,7 @@ static void addSingleMugenStageHandlerBackgroundElementTile(StaticStageHandlerEl
 	setMugenAnimationCameraScaleFactor(newAnimation.mElement, tZoomDelta);
 }
 
-static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement* e, MugenSpriteFile* tSprites, const Vector2DI& tTile, BlendType tBlendType, const Vector2D& tAlpha, double tZoomDelta) {
+static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement* e, MugenSpriteFile* tSprites, const Vector2DI& tTile, BlendType tBlendType, const Vector2D& tAlpha, float tZoomDelta) {
 	int startX;
 	int startY;
 	int amountX;
@@ -433,7 +443,7 @@ static void addMugenStageHandlerBackgroundElementTiles(StaticStageHandlerElement
 		for (i = 0; i < amountX; i++) {
 			addSingleMugenStageHandlerBackgroundElementTile(e, tSprites, tBlendType, tAlpha, tZoomDelta, offset);
 			offset.x += size.x + e->mTileSpacing.x;
-			offset.z -= 0.00001; // larger diff values will overflow and cause visual artifacts in the midway/2.def test stage
+			offset.z -= 0.00001f; // larger diff values will overflow and cause visual artifacts in the midway/2.def test stage
 		}
 		offset.y += size.y + e->mTileSpacing.y;
 	}
@@ -453,7 +463,7 @@ static void addStaticElementToIDList(StaticStageHandlerElement* e, int tID) {
 	elementList->mVector.push_back(e);
 }
 
-void addDreamMugenStageHandlerAnimatedBackgroundElement(const Position& tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile* tSprites, const Position2D& tDelta, const Vector2DI& tTile, const Vector2DI& tTileSpacing, BlendType tBlendType, const Vector2D& tAlpha, const GeoRectangle2D& tConstraintRectangle, const Vector2D& tConstraintRectangleDelta, const Vector2D& tVelocity, const Vector3D& tSinX, const Vector3D& tSinY, double tScaleStartY, double tScaleDeltaY, const Vector2D& tScaleStart, const Vector2D& tScaleDelta, const Vector2D& tDrawScale, int tLayerNo, int tID, int tIsParallax, const Vector2DI& tWidth, const Vector2D& tXScale, double tZoomDelta, int tPositionLink, const Vector2DI& tCoordinates)
+void addDreamMugenStageHandlerAnimatedBackgroundElement(const Position& tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile* tSprites, const Position2D& tDelta, const Vector2DI& tTile, const Vector2DI& tTileSpacing, BlendType tBlendType, const Vector2D& tAlpha, const GeoRectangle2D& tConstraintRectangle, const Vector2D& tConstraintRectangleDelta, const Vector2D& tVelocity, const Vector3D& tSinX, const Vector3D& tSinY, float tScaleStartY, float tScaleDeltaY, const Vector2D& tScaleStart, const Vector2D& tScaleDelta, const Vector2D& tDrawScale, int tLayerNo, int tID, int tIsParallax, const Vector2DI& tWidth, const Vector2D& tXScale, float tZoomDelta, int tPositionLink, const Vector2DI& tCoordinates)
 {
 	gMugenStageHandlerData.mStaticElements.push_back(StaticStageHandlerElement());
 	StaticStageHandlerElement* e = &gMugenStageHandlerData.mStaticElements.back();
@@ -463,7 +473,7 @@ void addDreamMugenStageHandlerAnimatedBackgroundElement(const Position& tStart, 
 	e->mDelta = tDelta;
 	e->mCoordinates = tCoordinates;
 	const auto sz = getScreenSize();
-	const auto coordScale = sz.x / double(tCoordinates.x);
+	const auto coordScale = sz.x / float(tCoordinates.x);
 	e->mGlobalScale = Vector2D(coordScale, coordScale);
 	e->mDrawScale = tDrawScale;
 
@@ -492,7 +502,7 @@ void addDreamMugenStageHandlerAnimatedBackgroundElement(const Position& tStart, 
 	e->mIsParallax = tIsParallax;
 	e->mXScale = tXScale;
 	if (e->mIsParallax) {
-		e->mWidth = Vector2D(spriteSize.x ? (tWidth.x / double(spriteSize.x)) : 1.0, spriteSize.y ? (tWidth.y / double(spriteSize.y)) : 1.0);
+		e->mWidth = Vector2D(spriteSize.x ? (tWidth.x / float(spriteSize.x)) : 1.0f, spriteSize.y ? (tWidth.y / float(spriteSize.y)) : 1.0f);
 		e->mParallaxScale = Vector2D(e->mWidth.x, 1.0);
 		e->mXScale.y = e->mXScale.y / e->mXScale.x;
 		e->mWidth.y = e->mWidth.y / e->mWidth.x;
@@ -502,7 +512,7 @@ void addDreamMugenStageHandlerAnimatedBackgroundElement(const Position& tStart, 
 		e->mWidth = Vector2D(1.0, 1.0);
 		e->mParallaxScale = Vector2D(1.0, 1.0);
 	}
-	e->mInvertedMinimumWidthFactor = (1.0 / std::min(e->mParallaxScale.x, e->mWidth.y));
+	e->mInvertedMinimumWidthFactor = (1.0f / std::min(e->mParallaxScale.x, e->mWidth.y));
 
 	e->mConstraintRectangle = tConstraintRectangle;
 	e->mConstraintRectangleDelta = tConstraintRectangleDelta;
@@ -538,12 +548,12 @@ Position2D* getDreamMugenStageHandlerCameraEffectPositionReference()
 	return &gMugenStageHandlerData.mCameraEffectPosition;
 }
 
-void setDreamMugenStageHandlerCameraEffectPositionX(double tX)
+void setDreamMugenStageHandlerCameraEffectPositionX(float tX)
 {
 	gMugenStageHandlerData.mCameraEffectPosition.x = tX;
 }
 
-void setDreamMugenStageHandlerCameraEffectPositionY(double tY)
+void setDreamMugenStageHandlerCameraEffectPositionY(float tY)
 {
 	gMugenStageHandlerData.mCameraEffectPosition.y = tY;
 }
@@ -558,13 +568,13 @@ Position* getDreamMugenStageHandlerCameraZoomReference()
 	return &gMugenStageHandlerData.mCameraZoom;
 }
 
-void setDreamMugenStageHandlerCameraZoom(double tZoom)
+void setDreamMugenStageHandlerCameraZoom(float tZoom)
 {
 	gMugenStageHandlerData.mCameraZoom = Vector3D(tZoom, tZoom, 1);
 }
 
 typedef struct {
-	double mSpeed;
+	float mSpeed;
 } SetMugenStageHandlerSpeedCaller;
 
 static void setSingleStaticStageElementTileSpeedCB(SetMugenStageHandlerSpeedCaller* tCaller, StageElementAnimationReference& tData) {
@@ -575,7 +585,7 @@ static void setSingleStaticStageElementSpeedCB(SetMugenStageHandlerSpeedCaller* 
 	stl_list_map(tData.mAnimationReferences, setSingleStaticStageElementTileSpeedCB, tCaller);
 }
 
-void setDreamMugenStageHandlerSpeed(double tSpeed)
+void setDreamMugenStageHandlerSpeed(float tSpeed)
 {
 	SetMugenStageHandlerSpeedCaller caller;
 	caller.mSpeed = tSpeed;
@@ -617,7 +627,7 @@ typedef struct {
 	Vector3D mSineAmplitude;
 	int mSinePeriod;
 	int mInvertAll;
-	double mColorFactor;
+	float mColorFactor;
 } SetBackgroundPaletteEffectCaller;
 
 static void setSingleStaticStageElementTilePaletteEffectCB(SetBackgroundPaletteEffectCaller* tCaller, StageElementAnimationReference& tData) {
@@ -628,7 +638,7 @@ static void setSingleStaticElementPaletteEffect(SetBackgroundPaletteEffectCaller
 	stl_list_map(tData.mAnimationReferences, setSingleStaticStageElementTilePaletteEffectCB, tCaller);
 }
 
-void setDreamStagePaletteEffects(int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, double tColorFactor)
+void setDreamStagePaletteEffects(int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, float tColorFactor)
 {
 	SetBackgroundPaletteEffectCaller caller;
 	caller.mDuration = tDuration;
@@ -669,52 +679,52 @@ void setStageElementEnabled(StaticStageHandlerElement* tElement, int tIsEnabled)
 	tElement->mIsEnabled = tIsEnabled;
 }
 
-void setStageElementVelocityX(StaticStageHandlerElement * tElement, double tVelocityX)
+void setStageElementVelocityX(StaticStageHandlerElement * tElement, float tVelocityX)
 {
 	tElement->mVelocity.x = tVelocityX;
 }
 
-void setStageElementVelocityY(StaticStageHandlerElement * tElement, double tVelocityY)
+void setStageElementVelocityY(StaticStageHandlerElement * tElement, float tVelocityY)
 {
 	tElement->mVelocity.y = tVelocityY;
 }
 
-void addStageElementVelocityX(StaticStageHandlerElement * tElement, double tVelocityX)
+void addStageElementVelocityX(StaticStageHandlerElement * tElement, float tVelocityX)
 {
 	tElement->mVelocity.x += tVelocityX;
 }
 
-void addStageElementVelocityY(StaticStageHandlerElement * tElement, double tVelocityY)
+void addStageElementVelocityY(StaticStageHandlerElement * tElement, float tVelocityY)
 {
 	tElement->mVelocity.y += tVelocityY;
 }
 
-void setStageElementPositionX(StaticStageHandlerElement * tElement, double tPositionX)
+void setStageElementPositionX(StaticStageHandlerElement * tElement, float tPositionX)
 {
 	tElement->mStart.x = tPositionX;
 }
 
-void setStageElementPositionY(StaticStageHandlerElement * tElement, double tPositionY)
+void setStageElementPositionY(StaticStageHandlerElement * tElement, float tPositionY)
 {
 	tElement->mStart.y = tPositionY;
 }
 
-void addStageElementPositionX(StaticStageHandlerElement * tElement, double tPositionX)
+void addStageElementPositionX(StaticStageHandlerElement * tElement, float tPositionX)
 {
 	tElement->mStart.x += tPositionX;
 }
 
-void addStageElementPositionY(StaticStageHandlerElement * tElement, double tPositionY)
+void addStageElementPositionY(StaticStageHandlerElement * tElement, float tPositionY)
 {
 	tElement->mStart.y += tPositionY;
 }
 
-void setStageElementSinOffsetX(StaticStageHandlerElement * tElement, double tOffsetX)
+void setStageElementSinOffsetX(StaticStageHandlerElement * tElement, float tOffsetX)
 {
 	tElement->mSinOffset.x = tOffsetX;
 }
 
-void setStageElementSinOffsetY(StaticStageHandlerElement * tElement, double tOffsetY)
+void setStageElementSinOffsetY(StaticStageHandlerElement * tElement, float tOffsetY)
 {
 	tElement->mSinOffset.y = tOffsetY;
 }
@@ -729,9 +739,9 @@ void setStageElementAnimation(StaticStageHandlerElement * tElement, int tAnimati
 	stl_list_map(tElement->mAnimationReferences, changeSingleMugenAnimationReference, &tAnimation);
 }
 
-double calculateStageElementSinOffset(int tTick, double tAmplitude, double tPeriod, double tPhase) {
-	tPeriod = max(1.0, tPeriod);
-	return tAmplitude * std::sin((((tTick + int(tPhase)) % int(tPeriod)) / tPeriod) * M_PI * 2);
+float calculateStageElementSinOffset(int tTick, float tAmplitude, float tPeriod, float tPhase) {
+	tPeriod = max(1.0f, tPeriod);
+	return tAmplitude * std::sin((((tTick + int(tPhase)) % int(tPeriod)) / tPeriod) * (float)M_PI * 2);
 }
 
 std::vector<StaticStageHandlerElement*>& getStageHandlerElementsWithID(int tID)

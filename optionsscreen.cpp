@@ -869,8 +869,8 @@ static void loadOptionsScreen() {
 
 	gOptionsScreenData.mHeaderTextID = addMugenTextMugenStyle("OPTIONS", Vector3D(160, 20, 45), Vector3DI(gOptionsScreenData.mTextFontID, 0, 0));
 	gOptionsScreenData.mBackgroundAnimationElement = playOneFrameAnimationLoop(Vector3D(52, 35, 40), &gOptionsScreenData.mWhiteTexture);
-	setAnimationColor(gOptionsScreenData.mBackgroundAnimationElement, 0, 0, 0.6);
-	setAnimationTransparency(gOptionsScreenData.mBackgroundAnimationElement, 0.7);
+	setAnimationColor(gOptionsScreenData.mBackgroundAnimationElement, 0, 0, 0.6f);
+	setAnimationTransparency(gOptionsScreenData.mBackgroundAnimationElement, 0.7f);
 
 	gOptionsScreenData.mConfirmationDialog.mIsActive = 0;
 	loadGeneralOptionsScreen();
@@ -920,8 +920,8 @@ static void generalToDreamcastSaveOptions() {
 
 static void setOptionScreenConfirmationDialogActive(const char* tQuestionText, const std::function<void()>& tFunc) {
 	gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement = playOneFrameAnimationLoop(Vector3D(58, 60, 49), &gOptionsScreenData.mWhiteTexture);
-	setAnimationColor(gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement, 0, 0, 0.6);
-	setAnimationTransparency(gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement, 0.7);
+	setAnimationColor(gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement, 0, 0, 0.6f);
+	setAnimationTransparency(gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement, 0.7f);
 	setAnimationSize(gOptionsScreenData.mConfirmationDialog.mBackgroundAnimationElement, Vector3D(202, 50, 1), Vector3D(0, 0, 0));
 
 	gOptionsScreenData.mConfirmationDialog.mQuestionTextID = addMugenTextMugenStyle(tQuestionText, Vector3D(160, 75, 51), Vector3DI(gOptionsScreenData.mTextFontID, 0, 0));

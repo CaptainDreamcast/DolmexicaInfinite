@@ -108,8 +108,8 @@ static void loadTrainingModeMenu(void*) {
 	setProfilingSectionMarkerCurrentFunction();
 	gTrainingModeMenuData.mBackgroundAnimationElement = playOneFrameAnimationLoop(Vector3D(78, 28, TRAINING_MODE_MENU_BG_Z), getEmptyWhiteTextureReference());
 	setAnimationSize(gTrainingModeMenuData.mBackgroundAnimationElement, Vector3D(164, 124, 1), Vector3D(0, 0, 0));
-	setAnimationColor(gTrainingModeMenuData.mBackgroundAnimationElement, 0, 0, 0.6);
-	setAnimationTransparency(gTrainingModeMenuData.mBackgroundAnimationElement, 0.7);
+	setAnimationColor(gTrainingModeMenuData.mBackgroundAnimationElement, 0, 0, 0.6f);
+	setAnimationTransparency(gTrainingModeMenuData.mBackgroundAnimationElement, 0.7f);
 	setAnimationVisibility(gTrainingModeMenuData.mBackgroundAnimationElement, 0);
 
 	gTrainingModeMenuData.mTitleText = addMugenTextMugenStyle("Training Mode", Vector3D(160, 40, TRAINING_MODE_MENU_TEXT_Z), Vector3DI(-1, 0, 0));

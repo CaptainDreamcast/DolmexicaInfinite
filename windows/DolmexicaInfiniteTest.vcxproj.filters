@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Resource Files">
@@ -55,6 +55,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\fightdebug.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fightdeterminism.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\fightresultdisplay.cpp">
@@ -183,7 +186,16 @@
     <ClCompile Include="..\test\performancetest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\test\determinismtest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
     <ClCompile Include="..\test\crashtest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\mediacapturetest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\censuscommon.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
     <ClCompile Include="..\test\commontestfunctionality.cpp">

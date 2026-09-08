@@ -14,5 +14,5 @@ ActorBlueprint getMugenAnimationUtilityHandler();
 void setMugenAnimationInvisibleForOneFrame(MugenAnimationHandlerElement* tElement);
 void setMugenTextInvisibleForOneFrame(int tID);
 
-void setMugenAnimationPaletteEffectForDuration(MugenAnimationHandlerElement* tElement, int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, double tColorFactor);
+void setMugenAnimationPaletteEffectForDuration(MugenAnimationHandlerElement* tElement, int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, float tColorFactor);
 void removeMugenAnimationPaletteEffectIfExists(MugenAnimationHandlerElement* tElement);

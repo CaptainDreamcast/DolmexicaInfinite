@@ -101,6 +101,11 @@ typedef struct {
 
 } DreamPlayerDebugData;
 
+struct DreamPlayer;
+struct DreamPlayerTargetStableOrder {
+	bool operator()(const std::pair<int, DreamPlayer*>& a, const std::pair<int, DreamPlayer*>& b) const;
+};
+
 struct DreamPlayer {
 	DreamPlayerHeader* mHeader;
 	DreamMugenConstantsSizeData mCustomSizeData;
@@ -119,7 +124,7 @@ struct DreamPlayer {
 	List mHelpers; // contains DreamPlayer
 	std::list<PlayerHitData> mReceivedHitData;
 	std::set<DreamPlayer*> mReceivedReversalDefPlayers;
-	std::set<std::pair<int, DreamPlayer*>> mActiveTargets;
+	std::set<std::pair<int, DreamPlayer*>, DreamPlayerTargetStableOrder> mActiveTargets;
 	DreamPlayer* mParent;
 	int mHelperIDInParent;
 	int mHelperIDInRoot;
@@ -137,8 +142,8 @@ struct DreamPlayer {
 
 	int mVars[100];
 	int mSystemVars[100];
-	double mFloatVars[100];
-	double mSystemFloatVars[100];
+	float mFloatVars[100];
+	float mSystemFloatVars[100];
 
 	int mCommandID;
 	RegisteredMugenStateMachine* mRegisteredStateMachine;
@@ -187,13 +192,14 @@ struct DreamPlayer {
 	int mAirJumpCounter;
 
 	int mIsHitOver;
+	int mIsHitOverridden;
 	int mIsFalling;
 	int mCanRecoverFromFall;
 	int mRecoverTimeSinceHitPause;
 	int mRecoverTime;
 
-	double mDefenseMultiplier;
-	double mSuperDefenseMultiplier;
+	float mDefenseMultiplier;
+	float mSuperDefenseMultiplier;
 
 	int mIsFrozen;
 	Position mFreezePosition;
@@ -217,7 +223,7 @@ struct DreamPlayer {
 	int mHitOverDuration;
 
 	int mIsAngleActive;
-	double mAngle;
+	float mAngle;
 
 	Vector2D mTempScale;
 
@@ -230,7 +236,7 @@ struct DreamPlayer {
 	int mHitCount;
 	int mFallAmountInCombo;
 
-	double mAttackMultiplier;
+	float mAttackMultiplier;
 
 	int mMoveReversed;
 
@@ -255,15 +261,15 @@ struct DreamPlayer {
 	int mIsBoundToScreenForTick;
 	Vector3DI mIsCameraFollowing;
 
-	double mStartLifePercentage;
+	float mStartLifePercentage;
 
 	int mIsGuardingInternally;
 	int mIsBeingJuggled;
 	int mAirJugglePoints;
 
-	double mTimeDilatationNow;
+	float mTimeDilatationNow;
 	int mTimeDilatationUpdates;
-	double mTimeDilatation;
+	float mTimeDilatation;
 
 	int mHasOwnPalette;
 
@@ -331,12 +337,12 @@ void addPlayerVariable(DreamPlayer* p, int tIndex, int tValue);
 int getPlayerSystemVariable(DreamPlayer* p, int tIndex);
 void setPlayerSystemVariable(DreamPlayer* p, int tIndex, int tValue);
 void addPlayerSystemVariable(DreamPlayer* p, int tIndex, int tValue);
-double getPlayerFloatVariable(DreamPlayer* p, int tIndex);
-void setPlayerFloatVariable(DreamPlayer* p, int tIndex, double tValue);
-void addPlayerFloatVariable(DreamPlayer* p, int tIndex, double tValue);
-double getPlayerSystemFloatVariable(DreamPlayer* p, int tIndex);
-void setPlayerSystemFloatVariable(DreamPlayer* p, int tIndex, double tValue);
-void addPlayerSystemFloatVariable(DreamPlayer* p, int tIndex, double tValue);
+float getPlayerFloatVariable(DreamPlayer* p, int tIndex);
+void setPlayerFloatVariable(DreamPlayer* p, int tIndex, float tValue);
+void addPlayerFloatVariable(DreamPlayer* p, int tIndex, float tValue);
+float getPlayerSystemFloatVariable(DreamPlayer* p, int tIndex);
+void setPlayerSystemFloatVariable(DreamPlayer* p, int tIndex, float tValue);
+void addPlayerSystemFloatVariable(DreamPlayer* p, int tIndex, float tValue);
 
 int getPlayerTimeInState(DreamPlayer* p);
 int getPlayerAnimationNumber(DreamPlayer* p);
@@ -352,20 +358,20 @@ int getPlayerSpriteGroup(DreamPlayer* p);
 int getPlayerSpriteElement(DreamPlayer* p);
 
 Vector2D getPlayerPosition(DreamPlayer* p, int tCoordinateP);
-double getPlayerPositionBasedOnScreenCenterX(DreamPlayer* p, int tCoordinateP);
-double getPlayerScreenPositionX(DreamPlayer* p, int tCoordinateP);
-double getPlayerPositionX(DreamPlayer* p, int tCoordinateP);
-double getPlayerPositionBasedOnStageFloorY(DreamPlayer* p, int tCoordinateP);
-double getPlayerScreenPositionY(DreamPlayer* p, int tCoordinateP);
-double getPlayerPositionY(DreamPlayer* p, int tCoordinateP);
-double getPlayerVelocityX(DreamPlayer* p, int tCoordinateP);
-double getPlayerVelocityY(DreamPlayer* p, int tCoordinateP);
+float getPlayerPositionBasedOnScreenCenterX(DreamPlayer* p, int tCoordinateP);
+float getPlayerScreenPositionX(DreamPlayer* p, int tCoordinateP);
+float getPlayerPositionX(DreamPlayer* p, int tCoordinateP);
+float getPlayerPositionBasedOnStageFloorY(DreamPlayer* p, int tCoordinateP);
+float getPlayerScreenPositionY(DreamPlayer* p, int tCoordinateP);
+float getPlayerPositionY(DreamPlayer* p, int tCoordinateP);
+float getPlayerVelocityX(DreamPlayer* p, int tCoordinateP);
+float getPlayerVelocityY(DreamPlayer* p, int tCoordinateP);
 
 int getPlayerDataLife(DreamPlayer* p);
 int getPlayerDataAttack(DreamPlayer* p);
-double getPlayerDataAttackFactor(DreamPlayer* p);
+float getPlayerDataAttackFactor(DreamPlayer* p);
 int getPlayerDataDefense(DreamPlayer* p); 
-double getPlayerDataDefenseFactor(DreamPlayer* p); 
+float getPlayerDataDefenseFactor(DreamPlayer* p); 
 int getPlayerDataLiedownTime(DreamPlayer* p);
 int getPlayerDataAirjuggle(DreamPlayer* p);
 int getPlayerDataSparkNo(DreamPlayer* p);
@@ -383,72 +389,72 @@ int getPlayerSizeShadowOffset(DreamPlayer* p, int tCoordinateP);
 int getPlayerSizeDrawOffsetX(DreamPlayer* p, int tCoordinateP);
 int getPlayerSizeDrawOffsetY(DreamPlayer* p, int tCoordinateP);
 
-double getPlayerVelocityAirGetHitGroundRecoverX(DreamPlayer* p, int tCoordinateP);
-double getPlayerVelocityAirGetHitGroundRecoverY(DreamPlayer* p, int tCoordinateP);
-double getPlayerVelocityAirGetHitAirRecoverMulX(DreamPlayer* p);
-double getPlayerVelocityAirGetHitAirRecoverMulY(DreamPlayer* p);
-double getPlayerVelocityAirGetHitAirRecoverAddX(DreamPlayer* p, int tCoordinateP);
-double getPlayerVelocityAirGetHitAirRecoverAddY(DreamPlayer* p, int tCoordinateP);
-double getPlayerVelocityAirGetHitAirRecoverBack(DreamPlayer* p, int tCoordinateP);
-double getPlayerVelocityAirGetHitAirRecoverFwd(DreamPlayer* p, int tCoordinateP);
-double getPlayerVelocityAirGetHitAirRecoverUp(DreamPlayer* p, int tCoordinateP);
-double getPlayerVelocityAirGetHitAirRecoverDown(DreamPlayer* p, int tCoordinateP);
+float getPlayerVelocityAirGetHitGroundRecoverX(DreamPlayer* p, int tCoordinateP);
+float getPlayerVelocityAirGetHitGroundRecoverY(DreamPlayer* p, int tCoordinateP);
+float getPlayerVelocityAirGetHitAirRecoverMulX(DreamPlayer* p);
+float getPlayerVelocityAirGetHitAirRecoverMulY(DreamPlayer* p);
+float getPlayerVelocityAirGetHitAirRecoverAddX(DreamPlayer* p, int tCoordinateP);
+float getPlayerVelocityAirGetHitAirRecoverAddY(DreamPlayer* p, int tCoordinateP);
+float getPlayerVelocityAirGetHitAirRecoverBack(DreamPlayer* p, int tCoordinateP);
+float getPlayerVelocityAirGetHitAirRecoverFwd(DreamPlayer* p, int tCoordinateP);
+float getPlayerVelocityAirGetHitAirRecoverUp(DreamPlayer* p, int tCoordinateP);
+float getPlayerVelocityAirGetHitAirRecoverDown(DreamPlayer* p, int tCoordinateP);
 
 int getPlayerMovementAirJumpNum(DreamPlayer* p);
 void setPlayerMovementAirJumpNum(DreamPlayer* p, int tAmount); // for testing only
 int getPlayerMovementAirJumpHeight(DreamPlayer* p, int tCoordinateP);
-double getPlayerMovementJumpChangeAnimThreshold(DreamPlayer* p, int tCoordinateP);
-double getPlayerMovementAirGetHitAirRecoverYAccel(DreamPlayer* p, int tCoordinateP);
+float getPlayerMovementJumpChangeAnimThreshold(DreamPlayer* p, int tCoordinateP);
+float getPlayerMovementAirGetHitAirRecoverYAccel(DreamPlayer* p, int tCoordinateP);
 
-double getPlayerStandFriction(DreamPlayer* p);
-double getPlayerStandFrictionThreshold(DreamPlayer* p, int tCoordinateP);
-double getPlayerCrouchFriction(DreamPlayer* p);
-double getPlayerCrouchFrictionThreshold(DreamPlayer* p, int tCoordinateP);
-double getPlayerAirGetHitGroundLevelY(DreamPlayer* p, int tCoordinateP);
-double getPlayerAirGetHitGroundRecoveryGroundLevelY(DreamPlayer* p, int tCoordinateP);
-double getPlayerAirGetHitGroundRecoveryGroundYTheshold(DreamPlayer* p, int tCoordinateP);
-double getPlayerAirGetHitAirRecoveryVelocityYThreshold(DreamPlayer* p, int tCoordinateP);
-double getPlayerAirGetHitTripGroundLevelY(DreamPlayer* p, int tCoordinateP);
-double getPlayerDownBounceOffsetX(DreamPlayer* p, int tCoordinateP);
-double getPlayerDownBounceOffsetY(DreamPlayer* p, int tCoordinateP);
-double getPlayerDownVerticalBounceAcceleration(DreamPlayer* p, int tCoordinateP);
-double getPlayerDownBounceGroundLevel(DreamPlayer* p, int tCoordinateP);
-double getPlayerLyingDownFrictionThreshold(DreamPlayer* p, int tCoordinateP);
-double getPlayerVerticalAcceleration(DreamPlayer* p, int tCoordinateP);
+float getPlayerStandFriction(DreamPlayer* p);
+float getPlayerStandFrictionThreshold(DreamPlayer* p, int tCoordinateP);
+float getPlayerCrouchFriction(DreamPlayer* p);
+float getPlayerCrouchFrictionThreshold(DreamPlayer* p, int tCoordinateP);
+float getPlayerAirGetHitGroundLevelY(DreamPlayer* p, int tCoordinateP);
+float getPlayerAirGetHitGroundRecoveryGroundLevelY(DreamPlayer* p, int tCoordinateP);
+float getPlayerAirGetHitGroundRecoveryGroundYTheshold(DreamPlayer* p, int tCoordinateP);
+float getPlayerAirGetHitAirRecoveryVelocityYThreshold(DreamPlayer* p, int tCoordinateP);
+float getPlayerAirGetHitTripGroundLevelY(DreamPlayer* p, int tCoordinateP);
+float getPlayerDownBounceOffsetX(DreamPlayer* p, int tCoordinateP);
+float getPlayerDownBounceOffsetY(DreamPlayer* p, int tCoordinateP);
+float getPlayerDownVerticalBounceAcceleration(DreamPlayer* p, int tCoordinateP);
+float getPlayerDownBounceGroundLevel(DreamPlayer* p, int tCoordinateP);
+float getPlayerLyingDownFrictionThreshold(DreamPlayer* p, int tCoordinateP);
+float getPlayerVerticalAcceleration(DreamPlayer* p, int tCoordinateP);
 
-double getPlayerForwardWalkVelocityX(DreamPlayer* p, int tCoordinateP);
-double getPlayerBackwardWalkVelocityX(DreamPlayer* p, int tCoordinateP);
-double getPlayerForwardRunVelocityX(DreamPlayer* p, int tCoordinateP);
-double getPlayerForwardRunVelocityY(DreamPlayer* p, int tCoordinateP);
-double getPlayerBackwardRunVelocityX(DreamPlayer* p, int tCoordinateP);
-double getPlayerBackwardRunVelocityY(DreamPlayer* p, int tCoordinateP);
-double getPlayerBackwardRunJumpVelocityX(DreamPlayer* p, int tCoordinateP);
-double getPlayerForwardRunJumpVelocityX(DreamPlayer* p, int tCoordinateP);
-double getPlayerNeutralJumpVelocityX(DreamPlayer* p, int tCoordinateP);
-double getPlayerForwardJumpVelocityX(DreamPlayer* p, int tCoordinateP);
-double getPlayerBackwardJumpVelocityX(DreamPlayer* p, int tCoordinateP);
-double getPlayerJumpVelocityY(DreamPlayer* p, int tCoordinateP);
-double getPlayerNeutralAirJumpVelocityX(DreamPlayer* p, int tCoordinateP);
-double getPlayerForwardAirJumpVelocityX(DreamPlayer* p, int tCoordinateP);
-double getPlayerBackwardAirJumpVelocityX(DreamPlayer* p, int tCoordinateP);
-double getPlayerAirJumpVelocityY(DreamPlayer* p, int tCoordinateP);
+float getPlayerForwardWalkVelocityX(DreamPlayer* p, int tCoordinateP);
+float getPlayerBackwardWalkVelocityX(DreamPlayer* p, int tCoordinateP);
+float getPlayerForwardRunVelocityX(DreamPlayer* p, int tCoordinateP);
+float getPlayerForwardRunVelocityY(DreamPlayer* p, int tCoordinateP);
+float getPlayerBackwardRunVelocityX(DreamPlayer* p, int tCoordinateP);
+float getPlayerBackwardRunVelocityY(DreamPlayer* p, int tCoordinateP);
+float getPlayerBackwardRunJumpVelocityX(DreamPlayer* p, int tCoordinateP);
+float getPlayerForwardRunJumpVelocityX(DreamPlayer* p, int tCoordinateP);
+float getPlayerNeutralJumpVelocityX(DreamPlayer* p, int tCoordinateP);
+float getPlayerForwardJumpVelocityX(DreamPlayer* p, int tCoordinateP);
+float getPlayerBackwardJumpVelocityX(DreamPlayer* p, int tCoordinateP);
+float getPlayerJumpVelocityY(DreamPlayer* p, int tCoordinateP);
+float getPlayerNeutralAirJumpVelocityX(DreamPlayer* p, int tCoordinateP);
+float getPlayerForwardAirJumpVelocityX(DreamPlayer* p, int tCoordinateP);
+float getPlayerBackwardAirJumpVelocityX(DreamPlayer* p, int tCoordinateP);
+float getPlayerAirJumpVelocityY(DreamPlayer* p, int tCoordinateP);
 
 int isPlayerAlive(DreamPlayer* p);
 int isPlayerDestroyed(DreamPlayer* p);
 
-void setPlayerVelocityX(DreamPlayer* p, double x, int tCoordinateP);
-void setPlayerVelocityY(DreamPlayer* p, double y, int tCoordinateP);
-void multiplyPlayerVelocityX(DreamPlayer* p, double x);
-void multiplyPlayerVelocityY(DreamPlayer* p, double y);
-void addPlayerVelocityX(DreamPlayer* p, double x, int tCoordinateP);
-void addPlayerVelocityY(DreamPlayer* p, double y, int tCoordinateP);
+void setPlayerVelocityX(DreamPlayer* p, float x, int tCoordinateP);
+void setPlayerVelocityY(DreamPlayer* p, float y, int tCoordinateP);
+void multiplyPlayerVelocityX(DreamPlayer* p, float x);
+void multiplyPlayerVelocityY(DreamPlayer* p, float y);
+void addPlayerVelocityX(DreamPlayer* p, float x, int tCoordinateP);
+void addPlayerVelocityY(DreamPlayer* p, float y, int tCoordinateP);
 
 void setPlayerPosition(DreamPlayer* p, const Position2D& tPosition, int tCoordinateP);
-void setPlayerPositionX(DreamPlayer* p, double x, int tCoordinateP);
-void setPlayerPositionY(DreamPlayer* p, double y, int tCoordinateP);
-void addPlayerPositionX(DreamPlayer* p, double x, int tCoordinateP);
-void addPlayerPositionY(DreamPlayer* p, double y, int tCoordinateP);
-void setPlayerPositionBasedOnScreenCenterX(DreamPlayer* p, double x, int tCoordinateP);
+void setPlayerPositionX(DreamPlayer* p, float x, int tCoordinateP);
+void setPlayerPositionY(DreamPlayer* p, float y, int tCoordinateP);
+void addPlayerPositionX(DreamPlayer* p, float x, int tCoordinateP);
+void addPlayerPositionY(DreamPlayer* p, float y, int tCoordinateP);
+void setPlayerPositionBasedOnScreenCenterX(DreamPlayer* p, float x, int tCoordinateP);
 
 int isPlayerCommandActive(DreamPlayer* p, const char* tCommandName);
 int isPlayerCommandActiveWithLookup(DreamPlayer* p, int tCommandLookupIndex);
@@ -475,7 +481,7 @@ int getPlayerAnimationElementFromTimeOffset(DreamPlayer* p, int tTime);
 int isPlayerAnimationTimeOffsetInAnimation(DreamPlayer* p, int tTime);
 int getPlayerAnimationTimeWhenStepStarts(DreamPlayer* p, int tStep);
 
-double calculateSpriteZFromSpritePriority(int tPriority, int tRootID, int tIsExplod);
+float calculateSpriteZFromSpritePriority(int tPriority, int tRootID, int tIsExplod);
 void setPlayerSpritePriority(DreamPlayer* p, int tPriority);
 
 void setPlayerNoWalkFlag(DreamPlayer* p);
@@ -509,15 +515,15 @@ void setPlayerHitShakeOver(DreamPlayer* p);
 int isPlayerHitOver(DreamPlayer* p);
 void setPlayerHitOver(DreamPlayer* p);
 int getPlayerHitTime(DreamPlayer* p);
-double getPlayerHitVelocityX(DreamPlayer* p, int tCoordinateP);
-double getPlayerHitVelocityY(DreamPlayer* p, int tCoordinateP);
+float getPlayerHitVelocityX(DreamPlayer* p, int tCoordinateP);
+float getPlayerHitVelocityY(DreamPlayer* p, int tCoordinateP);
 
 int getPlayerSlideTime(DreamPlayer* p);
 
-double getPlayerDefenseMultiplier(DreamPlayer* p);
-double getInvertedPlayerDefenseMultiplier(DreamPlayer* p);
-void setPlayerDefenseMultiplier(DreamPlayer* p, double tValue);
-void setPlayerSuperDefenseMultiplier(DreamPlayer* p, double tValue);
+float getPlayerDefenseMultiplier(DreamPlayer* p);
+float getInvertedPlayerDefenseMultiplier(DreamPlayer* p);
+void setPlayerDefenseMultiplier(DreamPlayer* p, float tValue);
+void setPlayerSuperDefenseMultiplier(DreamPlayer* p, float tValue);
 void setPlayerPositionFrozen(DreamPlayer* p);
 void setPlayerPositionUnfrozen(DreamPlayer* p);
 
@@ -537,7 +543,7 @@ int isPlayerHitPaused(DreamPlayer* p);
 void setPlayerHitPaused(DreamPlayer* p, int tDuration);
 void setPlayerUnHitPaused(DreamPlayer* p);
 
-double getPlayerDeathVelAddY(DreamPlayer* p, int tCoordinateP);
+float getPlayerDeathVelAddY(DreamPlayer* p, int tCoordinateP);
 void addPlayerDamage(DreamPlayer* p, DreamPlayer* tDamagingPlayer, int tDamage);
 
 int getPlayerTargetAmount(DreamPlayer* p);
@@ -563,43 +569,43 @@ int getPlayerProjectileContact(DreamPlayer* p, int tID);
 int getPlayerProjectileGuarded(DreamPlayer* p, int tID);
 
 void setPlayerHasOwnPalette(DreamPlayer* p, int tHasOwnPalette);
-void setPlayerPaletteEffect(DreamPlayer* p, int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, double tColorFactor, int tIgnoreOwnPal);
+void setPlayerPaletteEffect(DreamPlayer* p, int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, float tColorFactor, int tIgnoreOwnPal);
 void remapPlayerPalette(DreamPlayer* p, const Vector2DI& tSource, const Vector2DI& tDestination);
 
 int getPlayerTimeLeftInHitPause(DreamPlayer* p);
 void setPlayerPauseMoveTime(DreamPlayer* p, int tPauseMoveTime);
 void setPlayerSuperMoveTime(DreamPlayer* p, int tSuperMoveTime);
 
-double getPlayerFrontAxisDistanceToScreen(DreamPlayer* p, int tCoordinateP);
-double getPlayerBackAxisDistanceToScreen(DreamPlayer* p, int tCoordinateP);
+float getPlayerFrontAxisDistanceToScreen(DreamPlayer* p, int tCoordinateP);
+float getPlayerBackAxisDistanceToScreen(DreamPlayer* p, int tCoordinateP);
 
-double getPlayerFrontBodyDistanceToScreen(DreamPlayer* p, int tCoordinateP);
-double getPlayerBackBodyDistanceToScreen(DreamPlayer* p, int tCoordinateP);
+float getPlayerFrontBodyDistanceToScreen(DreamPlayer* p, int tCoordinateP);
+float getPlayerBackBodyDistanceToScreen(DreamPlayer* p, int tCoordinateP);
 
-double getPlayerFrontWidth(DreamPlayer* p, int tCoordinateP);
-double getPlayerFrontWidthPlayer(DreamPlayer* p, int tCoordinateP);
-double getPlayerFrontWidthStage(DreamPlayer* p, int tCoordinateP);
-double getPlayerBackWidth(DreamPlayer* p, int tCoordinateP);
-double getPlayerBackWidthPlayer(DreamPlayer* p, int tCoordinateP);
-double getPlayerBackWidthStage(DreamPlayer* p, int tCoordinateP);
-double getPlayerFrontX(DreamPlayer* p, int tCoordinateP);
-double getPlayerFrontXPlayer(DreamPlayer* p, int tCoordinateP);
-double getPlayerFrontXStage(DreamPlayer* p, int tCoordinateP);
-double getPlayerBackX(DreamPlayer* p, int tCoordinateP);
-double getPlayerBackXPlayer(DreamPlayer* p, int tCoordinateP);
-double getPlayerBackXStage(DreamPlayer* p, int tCoordinateP);
+float getPlayerFrontWidth(DreamPlayer* p, int tCoordinateP);
+float getPlayerFrontWidthPlayer(DreamPlayer* p, int tCoordinateP);
+float getPlayerFrontWidthStage(DreamPlayer* p, int tCoordinateP);
+float getPlayerBackWidth(DreamPlayer* p, int tCoordinateP);
+float getPlayerBackWidthPlayer(DreamPlayer* p, int tCoordinateP);
+float getPlayerBackWidthStage(DreamPlayer* p, int tCoordinateP);
+float getPlayerFrontX(DreamPlayer* p, int tCoordinateP);
+float getPlayerFrontXPlayer(DreamPlayer* p, int tCoordinateP);
+float getPlayerFrontXStage(DreamPlayer* p, int tCoordinateP);
+float getPlayerBackX(DreamPlayer* p, int tCoordinateP);
+float getPlayerBackXPlayer(DreamPlayer* p, int tCoordinateP);
+float getPlayerBackXStage(DreamPlayer* p, int tCoordinateP);
 int isPlayerInCorner(DreamPlayer* p);
 
-double getPlayerScreenEdgeInFrontX(DreamPlayer* p, int tCoordinateP);
-double getPlayerScreenEdgeInBackX(DreamPlayer* p, int tCoordinateP);
+float getPlayerScreenEdgeInFrontX(DreamPlayer* p, int tCoordinateP);
+float getPlayerScreenEdgeInBackX(DreamPlayer* p, int tCoordinateP);
 
-double getPlayerDistanceToFrontOfOtherPlayerX(DreamPlayer* p, int tCoordinateP);
-double getPlayerAxisDistanceX(DreamPlayer* p, int tCoordinateP);
-double getPlayerAxisDistanceY(DreamPlayer* p, int tCoordinateP);
-double getPlayerDistanceToRootX(DreamPlayer* p, int tCoordinateP);
-double getPlayerDistanceToRootY(DreamPlayer* p, int tCoordinateP);
-double getPlayerDistanceToParentX(DreamPlayer* p, int tCoordinateP);
-double getPlayerDistanceToParentY(DreamPlayer* p, int tCoordinateP);
+float getPlayerDistanceToFrontOfOtherPlayerX(DreamPlayer* p, int tCoordinateP);
+float getPlayerAxisDistanceX(DreamPlayer* p, int tCoordinateP);
+float getPlayerAxisDistanceY(DreamPlayer* p, int tCoordinateP);
+float getPlayerDistanceToRootX(DreamPlayer* p, int tCoordinateP);
+float getPlayerDistanceToRootY(DreamPlayer* p, int tCoordinateP);
+float getPlayerDistanceToParentX(DreamPlayer* p, int tCoordinateP);
+float getPlayerDistanceToParentY(DreamPlayer* p, int tCoordinateP);
 
 int getPlayerGroundSizeFront(DreamPlayer* p, int tCoordinateP);
 void setPlayerGroundSizeFront(DreamPlayer* p, int tGroundSizeFront, int tCoordinateP);
@@ -642,18 +648,18 @@ void increasePlayerHitCount(DreamPlayer* p);
 void resetPlayerHitCount(DreamPlayer* p);
 void increasePlayerComboCounter(DreamPlayer* p, int tValue);
 
-double getPlayerAttackMultiplier(DreamPlayer* p);
-void setPlayerAttackMultiplier(DreamPlayer* p, double tValue);
+float getPlayerAttackMultiplier(DreamPlayer* p);
+void setPlayerAttackMultiplier(DreamPlayer* p, float tValue);
 
-double getPlayerFallDefenseMultiplier(DreamPlayer* p);
+float getPlayerFallDefenseMultiplier(DreamPlayer* p);
 
 void setPlayerHuman(int i, int tCustomControllerUsed = -1);
 void setPlayerArtificial(int i, int tValue);
 int isPlayerHuman(DreamPlayer* p);
 int getPlayerAILevel(DreamPlayer* p);
 
-void setPlayerStartLifePercentage(int tIndex, double tPercentage);
-double getPlayerLifePercentage(DreamPlayer* p);
+void setPlayerStartLifePercentage(int tIndex, float tPercentage);
+float getPlayerLifePercentage(DreamPlayer* p);
 void setPlayerLife(DreamPlayer* p, DreamPlayer* tLifeGivingPlayer, int tLife);
 void addPlayerLife(DreamPlayer* p, DreamPlayer* tLifeGivingPlayer, int tLife);
 int getPlayerLife(DreamPlayer* p);
@@ -668,14 +674,14 @@ int isPlayerInGuardDistance(DreamPlayer* p);
 int getDefaultPlayerAttackDistance(DreamPlayer* p, int tCoordinateP);
 
 Position2D getPlayerHeadPosition(DreamPlayer* p, int tCoordinateP);
-double getPlayerHeadPositionX(DreamPlayer* p, int tCoordinateP);
-double getPlayerHeadPositionY(DreamPlayer* p, int tCoordinateP);
-void setPlayerHeadPosition(DreamPlayer* p, double tX, double tY, int tCoordinateP);
+float getPlayerHeadPositionX(DreamPlayer* p, int tCoordinateP);
+float getPlayerHeadPositionY(DreamPlayer* p, int tCoordinateP);
+void setPlayerHeadPosition(DreamPlayer* p, float tX, float tY, int tCoordinateP);
 
 Position2D getPlayerMiddlePosition(DreamPlayer* p, int tCoordinateP);
-double getPlayerMiddlePositionX(DreamPlayer* p, int tCoordinateP);
-double getPlayerMiddlePositionY(DreamPlayer* p, int tCoordinateP);
-void setPlayerMiddlePosition(DreamPlayer* p, double tX, double tY, int tCoordinateP);
+float getPlayerMiddlePositionX(DreamPlayer* p, int tCoordinateP);
+float getPlayerMiddlePositionY(DreamPlayer* p, int tCoordinateP);
+void setPlayerMiddlePosition(DreamPlayer* p, float tX, float tY, int tCoordinateP);
 
 int getPlayerShadowOffset(DreamPlayer* p, int tCoordinateP);
 void setPlayerShadowOffset(DreamPlayer* p, int tOffset, int tCoordinateP);
@@ -688,11 +694,11 @@ void turnPlayerAround(DreamPlayer* p);
 
 DreamPlayer* getPlayerOtherPlayer(DreamPlayer* p);
 
-double getPlayerScaleX(DreamPlayer* p);
-void setPlayerScaleX(DreamPlayer* p, double tScaleX);
-double getPlayerScaleY(DreamPlayer* p);
-void setPlayerScaleY(DreamPlayer* p, double tScaleY);
-double getPlayerToCameraScale(DreamPlayer* p);
+float getPlayerScaleX(DreamPlayer* p);
+void setPlayerScaleX(DreamPlayer* p, float tScaleX);
+float getPlayerScaleY(DreamPlayer* p);
+void setPlayerScaleY(DreamPlayer* p, float tScaleY);
+float getPlayerToCameraScale(DreamPlayer* p);
 
 int getPlayerDoesScaleProjectiles(DreamPlayer* p);
 void setPlayerDoesScaleProjectiles(DreamPlayer* p, int tDoesScaleProjectiles);
@@ -711,9 +717,9 @@ int getPlayerRecoverTime(DreamPlayer* p);
 
 void setPlayerTempScaleActive(DreamPlayer* p, const Vector2D& tScale);
 void setPlayerDrawAngleActive(DreamPlayer* p);
-void addPlayerDrawAngle(DreamPlayer* p, double tAngle);
-void multiplyPlayerDrawAngle(DreamPlayer* p, double tFactor);
-void setPlayerDrawAngleValue(DreamPlayer* p, double tAngle);
+void addPlayerDrawAngle(DreamPlayer* p, float tAngle);
+void multiplyPlayerDrawAngle(DreamPlayer* p, float tFactor);
+void setPlayerDrawAngleValue(DreamPlayer* p, float tAngle);
 
 void bindPlayerToRoot(DreamPlayer* p, int tTime, int tFacing, const Vector2D& tOffset, int tCoordinateP);
 void bindPlayerToParent(DreamPlayer* p, int tTime, int tFacing, const Vector2D& tOffset, int tCoordinateP);
@@ -723,10 +729,10 @@ int isPlayerBound(DreamPlayer* p);
 void bindPlayerTargetToPlayer(DreamPlayer* p, int tTime, const Vector2D& tOffset, int tID, int tCoordinateP);
 void addPlayerTargetLife(DreamPlayer* p, DreamPlayer* tLifeGivingPlayer, int tID, int tLife, int tCanKill, int tIsAbsolute);
 void addPlayerTargetPower(DreamPlayer* p, int tID, int tPower);
-void addPlayerTargetVelocityX(DreamPlayer* p, int tID, double tValue, int tCoordinateP);
-void addPlayerTargetVelocityY(DreamPlayer* p, int tID, double tValue, int tCoordinateP);
-void setPlayerTargetVelocityX(DreamPlayer* p, int tID, double tValue, int tCoordinateP);
-void setPlayerTargetVelocityY(DreamPlayer* p, int tID, double tValue, int tCoordinateP);
+void addPlayerTargetVelocityX(DreamPlayer* p, int tID, float tValue, int tCoordinateP);
+void addPlayerTargetVelocityY(DreamPlayer* p, int tID, float tValue, int tCoordinateP);
+void setPlayerTargetVelocityX(DreamPlayer* p, int tID, float tValue, int tCoordinateP);
+void setPlayerTargetVelocityY(DreamPlayer* p, int tID, float tValue, int tCoordinateP);
 void setPlayerTargetControl(DreamPlayer* p, int tID, int tControl);
 void setPlayerTargetHitOver(DreamPlayer* p, int tID);
 void setPlayerTargetFacing(DreamPlayer* p, int tID, int tFacing);
@@ -756,8 +762,8 @@ int getDefaultPlayerGuardSparkNumber(DreamPlayer* p);
 int isPlayerProjectile(DreamPlayer* p);
 int isPlayerHomeTeam(DreamPlayer* p);
 
-void setPlayerDrawOffsetX(DreamPlayer* p, double tValue, int tCoordinateP);
-void setPlayerDrawOffsetY(DreamPlayer* p, double tValue, int tCoordinateP);
+void setPlayerDrawOffsetX(DreamPlayer* p, float tValue, int tCoordinateP);
+void setPlayerDrawOffsetY(DreamPlayer* p, float tValue, int tCoordinateP);
 
 void setPlayerOneFrameTransparency(DreamPlayer* p, BlendType tType, int tAlphaSource, int tAlphaDest);
 void setPlayerWidthOneFrame(DreamPlayer* p, const Vector2DI& tEdgeWidth, const Vector2DI& tPlayerWidth, int tCoordinateP);
@@ -785,12 +791,12 @@ void turnPlayerTowardsOtherPlayer(DreamPlayer* p);
 int isPlayerInputAllowed(DreamPlayer* p);
 
 int getPlayerTimeDilationUpdates(DreamPlayer* p);
-double getPlayerSpeed(DreamPlayer* p);
-void setPlayersSpeed(double tSpeed);
-void setPlayerTargetsSuperDefenseMultiplier(DreamPlayer* tPlayer, double tMultiplier);
+float getPlayerSpeed(DreamPlayer* p);
+void setPlayersSpeed(float tSpeed);
+void setPlayerTargetsSuperDefenseMultiplier(DreamPlayer* tPlayer, float tMultiplier);
 
 Vector3DI getIsCameraFollowingPlayer(DreamPlayer* p);
 
 int parsePlayerSoundEffectChannel(int tChannel, DreamPlayer* tPlayer);
-double getPlayerVolumeModifier(DreamPlayer* tPlayer);
-double getPlayerMidiVolumeForPrism(DreamPlayer* tPlayer);
+float getPlayerVolumeModifier(DreamPlayer* tPlayer);
+float getPlayerMidiVolumeForPrism(DreamPlayer* tPlayer);

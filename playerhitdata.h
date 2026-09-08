@@ -145,17 +145,17 @@ typedef struct {
 	int mGuardControlTime;
 	int mGuardDistance;
 
-	double mVerticalAcceleration;
+	float mVerticalAcceleration;
 	Vector2D mGroundVelocity;
-	double mGuardVelocity;
+	float mGuardVelocity;
 	Vector2D mAirVelocity;
 	Vector2D mAirGuardVelocity;
 
-	double mGroundCornerPushVelocityOffset;
-	double mAirCornerPushVelocityOffset;
-	double mDownCornerPushVelocityOffset;
-	double mGuardCornerPushVelocityOffset;
-	double mAirGuardCornerPushVelocityOffset;
+	float mGroundCornerPushVelocityOffset;
+	float mAirCornerPushVelocityOffset;
+	float mDownCornerPushVelocityOffset;
+	float mGuardCornerPushVelocityOffset;
+	float mAirGuardCornerPushVelocityOffset;
 
 	int mAirGuardControlTime;
 	int mAirJugglePoints;
@@ -219,14 +219,14 @@ typedef struct {
 	Vector3D mPaletteEffectAddition;
 
 	int mEnvironmentShakeTime;
-	double mEnvironmentShakeFrequency;
+	float mEnvironmentShakeFrequency;
 	int mEnvironmentShakeAmplitude;
-	double mEnvironmentShakePhase;
+	float mEnvironmentShakePhase;
 
 	int mFallEnvironmentShakeTime;
-	double mFallEnvironmentShakeFrequency;
+	float mFallEnvironmentShakeFrequency;
 	int mFallEnvironmentShakeAmplitude;
-	double mFallEnvironmentShakePhase;
+	float mFallEnvironmentShakePhase;
 
 	Vector2D mVelocity;
 
@@ -361,37 +361,37 @@ void setHitDataGuardControlTime(DreamPlayer* tPlayer, int tControlTime);
 int getHitDataGuardDistance(DreamPlayer* tPlayer);
 void setHitDataGuardDistance(DreamPlayer* tPlayer, int tDistance);
 
-double getActiveHitDataYAccel(DreamPlayer* tPlayer);
-double getHitDataYAccel(DreamPlayer* tPlayer);
-void setHitDataYAccel(DreamPlayer* tPlayer, double YAccel);
+float getActiveHitDataYAccel(DreamPlayer* tPlayer);
+float getHitDataYAccel(DreamPlayer* tPlayer);
+void setHitDataYAccel(DreamPlayer* tPlayer, float YAccel);
 
-double getActiveHitDataGroundVelocityX(DreamPlayer* tPlayer);
-double getHitDataGroundVelocityX(DreamPlayer* tPlayer);
-double getActiveHitDataGroundVelocityY(DreamPlayer* tPlayer);
-double getHitDataGroundVelocityY(DreamPlayer* tPlayer);
-void setHitDataGroundVelocity(DreamPlayer* tPlayer, double tX, double tY);
-double getActiveHitDataGuardVelocity(DreamPlayer* tPlayer);
-double getHitDataGuardVelocity(DreamPlayer* tPlayer);
-void setHitDataGuardVelocity(DreamPlayer* tPlayer, double tX);
-double getActiveHitDataAirVelocityX(DreamPlayer* tPlayer);
-double getHitDataAirVelocityX(DreamPlayer* tPlayer);
-double getActiveHitDataAirVelocityY(DreamPlayer* tPlayer);
-double getHitDataAirVelocityY(DreamPlayer* tPlayer);
-void setHitDataAirVelocity(DreamPlayer* tPlayer, double tX, double tY);
-void setHitDataAirGuardVelocity(DreamPlayer* tPlayer, double tX, double tY);
+float getActiveHitDataGroundVelocityX(DreamPlayer* tPlayer);
+float getHitDataGroundVelocityX(DreamPlayer* tPlayer);
+float getActiveHitDataGroundVelocityY(DreamPlayer* tPlayer);
+float getHitDataGroundVelocityY(DreamPlayer* tPlayer);
+void setHitDataGroundVelocity(DreamPlayer* tPlayer, float tX, float tY);
+float getActiveHitDataGuardVelocity(DreamPlayer* tPlayer);
+float getHitDataGuardVelocity(DreamPlayer* tPlayer);
+void setHitDataGuardVelocity(DreamPlayer* tPlayer, float tX);
+float getActiveHitDataAirVelocityX(DreamPlayer* tPlayer);
+float getHitDataAirVelocityX(DreamPlayer* tPlayer);
+float getActiveHitDataAirVelocityY(DreamPlayer* tPlayer);
+float getHitDataAirVelocityY(DreamPlayer* tPlayer);
+void setHitDataAirVelocity(DreamPlayer* tPlayer, float tX, float tY);
+void setHitDataAirGuardVelocity(DreamPlayer* tPlayer, float tX, float tY);
 
-double getActiveGroundCornerPushVelocityOffset(DreamPlayer* tPlayer);
-double getGroundCornerPushVelocityOffset(DreamPlayer* tPlayer);
-void setGroundCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX);
-double getActiveAirCornerPushVelocityOffset(DreamPlayer* tPlayer);
-void setAirCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX);
-double getActiveDownCornerPushVelocityOffset(DreamPlayer* tPlayer);
-void setDownCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX);
-double getActiveGuardCornerPushVelocityOffset(DreamPlayer* tPlayer);
-double getGuardCornerPushVelocityOffset(DreamPlayer* tPlayer);
-void setGuardCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX);
-double getActiveAirGuardCornerPushVelocityOffset(DreamPlayer* tPlayer);
-void setAirGuardCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX);
+float getActiveGroundCornerPushVelocityOffset(DreamPlayer* tPlayer);
+float getGroundCornerPushVelocityOffset(DreamPlayer* tPlayer);
+void setGroundCornerPushVelocityOffset(DreamPlayer* tPlayer, float tX);
+float getActiveAirCornerPushVelocityOffset(DreamPlayer* tPlayer);
+void setAirCornerPushVelocityOffset(DreamPlayer* tPlayer, float tX);
+float getActiveDownCornerPushVelocityOffset(DreamPlayer* tPlayer);
+void setDownCornerPushVelocityOffset(DreamPlayer* tPlayer, float tX);
+float getActiveGuardCornerPushVelocityOffset(DreamPlayer* tPlayer);
+float getGuardCornerPushVelocityOffset(DreamPlayer* tPlayer);
+void setGuardCornerPushVelocityOffset(DreamPlayer* tPlayer, float tX);
+float getActiveAirGuardCornerPushVelocityOffset(DreamPlayer* tPlayer);
+void setAirGuardCornerPushVelocityOffset(DreamPlayer* tPlayer, float tX);
 
 int getActiveHitDataAirGuardControlTime(DreamPlayer* tPlayer);
 void setHitDataAirGuardControlTime(DreamPlayer* tPlayer, int tControlTime);
@@ -434,14 +434,14 @@ int getActiveHitDataFall(DreamPlayer* tPlayer);
 int getHitDataFall(DreamPlayer* tPlayer);
 void setActiveHitDataFall(DreamPlayer* tPlayer, int tIsCausingPlayer2ToFall);
 void setHitDataFall(DreamPlayer* tPlayer, int tIsCausingPlayer2ToFall);
-double getActiveHitDataFallXVelocity(DreamPlayer* tPlayer);
-double getHitDataFallXVelocity(DreamPlayer* tPlayer);
-void setActiveHitDataFallXVelocity(DreamPlayer* tPlayer, double tX, int tCoordinateP);
-void setHitDataFallXVelocity(DreamPlayer* tPlayer, double tX);
-double getActiveHitDataFallYVelocity(DreamPlayer* tPlayer);
-double getHitDataFallYVelocity(DreamPlayer* tPlayer);
-void setActiveHitDataFallYVelocity(DreamPlayer* tPlayer, double tY, int tCoordinateP);
-void setHitDataFallYVelocity(DreamPlayer* tPlayer, double tY);
+float getActiveHitDataFallXVelocity(DreamPlayer* tPlayer);
+float getHitDataFallXVelocity(DreamPlayer* tPlayer);
+void setActiveHitDataFallXVelocity(DreamPlayer* tPlayer, float tX, int tCoordinateP);
+void setHitDataFallXVelocity(DreamPlayer* tPlayer, float tX);
+float getActiveHitDataFallYVelocity(DreamPlayer* tPlayer);
+float getHitDataFallYVelocity(DreamPlayer* tPlayer);
+void setActiveHitDataFallYVelocity(DreamPlayer* tPlayer, float tY, int tCoordinateP);
+void setHitDataFallYVelocity(DreamPlayer* tPlayer, float tY);
 int getActiveHitDataFallRecovery(DreamPlayer* tPlayer);
 int getHitDataFallRecovery(DreamPlayer* tPlayer);
 void setHitDataFallRecovery(DreamPlayer* tPlayer, int tCanRecover);
@@ -455,7 +455,7 @@ void setHitDataAirFall(DreamPlayer* tPlayer, int tIsCausingPlayer2ToFall);
 int getActiveHitDataForceNoFall(DreamPlayer* tPlayer);
 void setHitDataForceNoFall(DreamPlayer* tPlayer, int tForcePlayer2NotToFall);
 
-void setHitDataDownVelocity(DreamPlayer* tPlayer, double tX, double tY);
+void setHitDataDownVelocity(DreamPlayer* tPlayer, float tX, float tY);
 void setHitDataDownHitTime(DreamPlayer* tPlayer, int tHitTime);
 void setHitDataDownBounce(DreamPlayer* tPlayer, int tDoesBounce);
 
@@ -489,34 +489,34 @@ void setHitDataPaletteEffectAddition(DreamPlayer* tPlayer, int tR, int tG, int t
 
 int getActiveHitDataEnvironmentShakeTime(DreamPlayer* tPlayer);
 void setHitDataEnvironmentShakeTime(DreamPlayer* tPlayer, int tTime);
-double getActiveHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer);
-double getHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer);
-void setHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer, double tFrequency);
+float getActiveHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer);
+float getHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer);
+void setHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer, float tFrequency);
 int getActiveHitDataEnvironmentShakeAmplitude(DreamPlayer* tPlayer);
 int getHitDataEnvironmentShakeAmplitude(DreamPlayer* tPlayer);
 void setHitDataEnvironmentShakeAmplitude(DreamPlayer* tPlayer, int tAmplitude);
-double getActiveHitDataEnvironmentShakePhase(DreamPlayer* tPlayer);
-void setHitDataEnvironmentShakePhase(DreamPlayer* tPlayer, double tPhase);
+float getActiveHitDataEnvironmentShakePhase(DreamPlayer* tPlayer);
+void setHitDataEnvironmentShakePhase(DreamPlayer* tPlayer, float tPhase);
 
 int getActiveHitDataFallEnvironmentShakeTime(DreamPlayer* tPlayer);
 void setActiveHitDataFallEnvironmentShakeTime(DreamPlayer* tPlayer, int tTime);
 void setHitDataFallEnvironmentShakeTime(DreamPlayer* tPlayer, int tTime);
-double getActiveHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer);
-double getHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer);
-void setHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer, double tFrequency);
+float getActiveHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer);
+float getHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer);
+void setHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer, float tFrequency);
 int getActiveHitDataFallEnvironmentShakeAmplitude(DreamPlayer* tPlayer);
 void setHitDataFallEnvironmentShakeAmplitude(DreamPlayer* tPlayer, int tAmplitude);
-double getActiveHitDataFallEnvironmentShakePhase(DreamPlayer* tPlayer);
-void setHitDataFallEnvironmentShakePhase(DreamPlayer* tPlayer, double tPhase);
+float getActiveHitDataFallEnvironmentShakePhase(DreamPlayer* tPlayer);
+void setHitDataFallEnvironmentShakePhase(DreamPlayer* tPlayer, float tPhase);
 
-double getActiveHitDataVelocityX(DreamPlayer* tPlayer);
-double getHitDataVelocityX(DreamPlayer* tPlayer);
-void setActiveHitDataVelocityX(DreamPlayer* tPlayer, double x, int tCoordinateP);
-void setHitDataVelocityX(DreamPlayer* tPlayer, double x);
-double getActiveHitDataVelocityY(DreamPlayer* tPlayer);
-double getHitDataVelocityY(DreamPlayer* tPlayer);
-void setActiveHitDataVelocityY(DreamPlayer* tPlayer, double y, int tCoordinateP);
-void setHitDataVelocityY(DreamPlayer* tPlayer, double y);
+float getActiveHitDataVelocityX(DreamPlayer* tPlayer);
+float getHitDataVelocityX(DreamPlayer* tPlayer);
+void setActiveHitDataVelocityX(DreamPlayer* tPlayer, float x, int tCoordinateP);
+void setHitDataVelocityX(DreamPlayer* tPlayer, float x);
+float getActiveHitDataVelocityY(DreamPlayer* tPlayer);
+float getHitDataVelocityY(DreamPlayer* tPlayer);
+void setActiveHitDataVelocityY(DreamPlayer* tPlayer, float y, int tCoordinateP);
+void setHitDataVelocityY(DreamPlayer* tPlayer, float y);
 
 int getActiveHitDataIsFacingRight(DreamPlayer* tPlayer);
 void setHitDataIsFacingRight(DreamPlayer* tPlayer, int tIsFacingRight);

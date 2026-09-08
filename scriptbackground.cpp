@@ -32,7 +32,7 @@ void loadScriptBackground(MugenDefScript * tScript, MugenSpriteFile * tSprites, 
 	assert(isStringLowercase(tBackgroundGroupName));
 	MugenDefScriptGroup* current = &tScript->mGroups[tDefinitionGroupName];
 	const auto clearColor = getMugenDefVectorIOrDefaultAsGroup(current, "bgclearcolor", Vector3DI(0, 0, 0));
-	setScreenBackgroundColorRGB(clearColor.x / 255.0, clearColor.y / 255.0, clearColor.z / 255.0);
+	setScreenBackgroundColorRGB(clearColor.x / 255.0f, clearColor.y / 255.0f, clearColor.z / 255.0f);
 
 	current = current->mNext;
 

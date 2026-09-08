@@ -21,13 +21,13 @@ void setProjectileHitAnimation(DreamPlayer* p, int tAnimation);
 int getProjectileRemoveAnimation(DreamPlayer* p);
 void setProjectileRemoveAnimation(DreamPlayer* p, int tAnimation);
 void setProjectileCancelAnimation(DreamPlayer* p, int tAnimation);
-void setProjectileScale(DreamPlayer* p, double tX, double tY);
+void setProjectileScale(DreamPlayer* p, float tX, float tY);
 void setProjectileRemoveAfterHit(DreamPlayer* p, int tValue);
 void setProjectileRemoveTime(DreamPlayer* p, int tTime);
-void setProjectileVelocity(DreamPlayer* p, double tX, double tY, int tCoordinateP);
-void setProjectileRemoveVelocity(DreamPlayer* p, double tX, double tY, int tCoordinateP);
-void setProjectileAcceleration(DreamPlayer* p, double tX, double tY, int tCoordinateP);
-void setProjectileVelocityMultipliers(DreamPlayer* p, double tX, double tY);
+void setProjectileVelocity(DreamPlayer* p, float tX, float tY, int tCoordinateP);
+void setProjectileRemoveVelocity(DreamPlayer* p, float tX, float tY, int tCoordinateP);
+void setProjectileAcceleration(DreamPlayer* p, float tX, float tY, int tCoordinateP);
+void setProjectileVelocityMultipliers(DreamPlayer* p, float tX, float tY);
 
 void setProjectileHitAmountBeforeVanishing(DreamPlayer* p, int tHitAmount);
 void setProjectilMisstime(DreamPlayer* p, int tMissTime);

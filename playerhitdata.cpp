@@ -678,7 +678,7 @@ void setHitDataGuardDistance(DreamPlayer* tPlayer, int tDistance)
 	e->mGuardDistance = tDistance;
 }
 
-double getActiveHitDataYAccel(DreamPlayer* tPlayer)
+float getActiveHitDataYAccel(DreamPlayer* tPlayer)
 {
 	if (isActiveHitDataActive(tPlayer)) {
 		assert(isGeneralPlayer(tPlayer));
@@ -686,200 +686,200 @@ double getActiveHitDataYAccel(DreamPlayer* tPlayer)
 		return transformDreamCoordinates(e->mVerticalAcceleration, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 	}
 	else {
-		return transformDreamCoordinates(0.7, 640, getPlayerCoordinateP(tPlayer));
+		return transformDreamCoordinates(0.7f, 640, getPlayerCoordinateP(tPlayer));
 	}
 }
 
-double getHitDataYAccel(DreamPlayer* tPlayer)
+float getHitDataYAccel(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	return e->mVerticalAcceleration;
 }
 
-void setHitDataYAccel(DreamPlayer* tPlayer, double YAccel)
+void setHitDataYAccel(DreamPlayer* tPlayer, float YAccel)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mVerticalAcceleration = YAccel;
 }
 
-double getActiveHitDataGroundVelocityX(DreamPlayer* tPlayer)
+float getActiveHitDataGroundVelocityX(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return transformDreamCoordinates(e->mGroundVelocity.x, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-double getHitDataGroundVelocityX(DreamPlayer* tPlayer)
+float getHitDataGroundVelocityX(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	return e->mGroundVelocity.x;
 }
 
-double getActiveHitDataGroundVelocityY(DreamPlayer* tPlayer)
+float getActiveHitDataGroundVelocityY(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return transformDreamCoordinates(e->mGroundVelocity.y, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-double getHitDataGroundVelocityY(DreamPlayer* tPlayer)
+float getHitDataGroundVelocityY(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	return e->mGroundVelocity.y;
 }
 
-void setHitDataGroundVelocity(DreamPlayer* tPlayer, double tX, double tY)
+void setHitDataGroundVelocity(DreamPlayer* tPlayer, float tX, float tY)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mGroundVelocity = Vector2D(tX, tY);
 }
 
-double getActiveHitDataGuardVelocity(DreamPlayer* tPlayer)
+float getActiveHitDataGuardVelocity(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return transformDreamCoordinates(e->mGuardVelocity, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-double getHitDataGuardVelocity(DreamPlayer* tPlayer)
+float getHitDataGuardVelocity(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	return e->mGuardVelocity;
 }
 
-void setHitDataGuardVelocity(DreamPlayer* tPlayer, double tX)
+void setHitDataGuardVelocity(DreamPlayer* tPlayer, float tX)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mGuardVelocity = tX;
 }
 
-double getActiveHitDataAirVelocityX(DreamPlayer* tPlayer)
+float getActiveHitDataAirVelocityX(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return transformDreamCoordinates(e->mAirVelocity.x, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-double getHitDataAirVelocityX(DreamPlayer* tPlayer)
+float getHitDataAirVelocityX(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	return e->mAirVelocity.x;
 }
 
-double getActiveHitDataAirVelocityY(DreamPlayer* tPlayer)
+float getActiveHitDataAirVelocityY(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return transformDreamCoordinates(e->mAirVelocity.y, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-double getHitDataAirVelocityY(DreamPlayer* tPlayer)
+float getHitDataAirVelocityY(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	return e->mAirVelocity.y;
 }
 
-void setHitDataAirVelocity(DreamPlayer* tPlayer, double tX, double tY)
+void setHitDataAirVelocity(DreamPlayer* tPlayer, float tX, float tY)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mAirVelocity = Vector2D(tX, tY);
 }
 
-void setHitDataAirGuardVelocity(DreamPlayer* tPlayer, double tX, double tY)
+void setHitDataAirGuardVelocity(DreamPlayer* tPlayer, float tX, float tY)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mAirGuardVelocity = Vector2D(tX, tY);
 }
 
-double getActiveGroundCornerPushVelocityOffset(DreamPlayer* tPlayer)
+float getActiveGroundCornerPushVelocityOffset(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return transformDreamCoordinates(e->mGroundCornerPushVelocityOffset, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-double getGroundCornerPushVelocityOffset(DreamPlayer* tPlayer)
+float getGroundCornerPushVelocityOffset(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	return e->mGroundCornerPushVelocityOffset;
 }
 
-void setGroundCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX)
+void setGroundCornerPushVelocityOffset(DreamPlayer* tPlayer, float tX)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mGroundCornerPushVelocityOffset = tX;
 }
 
-double getActiveAirCornerPushVelocityOffset(DreamPlayer* tPlayer)
+float getActiveAirCornerPushVelocityOffset(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return transformDreamCoordinates(e->mAirCornerPushVelocityOffset, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-void setAirCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX)
+void setAirCornerPushVelocityOffset(DreamPlayer* tPlayer, float tX)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mAirCornerPushVelocityOffset = tX;
 }
 
-double getActiveDownCornerPushVelocityOffset(DreamPlayer* tPlayer)
+float getActiveDownCornerPushVelocityOffset(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return transformDreamCoordinates(e->mDownCornerPushVelocityOffset, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-void setDownCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX)
+void setDownCornerPushVelocityOffset(DreamPlayer* tPlayer, float tX)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mDownCornerPushVelocityOffset = tX;
 }
 
-double getActiveGuardCornerPushVelocityOffset(DreamPlayer* tPlayer)
+float getActiveGuardCornerPushVelocityOffset(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return transformDreamCoordinates(e->mGuardCornerPushVelocityOffset, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-double getGuardCornerPushVelocityOffset(DreamPlayer* tPlayer)
+float getGuardCornerPushVelocityOffset(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	return e->mGuardCornerPushVelocityOffset;
 }
 
-void setGuardCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX)
+void setGuardCornerPushVelocityOffset(DreamPlayer* tPlayer, float tX)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mGuardCornerPushVelocityOffset = tX;
 }
 
-double getActiveAirGuardCornerPushVelocityOffset(DreamPlayer* tPlayer)
+float getActiveAirGuardCornerPushVelocityOffset(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return transformDreamCoordinates(e->mAirGuardCornerPushVelocityOffset, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-void setAirGuardCornerPushVelocityOffset(DreamPlayer* tPlayer, double tX)
+void setAirGuardCornerPushVelocityOffset(DreamPlayer* tPlayer, float tX)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
@@ -1132,56 +1132,56 @@ void setHitDataFall(DreamPlayer* tPlayer, int tIsCausingPlayer2ToFall)
 	e->mFall = tIsCausingPlayer2ToFall;
 }
 
-double getActiveHitDataFallXVelocity(DreamPlayer* tPlayer)
+float getActiveHitDataFallXVelocity(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return transformDreamCoordinates(e->mFallVelocity.x, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-double getHitDataFallXVelocity(DreamPlayer* tPlayer)
+float getHitDataFallXVelocity(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	return transformDreamCoordinates(e->mFallVelocity.x, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-void setActiveHitDataFallXVelocity(DreamPlayer* tPlayer, double tX, int tCoordinateP)
+void setActiveHitDataFallXVelocity(DreamPlayer* tPlayer, float tX, int tCoordinateP)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	e->mFallVelocity.x = transformDreamCoordinates(tX, tCoordinateP, getActiveHitDataCoordinateP(tPlayer));
 }
 
-void setHitDataFallXVelocity(DreamPlayer* tPlayer, double tX)
+void setHitDataFallXVelocity(DreamPlayer* tPlayer, float tX)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mFallVelocity.x = tX;
 }
 
-double getActiveHitDataFallYVelocity(DreamPlayer* tPlayer)
+float getActiveHitDataFallYVelocity(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return transformDreamCoordinates(e->mFallVelocity.y, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-double getHitDataFallYVelocity(DreamPlayer* tPlayer)
+float getHitDataFallYVelocity(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	return e->mFallVelocity.y;
 }
 
-void setActiveHitDataFallYVelocity(DreamPlayer* tPlayer, double tY, int tCoordinateP)
+void setActiveHitDataFallYVelocity(DreamPlayer* tPlayer, float tY, int tCoordinateP)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	e->mFallVelocity.y = transformDreamCoordinates(tY, tCoordinateP, getActiveHitDataCoordinateP(tPlayer));
 }
 
-void setHitDataFallYVelocity(DreamPlayer* tPlayer, double tY)
+void setHitDataFallYVelocity(DreamPlayer* tPlayer, float tY)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
@@ -1272,7 +1272,7 @@ void setHitDataForceNoFall(DreamPlayer* tPlayer, int tForcePlayer2NotToFall)
 	e->mForcePlayer2OutOfFallState = tForcePlayer2NotToFall;
 }
 
-void setHitDataDownVelocity(DreamPlayer* tPlayer, double tX, double tY)
+void setHitDataDownVelocity(DreamPlayer* tPlayer, float tX, float tY)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
@@ -1484,21 +1484,21 @@ void setHitDataEnvironmentShakeTime(DreamPlayer* tPlayer, int tTime)
 	e->mEnvironmentShakeTime = tTime;
 }
 
-double getActiveHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer)
+float getActiveHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return e->mEnvironmentShakeFrequency;
 }
 
-double getHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer)
+float getHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	return e->mEnvironmentShakeFrequency;
 }
 
-void setHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer, double tFrequency)
+void setHitDataEnvironmentShakeFrequency(DreamPlayer* tPlayer, float tFrequency)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
@@ -1526,14 +1526,14 @@ void setHitDataEnvironmentShakeAmplitude(DreamPlayer* tPlayer, int tAmplitude)
 	e->mEnvironmentShakeAmplitude = tAmplitude;
 }
 
-double getActiveHitDataEnvironmentShakePhase(DreamPlayer* tPlayer)
+float getActiveHitDataEnvironmentShakePhase(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return e->mEnvironmentShakePhase;
 }
 
-void setHitDataEnvironmentShakePhase(DreamPlayer* tPlayer, double tPhase)
+void setHitDataEnvironmentShakePhase(DreamPlayer* tPlayer, float tPhase)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
@@ -1561,21 +1561,21 @@ void setHitDataFallEnvironmentShakeTime(DreamPlayer* tPlayer, int tTime)
 	e->mFallEnvironmentShakeTime = tTime;
 }
 
-double getActiveHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer)
+float getActiveHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return e->mFallEnvironmentShakeFrequency;
 }
 
-double getHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer)
+float getHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	return e->mFallEnvironmentShakeFrequency;
 }
 
-void setHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer, double tFrequency)
+void setHitDataFallEnvironmentShakeFrequency(DreamPlayer* tPlayer, float tFrequency)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
@@ -1596,70 +1596,70 @@ void setHitDataFallEnvironmentShakeAmplitude(DreamPlayer* tPlayer, int tAmplitud
 	e->mFallEnvironmentShakeAmplitude = tAmplitude;
 }
 
-double getActiveHitDataFallEnvironmentShakePhase(DreamPlayer* tPlayer)
+float getActiveHitDataFallEnvironmentShakePhase(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return e->mFallEnvironmentShakePhase;
 }
 
-void setHitDataFallEnvironmentShakePhase(DreamPlayer* tPlayer, double tPhase)
+void setHitDataFallEnvironmentShakePhase(DreamPlayer* tPlayer, float tPhase)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mFallEnvironmentShakePhase = tPhase;
 }
 
-double getActiveHitDataVelocityX(DreamPlayer* tPlayer)
+float getActiveHitDataVelocityX(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return transformDreamCoordinates(e->mVelocity.x, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-double getHitDataVelocityX(DreamPlayer* tPlayer)
+float getHitDataVelocityX(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	return e->mVelocity.x;
 }
 
-void setActiveHitDataVelocityX(DreamPlayer* tPlayer, double x, int tCoordinateP)
+void setActiveHitDataVelocityX(DreamPlayer* tPlayer, float x, int tCoordinateP)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	e->mVelocity.x = transformDreamCoordinates(x, tCoordinateP, getActiveHitDataCoordinateP(tPlayer));
 }
 
-void setHitDataVelocityX(DreamPlayer* tPlayer, double x)
+void setHitDataVelocityX(DreamPlayer* tPlayer, float x)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	e->mVelocity.x = x;
 }
 
-double getActiveHitDataVelocityY(DreamPlayer* tPlayer)
+float getActiveHitDataVelocityY(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	return transformDreamCoordinates(e->mVelocity.y, getActiveHitDataCoordinateP(tPlayer), getPlayerCoordinateP(tPlayer));
 }
 
-double getHitDataVelocityY(DreamPlayer* tPlayer)
+float getHitDataVelocityY(DreamPlayer* tPlayer)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;
 	return e->mVelocity.y;
 }
 
-void setActiveHitDataVelocityY(DreamPlayer* tPlayer, double y, int tCoordinateP)
+void setActiveHitDataVelocityY(DreamPlayer* tPlayer, float y, int tCoordinateP)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mActiveHitData;
 	e->mVelocity.y = transformDreamCoordinates(y, tCoordinateP, getActiveHitDataCoordinateP(tPlayer));
 }
 
-void setHitDataVelocityY(DreamPlayer* tPlayer, double y)
+void setHitDataVelocityY(DreamPlayer* tPlayer, float y)
 {
 	assert(isGeneralPlayer(tPlayer));
 	PlayerHitData* e = &tPlayer->mPassiveHitData;

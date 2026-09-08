@@ -56,13 +56,13 @@ static void setFightScreenGameSpeed() {
 
 	int gameSpeed = getGlobalGameSpeed();
 	if (gameSpeed < 0) {
-		double baseFactor = (-gameSpeed) / 9.0;
-		double speedFactor = 1 - 0.75 * baseFactor;
+		float baseFactor = (-gameSpeed) / 9.0f;
+		float speedFactor = 1 - 0.75f * baseFactor;
 		setWrapperTimeDilatation(speedFactor * getConfigGameSpeedTimeFactor());
 	}
 	else if (gameSpeed > 0) {
-		double baseFactor = gameSpeed / 9.0;
-		double speedFactor = 1 + baseFactor;
+		float baseFactor = gameSpeed / 9.0f;
+		float speedFactor = 1 + baseFactor;
 		setWrapperTimeDilatation(speedFactor * getConfigGameSpeedTimeFactor());
 	}
 }
@@ -139,15 +139,19 @@ static void loadFightScreen() {
 	resizeMemoryStackToCurrentSize(&gFightScreenData.mMemoryStack);
 	logMemoryState();
 	shutdownDreamAssignmentReader();
-	
+
+	logg("[Fightscreen] Load player sprites");
 	loadPlayerSprites();
+	logg("[Fightscreen] Set ui faces");
 	setUIFaces();
-	
+
+	logg("[Fightscreen] Play stage music");
 	playDreamStageMusic();
 	if (getGameMode() == GAME_MODE_OSU) {
 		instantiateActor(getOsuHandler());
 	}
 
+	logg("[Fightscreen] Init post-load actors");
 	instantiateActor(getPauseControllerHandler());
 	instantiateActor(getPostStateMachinePlayersBlueprint());
 	instantiateActor(getDreamExplodHandler());
@@ -162,11 +166,13 @@ static void loadFightScreen() {
 	}
 
 	setFightScreenGameSpeed();
-	
+
+	logg("[Fightscreen] Set initial player states");
 	changePlayerState(getRootPlayer(0), 5900);
 	changePlayerState(getRootPlayer(1), 5900);
 	setPlayerStatemachineToUpdateAgain(getRootPlayer(0));
 	setPlayerStatemachineToUpdateAgain(getRootPlayer(1));
+	logg("[Fightscreen] Fight screen loaded");
 
 	
 

@@ -37,7 +37,7 @@ typedef struct {
 	Vector3D mSineAmplitude;
 	int mSinePeriod;
 	int mInvertAll;
-	double mColorFactor;
+	float mColorFactor;
 } ActivePaletteElement;
 
 static struct {
@@ -122,7 +122,7 @@ static void resetPaletteEffectsForAnimation(MugenAnimationHandlerElement* e) {
 }
 
 static void updateSinglePaletteForPaletteEffect(ActivePaletteElement& tElement) {
-	auto addition = tElement.mAddition + tElement.mSineAmplitude * std::sin(2 * M_PI * (tElement.mNow / double(tElement.mSinePeriod)));
+	auto addition = tElement.mAddition + tElement.mSineAmplitude * std::sin(2 * (float)M_PI * (tElement.mNow / float(tElement.mSinePeriod)));
 	setMugenAnimationColorOffset(tElement.mAnimationElement, addition.x, addition.y, addition.z);
 	setMugenAnimationColor(tElement.mAnimationElement, tElement.mMultiplier.x, tElement.mMultiplier.y, tElement.mMultiplier.z);
 	setMugenAnimationColorInverted(tElement.mAnimationElement, tElement.mInvertAll);
@@ -204,7 +204,7 @@ void setMugenTextInvisibleForOneFrame(int tID)
 	addActiveVisibilityText(tID);
 }
 
-void setMugenAnimationPaletteEffectForDuration(MugenAnimationHandlerElement* tElement, int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, double tColorFactor)
+void setMugenAnimationPaletteEffectForDuration(MugenAnimationHandlerElement* tElement, int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, float tColorFactor)
 {
 	if (!tDuration) {
 		if (stl_map_contains(gMugenAnimationUtilityData.mActivePaletteElements, tElement)) {

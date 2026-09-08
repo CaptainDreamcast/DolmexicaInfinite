@@ -56,7 +56,7 @@ void setFightContinueInactive();
 void setGameModeArcade();
 void setGameModeFreePlay();
 void setGameModeVersus();
-void setGameModeSurvival(double tLifePercentage, int tRound);
+void setGameModeSurvival(float tLifePercentage, int tRound);
 void setGameModeTraining(); 
 void setGameModeWatch();
 void setGameModeSuperWatch();

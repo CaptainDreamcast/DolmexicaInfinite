@@ -45,7 +45,7 @@
     <NMakeCleanCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web clean"</NMakeCleanCommandLine>
     <NMakeReBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web clean &amp;&amp; make -f Makefile.web"</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>__EMSCRIPTEN__;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\Program Files (x86)\FMOD SoundSystem;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <NMakeBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web"</NMakeBuildCommandLine>
@@ -53,7 +53,7 @@
     <NMakeCleanCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web clean"</NMakeCleanCommandLine>
     <NMakeReBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite &amp;&amp; make -f Makefile.web clean &amp;&amp; make -f Makefile.web"</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>__EMSCRIPTEN__;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\Program Files (x86)\FMOD SoundSystem;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>

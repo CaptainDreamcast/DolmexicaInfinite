@@ -113,8 +113,8 @@ static struct {
 static void loadNetplayPopup(void*) {
 	gNetplayPopupData.mBG = playOneFrameAnimationLoop(Vector3D(60, 100, NETPLAY_POPUP_BG_Z), getEmptyWhiteTextureReference());
 	setAnimationSize(gNetplayPopupData.mBG, Vector3D(200, 40, 1), Vector3D(0, 0, 0));
-	setAnimationColor(gNetplayPopupData.mBG, 0, 0, 0.6);
-	setAnimationTransparency(gNetplayPopupData.mBG, 0.7);
+	setAnimationColor(gNetplayPopupData.mBG, 0, 0, 0.6f);
+	setAnimationTransparency(gNetplayPopupData.mBG, 0.7f);
 	gNetplayPopupData.mTextID = addMugenTextMugenStyle(gNetplayPopupData.mMessage.c_str(), Vector3D(160, 120, NETPLAY_POPUP_TEXT_Z), Vector3DI(-1, 0, 0));
 	gNetplayPopupData.mConfirmID = addMugenTextMugenStyle("Press start to return to main menu.", Vector3D(160, 130, NETPLAY_POPUP_TEXT_Z), Vector3DI(-1, 0, 0));
 	gNetplayPopupData.mIsActive = true;
@@ -281,7 +281,7 @@ static void unloadHostNetplayScreen() {
 
 static void updateIPText()
 {
-	double offset;
+	float offset;
 	if (!gNetplayScreenData.mJoin.mPointerPosition) {
 		offset = 0;
 	}
@@ -422,8 +422,8 @@ static void loadNetplayScreen() {
 
 	gNetplayScreenData.mHeaderTextID = addMugenTextMugenStyle("OPTIONS", Vector3D(160, 20, 45), Vector3DI(gNetplayScreenData.mTextFontID, 0, 0));
 	gNetplayScreenData.mBackgroundAnimationElement = playOneFrameAnimationLoop(Vector3D(52, 35, 40), getEmptyWhiteTextureReference());
-	setAnimationColor(gNetplayScreenData.mBackgroundAnimationElement, 0, 0, 0.6);
-	setAnimationTransparency(gNetplayScreenData.mBackgroundAnimationElement, 0.7);
+	setAnimationColor(gNetplayScreenData.mBackgroundAnimationElement, 0, 0, 0.6f);
+	setAnimationTransparency(gNetplayScreenData.mBackgroundAnimationElement, 0.7f);
 
 	resetNetplayPopup();
 	initDolmexicaNetplay();

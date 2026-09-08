@@ -92,44 +92,44 @@ static void handleEnabledController(BackgroundState* e, StaticStageHandlerElemen
 static void handleVelSetController(BackgroundState* e, StaticStageHandlerElement* tElement) {
 	BackgroundPhysicsController* controller = (BackgroundPhysicsController*)(&e->mController);
 	if (controller->mHasAssignmentX) {
-		double x = evaluateDreamAssignmentAndReturnAsFloat(&controller->x, NULL);
+		float x = evaluateDreamAssignmentAndReturnAsFloat(&controller->x, NULL);
 		setStageElementVelocityX(tElement, x);
 	}
 	if (controller->mHasAssignmentY) {
-		double y = evaluateDreamAssignmentAndReturnAsFloat(&controller->y, NULL);
+		float y = evaluateDreamAssignmentAndReturnAsFloat(&controller->y, NULL);
 		setStageElementVelocityY(tElement, y);
 	}
 }
 static void handleVelAddController(BackgroundState* e, StaticStageHandlerElement* tElement) {
 	BackgroundPhysicsController* controller = (BackgroundPhysicsController*)(&e->mController);
 	if (controller->mHasAssignmentX) {
-		double x = evaluateDreamAssignmentAndReturnAsFloat(&controller->x, NULL);
+		float x = evaluateDreamAssignmentAndReturnAsFloat(&controller->x, NULL);
 		addStageElementVelocityX(tElement, x);
 	}
 	if (controller->mHasAssignmentY) {
-		double y = evaluateDreamAssignmentAndReturnAsFloat(&controller->y, NULL);
+		float y = evaluateDreamAssignmentAndReturnAsFloat(&controller->y, NULL);
 		addStageElementVelocityY(tElement, y);
 	}
 }
 static void handlePosSetController(BackgroundState* e, StaticStageHandlerElement* tElement) {
 	BackgroundPhysicsController* controller = (BackgroundPhysicsController*)(&e->mController);
 	if (controller->mHasAssignmentX) {
-		double x = evaluateDreamAssignmentAndReturnAsFloat(&controller->x, NULL);
+		float x = evaluateDreamAssignmentAndReturnAsFloat(&controller->x, NULL);
 		setStageElementPositionX(tElement, x);
 	}
 	if (controller->mHasAssignmentY) {
-		double y = evaluateDreamAssignmentAndReturnAsFloat(&controller->y, NULL);
+		float y = evaluateDreamAssignmentAndReturnAsFloat(&controller->y, NULL);
 		setStageElementPositionY(tElement, y);
 	}
 }
 static void handlePosAddController(BackgroundState* e, StaticStageHandlerElement* tElement) {
 	BackgroundPhysicsController* controller = (BackgroundPhysicsController*)(&e->mController);
 	if (controller->mHasAssignmentX) {
-		double x = evaluateDreamAssignmentAndReturnAsFloat(&controller->x, NULL);
+		float x = evaluateDreamAssignmentAndReturnAsFloat(&controller->x, NULL);
 		addStageElementPositionX(tElement, x);
 	}
 	if (controller->mHasAssignmentY) {
-		double y = evaluateDreamAssignmentAndReturnAsFloat(&controller->y, NULL);
+		float y = evaluateDreamAssignmentAndReturnAsFloat(&controller->y, NULL);
 		addStageElementPositionY(tElement, y);
 	}
 }

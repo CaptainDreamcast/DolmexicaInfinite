@@ -41,7 +41,7 @@ static void loadPlayerDebugData(const Position& tBasePosition, MugenTextAlignmen
 	e->mBasePosition = tBasePosition;
 
 	Position pos = e->mBasePosition;
-	double dy = 6;
+	float dy = 6;
 
 	char text[3];
 	text[0] = '\0';
@@ -152,7 +152,7 @@ static void setSpeedLevel() {
 		setWrapperTimeDilatation(0.5);
 		break;
 	case 2:
-		setWrapperTimeDilatation(0.1);
+		setWrapperTimeDilatation(0.1f);
 		break;
 	case 3:
 		setWrapperTimeDilatation(1 / 60.0f);
@@ -175,7 +175,7 @@ void switchDebugTimeOff() {
 	setSpeedLevel();
 }
 
-static void setPlayerTextColor(double tR, double tG, double tB) {
+static void setPlayerTextColor(float tR, float tG, float tB) {
 	PlayerDebugData* e = &gFightDebugData.mPlayer;
 
 	int j;
@@ -185,7 +185,7 @@ static void setPlayerTextColor(double tR, double tG, double tB) {
 }
 
 static void setDebugTextColor() {
-	double r, g, b;
+	float r, g, b;
 	if (gFightDebugData.mTextColorStep == 0) {
 		r = g = b = 0;
 	}
@@ -364,7 +364,7 @@ static void updateSingleDebugText() {
 
 	int j = 0;
 	char text[1000];
-	sprintf(text, "FRAMES: %d (%.1f FPS) VRET: 0, SPEED: 0, SKIP: A", getDreamGameTime(), getRealFramerate());
+	sprintf(text, "FRAMES: %d (%.1f FPS) VRET: 0, SPEED: 0, SKIP: A", getDreamGameTime(), (double)getRealFramerate());
 	changeMugenText(e->mTextIDs[j++], text);
 
 	if (player) {

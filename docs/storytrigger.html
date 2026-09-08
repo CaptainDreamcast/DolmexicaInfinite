@@ -250,18 +250,19 @@ code, tt {
 <li><a class="reference internal" href="#storycommand" id="id68">StoryCommand</a></li>
 <li><a class="reference internal" href="#sin-math" id="id69">Sin (math)</a></li>
 <li><a class="reference internal" href="#stage" id="id70">Stage</a></li>
-<li><a class="reference internal" href="#svar" id="id71">SVar</a></li>
-<li><a class="reference internal" href="#tan-math" id="id72">Tan (math)</a></li>
-<li><a class="reference internal" href="#text" id="id73">Text</a></li>
-<li><a class="reference internal" href="#textbuiltup" id="id74">TextBuiltup</a></li>
-<li><a class="reference internal" href="#textnextstate" id="id75">TextNextState</a></li>
-<li><a class="reference internal" href="#textvisible" id="id76">TextVisible</a></li>
-<li><a class="reference internal" href="#textx" id="id77">TextX</a></li>
-<li><a class="reference internal" href="#texty" id="id78">TextY</a></li>
-<li><a class="reference internal" href="#time" id="id79">Time</a></li>
-<li><a class="reference internal" href="#var" id="id80">Var</a></li>
-<li><a class="reference internal" href="#x" id="id81">X</a></li>
-<li><a class="reference internal" href="#y" id="id82">Y</a></li>
+<li><a class="reference internal" href="#strlen" id="id71">StrLen</a></li>
+<li><a class="reference internal" href="#svar" id="id72">SVar</a></li>
+<li><a class="reference internal" href="#tan-math" id="id73">Tan (math)</a></li>
+<li><a class="reference internal" href="#text" id="id74">Text</a></li>
+<li><a class="reference internal" href="#textbuiltup" id="id75">TextBuiltup</a></li>
+<li><a class="reference internal" href="#textnextstate" id="id76">TextNextState</a></li>
+<li><a class="reference internal" href="#textvisible" id="id77">TextVisible</a></li>
+<li><a class="reference internal" href="#textx" id="id78">TextX</a></li>
+<li><a class="reference internal" href="#texty" id="id79">TextY</a></li>
+<li><a class="reference internal" href="#time" id="id80">Time</a></li>
+<li><a class="reference internal" href="#var" id="id81">Var</a></li>
+<li><a class="reference internal" href="#x" id="id82">X</a></li>
+<li><a class="reference internal" href="#y" id="id83">Y</a></li>
 </ul>
 </li>
 </ul>
@@ -1358,7 +1359,7 @@ trigger1 = StageY(5) = 200
 <h2><a class="toc-backref" href="#id68">StoryCommand</a></h2>
 <p>Same as original command M.U.G.E.N trigger. Uses commands from cmd file in storyboard header.</p>
 </div>
-<div class="section" id="log-sin">
+<div class="section" id="sin-math">
 <h2><a class="toc-backref" href="#id69">Sin (math)</a></h2>
 <p>Same as original M.U.G.E.N trigger.</p>
 </div>
@@ -1385,16 +1386,39 @@ trigger1 = Stage(5) = 1
   Triggers if animation 5 is part of the stage's camera coordinate system.
 </pre>
 </div>
+<div class="section" id="strlen">
+<h2><a class="toc-backref" href="#id71">StrLen</a></h2>
+<p>This trigger takes a string as an argument and returns the amount of characters in that string. Arguments that are not strings are converted to a string first, so for example StrLen(123) returns 3.</p>
+<dl class="docutils">
+<dt>Format:</dt>
+<dd>StrLen(exprn)</dd>
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt>exprn</dt>
+<dd>The input string (or something that will be converted to a string first).</dd>
+</dl>
+</dd>
+<dt>Return type:</dt>
+<dd>int</dd>
+<dt>Error conditions:</dt>
+<dd>Returns bottom if exprn evaluates to bottom.</dd>
+</dl>
+<p>Example:</p>
+<pre class="literal-block">
+trigger1 = StrLen("Dolmexica") = 9
+  Triggers because the string "Dolmexica" is 9 characters long.
+</pre>
+</div>
 <div class="section" id="svar">
-<h2><a class="toc-backref" href="#id71">SVar</a></h2>
+<h2><a class="toc-backref" href="#id72">SVar</a></h2>
 <p>Same as original M.U.G.E.N trigger, but for string variables.</p>
 </div>
 <div class="section" id="tan-math">
-<h2><a class="toc-backref" href="#id72">Tan (math)</a></h2>
+<h2><a class="toc-backref" href="#id73">Tan (math)</a></h2>
 <p>Same as original M.U.G.E.N trigger.</p>
 </div>
 <div class="section" id="text">
-<h2><a class="toc-backref" href="#id73">Text</a></h2>
+<h2><a class="toc-backref" href="#id74">Text</a></h2>
 <p>Return full text of text element.</p>
 <dl class="docutils">
 <dt>Format:</dt>
@@ -1417,7 +1441,7 @@ trigger1 = Text(5) = "Hey, what is going on?"
 </pre>
 </div>
 <div class="section" id="textbuiltup">
-<h2><a class="toc-backref" href="#id74">TextBuiltup</a></h2>
+<h2><a class="toc-backref" href="#id75">TextBuiltup</a></h2>
 <p>Return true if typewriter effect is over and text is completely displayed.</p>
 <dl class="docutils">
 <dt>Format:</dt>
@@ -1440,7 +1464,7 @@ trigger1 = TextBuiltup(5) = 1
 </pre>
 </div>
 <div class="section" id="textnextstate">
-<h2><a class="toc-backref" href="#id75">TextNextState</a></h2>
+<h2><a class="toc-backref" href="#id76">TextNextState</a></h2>
 <p>Return next state parameter of text element.</p>
 <dl class="docutils">
 <dt>Format:</dt>
@@ -1463,7 +1487,7 @@ trigger1 = TextNextState(5) = 10
 </pre>
 </div>
 <div class="section" id="textvisible">
-<h2><a class="toc-backref" href="#id76">TextVisible</a></h2>
+<h2><a class="toc-backref" href="#id77">TextVisible</a></h2>
 <p>Return visibility of text.</p>
 <dl class="docutils">
 <dt>Format:</dt>
@@ -1486,7 +1510,7 @@ trigger1 = TextVisible(5) = 0
 </pre>
 </div>
 <div class="section" id="textx">
-<h2><a class="toc-backref" href="#id77">TextX</a></h2>
+<h2><a class="toc-backref" href="#id78">TextX</a></h2>
 <p>Return x position of text.</p>
 <dl class="docutils">
 <dt>Format:</dt>
@@ -1509,7 +1533,7 @@ trigger1 = TextX(5) = 200
 </pre>
 </div>
 <div class="section" id="texty">
-<h2><a class="toc-backref" href="#id78">TextY</a></h2>
+<h2><a class="toc-backref" href="#id79">TextY</a></h2>
 <p>Return y position of text.</p>
 <dl class="docutils">
 <dt>Format:</dt>
@@ -1532,7 +1556,7 @@ trigger1 = TextY(5) = 200
 </pre>
 </div>
 <div class="section" id="time">
-<h2><a class="toc-backref" href="#id79">Time</a></h2>
+<h2><a class="toc-backref" href="#id80">Time</a></h2>
 <p>Return time passed since current state was entered.</p>
 <dl class="docutils">
 <dt>Format:</dt>
@@ -1551,11 +1575,11 @@ trigger1 = Time % 10 = 0
 </pre>
 </div>
 <div class="section" id="var">
-<h2><a class="toc-backref" href="#id80">Var</a></h2>
+<h2><a class="toc-backref" href="#id81">Var</a></h2>
 <p>Same as original M.U.G.E.N trigger.</p>
 </div>
 <div class="section" id="x">
-<h2><a class="toc-backref" href="#id81">X</a></h2>
+<h2><a class="toc-backref" href="#id82">X</a></h2>
 <p>Return x position of anim.</p>
 <dl class="docutils">
 <dt>Format:</dt>
@@ -1578,7 +1602,7 @@ trigger1 = X(5) = 200
 </pre>
 </div>
 <div class="section" id="y">
-<h2><a class="toc-backref" href="#id82">Y</a></h2>
+<h2><a class="toc-backref" href="#id83">Y</a></h2>
 <p>Return y position of anim.</p>
 <dl class="docutils">
 <dt>Format:</dt>

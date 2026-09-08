@@ -1,6 +1,7 @@
 #include "config.h"
 
 #include <assert.h>
+#include <stdlib.h>
 
 #include <algorithm>
 
@@ -38,14 +39,14 @@ typedef struct {
 } ConfigOptionsData;
 
 typedef struct {
-	double mDefaultAttackDamageDoneToPowerMultiplier;
-	double mDefaultAttackDamageReceivedToPowerMultiplier;
-	double mSuperTargetDefenseMultiplier;
+	float mDefaultAttackDamageDoneToPowerMultiplier;
+	float mDefaultAttackDamageReceivedToPowerMultiplier;
+	float mSuperTargetDefenseMultiplier;
 } ConfigRulesData;
 
 typedef struct {
 	int mIsUsingStaticAssignments;
-	double mGameSpeedFactor;
+	float mGameSpeedFactor;
 	int mIsDrawingShadows;
 } ConfigConfigData;
 
@@ -60,15 +61,15 @@ typedef struct {
 typedef struct {
 	int mIsPlayingSound;
 	int mAreStereoEffectsActive;
-	double mPanningWidthFactor;
+	float mPanningWidthFactor;
 
-	double mMasterWavVolumeFactor;
+	float mMasterWavVolumeFactor;
 
-	double mWavVolumeFactor;
-	double mMidiVolumeFactor;
-	double mMP3VolumeFactor;
-	double mModVolumeFactor;
-	double mCDAVolumeFactor;
+	float mWavVolumeFactor;
+	float mMidiVolumeFactor;
+	float mMP3VolumeFactor;
+	float mModVolumeFactor;
+	float mCDAVolumeFactor;
 
 	int mIsPlayingMidi;
 	int mIsPlayingMP3;
@@ -100,7 +101,7 @@ static struct {
 	ConfigArcadeData mArcade;
 
 	unordered_map<int, int> mGlobalVariables;
-	unordered_map<int, double> mGlobalFVariables;
+	unordered_map<int, float> mGlobalFVariables;
 	unordered_map<int, std::string> mGlobalStringVariables;
 	std::string mAssetFolder;
 } gConfigData;
@@ -118,15 +119,15 @@ static void loadConfigOptions(MugenDefScript* tScript) {
 }
 
 static void loadConfigRules(MugenDefScript* tScript) {
-	gConfigData.mRules.mDefaultAttackDamageDoneToPowerMultiplier = getMugenDefFloatOrDefault(tScript, "rules", "default.attack.lifetopowermul", 0.7);
-	gConfigData.mRules.mDefaultAttackDamageReceivedToPowerMultiplier = getMugenDefFloatOrDefault(tScript, "rules", "default.gethit.lifetopowermul", 0.6);
+	gConfigData.mRules.mDefaultAttackDamageDoneToPowerMultiplier = getMugenDefFloatOrDefault(tScript, "rules", "default.attack.lifetopowermul", 0.7f);
+	gConfigData.mRules.mDefaultAttackDamageReceivedToPowerMultiplier = getMugenDefFloatOrDefault(tScript, "rules", "default.gethit.lifetopowermul", 0.6f);
 	gConfigData.mRules.mSuperTargetDefenseMultiplier = getMugenDefFloatOrDefault(tScript, "rules", "super.targetdefencemul", 1.5);
 }
 
 static void loadConfigConfig(MugenDefScript* tScript) {
 	gConfigData.mConfig.mIsUsingStaticAssignments = getMugenDefIntegerOrDefault(tScript, "config", "staticassignments", 0);
 	const auto gameSpeed = getMugenDefIntegerOrDefault(tScript, "config", "gamespeed", 60);
-	gConfigData.mConfig.mGameSpeedFactor = gameSpeed / 60.0;
+	gConfigData.mConfig.mGameSpeedFactor = gameSpeed / 60.0f;
 	gConfigData.mConfig.mIsDrawingShadows = getMugenDefIntegerOrDefault(tScript, "config", "drawshadows", 1);
 
 	setWrapperTimeDilatation(gConfigData.mConfig.mGameSpeedFactor);
@@ -150,16 +151,16 @@ static void loadConfigDebug(MugenDefScript* tScript) {
 static void loadConfigSound(MugenDefScript* tScript) {
 	gConfigData.mSound.mIsPlayingSound = getMugenDefIntegerOrDefault(tScript, "sound win", "sound", 1);
 	gConfigData.mSound.mAreStereoEffectsActive = getMugenDefIntegerOrDefault(tScript, "sound win", "stereoeffects", 1);
-	gConfigData.mSound.mPanningWidthFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "panningwidth", 240) / 255.0;
+	gConfigData.mSound.mPanningWidthFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "panningwidth", 240) / 255.0f;
 
-	gConfigData.mSound.mMasterWavVolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "masterwavvolume", 255) / 255.0;
+	gConfigData.mSound.mMasterWavVolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "masterwavvolume", 255) / 255.0f;
 	
-	gConfigData.mSound.mWavVolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "wavvolume", 128) / 255.0;
-	gConfigData.mSound.mMidiVolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "midivolume", 128) / 255.0;
-	gConfigData.mSound.mMP3VolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "mp3volume", 128) / 255.0;
-	gConfigData.mSound.mModVolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "modvolume", 128) / 255.0;
+	gConfigData.mSound.mWavVolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "wavvolume", 128) / 255.0f;
+	gConfigData.mSound.mMidiVolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "midivolume", 128) / 255.0f;
+	gConfigData.mSound.mMP3VolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "mp3volume", 128) / 255.0f;
+	gConfigData.mSound.mModVolumeFactor = getMugenDefIntegerOrDefault(tScript, "sound win", "modvolume", 128) / 255.0f;
 	const auto cdaValue = getMugenDefIntegerOrDefault(tScript, "sound win", "cdavolume", -1);
-	gConfigData.mSound.mCDAVolumeFactor = (cdaValue == -1) ? 1.0 : (cdaValue / 255.0);
+	gConfigData.mSound.mCDAVolumeFactor = (cdaValue == -1) ? 1.0f : (cdaValue / 255.0f);
 
 	gConfigData.mSound.mIsPlayingMidi = getMugenDefIntegerOrDefault(tScript, "sound win", "playmidi", 1);
 	gConfigData.mSound.mIsPlayingMP3 = getMugenDefIntegerOrDefault(tScript, "sound win", "playmp3", 1);
@@ -237,9 +238,38 @@ static const std::string getDolmexicaConfigPathAfterAssetFolderSet() {
 	}
 }
 
+static int hasDolmexicaAssetFolderConfig(const std::string& tFolder) {
+	return isFile(tFolder + "data/dolmexica.cfg") || isFile(tFolder + "data/mugen.cfg");
+}
+
+static std::string getDolmexicaAssetFolderEnvironmentOverride() {
+	const char* folderEnv = getenv("DOLMEXICA_ASSET_FOLDER");
+	if (!folderEnv || !*folderEnv) return "";
+
+	std::string folder = folderEnv;
+	if (folder.back() != '/' && folder.back() != '\\') folder += "/";
+	return folder;
+}
+
+static int loadDolmexicaAssetFolderFromEnvironment()
+{
+	const auto folder = getDolmexicaAssetFolderEnvironmentOverride();
+	if (folder.empty()) return 0;
+
+	if (!hasDolmexicaAssetFolderConfig(folder)) {
+		logWarningFormat("DOLMEXICA_ASSET_FOLDER points at %s, which has no data/mugen.cfg. Ignoring.", folder.c_str());
+		return 0;
+	}
+
+	gConfigData.mAssetFolder = folder;
+	return 1;
+}
+
 static void loadDolmexicaAssetFolder()
 {
-	if (isFile("assets/data/dolmexica.cfg") || isFile("assets/data/mugen.cfg")) {
+	if (loadDolmexicaAssetFolderFromEnvironment()) return;
+
+	if (hasDolmexicaAssetFolderConfig("assets/")) {
 		gConfigData.mAssetFolder = "assets/";
 	}
 	else {
@@ -396,17 +426,17 @@ std::string findMugenSystemOrFightFilePath(const std::string & tFile, const std:
 	return getDolmexicaAssetFolder() + tFile;
 }
 
-double getDreamDefaultAttackDamageDoneToPowerMultiplier()
+float getDreamDefaultAttackDamageDoneToPowerMultiplier()
 {
 	return gConfigData.mRules.mDefaultAttackDamageDoneToPowerMultiplier;
 }
 
-double getDreamDefaultAttackDamageReceivedToPowerMultiplier()
+float getDreamDefaultAttackDamageReceivedToPowerMultiplier()
 {
 	return gConfigData.mRules.mDefaultAttackDamageReceivedToPowerMultiplier;
 }
 
-double getDreamSuperTargetDefenseMultiplier()
+float getDreamSuperTargetDefenseMultiplier()
 {
 	return gConfigData.mRules.mSuperTargetDefenseMultiplier;
 }
@@ -436,7 +466,7 @@ int isUsingStaticAssignments()
 	return gConfigData.mConfig.mIsUsingStaticAssignments;
 }
 
-double getConfigGameSpeedTimeFactor()
+float getConfigGameSpeedTimeFactor()
 {
 	return gConfigData.mConfig.mGameSpeedFactor;
 }
@@ -463,9 +493,9 @@ void setDifficulty(int tDifficulty)
 	gConfigData.mOptions.mActive.mDifficulty = tDifficulty;
 }
 
-double getLifeStartPercentage()
+float getLifeStartPercentage()
 {
-	return gConfigData.mOptions.mActive.mLifeStartPercentageNumber / 100.0;
+	return gConfigData.mOptions.mActive.mLifeStartPercentageNumber / 100.0f;
 }
 
 int getLifeStartPercentageNumber()
@@ -509,9 +539,9 @@ void setGlobalGameSpeed(int tGameSpeed)
 	gConfigData.mOptions.mActive.mGameSpeed = tGameSpeed;
 }
 
-double parseGameWavVolumeToPrism(int tWavVolume)
+float parseGameWavVolumeToPrism(int tWavVolume)
 {
-	return tWavVolume / 100.0;
+	return tWavVolume / 100.0f;
 }
 
 int getGameWavVolume()
@@ -530,9 +560,9 @@ void setUnscaledGameWavVolume(int tWavVolume)
 	setVolume(parseGameWavVolumeToPrism(getGameWavVolume()));
 }
 
-double parseGameMidiVolumeToPrism(int tMidiVolume)
+float parseGameMidiVolumeToPrism(int tMidiVolume)
 {
-	return tMidiVolume / 100.0;
+	return tMidiVolume / 100.0f;
 }
 
 int getGameMidiVolume()
@@ -555,7 +585,7 @@ int getSoundAreStereoEffectsActive() {
 	return gConfigData.mSound.mAreStereoEffectsActive;
 }
 
-double getSoundPanningWidthFactor()
+float getSoundPanningWidthFactor()
 {
 	return gConfigData.mSound.mPanningWidthFactor;
 }
@@ -601,7 +631,7 @@ int calculateAIRampDifficulty(int tCurrentFightZeroIndexed, const Vector3DI& tAI
 		difficulty = baseDifficulty + tAIRampEnd.y;
 	}
 	else {
-		const auto t = (tCurrentFightZeroIndexed - tAIRampStart.x) / double(tAIRampEnd.x - tAIRampStart.x);
+		const auto t = (tCurrentFightZeroIndexed - tAIRampStart.x) / float(tAIRampEnd.x - tAIRampStart.x);
 		const auto offset = int(tAIRampStart.y + t * (tAIRampEnd.y - tAIRampStart.y));
 		difficulty = baseDifficulty + offset;
 	}
@@ -624,17 +654,17 @@ int getGlobalVariable(int tIndex)
 	return gConfigData.mGlobalVariables[tIndex];
 }
 
-void setGlobalFloatVariable(int tIndex, double tValue)
+void setGlobalFloatVariable(int tIndex, float tValue)
 {
 	gConfigData.mGlobalFVariables[tIndex] = tValue;
 }
 
-void addGlobalFloatVariable(int tIndex, double tValue)
+void addGlobalFloatVariable(int tIndex, float tValue)
 {
 	gConfigData.mGlobalFVariables[tIndex] += tValue;
 }
 
-double getGlobalFloatVariable(int tIndex)
+float getGlobalFloatVariable(int tIndex)
 {
 	return gConfigData.mGlobalFVariables[tIndex];
 }
@@ -994,7 +1024,7 @@ static void loadGlobalVariablesDreamcast(PrismSaveSlot tSaveSlot) {
 		float val;
 		readFromBufferPointer(&key, &p, sizeof(int32_t));
 		readFromBufferPointer(&val, &p, sizeof(float));
-		gConfigData.mGlobalFVariables[key] = double(val);
+		gConfigData.mGlobalFVariables[key] = float(val);
 	}
 
 	readFromBufferPointer(&varAmount, &p, sizeof(uint32_t));

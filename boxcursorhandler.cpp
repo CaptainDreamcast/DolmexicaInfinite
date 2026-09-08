@@ -40,12 +40,12 @@ static void boxCursorCB1(void* tCaller);
 
 static void boxCursorCB2(void* tCaller) {
 	BoxCursor* e = (BoxCursor*)tCaller;
-	e->mTweenID = tweenDouble(getAnimationTransparencyReference(e->mAnimationElement), 0.2, 0.1, linearTweeningFunction, 20, boxCursorCB1, e);
+	e->mTweenID = tweenDouble(getAnimationTransparencyReference(e->mAnimationElement), 0.2f, 0.1f, linearTweeningFunction, 20, boxCursorCB1, e);
 }
 
 static void boxCursorCB1(void* tCaller) {
 	BoxCursor* e = (BoxCursor*)tCaller;
-	e->mTweenID = tweenDouble(getAnimationTransparencyReference(e->mAnimationElement), 0.1, 0.2, linearTweeningFunction, 20, boxCursorCB2, e);
+	e->mTweenID = tweenDouble(getAnimationTransparencyReference(e->mAnimationElement), 0.1f, 0.2f, linearTweeningFunction, 20, boxCursorCB2, e);
 }
 
 int addBoxCursor(const Position& tStartPosition, const Position& tOffset, const GeoRectangle2D& tRectangle)
@@ -53,8 +53,8 @@ int addBoxCursor(const Position& tStartPosition, const Position& tOffset, const 
 	BoxCursor* e = (BoxCursor*)allocMemory(sizeof(BoxCursor));
 	e->mAnimationElement = playOneFrameAnimationLoop(tOffset + tRectangle.mTopLeft, &gBoxCursorHandlerData.mWhiteTexture);
 	e->mBasePosition = tStartPosition;
-	double w = tRectangle.mBottomRight.x - tRectangle.mTopLeft.x;
-	double h = tRectangle.mBottomRight.y - tRectangle.mTopLeft.y;
+	float w = tRectangle.mBottomRight.x - tRectangle.mTopLeft.x;
+	float h = tRectangle.mBottomRight.y - tRectangle.mTopLeft.y;
 	setAnimationSize(e->mAnimationElement, Vector3D(w, h, 1), Vector3D(0, 0, 0));
 	setAnimationBasePositionReference(e->mAnimationElement, &e->mBasePosition);
 	setAnimationColor(e->mAnimationElement, 0, 1, 1);
@@ -98,9 +98,9 @@ void pauseBoxCursor(int tID)
 	BoxCursor* e = (BoxCursor*)int_map_get(&gBoxCursorHandlerData.mBoxCursors, tID);
 	if (e->mIsPaused) return;
 
-	setAnimationColor(e->mAnimationElement, 0, 0.6, 0.6);
+	setAnimationColor(e->mAnimationElement, 0, 0.6f, 0.6f);
 	removeTween(e->mTweenID);
-	setAnimationTransparency(e->mAnimationElement, 0.2);
+	setAnimationTransparency(e->mAnimationElement, 0.2f);
 	e->mIsPaused = 1;
 }
 

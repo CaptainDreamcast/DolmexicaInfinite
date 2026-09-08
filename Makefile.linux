@@ -1,0 +1,34 @@
+# Headless Linux build of the Dolmexica Infinite test suite.
+# Usage: make -f Makefile.linux -j$(nproc)
+
+include Makefile.common
+
+PRISM_PATH ?= ../prism
+
+GAME_OBJS = $(filter-out main.o,$(OBJS))
+TEST_OBJS = test/main.o test/commontestfunctionality.o test/censuscommon.o test/crashtest.o \
+	test/mugenassignmentevaluatortest.o test/entitycensustest.o test/determinismtest.o test/assets_test.o test/hitoverridetest.o \
+	test/mediacapturetest.o
+
+OBJDIR = build_linux
+ALL_OBJS = $(addprefix $(OBJDIR)/,$(GAME_OBJS) $(TEST_OBJS))
+
+CXX ?= g++
+CXXFLAGS = -std=c++17 -fpermissive -O2 -g -Wno-write-strings \
+	-I$(PRISM_PATH)/include -I$(PRISM_PATH)/linux/shim -Itest/gtest-shim -I. \
+	$(shell pkg-config --cflags libpng zlib)
+LDFLAGS = -L$(PRISM_PATH)/bin_linux -lprism -lpng -lz -l:libzstd.so.1 -lpthread
+
+all: DolmexicaInfiniteTest
+
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+DolmexicaInfiniteTest: $(ALL_OBJS) $(PRISM_PATH)/bin_linux/libprism.a
+	$(CXX) $(ALL_OBJS) $(LDFLAGS) -o $@
+
+clean:
+	rm -rf $(OBJDIR) DolmexicaInfiniteTest
+
+.PHONY: all clean

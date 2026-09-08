@@ -25,6 +25,7 @@ filesystem
 concept
 debug
 release
+plans
 
 web/*
 web2/*
@@ -74,3 +75,4 @@ tools/MakeYourOwnGameKitGui/.vs/*
 *.psess
 *.vspx
 *.testdurations
+*.md

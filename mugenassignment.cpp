@@ -235,7 +235,7 @@ DreamMugenAssignment* makeDreamNumberMugenAssignment(int tVal)
 	return (DreamMugenAssignment*)number;
 }
 
-DreamMugenAssignment* makeDreamFloatMugenAssignment(double tVal)
+DreamMugenAssignment* makeDreamFloatMugenAssignment(float tVal)
 {
 	DreamMugenFloatAssignment* f = (DreamMugenFloatAssignment*)allocMemoryOnMemoryStackOrMemory(sizeof(DreamMugenFloatAssignment));
 	gDebugAssignmentAmount++;
@@ -846,7 +846,7 @@ static int isFloatConstant(char* tText) {
 }
 
 static DreamMugenAssignment* parseFloatConstantFromString(char* tText) {
-	double f = atof(tText);
+	float f = (float)atof(tText);
 
 	return makeDreamFloatMugenAssignment(f);
 }
@@ -925,6 +925,9 @@ static DreamMugenAssignment* parseMugenRawVariableFromString(char* tText) {
 	strcpy(data->mName, tText);
 	turnStringLowercase(data->mName);
 	data->mType = MUGEN_ASSIGNMENT_TYPE_RAW_VARIABLE;
+	data->mComparisonResolution = 0;
+	data->mComparisonEvaluatorType = 0;
+	data->mComparisonFunc = NULL;
 	return (DreamMugenAssignment*)data;
 }
 

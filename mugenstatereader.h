@@ -194,6 +194,7 @@ typedef struct {
 	int16_t mAccessAmount;
 	uint8_t mType;
 	uint8_t mTarget;
+	uint8_t mIgnoreHitPause;
 } DreamMugenStateController;
 
 typedef struct {
@@ -258,34 +259,34 @@ typedef struct {
 	Vector2D mAirGetHitAirRecoveryMultiplier;
 	Vector2D mAirGetHitAirRecoveryOffset;
 
-	double mAirGetHitExtraXWhenHoldingBackward;
-	double mAirGetHitExtraXWhenHoldingForward;
-	double mAirGetHitExtraYWhenHoldingUp;
-	double mAirGetHitExtraYWhenHoldingDown;
+	float mAirGetHitExtraXWhenHoldingBackward;
+	float mAirGetHitExtraXWhenHoldingForward;
+	float mAirGetHitExtraYWhenHoldingUp;
+	float mAirGetHitExtraYWhenHoldingDown;
 
 } DreamMugenConstantsVelocityData;
 
 typedef struct {
 	int mAllowedAirJumpAmount;
 	int mAirJumpMinimumHeight;
-	double mVerticalAcceleration;
-	double mStandFiction;
-	double mCrouchFriction;
-	double mStandFrictionThreshold;
-	double mCrouchFrictionThreshold;
-	double mJumpChangeAnimThreshold;
+	float mVerticalAcceleration;
+	float mStandFiction;
+	float mCrouchFriction;
+	float mStandFrictionThreshold;
+	float mCrouchFrictionThreshold;
+	float mJumpChangeAnimThreshold;
 
 	int mAirGetHitGroundLevelY;
 	int mAirGetHitGroundRecoveryGroundYTheshold;
 	int mAirGetHitGroundRecoveryGroundGoundLevelY;
-	double mAirGetHitAirRecoveryVelocityYThreshold;
-	double mAirGetHitAirRecoveryVerticalAcceleration;
+	float mAirGetHitAirRecoveryVelocityYThreshold;
+	float mAirGetHitAirRecoveryVerticalAcceleration;
 
 	int mAirGetHitTripGroundLevelY;
 	Vector2D mBounceOffset;
-	double mVerticalBounceAcceleration;
+	float mVerticalBounceAcceleration;
 	int mBounceGroundLevel;
-	double mLyingDownFrictionThreshold;
+	float mLyingDownFrictionThreshold;
 } DreamMugenConstantsMovementData;
 
 typedef struct {
@@ -384,4 +385,17 @@ DreamMugenStateTypeFlags convertDreamMugenStateTypeToFlag(DreamMugenStateType tT
 
 #ifdef _WIN32
 void imguiMugenStates(const std::string_view& tName, DreamMugenStates& tStates, const std::string_view& tScriptPath);
+
+struct DreamMugenStateControllerProvenance {
+	std::string mScriptPath;
+	int mStateID = -1;
+	int mControllerIndex = -1; // == group offset after the [Statedef N] group, same as saveMugenDefString
+};
+
+const DreamMugenStateControllerProvenance* getDreamMugenStateControllerProvenance(const void* tController);
+// which file the (accepted) [Statedef N] group came from, null when unknown. Same recording rules as above
+const std::string* getDreamMugenStateDefProvenance(int tStateID);
+// full state id -> source file map
+const std::map<int, std::string>& getDreamMugenStateDefProvenances();
+void clearDreamMugenStateControllerProvenances();
 #endif

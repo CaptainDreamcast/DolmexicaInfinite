@@ -69,8 +69,8 @@ typedef struct {
 	MugenAnimationHandlerElement* mAnimationElement;
 	MugenAnimationHandlerElement* mShadowAnimationElement;
 
-	double mTimeDilatationNow;
-	double mTimeDilatation;
+	float mTimeDilatationNow;
+	float mTimeDilatation;
 	int mNow;
 } Explod;
 
@@ -152,14 +152,14 @@ void setExplodBindTime(int tID, int tBindTime)
 	e->mBindTime = tBindTime;
 }
 
-void setExplodVelocity(int tID, double tX, double tY)
+void setExplodVelocity(int tID, float tX, float tY)
 {
 	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mVelocity = Vector3D(tX, tY, 0);
 	e->mVelocity = transformDreamCoordinatesVector(e->mVelocity, getActiveStateMachineCoordinateP(), getDreamMugenStageHandlerCameraCoordinateP());
 }
 
-void setExplodAcceleration(int tID, double tX, double tY)
+void setExplodAcceleration(int tID, float tX, float tY)
 {
 	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mAcceleration = Vector3D(tX, tY, 0);
@@ -205,7 +205,7 @@ void setExplodPauseMoveTime(int tID, int tPauseMoveTime)
 	e->mPauseMoveTime = tPauseMoveTime;
 }
 
-void setExplodScale(int tID, double tX, double tY)
+void setExplodScale(int tID, float tX, float tY)
 {
 	Explod* e = &gMugenExplod.mExplods[tID];
 	e->mScale = Vector2D(tX, tY);
@@ -229,7 +229,7 @@ static void parseShadowStatus(Explod* e, int tR, int tG, int tB) {
 
 	}
 	else {
-		e->mShadowColor = Vector3D(tR / 255.0, tG / 255.0, tB / 255.0);
+		e->mShadowColor = Vector3D(tR / 255.0f, tG / 255.0f, tB / 255.0f);
 	}
 }
 
@@ -339,11 +339,11 @@ static Position getExplodPosition(Explod* e) {
 	return p.xyz(calculateSpriteZFromSpritePriority(e->mSpritePriority, e->mPlayer->mRootID, 1));
 }
 
-static void getExplodSpritesAnimationsScale(Explod* e, MugenSpriteFile** tSprites, MugenAnimation** tAnimation, double* tBaseScale) {
+static void getExplodSpritesAnimationsScale(Explod* e, MugenSpriteFile** tSprites, MugenAnimation** tAnimation, float* tBaseScale) {
 	if (e->mIsInFightDefFile) {
 		*tSprites = getDreamFightEffectSprites();
 		*tAnimation = getDreamFightEffectAnimation(e->mAnimationNumber);
-		*tBaseScale = (getScreenSize().y / double(getDreamUICoordinateP())) * getDreamUIFightFXScale();
+		*tBaseScale = (getScreenSize().y / float(getDreamUICoordinateP())) * getDreamUIFightFXScale();
 	}
 	else {
 		*tSprites = getPlayerSprites(e->mPlayer);
@@ -439,7 +439,7 @@ void finalizeExplod(int tID)
 
 	MugenSpriteFile* sprites;
 	MugenAnimation* animation;
-	double baseScale;
+	float baseScale;
 	getExplodSpritesAnimationsScale(e, &sprites, &animation, &baseScale);
 
 	updateExplodSpaceFinalization(e);
@@ -499,7 +499,7 @@ static void updateExplodAnimationForSingleExplod(IntegerSetterForIDCaller* tCall
 
 	MugenSpriteFile* sprites;
 	MugenAnimation* animation;
-	double baseScale;
+	float baseScale;
 	getExplodSpritesAnimationsScale(e, &sprites, &animation, &baseScale);
 
 	setMugenAnimationSprites(e->mAnimationElement, sprites);
@@ -673,7 +673,7 @@ static void updateExplodVelocityForSingleExplod(FloatSetterForIDCaller* tCaller,
 	*vel = transformDreamCoordinatesVector(*vel, getActiveStateMachineCoordinateP(), getDreamMugenStageHandlerCameraCoordinateP());
 }
 
-void updateExplodVelocity(DreamPlayer* tPlayer, int tID, double tX, double tY)
+void updateExplodVelocity(DreamPlayer* tPlayer, int tID, float tX, float tY)
 {
 	FloatSetterForIDCaller caller;
 	caller.mPlayer = tPlayer;
@@ -697,7 +697,7 @@ static void updateExplodAccelerationForSingleExplod(FloatSetterForIDCaller* tCal
 	*acceleration = transformDreamCoordinatesVector(*acceleration, getActiveStateMachineCoordinateP(), getDreamMugenStageHandlerCameraCoordinateP());
 }
 
-void updateExplodAcceleration(DreamPlayer* tPlayer, int tID, double tX, double tY)
+void updateExplodAcceleration(DreamPlayer* tPlayer, int tID, float tX, float tY)
 {
 	FloatSetterForIDCaller caller;
 	caller.mPlayer = tPlayer;
@@ -812,7 +812,7 @@ static void updateExplodScaleForSingleExplod(FloatSetterForIDCaller* tCaller, Ex
 	setMugenAnimationDrawScale(e->mShadowAnimationElement, Vector2D(1, -getDreamStageShadowScaleY()) * e->mScale);
 }
 
-void updateExplodScale(DreamPlayer* tPlayer, int tID, double tX, double tY)
+void updateExplodScale(DreamPlayer* tPlayer, int tID, float tX, float tY)
 {
 	FloatSetterForIDCaller caller;
 	caller.mPlayer = tPlayer;
@@ -1062,7 +1062,7 @@ int getExplodIndexFromExplodID(DreamPlayer* tPlayer, int tExplodID)
 	return caller.mReturnValue;
 }
 
-void setPlayerExplodPaletteEffects(DreamPlayer* tPlayer, int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, double tColorFactor, int tIgnoreOwnPal)
+void setPlayerExplodPaletteEffects(DreamPlayer* tPlayer, int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, float tColorFactor, int tIgnoreOwnPal)
 {
 	for (auto& explodKeyValuePair : gMugenExplod.mExplods) {
 		auto& explod = explodKeyValuePair.second;
@@ -1113,10 +1113,10 @@ int getExplodAmountWithID(DreamPlayer* tPlayer, int tID)
 }
 
 typedef struct {
-	double mSpeed;
+	float mSpeed;
 } SetExplodsSpeedCaller;
 
-static void setSingleExplodSpeed(Explod* e, double tSpeed) {
+static void setSingleExplodSpeed(Explod* e, float tSpeed) {
 	e->mTimeDilatation = tSpeed;
 	setMugenAnimationSpeed(e->mAnimationElement, tSpeed);
 	setMugenAnimationSpeed(e->mShadowAnimationElement, tSpeed);
@@ -1127,7 +1127,7 @@ static void setSingleExplodSpeedCB(SetExplodsSpeedCaller* tSpeedSetCaller, Explo
 	setSingleExplodSpeed(&e, tSpeedSetCaller->mSpeed);
 }
 
-void setExplodsSpeed(double tSpeed) {
+void setExplodsSpeed(float tSpeed) {
 	SetExplodsSpeedCaller caller;
 	caller.mSpeed = tSpeed;
 	stl_int_map_map(gMugenExplod.mExplods, setSingleExplodSpeedCB, &caller);
@@ -1182,7 +1182,7 @@ static void updateStaticExplodPosition(Explod* e) {
 	}
 }
 
-static void setSingleExplodSpeed(Explod* e, double tSpeed);
+static void setSingleExplodSpeed(Explod* e, float tSpeed);
 
 static int updateActiveExplodSuperPauseStopAndReturnIfStopped(Explod* e) {
 	if (!isDreamSuperPauseActive()) return 0;

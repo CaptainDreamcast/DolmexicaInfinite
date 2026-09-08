@@ -37,7 +37,7 @@ typedef struct {
 	int mIsDarkening;
 	AnimationHandlerElement* mDarkeningAnimationElement;
 
-	double mPlayer2DefenseMultiplier;
+	float mPlayer2DefenseMultiplier;
 
 	int mIsSettingPlayerUnhittable;
 } SuperPauseControllerData;
@@ -191,7 +191,7 @@ void setDreamSuperPauseAnimation(DreamPlayer* tPlayer, int tIsInPlayerFile, int 
 
 	MugenAnimation* animation;
 	MugenSpriteFile* sprites;
-	double baseScale;
+	float baseScale;
 	if (tIsInPlayerFile) {
 		if (!doesPlayerHaveAnimationHimself(tPlayer, tAnimationNumber)) {
 			gPauseControllerData.mSuperPause.mHasAnimation = 0;
@@ -204,7 +204,7 @@ void setDreamSuperPauseAnimation(DreamPlayer* tPlayer, int tIsInPlayerFile, int 
 	else {
 		animation = getDreamFightEffectAnimation(tAnimationNumber);
 		sprites = getDreamFightEffectSprites();
-		baseScale = (getScreenSize().y / double(getDreamUICoordinateP())) * getDreamUIFightFXScale();
+		baseScale = (getScreenSize().y / float(getDreamUICoordinateP())) * getDreamUIFightFXScale();
 	}
 
 	gPauseControllerData.mSuperPause.mHasAnimation = 1;
@@ -229,7 +229,7 @@ void setDreamSuperPauseSound(DreamPlayer* tPlayer, int tIsInPlayerFile, int tSou
 	tryPlayMugenSoundAdvanced(soundFile, tSoundGroup, tSoundItem, getPlayerMidiVolumeForPrism(tPlayer));
 }
 
-void setDreamSuperPausePosition(DreamPlayer* tPlayer, double tX, double tY, int tCoordinateP)
+void setDreamSuperPausePosition(DreamPlayer* tPlayer, float tX, float tY, int tCoordinateP)
 {
 	int isPlayerFacingRight = getPlayerIsFacingRight(tPlayer);
 	if (!isPlayerFacingRight) tX *= -1;
@@ -246,12 +246,12 @@ void setDreamSuperPauseDarkening(DreamPlayer* /*tPlayer*/, int tIsDarkening)
 		gPauseControllerData.mSuperPause.mDarkeningAnimationElement = playOneFrameAnimationLoop(Vector3D(0, 0, SUPERPAUSE_DARKENING_Z), getEmptyWhiteTextureReference());
 		const auto sz = getScreenSize();
 		setAnimationSize(gPauseControllerData.mSuperPause.mDarkeningAnimationElement, Vector3D(sz.x, sz.y, 1), Vector3D(0, 0, 0));
-		setAnimationTransparency(gPauseControllerData.mSuperPause.mDarkeningAnimationElement, 0.7);
-		setAnimationColor(gPauseControllerData.mSuperPause.mDarkeningAnimationElement, 0.0, 0.0, 0.1);
+		setAnimationTransparency(gPauseControllerData.mSuperPause.mDarkeningAnimationElement, 0.7f);
+		setAnimationColor(gPauseControllerData.mSuperPause.mDarkeningAnimationElement, 0.0f, 0.0f, 0.1f);
 	}
 }
 
-void setDreamSuperPausePlayer2DefenseMultiplier(DreamPlayer* tPlayer, double tMultiplier)
+void setDreamSuperPausePlayer2DefenseMultiplier(DreamPlayer* tPlayer, float tMultiplier)
 {
 	if (!tMultiplier) {
 		gPauseControllerData.mSuperPause.mPlayer2DefenseMultiplier = getDreamSuperTargetDefenseMultiplier();

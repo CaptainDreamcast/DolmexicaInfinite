@@ -120,7 +120,7 @@ static void updateSingleHistoryBuffer(HistoryBufferUpdateCaller* tCaller, AfterI
 		return;
 	}
 	auto p = getMugenAnimationPositionReference(e.mAnimationElement);
-	p->z = getMugenAnimationPosition(tCaller->mPlayer->mAnimationElement).z - ((tCaller->mIndex / afterImage.mFrameGap) + 1) * 0.01;
+	p->z = getMugenAnimationPosition(tCaller->mPlayer->mAnimationElement).z - ((tCaller->mIndex / afterImage.mFrameGap) + 1) * 0.01f;
 	setMugenAnimationVisibility(e.mAnimationElement, e.mWasVisible);
 	setMugenAnimationColor(e.mAnimationElement, tCaller->mColor.x, tCaller->mColor.y, tCaller->mColor.z);
 	tCaller->mColor = (tCaller->mColor + afterImage.mColorAdd) * afterImage.mColorMultiply;

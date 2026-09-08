@@ -1,7 +1,7 @@
 OBJS = main.o \
 afterimage.o ai.o arcademode.o boxcursorhandler.o characterselectscreen.o collision.o config.o \
 creditsmode.o dolmexicadebug.o dolmexicastoryscreen.o \
-exhibitmode.o fightdebug.o fightnetplay.o \
+exhibitmode.o fightdebug.o fightdeterminism.o fightnetplay.o \
 fightresultdisplay.o fightscreen.o fightui.o freeplaymode.o \
 gamelogic.o initscreen.o intro.o mugenanimationutilities.o mugenassignment.o \
 mugenassignmentevaluator.o mugenbackgroundstatehandler.o mugencommandhandler.o mugencommandreader.o mugenexplod.o \

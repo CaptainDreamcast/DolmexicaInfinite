@@ -270,7 +270,7 @@ void setProjectileCancelAnimation(DreamPlayer* p, int tAnimation)
 	e->mCancelAnimation = tAnimation;
 }
 
-void setProjectileScale(DreamPlayer* p, double tX, double tY)
+void setProjectileScale(DreamPlayer* p, float tX, float tY)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
@@ -291,27 +291,27 @@ void setProjectileRemoveTime(DreamPlayer* p, int tTime)
 	e->mRemoveTime = tTime;
 }
 
-void setProjectileVelocity(DreamPlayer* p, double tX, double tY, int tCoordinateP)
+void setProjectileVelocity(DreamPlayer* p, float tX, float tY, int tCoordinateP)
 {
 	setPlayerVelocityX(p, tX, tCoordinateP);
 	setPlayerVelocityY(p, tY, tCoordinateP);
 }
 
-void setProjectileRemoveVelocity(DreamPlayer* p, double tX, double tY, int tCoordinateP)
+void setProjectileRemoveVelocity(DreamPlayer* p, float tX, float tY, int tCoordinateP)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	e->mRemoveVelocity = transformDreamCoordinatesVector(Vector3D(tX, tY, 0), tCoordinateP, getDreamMugenStageHandlerCameraCoordinateP());
 }
 
-void setProjectileAcceleration(DreamPlayer* p, double tX, double tY, int tCoordinateP)
+void setProjectileAcceleration(DreamPlayer* p, float tX, float tY, int tCoordinateP)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);
 	e->mAcceleration = transformDreamCoordinatesVector(Vector3D(tX, tY, 0), tCoordinateP, getDreamMugenStageHandlerCameraCoordinateP());
 }
 
-void setProjectileVelocityMultipliers(DreamPlayer* p, double tX, double tY)
+void setProjectileVelocityMultipliers(DreamPlayer* p, float tX, float tY)
 {
 	assert(int_map_contains(&gProjectileData.mProjectileList, p->mProjectileDataID));
 	Projectile* e = (Projectile*)int_map_get(&gProjectileData.mProjectileList, p->mProjectileDataID);

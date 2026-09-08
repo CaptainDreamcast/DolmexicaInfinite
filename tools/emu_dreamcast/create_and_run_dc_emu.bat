@@ -20,7 +20,7 @@ cd "build_dreamcast"
 call make_cdi.bat TEST test 302
 
 REM run cdi
-C:\DEV\PLATFORMS\DREAMCAST\EMU2\flycast.exe test.cdi
+C:\DEV\PLATFORMS\DREAMCAST\EMU2\flycast.exe test.cdi > prismLog.txt 2>&1
 
 REM cleanup
 cd ..\tools\emu_dreamcast

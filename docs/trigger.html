@@ -185,6 +185,7 @@ code, tt {
 <li><a class="reference internal" href="#globalsvar" id="id3">GlobalSVar</a></li>
 <li><a class="reference internal" href="#globalvar" id="id4">GlobalVar</a></li>
 <li><a class="reference internal" href="#platform" id="id5">Platform</a></li>
+<li><a class="reference internal" href="#strlen" id="id6">StrLen</a></li>
 </ul>
 </li>
 </ul>
@@ -281,6 +282,29 @@ trigger1 = GlobalVar(5) = 23
 <pre class="literal-block">
 trigger1 = Platform = "dreamcast"
   Triggers if Dolmexica Infinite is running on the Sega Dreamcast.
+</pre>
+</div>
+<div class="section" id="strlen">
+<h2><a class="toc-backref" href="#id6">StrLen</a></h2>
+<p>This trigger takes a string as an argument and returns the amount of characters in that string. Arguments that are not strings are converted to a string first, so for example StrLen(123) returns 3.</p>
+<dl class="docutils">
+<dt>Format:</dt>
+<dd>StrLen(exprn)</dd>
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt>exprn</dt>
+<dd>The input string (or something that will be converted to a string first).</dd>
+</dl>
+</dd>
+<dt>Return type:</dt>
+<dd>int</dd>
+<dt>Error conditions:</dt>
+<dd>Returns bottom if exprn evaluates to bottom.</dd>
+</dl>
+<p>Example:</p>
+<pre class="literal-block">
+trigger1 = StrLen("Dolmexica") = 9
+  Triggers because the string "Dolmexica" is 9 characters long.
 </pre>
 </div>
 </div>

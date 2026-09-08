@@ -16,7 +16,7 @@ using namespace std;
 typedef struct {
 	DreamPlayer* mPlayer;
 
-	double mDifficultyFactor;
+	float mDifficultyFactor;
 	int mRandomInputNow;
 	int mRandomInputDuration;
 
@@ -110,10 +110,10 @@ static void updateAIMovement(PlayerAI* e) {
 static void updateAIGuarding(PlayerAI* e) {
 	if (isPlayerBeingAttacked(e->mPlayer) && isPlayerInGuardDistance(e->mPlayer)) {
 		if (!e->mIsGuardingLogicActive) {
-			double rand = randfrom(0, 1);
-			double guardPossibilityMin = 0.2;
-			double guardPossibilityMax = 0.7;
-			double guardPossibility = guardPossibilityMin + (guardPossibilityMax - guardPossibilityMin) * e->mDifficultyFactor;
+			float rand = randfrom(0, 1);
+			float guardPossibilityMin = 0.2f;
+			float guardPossibilityMax = 0.7f;
+			float guardPossibility = guardPossibilityMin + (guardPossibilityMax - guardPossibilityMin) * e->mDifficultyFactor;
 			e->mWasGuardingSuccessful = (rand < guardPossibility);
 			e->mIsGuardingLogicActive = 1;
 		}
@@ -188,7 +188,7 @@ void setDreamAIActive(DreamPlayer * p)
 	e.mIsJumping = 0;
 	e.mIsGuardingLogicActive = 0;
 	e.mCommandNames.clear();
-	e.mDifficultyFactor = (getPlayerAILevel(p) - 1) / 7.0;
+	e.mDifficultyFactor = (getPlayerAILevel(p) - 1) / 7.0f;
 
 	DreamMugenCommands* commands = &p->mHeader->mFiles.mCommands;
 	stl_string_map_map(commands->mCommands, insertSingleCommandName, &e.mCommandNames);

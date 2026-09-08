@@ -46,8 +46,8 @@ typedef struct {
 	int mStage;
 	Vector2DI mValue;
 	int mStartTime;
-	double mVolumeScale;
-	double mPanning;
+	float mVolumeScale;
+	float mPanning;
 } StorySound;
 
 typedef struct {
@@ -175,9 +175,9 @@ static void loadSingleLayerText(MugenDefScriptGroup* tGroup, Scene* tScene, int 
 		if(stringVector.mSize > 0) e->mFont.x = atoi(stringVector.mElement[0]);
 		if(stringVector.mSize > 1) e->mFont.y = atoi(stringVector.mElement[1]);
 		if(stringVector.mSize > 2) e->mFont.z = atoi(stringVector.mElement[2]);
-		if(stringVector.mSize > 3) e->mTextColor.x = atoi(stringVector.mElement[3]) / 255.0;
-		if(stringVector.mSize > 4) e->mTextColor.y = atoi(stringVector.mElement[4]) / 255.0;
-		if(stringVector.mSize > 5) e->mTextColor.z = atoi(stringVector.mElement[5]) / 255.0;
+		if(stringVector.mSize > 3) e->mTextColor.x = atoi(stringVector.mElement[3]) / 255.0f;
+		if(stringVector.mSize > 4) e->mTextColor.y = atoi(stringVector.mElement[4]) / 255.0f;
+		if(stringVector.mSize > 5) e->mTextColor.z = atoi(stringVector.mElement[5]) / 255.0f;
 		destroyMugenStringVector(stringVector);
 	}
 
@@ -215,10 +215,10 @@ static void loadSingleSound(MugenDefScriptGroup* tGroup, Scene* tScene, int i) {
 	e->mStartTime = getMugenDefIntegerOrDefaultAsGroup(tGroup, variableName, 0);
 
 	sprintf(variableName, "sound%d.volumescale", i);
-	e->mVolumeScale = getMugenDefFloatOrDefaultAsGroup(tGroup, variableName, 100.0) / 100.0;
+	e->mVolumeScale = getMugenDefFloatOrDefaultAsGroup(tGroup, variableName, 100.0f) / 100.0f;
 
 	sprintf(variableName, "sound%d.pan", i);
-	e->mPanning = getMugenDefIntegerOrDefaultAsGroup(tGroup, variableName, 0) / 127.0;
+	e->mPanning = getMugenDefIntegerOrDefaultAsGroup(tGroup, variableName, 0) / 127.0f;
 
 	e->mStage = 0;
 }
@@ -319,8 +319,8 @@ static void startScene() {
 		}
 	}
 
-	setScreenBackgroundColorRGB(scene->mClearColor.x / 255.0, scene->mClearColor.y / 255.0, scene->mClearColor.z / 255.0);
-	setFadeColorRGB(scene->mFadeInColor.x / 255.0, scene->mFadeInColor.y / 255.0, scene->mFadeInColor.z / 255.0);
+	setScreenBackgroundColorRGB(scene->mClearColor.x / 255.0f, scene->mClearColor.y / 255.0f, scene->mClearColor.z / 255.0f);
+	setFadeColorRGB(scene->mFadeInColor.x / 255.0f, scene->mFadeInColor.y / 255.0f, scene->mFadeInColor.z / 255.0f);
 	addFadeIn(scene->mFadeInTime, NULL, NULL);
 }
 
@@ -442,7 +442,7 @@ static void fadeOutSceneOver(void* tCaller) {
 static void fadeOutScene() {
 	Scene* scene = &gStoryScreenData.mScenes[gStoryScreenData.mCurrentScene];
 
-	setFadeColorRGB(scene->mFadeOutColor.x / 255.0, scene->mFadeOutColor.y / 255.0, scene->mFadeOutColor.z / 255.0);
+	setFadeColorRGB(scene->mFadeOutColor.x / 255.0f, scene->mFadeOutColor.y / 255.0f, scene->mFadeOutColor.z / 255.0f);
 	addFadeOut(scene->mFadeOutTime, fadeOutSceneOver, NULL);
 
 	gStoryScreenData.mIsFadingOut = 1;

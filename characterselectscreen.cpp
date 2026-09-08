@@ -46,7 +46,7 @@ typedef struct {
 
 	Position2D mNameOffset;
 	Vector3DI mNameFont;
-	double mNameWidth;
+	float mNameWidth;
 
 	Vector2DI mCursorMoveSound;
 	Vector2DI mCursorDoneSound;
@@ -75,7 +75,7 @@ typedef struct {
 	int mIsSkippingCharScriptLoading;
 
 	Vector2D mCellSize;
-	double mCellSpacing;
+	float mCellSpacing;
 	
 	int mIsCellBackgroundAnimationOwned;
 	MugenAnimation* mCellBackgroundAnimation;
@@ -571,8 +571,8 @@ static int loadMenuCharacterSpritesAndNameAndReturnWhetherExists(SelectCharacter
 }
 
 static Position2D getCellScreenPosition(const Vector2DI& tCellPosition) {
-	double dx = tCellPosition.x * (gCharacterSelectScreenData.mHeader.mCellSpacing + gCharacterSelectScreenData.mHeader.mCellSize.x);
-	double dy = tCellPosition.y * (gCharacterSelectScreenData.mHeader.mCellSpacing + gCharacterSelectScreenData.mHeader.mCellSize.y);
+	float dx = tCellPosition.x * (gCharacterSelectScreenData.mHeader.mCellSpacing + gCharacterSelectScreenData.mHeader.mCellSize.x);
+	float dy = tCellPosition.y * (gCharacterSelectScreenData.mHeader.mCellSpacing + gCharacterSelectScreenData.mHeader.mCellSize.y);
 	return gCharacterSelectScreenData.mHeader.mPosition + Vector2D(dx, dy);
 }
 

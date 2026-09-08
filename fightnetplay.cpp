@@ -8,6 +8,7 @@
 #include "playerdefinition.h"
 #include "mugencommandhandler.h"
 #include "netplaylogic.h"
+#include "fightdeterminism.h"
 
 static struct {
 	bool mHasReceivedNetplayData;
@@ -15,6 +16,7 @@ static struct {
 } gFightNetplayData;
 
 struct FightSyncCheckData {
+	uint32_t mFightStateChecksum;
 	int mLife1;
 	int mLife2;
 };
@@ -23,6 +25,7 @@ static Buffer gatherNetplaySyncCheckData(void*) {
 	Buffer b = makeBufferEmptyOwned();
 
 	FightSyncCheckData syncCheckData;
+	syncCheckData.mFightStateChecksum = getFightStateChecksum();
 	syncCheckData.mLife1 = getPlayerLife(getRootPlayer(0));
 	syncCheckData.mLife2 = getPlayerLife(getRootPlayer(1));
 	appendBufferBuffer(&b, makeBuffer(&syncCheckData, sizeof(FightSyncCheckData)));
@@ -32,7 +35,9 @@ static Buffer gatherNetplaySyncCheckData(void*) {
 static int checkNetplaySyncCheckData(void*, const Buffer& b1, const Buffer& b2) {
 	const auto checkData1 = (FightSyncCheckData*)b1.mData;
 	const auto checkData2 = (FightSyncCheckData*)b2.mData;
-	return checkData1->mLife1 == checkData2->mLife1 && checkData1->mLife2 == checkData2->mLife2;
+	return checkData1->mFightStateChecksum == checkData2->mFightStateChecksum
+		&& checkData1->mLife1 == checkData2->mLife1
+		&& checkData1->mLife2 == checkData2->mLife2;
 }
 
 static void initFightNetplay(void*) {

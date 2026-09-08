@@ -24,7 +24,7 @@ static struct {
 	char mResultMessageFormat[100];
 	int mRoundsToWin;
 
-	double mLifePercentage;
+	float mLifePercentage;
 } gSurvivalModeData;
 
 static void updateSurvivalResultMessage() {

@@ -365,3 +365,17 @@ TEST_F(MugenAssignmentEvaluatorTest, AnimElemTimeArray) {
 	ASSERT_EQ(comparison->a->mType, MUGEN_ASSIGNMENT_TYPE_ARRAY);
 	ASSERT_EQ(comparison->b->mType, MUGEN_ASSIGNMENT_TYPE_UNARY_MINUS);
 }
+
+TEST_F(MugenAssignmentEvaluatorTest, Strlen) {
+	auto assignment = parseDreamMugenAssignmentFromString("strlen(\"Hello\")");
+	ASSERT_EQ(5, evaluateDreamAssignmentAndReturnAsInteger(&assignment, NULL));
+	assignment = parseDreamMugenAssignmentFromString("strlen(\"\")");
+	ASSERT_EQ(0, evaluateDreamAssignmentAndReturnAsInteger(&assignment, NULL));
+	assignment = parseDreamMugenAssignmentFromString("strlen(\"DolmexicaInfinite\")");
+	ASSERT_EQ(17, evaluateDreamAssignmentAndReturnAsInteger(&assignment, NULL));
+
+	assignment = parseDreamMugenAssignmentFromString("strlen(\"abc\") + strlen(\"de\")");
+	ASSERT_EQ(5, evaluateDreamAssignmentAndReturnAsInteger(&assignment, NULL));
+	assignment = parseDreamMugenAssignmentFromString("strlen(\"Hello\") = 5");
+	ASSERT_TRUE(evaluateDreamAssignment(&assignment, NULL));
+}

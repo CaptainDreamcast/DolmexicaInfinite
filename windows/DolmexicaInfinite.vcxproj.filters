@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -52,6 +52,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\fightdebug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fightdeterminism.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\fightresultdisplay.cpp">
@@ -379,13 +382,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libvorbisfile-3.dll">
-      <Filter>DLLs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libvorbis-0.dll">
-      <Filter>DLLs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libogg-0.dll">
+    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\fmod.dll">
       <Filter>DLLs</Filter>
     </CopyFileToFolders>
   </ItemGroup>

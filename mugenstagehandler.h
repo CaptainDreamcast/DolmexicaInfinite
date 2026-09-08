@@ -41,8 +41,8 @@ typedef struct StaticStageHandlerElement_t {
 	int mOwnsAnimation;
 	std::list<StageElementAnimationReference> mAnimationReferences;
 
-	double mScaleStartY;
-	double mScaleDeltaY;
+	float mScaleStartY;
+	float mScaleDeltaY;
 	Vector2D mScaleStart;
 	Vector2D mScaleDelta;
 
@@ -57,7 +57,7 @@ typedef struct StaticStageHandlerElement_t {
 
 	int mIsParallax;
 	Vector2D mWidth;
-	double mInvertedMinimumWidthFactor;
+	float mInvertedMinimumWidthFactor;
 	Vector2D mXScale;
 
 	GeoRectangle2D mConstraintRectangle;
@@ -76,46 +76,47 @@ Vector2DI getDreamMugenStageHandlerCameraCoordinates();
 int getDreamMugenStageHandlerCameraCoordinateP();
 void setDreamMugenStageHandlerCameraCoordinates(const Vector2DI& tCoordinates);
 void setDreamMugenStageHandlerCameraRange(const GeoRectangle2D& tRect);
+GeoRectangle2D getDreamMugenStageHandlerCameraRange();
 void setDreamMugenStageHandlerCameraPosition(const Position2D& p);
-void addDreamMugenStageHandlerCameraPositionX(double tX);
-void setDreamMugenStageHandlerCameraPositionX(double tX);
-void addDreamMugenStageHandlerCameraPositionY(double tY);
-void setDreamMugenStageHandlerCameraPositionY(double tY);
+void addDreamMugenStageHandlerCameraPositionX(float tX);
+void setDreamMugenStageHandlerCameraPositionX(float tX);
+void addDreamMugenStageHandlerCameraPositionY(float tY);
+void setDreamMugenStageHandlerCameraPositionY(float tY);
 void setDreamMugenStageHandlerScreenShake(const Position2D& tScreenShake);
 void resetDreamMugenStageHandlerCameraPosition();
 void resetDreamMugenStageHandler();
 void clearDreamMugenStageHandler();
 
-void addDreamMugenStageHandlerAnimatedBackgroundElement(const Position& tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile * tSprites, const Position2D& tDelta, const Vector2DI& tTile, const Vector2DI& tTileSpacing, BlendType tBlendType, const Vector2D& tAlpha, const GeoRectangle2D& tConstraintRectangle, const Vector2D& tConstraintRectangleDelta, const Vector2D& tVelocity, const Vector3D& tSinX, const Vector3D& tSinY, double tScaleStartY, double tScaleDeltaY, const Vector2D& tScaleStart, const Vector2D& tScaleDelta, const Vector2D& tDrawScale, int tLayerNo, int tID, int tIsParallax, const Vector2DI& tWidth, const Vector2D& tXScale, double tZoomDelta, int tPositionLink, const Vector2DI& tCoordinates);
+void addDreamMugenStageHandlerAnimatedBackgroundElement(const Position& tStart, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile * tSprites, const Position2D& tDelta, const Vector2DI& tTile, const Vector2DI& tTileSpacing, BlendType tBlendType, const Vector2D& tAlpha, const GeoRectangle2D& tConstraintRectangle, const Vector2D& tConstraintRectangleDelta, const Vector2D& tVelocity, const Vector3D& tSinX, const Vector3D& tSinY, float tScaleStartY, float tScaleDeltaY, const Vector2D& tScaleStart, const Vector2D& tScaleDelta, const Vector2D& tDrawScale, int tLayerNo, int tID, int tIsParallax, const Vector2DI& tWidth, const Vector2D& tXScale, float tZoomDelta, int tPositionLink, const Vector2DI& tCoordinates);
 Position* getDreamMugenStageHandlerCameraPositionReference();
 Position2D* getDreamMugenStageHandlerCameraEffectPositionReference();
-void setDreamMugenStageHandlerCameraEffectPositionX(double tX);
-void setDreamMugenStageHandlerCameraEffectPositionY(double tY);
+void setDreamMugenStageHandlerCameraEffectPositionX(float tX);
+void setDreamMugenStageHandlerCameraEffectPositionY(float tY);
 Position2D* getDreamMugenStageHandlerCameraTargetPositionReference();
 Position* getDreamMugenStageHandlerCameraZoomReference();
-void setDreamMugenStageHandlerCameraZoom(double tZoom);
+void setDreamMugenStageHandlerCameraZoom(float tZoom);
 
-void setDreamMugenStageHandlerSpeed(double tSpeed);
+void setDreamMugenStageHandlerSpeed(float tSpeed);
 
 void setDreamStageInvisibleForOneFrame();
 void setDreamStageLayer1InvisibleForOneFrame();
-void setDreamStagePaletteEffects(int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, double tColorFactor);
+void setDreamStagePaletteEffects(int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, float tColorFactor);
 
 void setStageElementInvisible(StaticStageHandlerElement* tElement, int tIsInvisible);
 void setStageElementEnabled(StaticStageHandlerElement* tElement, int tIsEnabled);
-void setStageElementVelocityX(StaticStageHandlerElement* tElement, double tVelocityX);
-void setStageElementVelocityY(StaticStageHandlerElement* tElement, double tVelocityY);
-void addStageElementVelocityX(StaticStageHandlerElement* tElement, double tVelocityX);
-void addStageElementVelocityY(StaticStageHandlerElement* tElement, double tVelocityY);
-void setStageElementPositionX(StaticStageHandlerElement* tElement, double tPositionX);
-void setStageElementPositionY(StaticStageHandlerElement* tElement, double tPositionY);
-void addStageElementPositionX(StaticStageHandlerElement* tElement, double tPositionX);
-void addStageElementPositionY(StaticStageHandlerElement* tElement, double tPositionY);
-void setStageElementSinOffsetX(StaticStageHandlerElement* tElement, double tOffsetX);
-void setStageElementSinOffsetY(StaticStageHandlerElement* tElement, double tOffsetY);
+void setStageElementVelocityX(StaticStageHandlerElement* tElement, float tVelocityX);
+void setStageElementVelocityY(StaticStageHandlerElement* tElement, float tVelocityY);
+void addStageElementVelocityX(StaticStageHandlerElement* tElement, float tVelocityX);
+void addStageElementVelocityY(StaticStageHandlerElement* tElement, float tVelocityY);
+void setStageElementPositionX(StaticStageHandlerElement* tElement, float tPositionX);
+void setStageElementPositionY(StaticStageHandlerElement* tElement, float tPositionY);
+void addStageElementPositionX(StaticStageHandlerElement* tElement, float tPositionX);
+void addStageElementPositionY(StaticStageHandlerElement* tElement, float tPositionY);
+void setStageElementSinOffsetX(StaticStageHandlerElement* tElement, float tOffsetX);
+void setStageElementSinOffsetY(StaticStageHandlerElement* tElement, float tOffsetY);
 void setStageElementAnimation(StaticStageHandlerElement* tElement, int tAnimation);
 
-double calculateStageElementSinOffset(int tTick, double tAmplitude, double tPeriod, double tPhase);
+float calculateStageElementSinOffset(int tTick, float tAmplitude, float tPeriod, float tPhase);
 
 std::vector<StaticStageHandlerElement*>& getStageHandlerElementsWithID(int tID);
 

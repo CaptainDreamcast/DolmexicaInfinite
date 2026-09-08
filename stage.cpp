@@ -34,27 +34,27 @@ typedef struct {
 
 typedef struct {
 	Position2D mStartPosition;
-	double mBoundLeft;
-	double mBoundRight;
-	double mBoundHigh;
-	double mBoundLow;
+	float mBoundLeft;
+	float mBoundRight;
+	float mBoundHigh;
+	float mBoundLow;
 
-	double mTension;
-	double mTensionHigh;
-	double mTensionLow;
+	float mTension;
+	float mTensionHigh;
+	float mTensionLow;
 
-	double mVerticalFollow;
-	double mFloorTension;
+	float mVerticalFollow;
+	float mFloorTension;
 
 	int mOverdrawHigh;
 	int mOverdrawLow;
 	int mCutHigh;
 	int mCutLow;
 
-	double mStartZoom;
-	double mZoomOut;
-	double mZoomIn;
-	double mCurrentZoom;
+	float mStartZoom;
+	float mZoomOut;
+	float mZoomIn;
+	float mCurrentZoom;
 
 } StageCamera;
 
@@ -65,18 +65,18 @@ typedef struct {
 	int mP1Facing;
 	int mP2Facing;
 
-	double mLeftBound;
-	double mRightBound;
+	float mLeftBound;
+	float mRightBound;
 
 } StagePlayerInfo;
 
 typedef struct {
-	double mScreenLeft;
-	double mScreenRight;
+	float mScreenLeft;
+	float mScreenRight;
 } StageBound;
 
 typedef struct {
-	double mZOffset;
+	float mZOffset;
 	int mHasZOffsetLink;
 	int mZOffsetLink;
 	int mAutoturn;
@@ -89,9 +89,9 @@ typedef struct {
 typedef struct {
 	int mIntensity;
 	Vector3DI mColor;
-	double mScaleY;
+	float mScaleY;
 	Vector2D mFadeRange;
-	double mXShear;
+	float mXShear;
 
 } StageShadow;
 
@@ -134,14 +134,14 @@ typedef struct {
 	Vector3D mSinX;
 	Vector3D mSinY;
 
-	double mScaleStartY;
-	double mScaleDeltaY;
+	float mScaleStartY;
+	float mScaleDeltaY;
 	Vector2D mScaleStart;
 	Vector2D mScaleDelta;
 
 	Vector2DI mWidth;
 	Vector2D mXScale;
-	double mZoomDelta;
+	float mZoomDelta;
 	int mPositionLink;
 
 	int mActionNumber;
@@ -168,7 +168,7 @@ static struct {
 	int mHasCustomMusicPath;
 	char mCustomMusicPath[1024];
 
-	double mZOffset;
+	float mZOffset;
 } gStageData;
 
 static void loadStageInfo(MugenDefScript* s) {
@@ -198,6 +198,7 @@ static void loadStageCamera(MugenDefScript* s) {
 	gStageData.mCamera.mStartZoom = getMugenDefFloatOrDefault(s, "camera", "startzoom", 1);
 	gStageData.mCamera.mZoomOut = getMugenDefFloatOrDefault(s, "camera", "zoomout", 1);
 	gStageData.mCamera.mZoomIn = getMugenDefFloatOrDefault(s, "camera", "zoomin", 1);
+	gStageData.mCamera.mStartZoom = std::max(gStageData.mCamera.mStartZoom, 1.0f);
 	gStageData.mCamera.mCurrentZoom = gStageData.mCamera.mStartZoom;
 }
 
@@ -317,7 +318,7 @@ static int isBackgroundElementGroup(MugenDefScriptGroup* tGroup) {
 }
 
 static void addBackgroundElementToStageHandler(StageBackgroundElement& e, MugenAnimation* tAnimation, int tOwnsAnimation, MugenSpriteFile* tSprites, const Vector2DI& tLocalCoordinates, const Vector2D& tGlobalScale) {
-	const auto z = e.mListPosition*0.01 + e.mLayerNo * BACKGROUND_UPPER_BASE_Z;
+	const auto z = e.mListPosition*0.01f + e.mLayerNo * BACKGROUND_UPPER_BASE_Z;
 	addDreamMugenStageHandlerAnimatedBackgroundElement(e.mStart.xyz(z), tAnimation, tOwnsAnimation, tSprites, e.mDelta, e.mTile, e.mTileSpacing, e.mBlendType, e.mAlpha, e.mConstraintRectangle, e.mConstraintRectangleDelta, e.mVelocity, e.mSinX, e.mSinY, e.mScaleStartY, e.mScaleDeltaY, e.mScaleStart, e.mScaleDelta, tGlobalScale, e.mLayerNo, e.mID, e.mType == STAGE_BACKGROUND_PARALLAX, e.mWidth, e.mXScale, e.mZoomDelta, e.mPositionLink, tLocalCoordinates);
 }
 
@@ -325,8 +326,8 @@ static GeoRectangle2D getBackgroundElementWindow(MugenDefScriptGroup* tGroup, co
 	GeoRectangle2D returnRectangle;
 	if (isMugenDefGeoRectangle2DVariableAsGroup(tGroup, "maskwindow")) {
 		returnRectangle = getMugenDefGeoRectangle2DOrDefaultAsGroup(tGroup, "maskwindow", GeoRectangle2D(-INF / 2, -INF / 2, INF, INF));
-		returnRectangle.mTopLeft.x += tLocalCoordinates.x / 2.0;
-		returnRectangle.mBottomRight.x += tLocalCoordinates.x / 2.0;
+		returnRectangle.mTopLeft.x += tLocalCoordinates.x / 2.0f;
+		returnRectangle.mBottomRight.x += tLocalCoordinates.x / 2.0f;
 		returnRectangle.mTopLeft = returnRectangle.mTopLeft + Vector2D(1, 1);
 		returnRectangle.mBottomRight = returnRectangle.mBottomRight - Vector2D(1, 1);
 	}
@@ -365,8 +366,8 @@ void loadBackgroundElementGroup(MugenDefScriptGroup* tGroup, int i, MugenSpriteF
 
 	e.mListPosition = i;
 
-	e.mScaleStartY = getMugenDefFloatOrDefaultAsGroup(tGroup, "yscalestart", 100) / 100.0;
-	e.mScaleDeltaY = getMugenDefFloatOrDefaultAsGroup(tGroup, "yscaledelta", 0) / 100.0;
+	e.mScaleStartY = getMugenDefFloatOrDefaultAsGroup(tGroup, "yscalestart", 100) / 100.0f;
+	e.mScaleDeltaY = getMugenDefFloatOrDefaultAsGroup(tGroup, "yscaledelta", 0) / 100.0f;
 	e.mScaleStart = getMugenDefVector2DOrDefaultAsGroup(tGroup, "scalestart", Vector2D(1, 1));
 	e.mScaleDelta = getMugenDefVector2DOrDefaultAsGroup(tGroup, "scaledelta", Vector2D(0, 0));
 
@@ -488,8 +489,8 @@ static void loadStageBackgroundDefinitionAndElements(char* tPath, MugenDefScript
 }
 
 static void setStageCamera() {
-	double sizeX = gStageData.mCamera.mBoundRight - gStageData.mCamera.mBoundLeft;
-	double sizeY = gStageData.mCamera.mBoundLow - gStageData.mCamera.mBoundHigh;
+	float sizeX = gStageData.mCamera.mBoundRight - gStageData.mCamera.mBoundLeft;
+	float sizeY = gStageData.mCamera.mBoundLow - gStageData.mCamera.mBoundHigh;
 	setDreamMugenStageHandlerCameraRange(transformDreamCoordinatesGeoRectangle2D(GeoRectangle2D(gStageData.mCamera.mBoundLeft, gStageData.mCamera.mBoundHigh, sizeX, sizeY), gStageData.mStageInfo.mLocalCoordinates.x, getDreamMugenStageHandlerCameraCoordinateP()));
 }
 
@@ -542,7 +543,7 @@ static void updateZOffset() {
 	gStageData.mZOffset = elements[0]->mTileBasePosition.y;
 }
 
-static double getDreamCameraTargetPositionX(int tCoordinateP)
+static float getDreamCameraTargetPositionX(int tCoordinateP)
 {
 	auto p = *getDreamMugenStageHandlerCameraTargetPositionReference();
 	p = transformDreamCoordinatesVector2D(p, getDreamMugenStageHandlerCameraCoordinateP(), tCoordinateP);
@@ -550,7 +551,7 @@ static double getDreamCameraTargetPositionX(int tCoordinateP)
 }
 
 static void updateCameraMovementX() {
-	std::vector<double> xPositions;
+	std::vector<float> xPositions;
 	if (getRootPlayer(0)->mIsCameraFollowing.x) {
 		xPositions.push_back(getPlayerPositionX(getRootPlayer(0), gStageData.mStageInfo.mLocalCoordinates.x));
 	}
@@ -559,8 +560,8 @@ static void updateCameraMovementX() {
 	}
 	if (xPositions.empty()) return;
 
-	double minX = xPositions[0];
-	double maxX = xPositions[0];
+	float minX = xPositions[0];
+	float maxX = xPositions[0];
 	if (xPositions.size() > 1) {
 		minX = std::min(minX, xPositions[1]);
 		maxX = std::max(maxX, xPositions[1]);
@@ -568,26 +569,26 @@ static void updateCameraMovementX() {
 	minX -= gStageData.mStageInfo.mLocalCoordinates.x / 2;
 	maxX -= gStageData.mStageInfo.mLocalCoordinates.x / 2;
 
-	double right = getDreamCameraTargetPositionX(gStageData.mStageInfo.mLocalCoordinates.x) + gStageData.mStageInfo.mLocalCoordinates.x / 2;
-	double left = getDreamCameraTargetPositionX(gStageData.mStageInfo.mLocalCoordinates.x) - gStageData.mStageInfo.mLocalCoordinates.x / 2;
+	float right = getDreamCameraTargetPositionX(gStageData.mStageInfo.mLocalCoordinates.x) + gStageData.mStageInfo.mLocalCoordinates.x / 2;
+	float left = getDreamCameraTargetPositionX(gStageData.mStageInfo.mLocalCoordinates.x) - gStageData.mStageInfo.mLocalCoordinates.x / 2;
 
-	double lx = (left + gStageData.mCamera.mTension) - minX;
-	double rx = maxX - (right - gStageData.mCamera.mTension);
+	float lx = (left + gStageData.mCamera.mTension) - minX;
+	float rx = maxX - (right - gStageData.mCamera.mTension);
 
 	if (lx <= 0 && rx > 0) {
-		double delta = min(rx, -lx);
+		float delta = min(rx, -lx);
 		delta = transformDreamCoordinates(delta, gStageData.mStageInfo.mLocalCoordinates.x, getDreamMugenStageHandlerCameraCoordinateP());
 		addDreamMugenStageHandlerCameraPositionX(delta);
 	}
 	else if (lx > 0 && rx <= 0) {
-		double delta = min(lx, -rx);
+		float delta = min(lx, -rx);
 		delta = transformDreamCoordinates(delta, gStageData.mStageInfo.mLocalCoordinates.x, getDreamMugenStageHandlerCameraCoordinateP());
 		addDreamMugenStageHandlerCameraPositionX(-delta);
 	}
 }
 
 static void updateCameraMovementY() {
-	std::vector<double> yPositions;
+	std::vector<float> yPositions;
 	if (getRootPlayer(0)->mIsCameraFollowing.y) {
 		yPositions.push_back(getPlayerPositionY(getRootPlayer(0), getDreamMugenStageHandlerCameraCoordinateP()));
 	}
@@ -596,7 +597,7 @@ static void updateCameraMovementY() {
 	}
 	if (yPositions.empty()) return;
 
-	double mini = yPositions[0];
+	float mini = yPositions[0];
 	if (yPositions.size() > 1) {
 		mini = std::min(mini, yPositions[1]);
 	}
@@ -652,10 +653,10 @@ void playDreamStageMusic()
 	}
 }
 
-double parseDreamCoordinatesToLocalCoordinateSystem(double tCoordinate, int tOtherCoordinateSystemAsP)
+float parseDreamCoordinatesToLocalCoordinateSystem(float tCoordinate, int tOtherCoordinateSystemAsP)
 {
 	int currentP = gStageData.mStageInfo.mLocalCoordinates.x; 
-	double fac = currentP / (double)tOtherCoordinateSystemAsP;
+	float fac = currentP / (float)tOtherCoordinateSystemAsP;
 
 	return tCoordinate*fac;
 }
@@ -667,7 +668,7 @@ Position2D getDreamPlayerStartingPositionInCameraCoordinates(int i)
 	else ret = gStageData.mPlayerInfo.mP2Start;
 
 	ret = ret + Vector2D(gStageData.mStageInfo.mLocalCoordinates.x / 2, 0);
-	return ret * (getDreamMugenStageHandlerCameraCoordinateP() / (double)gStageData.mStageInfo.mLocalCoordinates.x);
+	return ret * (getDreamMugenStageHandlerCameraCoordinateP() / (float)gStageData.mStageInfo.mLocalCoordinates.x);
 }
 
 Position2D getDreamCameraStartPosition(int tCoordinateP)
@@ -678,7 +679,7 @@ Position2D getDreamCameraStartPosition(int tCoordinateP)
 Position2D getDreamStageCoordinateSystemOffset(int tCoordinateP)
 {
 	const auto ret = Vector2D(0, gStageData.mZOffset);
-	return ret * (tCoordinateP / (double)gStageData.mStageInfo.mLocalCoordinates.x);
+	return ret * (tCoordinateP / (float)gStageData.mStageInfo.mLocalCoordinates.x);
 }
 
 int doesDreamPlayerStartFacingLeft(int i)
@@ -687,7 +688,7 @@ int doesDreamPlayerStartFacingLeft(int i)
 	else return gStageData.mPlayerInfo.mP2Facing == -1;
 }
 
-double getDreamCameraPositionX(int tCoordinateP)
+float getDreamCameraPositionX(int tCoordinateP)
 {
 	Position p = *getDreamMugenStageHandlerCameraPositionReference();
 	p = transformDreamCoordinatesVector(p, getDreamMugenStageHandlerCameraCoordinateP(), tCoordinateP);
@@ -695,7 +696,7 @@ double getDreamCameraPositionX(int tCoordinateP)
 	return p.x;
 }
 
-double getDreamCameraPositionY(int tCoordinateP)
+float getDreamCameraPositionY(int tCoordinateP)
 {
 	Position p = *getDreamMugenStageHandlerCameraPositionReference();
 	p = transformDreamCoordinatesVector(p, getDreamMugenStageHandlerCameraCoordinateP(), tCoordinateP);
@@ -703,23 +704,23 @@ double getDreamCameraPositionY(int tCoordinateP)
 	return p.y;
 }
 
-double getDreamCameraZoom()
+float getDreamCameraZoom()
 {
 	return gStageData.mCamera.mCurrentZoom;
 }
 
-void setDreamStageZoomOneFrame(double tScale, const Position2D& tStagePos)
+void setDreamStageZoomOneFrame(float tScale, const Position2D& tStagePos)
 {
 	// gStageData.mCamera.mCurrentZoom = std::min(std::max(tScale, gStageData.mCamera.mZoomOut), gStageData.mCamera.mZoomIn); // Mugen 1.1b doesn't respect the zoom limits, so Dolmexica doesn't either
-	gStageData.mCamera.mCurrentZoom = std::max(tScale, 1.0); // Mugen 1.1b only supports zooming in, so Dolmexica does too
-	setDreamMugenStageHandlerCameraEffectPositionX(tStagePos.x + gStageData.mStageInfo.mLocalCoordinates.x / 2.0); // Mugen 1.1b does not care about camera position, so Dolmexica doesn't either
+	gStageData.mCamera.mCurrentZoom = std::max(tScale, 1.0f); // Mugen 1.1b only supports zooming in, so Dolmexica does too
+	setDreamMugenStageHandlerCameraEffectPositionX(tStagePos.x + gStageData.mStageInfo.mLocalCoordinates.x / 2.0f); // Mugen 1.1b does not care about camera position, so Dolmexica doesn't either
 	setDreamMugenStageHandlerCameraEffectPositionY(tStagePos.y + getDreamStageCoordinateSystemOffset(getDreamStageCoordinateP()).y);
 	setDreamMugenStageHandlerCameraZoom(gStageData.mCamera.mCurrentZoom);
 }
 
-double getDreamScreenFactorFromCoordinateP(int tCoordinateP)
+float getDreamScreenFactorFromCoordinateP(int tCoordinateP)
 {
-	return gStageData.mStageInfo.mLocalCoordinates.x / (double)tCoordinateP;
+	return gStageData.mStageInfo.mLocalCoordinates.x / (float)tCoordinateP;
 }
 
 int getDreamStageCoordinateP()
@@ -727,72 +728,72 @@ int getDreamStageCoordinateP()
 	return gStageData.mStageInfo.mLocalCoordinates.x;
 }
 
-double getDreamStageLeftEdgeX(int tCoordinateP)
+float getDreamStageLeftEdgeX(int tCoordinateP)
 {
 	const auto center = getDreamStageCenterOfScreenBasedOnPlayer(tCoordinateP);
 	return center.x - (getDreamGameWidth(tCoordinateP) / 2);
 }
 
-double getDreamStageRightEdgeX(int tCoordinateP)
+float getDreamStageRightEdgeX(int tCoordinateP)
 {
 	const auto center = getDreamStageCenterOfScreenBasedOnPlayer(tCoordinateP);
 	return center.x + (getDreamGameWidth(tCoordinateP) / 2);
 }
 
-double getDreamStageTopEdgeY(int tCoordinateP)
+float getDreamStageTopEdgeY(int tCoordinateP)
 {
 	return getDreamCameraPositionY(tCoordinateP);
 }
 
-double getDreamStageBottomEdgeY(int tCoordinateP)
+float getDreamStageBottomEdgeY(int tCoordinateP)
 {
 	return getDreamCameraPositionY(tCoordinateP) + getDreamGameHeight(tCoordinateP);
 }
 
-double getDreamStageBoundLeft(int tCoordinateP)
+float getDreamStageBoundLeft(int tCoordinateP)
 {
 	return transformDreamCoordinates(gStageData.mCamera.mBoundLeft, getDreamStageCoordinateP(), tCoordinateP);
 }
 
-double getDreamStageBoundRight(int tCoordinateP)
+float getDreamStageBoundRight(int tCoordinateP)
 {
 	return transformDreamCoordinates(gStageData.mCamera.mBoundRight + gStageData.mStageInfo.mLocalCoordinates.x, getDreamStageCoordinateP(), tCoordinateP);
 }
 
-double transformDreamCoordinates(double tVal, int tSrcP, int tDstP)
+float transformDreamCoordinates(float tVal, int tSrcP, int tDstP)
 {
 	if (tSrcP == tDstP) return tVal;
-	return tVal * (tDstP / (double) tSrcP);
+	return tVal * (tDstP / (float) tSrcP);
 }
 
 int transformDreamCoordinatesI(int tVal, int tSrcP, int tDstP)
 {
 	if (tSrcP == tDstP) return tVal;
-	return int(tVal * (tDstP / (double)tSrcP));
+	return int(tVal * (tDstP / (float)tSrcP));
 }
 
 Vector2D transformDreamCoordinatesVector2D(const Vector2D& tVal, int tSrcP, int tDstP)
 {
 	if (tSrcP == tDstP) return tVal;
-	return tVal * (tDstP / (double)tSrcP);
+	return tVal * (tDstP / (float)tSrcP);
 }
 
 Vector3D transformDreamCoordinatesVector(const Vector3D& tVal, int tSrcP, int tDstP)
 {
 	if (tSrcP == tDstP) return tVal;
-	return vecScale(tVal, (tDstP / (double)tSrcP));
+	return vecScale(tVal, (tDstP / (float)tSrcP));
 }
 
 Vector2DI transformDreamCoordinatesVector2DI(const Vector2DI& tVal, int tSrcP, int tDstP)
 {
 	if (tSrcP == tDstP) return tVal;
-	return vecScaleI2D(tVal, (tDstP / (double)tSrcP));
+	return vecScaleI2D(tVal, (tDstP / (float)tSrcP));
 }
 
 Vector3DI transformDreamCoordinatesVectorI(const Vector3DI& tVal, int tSrcP, int tDstP)
 {
 	if (tSrcP == tDstP) return tVal;
-	return vecScaleI(tVal, (tDstP / (double)tSrcP));
+	return vecScaleI(tVal, (tDstP / (float)tSrcP));
 }
 
 Vector3D transformDreamCoordinatesVectorXY(const Vector3D& tVal, int tSrcP, int tDstP)
@@ -810,18 +811,18 @@ GeoRectangle2D transformDreamCoordinatesGeoRectangle2D(const GeoRectangle2D& tVa
 	return ret;
 }
 
-double getDreamStageTopOfScreenBasedOnPlayer(int tCoordinateP)
+float getDreamStageTopOfScreenBasedOnPlayer(int tCoordinateP)
 {
 	return getDreamCameraPositionY(tCoordinateP);
 }
 
-double getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(int tCoordinateP)
+float getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(int tCoordinateP)
 {
 	const auto stageOffset = getDreamStageCoordinateSystemOffset(tCoordinateP);
 	return getDreamStageTopOfScreenBasedOnPlayer(tCoordinateP) - stageOffset.y;
 }
 
-double getDreamStageLeftOfScreenBasedOnPlayer(int tCoordinateP)
+float getDreamStageLeftOfScreenBasedOnPlayer(int tCoordinateP)
 {
 	Position p = *getDreamMugenStageHandlerCameraPositionReference();
 	p = transformDreamCoordinatesVector(p, getDreamMugenStageHandlerCameraCoordinateP(), tCoordinateP);
@@ -829,11 +830,11 @@ double getDreamStageLeftOfScreenBasedOnPlayer(int tCoordinateP)
 	return p.x;
 }
 
-double getDreamStageRightOfScreenBasedOnPlayer(int tCoordinateP)
+float getDreamStageRightOfScreenBasedOnPlayer(int tCoordinateP)
 {
 	Position p = *getDreamMugenStageHandlerCameraPositionReference();
 	p = transformDreamCoordinatesVector(p, getDreamMugenStageHandlerCameraCoordinateP(), tCoordinateP);
-	double screenSize = transformDreamCoordinates(gStageData.mStageInfo.mLocalCoordinates.x, gStageData.mStageInfo.mLocalCoordinates.x, tCoordinateP);
+	float screenSize = transformDreamCoordinates(gStageData.mStageInfo.mLocalCoordinates.x, gStageData.mStageInfo.mLocalCoordinates.x, tCoordinateP);
 
 	return p.x + screenSize;
 }
@@ -842,7 +843,7 @@ Position2D getDreamStageCenterOfScreenBasedOnPlayer(int tCoordinateP)
 {
 	auto ret = getDreamMugenStageHandlerCameraPositionReference()->xy();
 	ret = ret + Vector2D(gStageData.mStageInfo.mLocalCoordinates.x / 2, 0);
-	return ret * (tCoordinateP / (double)gStageData.mStageInfo.mLocalCoordinates.x);
+	return ret * (tCoordinateP / (float)gStageData.mStageInfo.mLocalCoordinates.x);
 }
 
 int getDreamGameWidth(int tCoordinateP)
@@ -896,17 +897,17 @@ void setDreamStageCoordinates(const Vector2DI& tCoordinates)
 	gStageData.mZOffset = gStageData.mStageInfo.mZOffset = 0;
 }
 
-double getDreamStageShadowTransparency()
+float getDreamStageShadowTransparency()
 {
-	return gStageData.mShadow.mIntensity / 255.0;
+	return gStageData.mShadow.mIntensity / 255.0f;
 }
 
 Vector3D getDreamStageShadowColor()
 {
-	return Vector3D(gStageData.mShadow.mColor.x / 255.0, gStageData.mShadow.mColor.y / 255.0, gStageData.mShadow.mColor.z / 255.0);
+	return Vector3D(gStageData.mShadow.mColor.x / 255.0f, gStageData.mShadow.mColor.y / 255.0f, gStageData.mShadow.mColor.z / 255.0f);
 }
 
-double getDreamStageShadowScaleY()
+float getDreamStageShadowScaleY()
 {
 	return gStageData.mShadow.mScaleY;
 }
@@ -916,12 +917,12 @@ static Vector2D getDreamStageShadowFadeRange(int tCoordinateP)
 	return transformDreamCoordinatesVector2D(gStageData.mShadow.mFadeRange, getDreamStageCoordinateP(), tCoordinateP);
 }
 
-double getDreamStageReflectionTransparency()
+float getDreamStageReflectionTransparency()
 {
-	return gStageData.mReflection.mIntensity / 256.0;
+	return gStageData.mReflection.mIntensity / 256.0f;
 }
 
-double getDreamStageShadowFadeRangeFactor(double tPosY, int tCoordinateP)
+float getDreamStageShadowFadeRangeFactor(float tPosY, int tCoordinateP)
 {
 	auto fadeRange = getDreamStageShadowFadeRange(tCoordinateP);
 	fadeRange = fadeRange * 0.5;
@@ -989,10 +990,10 @@ Vector2D getBackgroundAlphaVector(MugenDefScriptGroup* tGroup)
 	}
 
 	Vector2D ret;
-	if (t1 == "") ret.x = 1.0;
-	else ret.x = atof(t1.c_str()) / 256.0;
-	if (t2 == "") ret.y = 1.0;
-	else ret.y = atof(t2.c_str()) / 256.0;
+	if (t1 == "") ret.x = 1.0f;
+	else ret.x = (float)atof(t1.c_str()) / 256.0f;
+	if (t2 == "") ret.y = 1.0f;
+	else ret.y = (float)atof(t2.c_str()) / 256.0f;
 	return ret;
 }
 

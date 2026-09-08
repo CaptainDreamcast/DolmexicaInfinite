@@ -58,7 +58,7 @@ typedef struct {
 	ListIterator mPreviousTimingPointWithPositiveBeat;
 	ListIterator mCurrentTimingPoint;
 
-	double mCurrentMillisecondsPerBeat;
+	float mCurrentMillisecondsPerBeat;
 
 } TimingPointData;
 
@@ -102,7 +102,7 @@ static struct {
 
 	TimingPointData mTimingPoint;
 
-	double mGlobalZCounter;
+	float mGlobalZCounter;
 
 	OsuPlayerAI mPlayerAI[2];
 
@@ -209,8 +209,8 @@ static int getFadeInTime() {
 	else return (int)(800 - 500 * ((gOsuHandlerData.mOsu.mDifficulty.mApproachRate - 5.0) / 5));
 }
 
-static double getCircleSizeScale() {
-	double size = 54.4 - 4.48 * gOsuHandlerData.mOsu.mDifficulty.mCircleSize;
+static float getCircleSizeScale() {
+	float size = 54.4f - 4.48f * gOsuHandlerData.mOsu.mDifficulty.mCircleSize;
 	return size / 32;
 
 }
@@ -263,11 +263,11 @@ static void addActiveHitObject(OsuHitObject* tObject, int tIsOwned) {
 	setMugenAnimationTransparency(e->mCircleAnimationElement, 0);
 	setMugenAnimationBaseDrawScale(e->mCircleAnimationElement, getCircleSizeScale());
 	setMugenAnimationColor(e->mCircleAnimationElement, e->mColor->mR, e->mColor->mG, e->mColor->mB);
-	e->mBodyAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, gOsuHandlerData.mParameters.mHitCircleAnimation), &gOsuHandlerData.mSprites, Vector3D(parsePositionX(tObject->mX), parsePositionY(tObject->mY), gOsuHandlerData.mGlobalZCounter + 0.001));
+	e->mBodyAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, gOsuHandlerData.mParameters.mHitCircleAnimation), &gOsuHandlerData.mSprites, Vector3D(parsePositionX(tObject->mX), parsePositionY(tObject->mY), gOsuHandlerData.mGlobalZCounter + 0.001f));
 	setMugenAnimationTransparency(e->mBodyAnimationElement, 0);
 	setMugenAnimationBaseDrawScale(e->mBodyAnimationElement, getCircleSizeScale());
-	setMugenAnimationColor(e->mBodyAnimationElement, e->mColor->mR*0.8, e->mColor->mG*0.8, e->mColor->mB*0.8);
-	gOsuHandlerData.mGlobalZCounter -= 0.003;
+	setMugenAnimationColor(e->mBodyAnimationElement, e->mColor->mR*0.8f, e->mColor->mG*0.8f, e->mColor->mB*0.8f);
+	gOsuHandlerData.mGlobalZCounter -= 0.003f;
 
 	int i;
 	for (i = 0; i < 2; i++) {
@@ -375,7 +375,7 @@ static void updateTimingPoint() {
 	}
 	else {
 		OsuTimingPoint* previousWithPositive = (OsuTimingPoint*)list_iterator_get(gOsuHandlerData.mTimingPoint.mPreviousTimingPointWithPositiveBeat);
-		double percentage = -next->mMillisecondsPerBeat;
+		float percentage = -next->mMillisecondsPerBeat;
 
 		gOsuHandlerData.mTimingPoint.mCurrentMillisecondsPerBeat = previousWithPositive->mMillisecondsPerBeat * (percentage / 100);
 	}
@@ -446,8 +446,8 @@ static void updateActiveHitObjectFadeIn(ActiveHitObject* e) {
 	int start = e->mObject->mTime - preempt;
 	int end = start + fadeIn;
 
-	double transparency = (time - start) / (double)(end - start);
-	transparency = std::min(1.0, transparency);
+	float transparency = (time - start) / (float)(end - start);
+	transparency = std::min(1.0f, transparency);
 
 	setMugenAnimationTransparency(e->mCircleAnimationElement, transparency);
 	setMugenAnimationTransparency(e->mBodyAnimationElement, transparency);
@@ -460,8 +460,8 @@ static void updateActiveHitObjectFadeOut(ActiveHitObject* e) {
 	int start = e->mObject->mTime + getHitWindow50();
 	int end = start + HIT_OBJECT_FADE_OUT;
 
-	double transparency = (time - start) / (double)(end - start);
-	transparency = std::min(1.0, transparency);
+	float transparency = (time - start) / (float)(end - start);
+	transparency = std::min(1.0f, transparency);
 	transparency = 1 - transparency;
 
 	setMugenAnimationTransparency(e->mCircleAnimationElement, 0);
@@ -485,8 +485,8 @@ static void updateActiveHitObjectBrightness(ActiveHitObject* e) {
 	int start = e->mObject->mTime - preempt;
 	int end = e->mObject->mTime;
 
-	double t = (time - start) / (double)(end - start);
-	double scale = 4 - (4 - 1)*t;
+	float t = (time - start) / (float)(end - start);
+	float scale = 4 - (4 - 1)*t;
 	scale *= getCircleSizeScale();
 	setMugenAnimationBaseDrawScale(e->mCircleAnimationElement, scale);
 }
@@ -497,8 +497,8 @@ static void updateActiveHitObjectRingScale(ActiveHitObject* e) {
 	int start = e->mObject->mTime - preempt;
 	int end = e->mObject->mTime;
 
-	double t = (time - start) / (double)(end - start);
-	double scale = 4-(4-1)*t;
+	float t = (time - start) / (float)(end - start);
+	float scale = 4-(4-1)*t;
 	scale *= getCircleSizeScale();
 	setMugenAnimationBaseDrawScale(e->mCircleAnimationElement, scale);
 }
@@ -513,7 +513,7 @@ static void addResponse(int i, ActiveHitObject* e, int tLevel) {
 	Position pos = getMugenAnimationPosition(e->mBodyAnimationElement);
 
 	pos.x += 20 * (i ? 1 : -1);
-	pos.z += 0.001;
+	pos.z += 0.001f;
 
 	e->mPlayerResponse[i].mResponseAnimationElement = addMugenAnimation(getMugenAnimation(&gOsuHandlerData.mAnimations, gOsuHandlerData.mParameters.mHitAnimationBase + tLevel), &gOsuHandlerData.mSprites, pos);
 
@@ -625,8 +625,8 @@ static void updateActiveHitObjects() {
 	list_remove_predicate(&gOsuHandlerData.mActiveHitObjects, updateSingleActiveHitObject, &caller);
 }
 
-static double getSliderDuration(OsuSliderObject* tObject) {
-	double duration = tObject->mPixelLength / (100.0 * gOsuHandlerData.mOsu.mDifficulty.mSliderMultiplier) * gOsuHandlerData.mTimingPoint.mCurrentMillisecondsPerBeat;
+static float getSliderDuration(OsuSliderObject* tObject) {
+	float duration = tObject->mPixelLength / (100.0f * gOsuHandlerData.mOsu.mDifficulty.mSliderMultiplier) * gOsuHandlerData.mTimingPoint.mCurrentMillisecondsPerBeat;
 	return duration;
 }
 
@@ -634,7 +634,7 @@ static int updateSingleActiveSliderObject(void* tCaller, void* tData) {
 	(void)tCaller;
 	ActiveSliderObject* e = (ActiveSliderObject*)tData;
 	
-	double sliderDuration = getSliderDuration(e->mObject);
+	float sliderDuration = getSliderDuration(e->mObject);
 	int time = (int)(e->mObject->mTime + e->mRepeatNow * sliderDuration);
 	int startTime = time - getPreempt();
 	if (startTime > (int)getStreamingSoundTimeElapsedInMilliseconds()) return 0;
@@ -707,8 +707,8 @@ static void updateActiveSpinnerTextFadeIn(ActiveSpinnerObject* e, int tTime) {
 	int start = e->mObject->mTime - preempt;
 	int end = start + fadeIn;
 
-	double transparency = (tTime - start) / (double)(end - start);
-	transparency = std::min(1.0, transparency);
+	float transparency = (tTime - start) / (float)(end - start);
+	transparency = std::min(1.0f, transparency);
 
 	setMugenAnimationTransparency(e->mEncouragementAnimationElement, transparency);
 }
@@ -717,15 +717,15 @@ static void updateActiveSpinnerTextFadeOut(ActiveSpinnerObject* e, int tTime) {
 	int end = e->mObject->mEndTime + ACTIVE_SPINNER_POST_TIME;
 	int start = end - HIT_OBJECT_FADE_OUT;
 
-	double transparency = 1 - (tTime - start) / (double)(end - start);
-	transparency = std::max(0.0, transparency);
+	float transparency = 1 - (tTime - start) / (float)(end - start);
+	transparency = std::max(0.0f, transparency);
 
 	setMugenAnimationTransparency(e->mEncouragementAnimationElement, transparency);
 }
 
-static double pulseTween(double t) {
-	double duration = 0.1;
-	double change = 0.2;
+static float pulseTween(float t) {
+	float duration = 0.1f;
+	float change = 0.2f;
 
 	if (t < 1 - duration) return 1;
 	if (t < 1 - (duration / 2)) {
@@ -744,10 +744,10 @@ static double pulseTween(double t) {
 
 static void updateActiveSpinnerPulse(ActiveSpinnerObject* e, int tTime) {
 	int timeDelta = abs(e->mObject->mTime - tTime);
-	double milliSecondsPerBeat = gOsuHandlerData.mTimingPoint.mCurrentMillisecondsPerBeat;
+	float milliSecondsPerBeat = gOsuHandlerData.mTimingPoint.mCurrentMillisecondsPerBeat;
 	int cycleLength = (int)(milliSecondsPerBeat * 1);
-	double cyclePosition = (timeDelta % cycleLength) / (double)cycleLength;
-	double t = pulseTween(cyclePosition);
+	float cyclePosition = (timeDelta % cycleLength) / (float)cycleLength;
+	float t = pulseTween(cyclePosition);
 
 	setMugenAnimationBaseDrawScale(e->mEncouragementAnimationElement, t);
 }

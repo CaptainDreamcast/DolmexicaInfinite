@@ -26,11 +26,16 @@ struct RegisteredMugenStateMachine {
 	int mIsInputControlDisabled;
 	int mIsDisabled;
 	int mWasUpdatedOutsideHandler;
+	int mIsBeingProcessed;
+
+	int mHasPendingStateChange;
+	int mPendingStateChange;
+	int mIsPendingStateChangeToOwnStates;
 
 	int mCurrentJugglePoints;
 
-	double mTimeDilatationNow;
-	double mTimeDilatation;
+	float mTimeDilatationNow;
+	float mTimeDilatation;
 };
 
 ActorBlueprint getDreamMugenStateHandler();
@@ -60,10 +65,11 @@ void changeDreamHandledStateMachineState(RegisteredMugenStateMachine* tRegistere
 void changeDreamHandledStateMachineStateToOtherPlayerStateMachine(RegisteredMugenStateMachine* tRegisteredState, RegisteredMugenStateMachine* tBorrowState, int tNewState);
 void changeDreamHandledStateMachineStateToOwnStateMachine(RegisteredMugenStateMachine* tRegisteredState, int tNewState);
 void changeDreamHandledStateMachineStateToOwnStateMachineWithoutChangingState(RegisteredMugenStateMachine* tRegisteredState);
-void setDreamHandledStateMachineSpeed(RegisteredMugenStateMachine* tRegisteredState, double tSpeed);
+void setDreamHandledStateMachineSpeed(RegisteredMugenStateMachine* tRegisteredState, float tSpeed);
 
-void updateDreamSingleStateMachineByID(RegisteredMugenStateMachine* tRegisteredState);
+void updateDreamSingleStateMachineByID(RegisteredMugenStateMachine* tRegisteredState, int tDoesIncrementTimeInState = 1);
 void setDreamSingleStateMachineToUpdateAgainByID(RegisteredMugenStateMachine* tRegisteredState);
+void resetDreamRegisteredStateMachineControllerPersistence(RegisteredMugenStateMachine* tRegisteredState);
 
 int getActiveStateMachineCoordinateP();
 void setActiveStateMachineCoordinateP(int tCoordinateP);

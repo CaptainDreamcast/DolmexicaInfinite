@@ -16,8 +16,8 @@ const std::string& getCustomFightMotif();
 
 void playDreamHitSpark(const Position2D& tPosition, DreamPlayer* tPlayer, int tIsInPlayerFile, int tNumber, int tIsFacingRight, int tPositionCoordinateP);
 void addDreamDustCloud(const Position& tPositionCameraSpace, int tIsFacingRight);
-void setDreamLifeBarPercentage(DreamPlayer* tPlayer, double tPercentage);
-void setDreamPowerBarPercentage(DreamPlayer* tPlayer, double tPercentage, int tValue);
+void setDreamLifeBarPercentage(DreamPlayer* tPlayer, float tPercentage);
+void setDreamPowerBarPercentage(DreamPlayer* tPlayer, float tPercentage, int tValue);
 void enableDreamTimer();
 void disableDreamTimer();
 void resetDreamTimer();
@@ -27,20 +27,20 @@ MugenAnimation* getDreamFightEffectAnimation(int tNumber);
 MugenSpriteFile* getDreamFightEffectSprites();
 MugenSounds* getDreamCommonSounds();
 int getDreamUICoordinateP();
-double getDreamUIFightFXScale();
+float getDreamUIFightFXScale();
 
 void playDreamRoundAnimation(int tRound, void(*tFunc)());
 void playDreamFightAnimation(void(*tFunc)());
 void playDreamKOAnimation(void(*tFunc)());
 void playDreamDKOAnimation(void(*tFunc)());
 void playDreamTOAnimation(void(*tFunc)());
-void playDreamWinAnimation(char* tName, void(*tFunc)());
-void playDreamDrawAnimation(void(*tFunc)());
+void playDreamWinAnimation(char* tName);
+void playDreamDrawAnimation();
 void playDreamContinueAnimation(void(*tAnimationFinishedFunc)(), void(*tContinuePressedFunc)());
 void setDreamTimeDisplayFinishedCB(void(*tTimeDisplayFinishedFunc)());
 
 void setDreamBarInvisibleForOneFrame();
-void setDreamBarPaletteEffects(int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, double tColorFactor);
+void setDreamBarPaletteEffects(int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, float tColorFactor);
 
 void setTimerFreezeFlag();
 void setTimerInfinite();
@@ -48,7 +48,7 @@ void setTimerFinite();
 int isTimerFinished();
 
 void setEnvironmentColor(const Vector3DI& tColors, int tTime, int tIsUnderCharacters);
-void setEnvironmentShake(int tDuration, double tFrequency, int tAmplitude, double tPhaseOffset, int tCoordinateP);
+void setEnvironmentShake(int tDuration, float tFrequency, int tAmplitude, float tPhaseOffset, int tCoordinateP);
 
 void addNormalWinIcon(int tPlayer, int tIsPerfect);
 void addSpecialWinIcon(int tPlayer, int tIsPerfect);

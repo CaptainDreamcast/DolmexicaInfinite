@@ -26,13 +26,13 @@ protected:
 static const auto PERFORMANCE_TEST_ITERATIONS = 1000;
 static const auto PERFORMANCE_EPSILON = 2.0 * 1e-2;
 
-static void performanceTestScreen(Screen* tScreen, double tExpectedAverageTimerPerFrame) {
+static void performanceTestScreen(Screen* tScreen, float tExpectedAverageTimerPerFrame) {
 	initPrismWrapperScreenForDebug(tScreen);
 	const auto startTime = getSystemTicks();
 	updatePrismWrapperScreenForDebugWithIterations(PERFORMANCE_TEST_ITERATIONS);
 	const auto endTime = getSystemTicks();
 	const auto delta = endTime - startTime;
-	const auto averageTimePerFrame = delta / double(PERFORMANCE_TEST_ITERATIONS);
+	const auto averageTimePerFrame = delta / float(PERFORMANCE_TEST_ITERATIONS);
 	unloadPrismWrapperScreenForDebug();
 	logFormat("Average frame performance: %f", averageTimePerFrame);
 	ASSERT_NEAR(averageTimePerFrame, tExpectedAverageTimerPerFrame, PERFORMANCE_EPSILON);

@@ -27,11 +27,18 @@
 char romdisk_buffer[1];
 int romdisk_buffer_length;
 
-#define DEVELOP
+// #define DEVELOP
 
 #ifdef DREAMCAST
 KOS_INIT_FLAGS(INIT_DEFAULT | INIT_MALLOCSTATS);
 
+#endif
+
+#ifdef VITA
+// VitaSDK defaults the newlib heap to 32MB, not enough for large sprites like in stages (or Dream Fight story credits etc). 96MB seems to work, even with fragmentation.
+extern "C" {
+	unsigned int _newlib_heap_size_user = 96 * 1024 * 1024;
+}
 #endif
 
 void exitGame() {
@@ -79,14 +86,15 @@ int main(int argc, char** argv) {
 	}
 
 	setMemoryHandlerCompressionActive();
+	setSoundEffectCompression(1);
 	initClipboardForGame();
 	setScreenEffectZ(99);
 	setMugenAnimationHandlerPixelCenter(Vector2D(0.0, 0.0));
 	setScreenAfterWrapperLogoScreen(getInitScreen());
 	
 #ifdef DEVELOP	
-	//setUnscaledGameWavVolume(0);
-	//setUnscaledGameMidiVolume(0);
+	setUnscaledGameWavVolume(0);
+	setUnscaledGameMidiVolume(0);
 
 	if (isOnWindows())
 	{

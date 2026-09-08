@@ -116,7 +116,7 @@ static void loadSingleOsuFileTimingPoint(void* tCaller, void* tData) {
 
 	OsuTimingPoint* e = (OsuTimingPoint*)allocMemory(sizeof(OsuTimingPoint));
 	e->mOffset = atoi(vectorElement->mVector.mElement[0]);
-	e->mMillisecondsPerBeat = atof(vectorElement->mVector.mElement[1]);
+	e->mMillisecondsPerBeat = (float)atof(vectorElement->mVector.mElement[1]);
 	e->mMeter = (vectorElement->mVector.mSize >= 3) ? atoi(vectorElement->mVector.mElement[2]) : 4;
 	e->mSampleIndex = (vectorElement->mVector.mSize >= 5) ? atoi(vectorElement->mVector.mElement[4]) : 0;
 	e->mVolume = (vectorElement->mVector.mSize >= 6) ? atoi(vectorElement->mVector.mElement[5]) : 100;
@@ -138,7 +138,7 @@ typedef struct {
 	OsuFile* mDst;
 } OsuFileColorLoadCaller;
 
-static void createAndAddOsuColor(OsuFile* tFile, double r, double g, double b) {
+static void createAndAddOsuColor(OsuFile* tFile, float r, float g, float b) {
 	OsuColor* e = (OsuColor*)allocMemory(sizeof(OsuColor));
 	e->mR = r;
 	e->mG = g;
@@ -154,9 +154,9 @@ static void loadSingleOsuFileColor(void* tCaller, void* tData) {
 	MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)element->mData;
 	if (vectorElement->mVector.mSize != 3) return;
 
-	double r = atoi(vectorElement->mVector.mElement[0]) / 255.0;
-	double g = atoi(vectorElement->mVector.mElement[1]) / 255.0;
-	double b = atoi(vectorElement->mVector.mElement[2]) / 255.0;
+	float r = atoi(vectorElement->mVector.mElement[0]) / 255.0f;
+	float g = atoi(vectorElement->mVector.mElement[1]) / 255.0f;
+	float b = atoi(vectorElement->mVector.mElement[2]) / 255.0f;
 	createAndAddOsuColor(caller->mDst, r, g, b);
 }
 
@@ -286,7 +286,7 @@ static void loadSingleOsuFileHitObject(void* tCaller, void* tData) {
 		e->mHitSound = (uint8_t)atoi(vector.mElement[4]);
 		e->mEndPosition = parseEndPositionFromPathString(vector.mElement[5]);
 		e->mRepeat = atoi(vector.mElement[6]);
-		e->mPixelLength = atof(vector.mElement[7]);
+		e->mPixelLength = (float)atof(vector.mElement[7]);
 
 		list_push_back_owned(&caller->mDst->mOsuHitObjects, e);
 	}

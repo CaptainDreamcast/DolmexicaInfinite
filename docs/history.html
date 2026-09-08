@@ -174,6 +174,34 @@ code, tt {
 <div class="document" id="m-u-g-e-n-update-history">
 <h1 class="title">Dolmexica Infinite Update History</h1>
 <p>Updates shown are in order of most recent to least recent.</p>
+<div class="section" id="new-in-1-8">
+  <h1>New in 1.8</h1>
+  <p>09 September 2026</p>
+  <div class="section" id="general">
+  <h2>General updates</h2>
+  <ul class="simple">
+  <li>Feature: [General] New "strlen" function for triggers, for all trigger types.</li>
+  <li>Feature: [Windows/Web] Audio backend changed to fmod, frequency multiplier for sound effects work now. Not sure if I'll keep it (the fmod license might be a bit too restrictive for a Mugen interpreter).</li>
+  <li>Feature: [Windows/Web] Due to this mp3 support for these platforms (Dreamcast/Vita still pending if at all coming, don't expect it, stick to ogg there).</li>
+  <li>Feature: [Web] Assets are now split into multiple included files (one for each folder under assets/), which helps getting around maximum per-file size on many web game sites like itch or newgrounds.</li>
+  <li>Bugfix: [General] Now takes character scale differences in account when using other player animations.</li>
+  <li>Bugfix: [General] Changing to other player's state machine does not apply position/velocity/turn/var controllers twice (rest might still be weird, this fix is still ongoing).</li>
+  <li>Bugfix: [General] Should be able to handle not just f30 s30 etc, but also "f 30" and "s 30" with spaces.</li>
+  <li>Bugfix: [General] During ChangeState controllers, no longer executes special states ahead of new state during frame.</li>
+  <li>Bugfix: [General] HitDef "hitflag" should be used more like in Mugen now.</li>
+  <li>Bugfix: [General] ignorehitpause should be used more like in Mugen now.</li>
+  <li>Bugfix: [General] UI elements that were text instead of animations are now supported for all fight motif elements, not just some.</li>
+  <li>Bugfix: [General] Fight motif time value handling was adjusted AGAIN. Hopefully it works just like Mugen for real now.</li>
+  <li>Bugfix: [General] Hit velocities no longer applied to custom states.</li>
+  <li>Bugfix: [General] Gethit logic in general should be closer to Mugen now (but still not perfect, expect more tinkering in future versions).</li>
+  <li>Bugfix: [General] Lots of minor state machine fixes.</li>
+  <li>Bugfix: [Dreamcast] Sound effect crunchiness should be gone now. 4bit Yamaha ADPCM compression is used, so some minor reduced quality should still be expected.</li>
+  <li>Bugfix: [Dreamcast] General performance improvements. Texture memory swapping still the main slowdown culprit, so not sure how noticeable in practice though.</li>
+  <li>Bugfix: [Vita] Probably fifth time this bullet point made it in in a row, but I think I really got the source of the random crashes now, it was a heap size thing.</li>
+  <li>Bugfix: [Vita] Some SFX improvements (vita sound improvements are ever-ongoing).</li>
+  </ul>
+  </div>
+  </div>
 <div class="section" id="new-in-1-7">
   <h1>New in 1.7</h1>
   <p>09 September 2025</p>

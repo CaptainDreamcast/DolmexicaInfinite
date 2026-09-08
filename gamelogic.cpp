@@ -8,7 +8,6 @@
 #include <prism/input.h>
 #include <prism/log.h>
 #include <prism/math.h>
-#include <prism/timer.h>
 
 #include "playerdefinition.h"
 #include "fightui.h"
@@ -47,6 +46,12 @@ typedef struct {
 	int mNow;
 } Slowdown;
 
+typedef struct {
+	int mIsActive;
+
+	int mNow;
+} GameLogicWait;
+
 static struct {
 	int mGameTime;
 	int mRoundNumber;
@@ -74,8 +79,39 @@ static struct {
 	ExhibitLogic mExhibit;
 	Slowdown mSlowdown;
 
+	GameLogicWait mIntroWait;
+	GameLogicWait mWinPoseWait;
+	GameLogicWait mNextRoundWait;
+
 	GameMode mMode;
 } gGameLogicData;
+
+static void startWait(GameLogicWait* tWait) {
+	tWait->mNow = 0;
+	tWait->mIsActive = 1;
+}
+
+static void stopWait(GameLogicWait* tWait) {
+	tWait->mIsActive = 0;
+}
+
+static void stopAllWaits() {
+	stopWait(&gGameLogicData.mIntroWait);
+	stopWait(&gGameLogicData.mWinPoseWait);
+	stopWait(&gGameLogicData.mNextRoundWait);
+}
+
+static int updateWaitAndCheckIfOver(GameLogicWait* tWait, int tDuration) {
+	if (!tWait->mIsActive) return 0;
+
+	tWait->mNow++;
+	if (tWait->mNow >= tDuration) {
+		stopWait(tWait);
+		return 1;
+	}
+
+	return 0;
+}
 
 static void fightAnimationFinishedCB() {
 	gGameLogicData.mRoundStateNumber = ROUND_STATE_FIGHT;
@@ -99,16 +135,19 @@ static void startIntro() {
 	gGameLogicData.mIsDisplayingIntro = 2;
 }
 
-static void startIntroCB(void*) {
-	startIntro();
+static void updateIntroWait() {
+	if (updateWaitAndCheckIfOver(&gGameLogicData.mIntroWait, getStartWaitTime())) {
+		startIntro();
+	}
 }
 
 static void fadeInFinished(void*) {
-	addTimerCB(getStartWaitTime(), startIntroCB, NULL);
+	startWait(&gGameLogicData.mIntroWait);
 }
 
 static void startRound() {
 	disableDreamTimer();
+	gGameLogicData.mRoundWinner = nullptr;
 	gGameLogicData.mRoundStateNumber = ROUND_STATE_FADE_IN;
 	gGameLogicData.mTimeSinceKO = 0;
 	gGameLogicData.mIsDisplayingIntro = 0;
@@ -212,6 +251,7 @@ static void loadGameLogic(void* tData) {
 	gGameLogicData.mGameTime = 0;
 	gGameLogicData.mRoundNumber = gGameLogicData.mStartRound;
 	stopSlowdown();
+	stopAllWaits();
 	startRound();
 }
 
@@ -279,26 +319,7 @@ static void gotoNextScreenWaitCB(void*) {
 	addFadeOut(30, goToNextScreen, NULL);
 }
 
-static void gotoNextScreenWait() {
-	addTimerCB(getOverTime(), gotoNextScreenWaitCB, NULL);
-}
-
-static void winAnimationFinishedFinalCB() {
-	setMatchWinner();
-	setWinVictoryQuote();
-
-	int isShowingResultsSurvival = gGameLogicData.mMode == GAME_MODE_SURVIVAL && !isPlayerHuman(gGameLogicData.mRoundWinner);
-	if (gGameLogicData.mIsContinueActive && getPlayerAILevel(gGameLogicData.mRoundWinner)) {
-		startContinue();
-	}
-	else if (isShowingFightResults() || isShowingResultsSurvival) {
-		showFightResults(goToNextScreen, goToLoseScreen);
-	} else {
-		gotoNextScreenWait();
-	}
-}
-
-static void startWinPoseCB(void*) {
+static void winPoseWaitFinished() {
 	turnPlayerTowardsOtherPlayer(gGameLogicData.mRoundWinner);
 
 	if (hasPlayerStateSelf(gGameLogicData.mRoundWinner, 180)) {
@@ -306,11 +327,16 @@ static void startWinPoseCB(void*) {
 	}
 
 	gGameLogicData.mRoundStateNumber = ROUND_STATE_WIN_POSE;
-	gGameLogicData.mIsDisplayingWinPose = 1;
 }
 
-static void startWinPose() {
-	addTimerCB(getOverWinTime(), startWinPoseCB, NULL);
+static void updateWinPoseWait() {
+	if (updateWaitAndCheckIfOver(&gGameLogicData.mWinPoseWait, getOverWinTime())) {
+		winPoseWaitFinished();
+	}
+}
+
+static void playWinAnimation() {
+	playDreamWinAnimation(getPlayerDisplayName(gGameLogicData.mRoundWinner));
 }
 
 static void restoreSurvivalHealth() {
@@ -320,34 +346,60 @@ static void restoreSurvivalHealth() {
 	addPlayerLife(gGameLogicData.mRoundWinner, gGameLogicData.mRoundWinner, getPlayerLifeMax(gGameLogicData.mRoundWinner) / 2);
 }
 
-static void gotoNextRoundWaitCB(void*) {
-	addFadeOut(30, gotoNextRound, NULL);
+static void nextRoundWaitFinished() {
+	gGameLogicData.mIsDisplayingWinPose = 0;
+
+	if (gGameLogicData.mRoundWinner && hasPlayerWon(gGameLogicData.mRoundWinner))
+	{
+		restoreSurvivalHealth();
+
+		setMatchWinner();
+		setWinVictoryQuote();
+
+		int isShowingResultsSurvival = gGameLogicData.mMode == GAME_MODE_SURVIVAL && !isPlayerHuman(gGameLogicData.mRoundWinner);
+		if (gGameLogicData.mIsContinueActive && getPlayerAILevel(gGameLogicData.mRoundWinner))
+		{
+			startContinue();
+		}
+		else if (isShowingFightResults() || isShowingResultsSurvival)
+		{
+			showFightResults(goToNextScreen, goToLoseScreen);
+		}
+		else
+		{
+			gotoNextScreenWaitCB(nullptr);
+		}
+	}
+	else
+	{
+		addFadeOut(30, gotoNextRound, NULL);
+	}
+}
+
+static void updateNextRoundWait() {
+	if (updateWaitAndCheckIfOver(&gGameLogicData.mNextRoundWait, getOverTime())) {
+		nextRoundWaitFinished();
+	}
 }
 
 static void gotoNextRoundWait() {
-	addTimerCB(getOverTime(), gotoNextRoundWaitCB, NULL);
+	startWait(&gGameLogicData.mNextRoundWait);
+	gGameLogicData.mIsDisplayingWinPose = 1;
 }
 
-static void winAnimationFinishedNormalCB() {
+static void startWinPose() {
+	startWait(&gGameLogicData.mWinPoseWait);
+	increasePlayerRoundsWon(gGameLogicData.mRoundWinner);
+	playWinAnimation();
 	gotoNextRoundWait();
-}
-
-static void playWinAnimationGeneral() {
-	if (hasPlayerWon(gGameLogicData.mRoundWinner)) {
-		restoreSurvivalHealth();
-		playDreamWinAnimation(getPlayerDisplayName(gGameLogicData.mRoundWinner), winAnimationFinishedFinalCB);
-	}
-	else {
-		winAnimationFinishedNormalCB(); // don't draw hellishly long win text for each round
-	}
 }
 
 static void startWinTextOrDraw() {
 	if (isDreamRoundDraw()) {
-		playDreamDrawAnimation(winAnimationFinishedNormalCB);
+		playDreamDrawAnimation();
 	}
 	else {
-		playWinAnimationGeneral();
+		playWinAnimation();
 	}
 }
 
@@ -360,6 +412,7 @@ static void startTOPose() {
 		}
 		gGameLogicData.mRoundStateNumber = ROUND_STATE_WIN_POSE;
 		startWinTextOrDraw();
+		gotoNextRoundWait();
 	}
 	else {
 		if (hasPlayerStateSelf(getPlayerOtherPlayer(gGameLogicData.mRoundWinner), 170)) {
@@ -381,7 +434,7 @@ static void dkoAnimationFinishedCB() {
 static void startSlowdown() {
 	if (gGameLogicData.mSlowdown.mIsActive) return;
 	if (!getSlowTime()) return;
-	static const auto SLOWDOWN_SPEED = 0.1;
+	static const auto SLOWDOWN_SPEED = 0.1f;
 	setPlayersSpeed(SLOWDOWN_SPEED);
 	setDreamMugenStageHandlerSpeed(SLOWDOWN_SPEED);
 
@@ -445,8 +498,20 @@ static void updateWinCondition() {
 	}
 }
 
+static void updateWinPose()
+{
+	if (!gGameLogicData.mIsDisplayingWinPose) return;
+
+	if (hasPressedStartFlankSingle(0) || hasPressedStartFlankSingle(1))
+	{
+		stopAllWaits();
+		nextRoundWaitFinished();
+	}
+}
+
 static void resetRoundData(void* /*tCaller*/) {
 	enableDrawing();
+	stopAllWaits();
 	resetPlayers();
 	resetDreamMugenStageHandlerCameraPosition();
 	resetStageForRound();
@@ -462,20 +527,6 @@ static void gotoNextRound(void* tCaller) {
 	increasePlayerRoundsExisted();
 	gGameLogicData.mRoundNumber++;
 	resetRoundData(NULL);
-}
-
-static void updateWinPose() {
-	if (!gGameLogicData.mIsDisplayingWinPose) return;
-
-	int hasSkipped = hasPressedStartFlankSingle(0) || hasPressedStartFlankSingle(1);
-	int isTimeOver = !getPlayerAnimationTimeDeltaUntilFinished(gGameLogicData.mRoundWinner) || hasPlayerAnimationLooped(gGameLogicData.mRoundWinner);
-	int isStepInfinite = isMugenAnimationStepDurationInfinite(getPlayerAnimationStepDuration(gGameLogicData.mRoundWinner)); 
-	int isOver = (isTimeOver || isStepInfinite) && !gGameLogicData.mRoundNotOverFlag;
-	if (isOver || hasSkipped) {
-		increasePlayerRoundsWon(gGameLogicData.mRoundWinner);
-		playWinAnimationGeneral();
-		gGameLogicData.mIsDisplayingWinPose = 0;
-	}
 }
 
 static void updateRoundNotOverFlag() {
@@ -545,6 +596,9 @@ static void updateGameLogic(void* tData) {
 
 	gGameLogicData.mGameTime++;
 
+	updateIntroWait();
+	updateWinPoseWait();
+	updateNextRoundWait();
 	updateIntro();
 	updateWinCondition();
 	updateWinPose();
@@ -679,7 +733,7 @@ void reloadFight()
 void skipFightIntroWithoutFading()
 {
 	skipFadeIn();
-	clearTimer();
+	stopAllWaits();
 	skipIntroCB(NULL);
 	skipFadeIn();
 }
@@ -761,7 +815,7 @@ void setGameModeVersus() {
 	gGameLogicData.mMode = GAME_MODE_VERSUS;
 }
 
-void setGameModeSurvival(double tLifePercentage, int tRound) {
+void setGameModeSurvival(float tLifePercentage, int tRound) {
 	gGameLogicData.mRoundsToWin = 1;
 	gGameLogicData.mHasCustomRoundsToWinAmount = 1;
 	gGameLogicData.mHasCustomTimerDuration = 0;

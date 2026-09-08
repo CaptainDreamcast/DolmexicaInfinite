@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <Windows.h>
+#include <filesystem>
 
 #include <prism/wrapper.h>
 #include <prism/file.h>
@@ -46,21 +46,17 @@ static void testCharacter(const std::string& tCharacterName) {
 
 static void processCharacterAssets(const char* folder)
 {
-	WIN32_FIND_DATAA ffd;
-	HANDLE hFind = FindFirstFileA(folder, &ffd);
-	if (hFind != INVALID_HANDLE_VALUE) {
-		do {
-			if (strcmp(ffd.cFileName, ".") == 0 || strcmp(ffd.cFileName, "..") == 0) continue;
-			if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-				testCharacter(ffd.cFileName);
-			}
-		} while (FindNextFileA(hFind, &ffd) != 0);
-		FindClose(hFind);
+	std::error_code ec;
+	for (const auto& entry : std::filesystem::directory_iterator(folder, ec)) {
+		if (!entry.is_directory()) continue;
+		const auto characterName = entry.path().filename().string();
+		if (!isAssetIncludedInTestRun(characterName)) continue;
+		testCharacter(characterName);
 	}
 }
 
 TEST_F(CrashTest, CharacterCrashTest) {
-	processCharacterAssets("assets\\chars\\*");
+	processCharacterAssets((getDolmexicaAssetFolder() + "chars").c_str());
 }
 
 static void testStage(const std::string& tStageDefPath) {
@@ -81,26 +77,15 @@ static void testStage(const std::string& tStageDefPath) {
 
 static void processStageAssetsRecursively(const std::string& folder)
 {
-	const auto searchString = folder + "*";
-	WIN32_FIND_DATAA ffd;
-	HANDLE hFind = FindFirstFileA(searchString.c_str(), &ffd);
-	if (hFind != INVALID_HANDLE_VALUE) {
-		do {
-			if (strcmp(ffd.cFileName, ".") == 0 || strcmp(ffd.cFileName, "..") == 0) continue;
-			if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-				processStageAssetsRecursively(folder + ffd.cFileName + "\\");
-			}
-			else {
-				if (!hasFileExtension(ffd.cFileName)) continue;
-				const auto extension = getFileExtension(ffd.cFileName);
-				if (std::string(extension) != "def") continue;
-				testStage(folder + ffd.cFileName);
-			}
-		} while (FindNextFileA(hFind, &ffd) != 0);
-		FindClose(hFind);
+	std::error_code ec;
+	for (const auto& entry : std::filesystem::recursive_directory_iterator(folder, ec)) {
+		if (!entry.is_regular_file()) continue;
+		if (entry.path().extension() != ".def") continue;
+		if (!isAssetIncludedInTestRun(entry.path().generic_string())) continue;
+		testStage(entry.path().generic_string());
 	}
 }
 
 TEST_F(CrashTest, StageCrashTest) {
-	processStageAssetsRecursively("assets\\stages\\");
+	processStageAssetsRecursively(getDolmexicaAssetFolder() + "stages/");
 }

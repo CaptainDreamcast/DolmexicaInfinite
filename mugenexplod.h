@@ -36,14 +36,14 @@ void setExplodPositionType(int tID, DreamExplodPositionType tType);
 void setExplodHorizontalFacing(int tID, int tFacing);
 void setExplodVerticalFacing(int tID, int tFacing);
 void setExplodBindTime(int tID, int tBindTime);
-void setExplodVelocity(int tID, double tX, double tY);
-void setExplodAcceleration(int tID, double tX, double tY);
+void setExplodVelocity(int tID, float tX, float tY);
+void setExplodAcceleration(int tID, float tX, float tY);
 void setExplodRandomOffset(int tID, int tX, int tY);
 void setExplodRemoveTime(int tID, int tRemoveTime);
 void setExplodSuperMove(int tID, int tCanMoveDuringSuperMove);
 void setExplodSuperMoveTime(int tID, int tSuperMoveTime);
 void setExplodPauseMoveTime(int tID, int tPauseMoveTime);
-void setExplodScale(int tID, double tX, double tY);
+void setExplodScale(int tID, float tX, float tY);
 void setExplodSpritePriority(int tID, int tSpritePriority);
 void setExplodOnTop(int tID, int tIsOnTop);
 void setExplodShadow(int tID, int tR, int tG, int tB);
@@ -60,14 +60,14 @@ void updateExplodPositionType(DreamPlayer* tPlayer, int tID, DreamExplodPosition
 void updateExplodHorizontalFacing(DreamPlayer* tPlayer, int tID, int tFacing);
 void updateExplodVerticalFacing(DreamPlayer* tPlayer, int tID, int tFacing);
 void updateExplodBindTime(DreamPlayer* tPlayer, int tID, int tBindTime);
-void updateExplodVelocity(DreamPlayer* tPlayer, int tID, double tX, double tY);
-void updateExplodAcceleration(DreamPlayer* tPlayer, int tID, double tX, double tY);
+void updateExplodVelocity(DreamPlayer* tPlayer, int tID, float tX, float tY);
+void updateExplodAcceleration(DreamPlayer* tPlayer, int tID, float tX, float tY);
 void updateExplodRandomOffset(DreamPlayer* tPlayer, int tID, int tX, int tY);
 void updateExplodRemoveTime(DreamPlayer* tPlayer, int tID, int tRemoveTime);
 void updateExplodSuperMove(DreamPlayer* tPlayer, int tID, int tIsSuperMove);
 void updateExplodSuperMoveTime(DreamPlayer* tPlayer, int tID, int tSuperMoveTime);
 void updateExplodPauseMoveTime(DreamPlayer* tPlayer, int tID, int tPauseMoveTime);
-void updateExplodScale(DreamPlayer* tPlayer, int tID, double tX, double tY);
+void updateExplodScale(DreamPlayer* tPlayer, int tID, float tX, float tY);
 void updateExplodSpritePriority(DreamPlayer* tPlayer, int tID, int tSpritePriority);
 void updateExplodOnTop(DreamPlayer* tPlayer, int tID, int tIsOnTop);
 void updateExplodShadow(DreamPlayer* tPlayer, int tID, int tR, int tG, int tB);
@@ -82,12 +82,12 @@ void removeExplodsForPlayerAfterHit(DreamPlayer* tPlayer);
 void removeAllExplods();
 int getExplodIndexFromExplodID(DreamPlayer* tPlayer, int tExplodID);
 
-void setPlayerExplodPaletteEffects(DreamPlayer* tPlayer, int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, double tColorFactor, int tIgnoreOwnPal);
+void setPlayerExplodPaletteEffects(DreamPlayer* tPlayer, int tDuration, const Vector3D& tAddition, const Vector3D& tMultiplier, const Vector3D& tSineAmplitude, int tSinePeriod, int tInvertAll, float tColorFactor, int tIgnoreOwnPal);
 
 int getExplodAmount(DreamPlayer* tPlayer);
 int getExplodAmountWithID(DreamPlayer* tPlayer, int tID);
 
-void setExplodsSpeed(double tSpeed);
+void setExplodsSpeed(float tSpeed);
 void setAllExplodsNoShadow();
 
 ActorBlueprint getDreamExplodHandler();

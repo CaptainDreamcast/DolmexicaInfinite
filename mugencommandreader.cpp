@@ -30,6 +30,13 @@ static int isStateDef(char* tLowercaseName) {
 	return items == 1 && !strcmp("statedef", name);
 }
 
+static int isState(char* tLowercaseName) {
+	char name[100];
+	int items = sscanf(tLowercaseName, "%s", name);
+
+	return items == 1 && !strcmp("state", name);
+}
+
 static int isRemap(char* tLowercaseName) {
 	return !strcmp("remap", tLowercaseName);
 }
@@ -377,7 +384,7 @@ static void loadMugenCommandsFromDefScript(DreamMugenCommands* tCommands, MugenD
 
 		if (isCommand(lowercase)) {
 			handleCommand(tCommands, current);
-		} else if (isStateDef(lowercase)) {
+		} else if (isStateDef(lowercase) || isState(lowercase)) {
 			handleStateDef();
 		} else if (isRemap(lowercase)) {
 			handleRemap();

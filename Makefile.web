@@ -3,15 +3,28 @@ include Makefile.common
 all: complete build_assets
 
 build_assets:
-	if [ -d "assets" ]; then \
-        python3 $(EMSDK)/upstream/emscripten/tools/file_packager.py web/assets.data --use-preload-plugins --preload assets@assets --js-output=web/assets.js; \
+	@rm -f web/asset_scripts.tmp; touch web/asset_scripts.tmp
+	@for dir in assets/*/; do \
+        [ -d "$$dir" ] || continue; \
+        name=$$(basename "$$dir"); \
+        echo "Packaging assets/$$name"; \
+        python3 $(EMSDK)/upstream/emscripten/tools/file_packager.py web/assets_$$name.data --use-preload-plugins --preload assets/$$name@assets/$$name --js-output=web/assets_$$name.js || exit 1; \
+        echo "<script type=\"text/javascript\" src=\"assets_$$name.js\"></script>" >> web/asset_scripts.tmp; \
+    done
+	@for name in tracks debug; do \
+        if [ -d "$$name" ]; then \
+            echo "Packaging $$name"; \
+            python3 $(EMSDK)/upstream/emscripten/tools/file_packager.py web/$$name.data --use-preload-plugins --preload $$name@$$name --js-output=web/$$name.js || exit 1; \
+            echo "<script type=\"text/javascript\" src=\"$$name.js\"></script>" >> web/asset_scripts.tmp; \
+        fi; \
+    done
+	@if grep -q "<!-- ASSET_SCRIPTS -->" web/index.html; then \
+        sed -i -e '/<!-- ASSET_SCRIPTS -->/r web/asset_scripts.tmp' -e '/<!-- ASSET_SCRIPTS -->/d' web/index.html; \
+        echo "Injected asset script tags into web/index.html"; \
+    else \
+        echo "Warning: no <!-- ASSET_SCRIPTS --> marker in web/index.html, script tags not injected"; \
     fi
-	if [ -d "tracks" ]; then \
-        python3 $(EMSDK)/upstream/emscripten/tools/file_packager.py web/tracks.data --use-preload-plugins --preload tracks@tracks --js-output=web/tracks.js; \
-    fi
-	if [ -d "debug" ]; then \
-        python3 $(EMSDK)/upstream/emscripten/tools/file_packager.py web/debug.data --use-preload-plugins --preload debug@debug --js-output=web/debug.js; \
-    fi
+	@rm -f web/asset_scripts.tmp
 
 clean_user:
 	

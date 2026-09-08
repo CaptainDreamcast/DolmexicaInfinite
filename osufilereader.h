@@ -14,17 +14,17 @@ typedef struct {
 	OsuMilliSecond mAudioLeadIn;
 	OsuMilliSecond mPreviewTime;
 	int mCountdown;
-	double mStackLeniency;
+	float mStackLeniency;
 	
 
 } OsuFileGeneral;
 
 typedef struct {
 	int mHPDrainRate;
-	double mCircleSize;
+	float mCircleSize;
 	int mOverallDifficulty;
-	double mApproachRate;
-	double mSliderMultiplier;
+	float mApproachRate;
+	float mSliderMultiplier;
 	int mSliderTickRate;
 
 } OsuFileDifficulty;
@@ -43,7 +43,7 @@ typedef struct {
 
 typedef struct {
 	OsuMilliSecond mOffset;
-	double mMillisecondsPerBeat;
+	float mMillisecondsPerBeat;
 	int mMeter;
 	int mSampleIndex;
 	int mVolume;
@@ -53,9 +53,9 @@ typedef struct {
 } OsuTimingPoint;
 
 typedef struct {
-	double mR;
-	double mG;
-	double mB;
+	float mR;
+	float mG;
+	float mB;
 } OsuColor;
 
 
@@ -80,7 +80,7 @@ typedef struct {
 	uint8_t mHitSound;
 	Vector3DI mEndPosition;
 	int mRepeat;
-	double mPixelLength;
+	float mPixelLength;
 } OsuSliderObject;
 
 typedef struct {

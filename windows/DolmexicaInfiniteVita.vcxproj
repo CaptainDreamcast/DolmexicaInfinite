@@ -46,7 +46,7 @@
     <NMakeCleanCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita/build &amp;&amp; make clean &amp;&amp; cd .. &amp;&amp; rm -r -f build"</NMakeCleanCommandLine>
     <NMakeReBuildCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita &amp;&amp; rm -f build/DolmexicaInfinite &amp;&amp; cmake -S . -B build &amp;&amp; cd build &amp;&amp; make"</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>VITA;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\Program Files (x86)\FMOD SoundSystem;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <NMakeBuildCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita &amp;&amp; rm -r -f build &amp;&amp; cmake -S . -B build &amp;&amp; cd build &amp;&amp; make"</NMakeBuildCommandLine>
@@ -55,7 +55,7 @@
     <NMakeCleanCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita/build &amp;&amp; make clean &amp;&amp; cd .. &amp;&amp; rm -r -f build"</NMakeCleanCommandLine>
     <NMakeReBuildCommandLine>ubuntu run "export VITASDK=/usr/local/vitasdk &amp;&amp; export PATH=$VITASDK/bin:$PATH &amp;&amp; cd /mnt/c/DEV/PROJECTS/DolmexicaInfinite/vita &amp;&amp; rm -r -f build &amp;&amp; cmake -S . -B build &amp;&amp; cd build &amp;&amp; make"</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>VITA;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\Program Files (x86)\FMOD SoundSystem;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>

@@ -20,29 +20,29 @@ ActorBlueprint getDreamStageBP();
 MugenAnimations* getStageAnimations();
 void playDreamStageMusic();
 
-double parseDreamCoordinatesToLocalCoordinateSystem(double tCoordinate, int tOtherCoordinateSystemAsP);
+float parseDreamCoordinatesToLocalCoordinateSystem(float tCoordinate, int tOtherCoordinateSystemAsP);
 
 Position2D getDreamPlayerStartingPositionInCameraCoordinates(int i);
 Position2D getDreamCameraStartPosition(int tCoordinateP);
 Position2D getDreamStageCoordinateSystemOffset(int tCoordinateP);
 int doesDreamPlayerStartFacingLeft(int i);
 
-double getDreamCameraPositionX(int tCoordinateP);
-double getDreamCameraPositionY(int tCoordinateP);
-double getDreamCameraZoom();
-void setDreamStageZoomOneFrame(double tScale, const Position2D& tStagePos);
-double getDreamScreenFactorFromCoordinateP(int tCoordinateP);
+float getDreamCameraPositionX(int tCoordinateP);
+float getDreamCameraPositionY(int tCoordinateP);
+float getDreamCameraZoom();
+void setDreamStageZoomOneFrame(float tScale, const Position2D& tStagePos);
+float getDreamScreenFactorFromCoordinateP(int tCoordinateP);
 int getDreamStageCoordinateP();
 
-double getDreamStageLeftEdgeX(int tCoordinateP);
-double getDreamStageRightEdgeX(int tCoordinateP);
-double getDreamStageTopEdgeY(int tCoordinateP);
-double getDreamStageBottomEdgeY(int tCoordinateP);
+float getDreamStageLeftEdgeX(int tCoordinateP);
+float getDreamStageRightEdgeX(int tCoordinateP);
+float getDreamStageTopEdgeY(int tCoordinateP);
+float getDreamStageBottomEdgeY(int tCoordinateP);
 
-double getDreamStageBoundLeft(int tCoordinateP);
-double getDreamStageBoundRight(int tCoordinateP);
+float getDreamStageBoundLeft(int tCoordinateP);
+float getDreamStageBoundRight(int tCoordinateP);
 
-double transformDreamCoordinates(double tVal, int tSrcP, int tDstP);
+float transformDreamCoordinates(float tVal, int tSrcP, int tDstP);
 int transformDreamCoordinatesI(int tVal, int tSrcP, int tDstP);
 Vector2D transformDreamCoordinatesVector2D(const Vector2D& tVal, int tSrcP, int tDstP);
 Vector3D transformDreamCoordinatesVector(const Vector3D& tVal, int tSrcP, int tDstP);
@@ -51,10 +51,10 @@ Vector3DI transformDreamCoordinatesVectorI(const Vector3DI& tVal, int tSrcP, int
 Vector3D transformDreamCoordinatesVectorXY(const Vector3D& tVal, int tSrcP, int tDstP);
 GeoRectangle2D transformDreamCoordinatesGeoRectangle2D(const GeoRectangle2D& tVal, int tSrcP, int tDstP);
 
-double getDreamStageTopOfScreenBasedOnPlayer(int tCoordinateP);
-double getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(int tCoordinateP);
-double getDreamStageLeftOfScreenBasedOnPlayer(int tCoordinateP);
-double getDreamStageRightOfScreenBasedOnPlayer(int tCoordinateP);
+float getDreamStageTopOfScreenBasedOnPlayer(int tCoordinateP);
+float getDreamStageTopOfScreenBasedOnPlayerInStageCoordinateOffset(int tCoordinateP);
+float getDreamStageLeftOfScreenBasedOnPlayer(int tCoordinateP);
+float getDreamStageRightOfScreenBasedOnPlayer(int tCoordinateP);
 Position2D getDreamStageCenterOfScreenBasedOnPlayer(int tCoordinateP);
 
 int getDreamGameWidth(int tCoordinateP);
@@ -71,11 +71,11 @@ int getDreamStageRightEdgeMinimumPlayerDistance(int tCoordinateP);
 
 void setDreamStageCoordinates(const Vector2DI& tCoordinates);
 
-double getDreamStageShadowTransparency();
+float getDreamStageShadowTransparency();
 Vector3D getDreamStageShadowColor();
-double getDreamStageShadowScaleY();
-double getDreamStageReflectionTransparency();
-double getDreamStageShadowFadeRangeFactor(double tPosY, int tCoordinateP);
+float getDreamStageShadowScaleY();
+float getDreamStageReflectionTransparency();
+float getDreamStageShadowFadeRangeFactor(float tPosY, int tCoordinateP);
 
 void setDreamStageNoAutomaticCameraMovement();
 void setDreamStageAutomaticCameraMovement();

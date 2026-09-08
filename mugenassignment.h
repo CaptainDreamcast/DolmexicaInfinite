@@ -73,7 +73,7 @@ typedef struct {
 
 typedef struct {
 	uint8_t mType;
-	double mValue;
+	float mValue;
 } DreamMugenFloatAssignment;
 
 typedef struct {
@@ -88,7 +88,10 @@ typedef struct {
 
 typedef struct {
 	uint8_t mType;
+	uint8_t mComparisonResolution;
+	uint8_t mComparisonEvaluatorType;
 	char* mName;
+	void* mComparisonFunc;
 } DreamMugenRawVariableAssignment;
 
 
@@ -133,7 +136,7 @@ void destroyDreamFalseMugenAssignment(DreamMugenAssignment* tAssignment);
 void destroyDreamMugenAssignment(DreamMugenAssignment* tAssignment);
 
 DreamMugenAssignment* makeDreamNumberMugenAssignment(int tVal);
-DreamMugenAssignment * makeDreamFloatMugenAssignment(double tVal);
+DreamMugenAssignment * makeDreamFloatMugenAssignment(float tVal);
 DreamMugenAssignment * makeDreamStringMugenAssignment(const char* tVal);
 DreamMugenAssignment* makeDream2DVectorMugenAssignment(const Vector2D& tVal);
 DreamMugenAssignment* makeDreamAndMugenAssignment(DreamMugenAssignment* a, DreamMugenAssignment* b);

@@ -140,11 +140,11 @@ static void movePlayersOutOfScreen() {
 static void fadeToResultFinishedCB(void* /*tData*/) {
 	gFightResultDisplayData.mBlackBGAnimationElement = playOneFrameAnimationLoop(Vector3D(0, 0, BLACK_BG_Z), &gFightResultDisplayData.mWhiteTexture);
 	setAnimationColor(gFightResultDisplayData.mBlackBGAnimationElement, 0, 0, 0);
-	setAnimationTransparency(gFightResultDisplayData.mBlackBGAnimationElement, 0.6);
+	setAnimationTransparency(gFightResultDisplayData.mBlackBGAnimationElement, 0.6f);
 	ScreenSize sz = getScreenSize();
 	setAnimationSize(gFightResultDisplayData.mBlackBGAnimationElement, Vector3D(sz.x, sz.y, 1), Vector3D(0, 0, 0));
 
-	double z;
+	float z;
 	if (gFightResultDisplayData.mLayerNo == 0) {
 		z = DISPLAY_TEXT_LOWEST_Z;
 	} 
